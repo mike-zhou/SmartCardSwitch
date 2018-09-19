@@ -1,0 +1,7 @@
+.metadata/
+RemoteSystemsTempFiles/
+*.d
+*.o
+proxy/Debug/proxy
+proxy/Release/proxy
+
