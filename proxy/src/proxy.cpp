@@ -5,6 +5,7 @@
 #include "Poco/Task.h"
 #include "Poco/TaskManager.h"
 #include "Poco/DateTimeFormatter.h"
+#include "Poco/Net/SocketAddress.h"
 #include <iostream>
 
 #include "CDeviceManager.h"
@@ -83,12 +84,15 @@ protected:
 		if (!_helpRequested)
 		{
 			TaskManager tm;
+			Poco::Net::SocketAddress serverAddress;
 
 			pLogger = new ProxyLogger;
 			CDeviceManager * pDeviceManager = new CDeviceManager;
 			CSocketManager * pSocketManager = new CSocketManager;
 			CDeviceSocketMapping deviceSocketMapping(pDeviceManager, pSocketManager);
 			CListener * pListener = new CListener(pSocketManager);
+
+			pListener->Bind(serverAddress);
 
 			tm.start(pLogger);
 			tm.start(pDeviceManager);
