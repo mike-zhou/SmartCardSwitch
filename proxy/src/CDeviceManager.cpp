@@ -13,6 +13,8 @@
 #include "Poco/Path.h"
 #include "Poco/Exception.h"
 #include "ProxyLogger.h"
+#include <poll.h>
+#include <stddef.h>
 
 using Poco::DirectoryIterator;
 using Poco::File;
@@ -126,9 +128,62 @@ void CDeviceManager::checkDevices()
 
 }
 
-void CDeviceManager::pollDevices()
+
+void CDeviceManager::onDeviceInput(struct Device& device)
 {
 
+}
+
+void CDeviceManager::onDeviceOutput(struct Device& device)
+{
+
+}
+
+void CDeviceManager::onDeviceError(struct Device& device)
+{
+
+}
+
+
+void CDeviceManager::pollDevices()
+{
+	if(_devices.size() < 1) {
+		return;
+	}
+	else
+	{
+		//poll devices.
+		std::vector<struct pollfd> fdVector;
+
+		for(size_t i=0; i<_devices.size(); i++)
+		{
+			pollfd fd;
+
+			fd.fd = _devices[i].fd;
+			fd.events = POLLIN | POLLOUT | POLLERR;
+			fd.revents = 0;
+			fdVector.push_back(fd);
+		}
+
+		auto rc = poll(fdVector.data(), fdVector.size(), 10);
+		if(rc > 0)
+		{
+			for(size_t i=0; i<_devices.size(); i++)
+			{
+				auto events = fdVector[i].revents;
+
+				if(events & POLLIN) {
+					onDeviceInput(_devices[i]);
+				}
+				if(events & POLLOUT) {
+					onDeviceOutput(_devices[i]);
+				}
+				if(events & POLLERR) {
+					onDeviceError(_devices[i]);
+				}
+			}
+		}
+	}
 }
 
 void CDeviceManager::runTask()

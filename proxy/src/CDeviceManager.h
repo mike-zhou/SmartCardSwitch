@@ -61,6 +61,10 @@ private:
 
 	//check if any DCD device is inserted or unpluged.
 	void checkDevices();
+
+	void onDeviceInput(struct Device& device);
+	void onDeviceOutput(struct Device& device);
+	void onDeviceError(struct Device& device);
 	void pollDevices();
 
 	CDeviceSocketMapping * _pMappingObj;
