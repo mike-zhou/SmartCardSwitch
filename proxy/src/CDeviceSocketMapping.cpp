@@ -26,7 +26,7 @@ void CDeviceSocketMapping::OnDeviceInserted(const std::string& deviceName)
 
 }
 
-void CDeviceSocketMapping::OnDeviceExtracted(const std::string& deviceName)
+void CDeviceSocketMapping::OnDeviceUnplugged(const std::string& deviceName)
 {
 
 }

@@ -59,6 +59,7 @@ private:
 
 	std::vector<struct Device> _devices;
 
+	//check if any DCD device is inserted or unpluged.
 	void checkDevices();
 	void pollDevices();
 

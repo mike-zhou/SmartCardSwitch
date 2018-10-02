@@ -26,7 +26,7 @@ public:
 	// called by DeviceManager when a device is inserted.
 	void OnDeviceInserted(const std::string& deviceName);
 	// called by Device Manager when a device is unplugged.
-	void OnDeviceExtracted(const std::string& deviceName);
+	void OnDeviceUnplugged(const std::string& deviceName);
 	// called by Device Manager when a device has some replies.
 	void OnDeviceReply(const std::string& deviceName, const std::string& reply);
 

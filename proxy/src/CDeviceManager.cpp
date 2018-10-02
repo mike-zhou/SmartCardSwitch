@@ -7,6 +7,7 @@
 #include "stddef.h"
 #include "fcntl.h"
 #include "CDeviceManager.h"
+#include "CDeviceSocketMapping.h"
 #include "Poco/DirectoryIterator.h"
 #include "Poco/File.h"
 #include "Poco/Path.h"
@@ -53,24 +54,25 @@ void CDeviceManager::checkDevices()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	//iterate each file in the folder
+	//iterate each file in the folder /dev/serial/device_by_id
 	try
 	{
-		DirectoryIterator it(DEVICE_FOLDER_PATH);
 		DirectoryIterator end;
 		std::vector<bool> devicesExist;
 
+		//firstly, take it for granted that add _devices[i] is lost
 		for(size_t i=0; i<_devices.size(); i++) {
 			devicesExist.push_back(false);
 		}
 
-		for(;it != end; it++)
+		//open all DCD files.
+		for(DirectoryIterator it(DEVICE_FOLDER_PATH) ;it != end; it++)
 		{
 			bool fileIsOpened = false;
 			Path p(it->path());
 			int fd;
 
-			//check if device has been opened
+			//check if current device has been opened
 			for(size_t i = 0; i<_devices.size(); i++) {
 				if(_devices[i].fileName == p.getFileName()) {
 					fileIsOpened = true;
@@ -98,11 +100,23 @@ void CDeviceManager::checkDevices()
 			struct Device device;
 			device.fd = fd;
 			device.deviceName = p.getFileName();
-			device.state = OPENED;
+			device.state = DeviceState::OPENED;
 			_devices.push_back(device);
 			devicesExist.push_back(true);
 		}
 
+		//notify unplugged device file
+		for(auto i = (devicesExist.size() -1); i >= 0; i--)
+		{
+			//if an active device is missing, then it is unplugged.
+			if(devicesExist[i] == false) {
+				if(_devices[i].state == DeviceState::ACTIVE) {
+					_pMappingObj->OnDeviceUnplugged(_devices[i].deviceName); //notify mapping of the unplug
+					devicesExist.erase(devicesExist.begin() + i); //remove the tag
+					_devices.erase(_devices.begin() + i); // remove device from list.
+				}
+			}
+		}
 
 	}
 	catch (Poco::Exception& exc)
