@@ -24,6 +24,7 @@ public:
 	virtual ~CDeviceManager();
 
 	void SetDeviceSocketMapping(CDeviceSocketMapping * pMappingObj);
+	void StartMonitoringDevices();
 	// Called by DeviceSocketMapping object to send a command to device.
 	void SendCommand(const std::string& deviceName, const std::string& command);
 
@@ -37,6 +38,8 @@ private:
 	const char ILLEGAL_CHARACTER_REPRESENTIVE = '?';
 	const char * COMMAND_QUERY_NAME = "C 1\n";
 	const char COMMAND_TERMINATER = '\n';
+
+	bool _startMonitoringDevices;
 
 	enum DeviceState
 	{

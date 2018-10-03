@@ -26,6 +26,7 @@ extern ProxyLogger * pLogger;
 CDeviceManager::CDeviceManager() : Task("CDeviceManager")
 {
 	_pMapping = NULL;
+	_startMonitoringDevices = false;
 }
 
 CDeviceManager::~CDeviceManager() {
@@ -37,6 +38,11 @@ void CDeviceManager::SetDeviceSocketMapping(CDeviceSocketMapping * pMappingObj)
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	_pMapping = pMappingObj;
+}
+
+void CDeviceManager::StartMonitoringDevices()
+{
+	_startMonitoringDevices = true;
 }
 
 void CDeviceManager::SendCommand(const std::string& deviceName, const std::string& command)
@@ -362,6 +368,11 @@ void CDeviceManager::runTask()
 		}
 		else
 		{
+			if(!_startMonitoringDevices) {
+				sleep(10);
+				continue;
+			}
+
 			{
 				Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 				if(_pMapping == NULL) {

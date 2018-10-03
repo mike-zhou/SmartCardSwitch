@@ -99,6 +99,8 @@ protected:
 			tm.start(pSocketManager);
 			tm.start(pListener);
 
+			pDeviceManager->StartMonitoringDevices();
+
 			waitForTerminationRequest();
 			tm.cancelAll();
 			tm.joinAll();
