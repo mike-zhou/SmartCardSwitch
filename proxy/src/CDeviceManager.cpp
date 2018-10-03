@@ -102,7 +102,7 @@ void CDeviceManager::checkDevices()
 			}
 			struct Device device;
 			device.fd = fd;
-			device.deviceName = p.getFileName();
+			device.fileName = p.getFileName();
 			device.state = DeviceState::OPENED;
 			_devices.push_back(device);
 			devicesExist.push_back(true);
@@ -129,7 +129,33 @@ void CDeviceManager::checkDevices()
 
 }
 
-//read data from device, compose replies and send them to mapping.
+void CDeviceManager::onReply(struct Device& device, const std::string& reply)
+{
+	switch(device.state)
+	{
+		case DeviceState::RECEIVING_NAME:
+		{
+			device.deviceName = reply;
+			device.state = DeviceState::ACTIVE;
+			_pMapping->OnDeviceInserted(device.deviceName);
+		}
+		break;
+
+		case DeviceState::ACTIVE:
+		{
+			_pMapping->OnDeviceReply(device.deviceName, reply);
+		}
+		break;
+
+		default:
+		{
+			//do nothing
+		}
+		break;
+	}
+}
+
+//read data from device
 void CDeviceManager::onDeviceInput(struct Device& device)
 {
 	const int BUFFER_SIZE = 1024;
@@ -168,7 +194,8 @@ void CDeviceManager::onDeviceInput(struct Device& device)
 			bool illegal = false;
 
 			//retrieve the reply from the incoming deque.
-			for(; device.incoming.size() > 0; ) {
+			for(; device.incoming.size() > 0; )
+			{
 				unsigned char c = device.incoming.front();
 				device.incoming.pop_front();
 
@@ -185,8 +212,7 @@ void CDeviceManager::onDeviceInput(struct Device& device)
 						pLogger->LogError("CDeviceManager illegal reply: " + device.fileName + ":" + reply.data());
 					}
 					else {
-						//send the reply to mapping.
-						_pMapping->OnDeviceReply(device.deviceName, std::string(reply.data()));
+						onReply(device, std::string(reply.data()));
 						pLogger->LogDebug("CDeviceManager rely: " + device.fileName + ":" + std::string(reply.data()));
 					}
 					break;
@@ -207,15 +233,78 @@ void CDeviceManager::onDeviceInput(struct Device& device)
 	}
 }
 
+void CDeviceManager::enqueueCommand(struct Device& device, const char * pCommand)
+{
+	if(pCommand == nullptr) {
+		return;
+	}
+
+	std::string command(pCommand);
+	enqueueCommand(device, command);
+}
+
+void CDeviceManager::enqueueCommand(struct Device& device, const std::string command)
+{
+	if(command.size() < 1) {
+		return;
+	}
+
+	for(int i=0; i<command.size(); i++) {
+		if(command[i] == '\r') {
+			continue; //skip '\r'
+		}
+		device.outgoing.push_back(command[i]);
+	}
+}
+
+
+//write a command to device
 void CDeviceManager::onDeviceOutput(struct Device& device)
 {
+	int amount;
+	char c;
 
+	//internal command
+	{
+		switch(device.state)
+		{
+			case DeviceState::OPENED:
+			{
+				std::string command(COMMAND_QUERY_NAME);
+				enqueueCommand(device, command);
+				device.state = DeviceState::RECEIVING_NAME;
+			}
+			break;
+
+			default:
+			{
+				//nothing to do
+			}
+			break;
+		}
+	}
+
+	if(device.outgoing.size() > 0)
+	{
+		for(;;)
+		{
+			c = device.outgoing.front();
+			amount = write(device.fd, &c, 1);
+			if(amount > 0) {
+				device.outgoing.pop_front();
+			}
+			else {
+				break;
+			}
+		}
+	}
 }
 
 void CDeviceManager::onDeviceError(struct Device& device)
 {
 
 }
+
 
 
 void CDeviceManager::pollDevices()

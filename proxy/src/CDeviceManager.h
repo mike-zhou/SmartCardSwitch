@@ -36,12 +36,12 @@ private:
 	std::string DEVICE_FOLDER_PATH;
 	std::string IDENTIFIER;
 	const char ILLEGAL_CHARACTER_REPRESENTIVE = '?';
+	const char * COMMAND_QUERY_NAME = "C 1\n";
 
 	enum DeviceState
 	{
 		CLOSED = 0,
 		OPENED,
-		QUERYING_NAME,
 		RECEIVING_NAME,
 		ACTIVE,
 		ERROR
@@ -52,9 +52,9 @@ private:
 		enum DeviceState state;
 
 		int fd;
-		std::string fileName;
+		std::string fileName; //device file name
 
-		std::string deviceName;
+		std::string deviceName; //name queried from COMMAND_QUERY_NAME
 		std::deque<char> outgoing;
 		std::deque<char> incoming;
 	};
@@ -64,10 +64,14 @@ private:
 	//check if any DCD device is inserted or unpluged.
 	void checkDevices();
 
+	void onReply(struct Device& device, const std::string& reply);
 	void onDeviceInput(struct Device& device);
 	void onDeviceOutput(struct Device& device);
 	void onDeviceError(struct Device& device);
 	void pollDevices();
+
+	void enqueueCommand(struct Device& device, const char * pCommand);
+	void enqueueCommand(struct Device& device, const std::string command);
 
 	CDeviceSocketMapping * _pMapping;
 };
