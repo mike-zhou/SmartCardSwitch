@@ -21,6 +21,9 @@ public:
 
 	bool Init(const Poco::Path& path);
 	void Log(const std::string& log);
+	void LogError(const std::string& err);
+	void LogDebug(const std::string& debug);
+	void LogInfo(const std::string& info);
 
 	void runTask();
 

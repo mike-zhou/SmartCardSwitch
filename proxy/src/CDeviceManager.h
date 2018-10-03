@@ -10,6 +10,7 @@
 
 #include <map>
 #include <vector>
+#include <deque>
 #include <string>
 #include "Poco/Task.h"
 #include "Poco/Mutex.h"
@@ -34,6 +35,7 @@ private:
 
 	std::string DEVICE_FOLDER_PATH;
 	std::string IDENTIFIER;
+	const char ILLEGAL_CHARACTER_REPRESENTIVE = '?';
 
 	enum DeviceState
 	{
@@ -53,8 +55,8 @@ private:
 		std::string fileName;
 
 		std::string deviceName;
-		std::vector<char> outgoing;
-		std::vector<char> incoming;
+		std::deque<char> outgoing;
+		std::deque<char> incoming;
 	};
 
 	std::vector<struct Device> _devices;
@@ -67,7 +69,7 @@ private:
 	void onDeviceError(struct Device& device);
 	void pollDevices();
 
-	CDeviceSocketMapping * _pMappingObj;
+	CDeviceSocketMapping * _pMapping;
 };
 
 #endif /* CDEVICEMANAGER_H_ */

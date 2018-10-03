@@ -15,6 +15,7 @@
 #include "ProxyLogger.h"
 #include <poll.h>
 #include <stddef.h>
+#include <unistd.h>
 
 using Poco::DirectoryIterator;
 using Poco::File;
@@ -27,7 +28,7 @@ CDeviceManager::CDeviceManager() : Task("CDeviceManager")
 	DEVICE_FOLDER_PATH = "/dev/serial/by-id";
 	IDENTIFIER = "Deeply_Customized_Device_Name_needs_to_be_queried";
 
-	_pMappingObj = NULL;
+	_pMapping = NULL;
 
 }
 
@@ -39,7 +40,7 @@ void CDeviceManager::SetDeviceSocketMapping(CDeviceSocketMapping * pMappingObj)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	_pMappingObj = pMappingObj;
+	_pMapping = pMappingObj;
 }
 
 void CDeviceManager::StartMonitoringDevices()
@@ -113,7 +114,7 @@ void CDeviceManager::checkDevices()
 			//if an active device is missing, then it is unplugged.
 			if(devicesExist[i] == false) {
 				if(_devices[i].state == DeviceState::ACTIVE) {
-					_pMappingObj->OnDeviceUnplugged(_devices[i].deviceName); //notify mapping of the unplug
+					_pMapping->OnDeviceUnplugged(_devices[i].deviceName); //notify mapping of the unplug
 					devicesExist.erase(devicesExist.begin() + i); //remove the tag
 					_devices.erase(_devices.begin() + i); // remove device from list.
 				}
@@ -128,10 +129,82 @@ void CDeviceManager::checkDevices()
 
 }
 
-
+//read data from device, compose replies and send them to mapping.
 void CDeviceManager::onDeviceInput(struct Device& device)
 {
+	const int BUFFER_SIZE = 1024;
+	unsigned char buffer[BUFFER_SIZE];
+	ssize_t amount;
 
+	//read data from device
+	for(;;)
+	{
+		amount =  read(device.fd, buffer, BUFFER_SIZE);
+		for(int i=0; i<amount; i++)
+		{
+			device.incoming.push_back(buffer[i]);
+		}
+		if(amount < 1) {
+			break;
+		}
+	}
+
+	//notify mapping of complete replies
+	for(;;)
+	{
+		bool replyReady = false;
+
+		//check if there is a complete reply
+		for(int i=0; i<device.incoming.size(); i++) {
+			if(device.incoming[i] == '\n') {
+				replyReady = true;
+				break;
+			}
+		}
+
+		if(replyReady)
+		{
+			std::vector<char> reply;
+			bool illegal = false;
+
+			//retrieve the reply from the incoming deque.
+			for(; device.incoming.size() > 0; ) {
+				unsigned char c = device.incoming.front();
+				device.incoming.pop_front();
+
+				if((c >= ' ') && (c <= '~')) {
+					reply.push_back(c);
+				}
+				else if(c == '\r') {
+					//ignore this character
+					continue;
+				}
+				else if(c == '\n') {
+					//a complete reply is found, send it to mapping
+					if(illegal) {
+						pLogger->LogError("CDeviceManager illegal reply: " + device.fileName + ":" + reply.data());
+					}
+					else {
+						//send the reply to mapping.
+						_pMapping->OnDeviceReply(device.deviceName, std::string(reply.data()));
+						pLogger->LogDebug("CDeviceManager rely: " + device.fileName + ":" + std::string(reply.data()));
+					}
+					break;
+				}
+				else {
+					//illegal character
+					if(illegal == false) {
+						pLogger->LogError("CDeviceManager illegal character in : " + device.fileName);
+						illegal = true;
+					}
+					reply.push_back(ILLEGAL_CHARACTER_REPRESENTIVE);
+				}
+			}
+		}
+		else {
+			break;
+		}
+	}
 }
 
 void CDeviceManager::onDeviceOutput(struct Device& device)
@@ -197,7 +270,7 @@ void CDeviceManager::runTask()
 		{
 			{
 				Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-				if(_pMappingObj == NULL) {
+				if(_pMapping == NULL) {
 					sleep(10);
 					continue;
 				}

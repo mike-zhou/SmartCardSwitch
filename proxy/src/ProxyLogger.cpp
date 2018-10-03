@@ -30,6 +30,21 @@ void ProxyLogger::Log(const std::string& log)
 	printf("%s\r\n", log.c_str());
 }
 
+void ProxyLogger::LogError(const std::string& err)
+{
+	Log(err);
+}
+
+void ProxyLogger::LogDebug(const std::string& debug)
+{
+	Log(debug);
+}
+
+void ProxyLogger::LogInfo(const std::string& info)
+{
+	Log(info);
+}
+
 void ProxyLogger::runTask()
 {
 	while(1)
