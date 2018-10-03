@@ -55,9 +55,10 @@ private:
 		enum DeviceState state;
 
 		int fd;
-		std::string fileName; //device file name
+		std::string fileName; //device file name in Linux /dev
 
-		std::string deviceName; //name queried from COMMAND_QUERY_NAME
+		//name queried from COMMAND_QUERY_NAME. Each device is supposed to have a unique name.
+		std::string deviceName;
 		std::deque<char> outgoing;
 		std::deque<char> incoming;
 	};
