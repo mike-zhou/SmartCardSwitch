@@ -24,7 +24,6 @@ public:
 	virtual ~CDeviceManager();
 
 	void SetDeviceSocketMapping(CDeviceSocketMapping * pMappingObj);
-	void StartMonitoringDevices();
 	// Called by DeviceSocketMapping object to send a command to device.
 	void SendCommand(const std::string& deviceName, const std::string& command);
 
@@ -33,10 +32,11 @@ public:
 private:
 	Poco::Mutex _mutex;
 
-	std::string DEVICE_FOLDER_PATH;
-	std::string IDENTIFIER;
+	const std::string DEVICE_FOLDER_PATH = "/dev/serial/by-id";
+	const std::string IDENTIFIER = "Deeply_Customized_Device_Name_needs_to_be_queried";;
 	const char ILLEGAL_CHARACTER_REPRESENTIVE = '?';
 	const char * COMMAND_QUERY_NAME = "C 1\n";
+	const char COMMAND_TERMINATER = '\n';
 
 	enum DeviceState
 	{

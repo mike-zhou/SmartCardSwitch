@@ -25,11 +25,7 @@ extern ProxyLogger * pLogger;
 
 CDeviceManager::CDeviceManager() : Task("CDeviceManager")
 {
-	DEVICE_FOLDER_PATH = "/dev/serial/by-id";
-	IDENTIFIER = "Deeply_Customized_Device_Name_needs_to_be_queried";
-
 	_pMapping = NULL;
-
 }
 
 CDeviceManager::~CDeviceManager() {
@@ -43,14 +39,18 @@ void CDeviceManager::SetDeviceSocketMapping(CDeviceSocketMapping * pMappingObj)
 	_pMapping = pMappingObj;
 }
 
-void CDeviceManager::StartMonitoringDevices()
-{
-
-}
-
 void CDeviceManager::SendCommand(const std::string& deviceName, const std::string& command)
 {
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
+	for(int i=0; i<_devices.size(); i++) {
+		if(_devices[i].state == DeviceState::ACTIVE) {
+			if(_devices[i].deviceName == deviceName) {
+				pLogger->LogDebug("CDeviceManager enqueue command: " + deviceName + ":" + command);
+				enqueueCommand(_devices[i], command);
+			}
+		}
+	}
 }
 
 void CDeviceManager::checkDevices()
@@ -108,7 +108,7 @@ void CDeviceManager::checkDevices()
 			devicesExist.push_back(true);
 		}
 
-		//notify unplugged device file
+		//notify unplugged device files
 		for(auto i = (devicesExist.size() -1); i >= 0; i--)
 		{
 			//if an active device is missing, then it is unplugged.
@@ -207,7 +207,7 @@ void CDeviceManager::onDeviceInput(struct Device& device)
 					continue;
 				}
 				else if(c == '\n') {
-					//a complete reply is found, send it to mapping
+					//a complete reply is found
 					if(illegal) {
 						pLogger->LogError("CDeviceManager illegal reply: " + device.fileName + ":" + reply.data());
 					}
@@ -255,6 +255,7 @@ void CDeviceManager::enqueueCommand(struct Device& device, const std::string com
 		}
 		device.outgoing.push_back(command[i]);
 	}
+	device.outgoing.push_back(COMMAND_TERMINATER);
 }
 
 
@@ -264,7 +265,7 @@ void CDeviceManager::onDeviceOutput(struct Device& device)
 	int amount;
 	char c;
 
-	//internal command
+	//internal command to query device name
 	{
 		switch(device.state)
 		{
@@ -286,14 +287,18 @@ void CDeviceManager::onDeviceOutput(struct Device& device)
 
 	if(device.outgoing.size() > 0)
 	{
+		//send command to device
 		for(;;)
 		{
+			//write a byte to device
 			c = device.outgoing.front();
 			amount = write(device.fd, &c, 1);
 			if(amount > 0) {
+				//byte is written
 				device.outgoing.pop_front();
 			}
 			else {
+				//nothing is written
 				break;
 			}
 		}
@@ -302,7 +307,7 @@ void CDeviceManager::onDeviceOutput(struct Device& device)
 
 void CDeviceManager::onDeviceError(struct Device& device)
 {
-
+	pLogger->LogError("CDeviceManager device error: " + device.fileName);
 }
 
 
