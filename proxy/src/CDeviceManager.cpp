@@ -25,7 +25,7 @@ extern ProxyLogger * pLogger;
 
 CDeviceManager::CDeviceManager() : Task("CDeviceManager")
 {
-	_pMapping = NULL;
+	_pObserver = NULL;
 	_startMonitoringDevices = false;
 }
 
@@ -33,11 +33,11 @@ CDeviceManager::~CDeviceManager() {
 	// TODO Auto-generated destructor stub
 }
 
-void CDeviceManager::SetDeviceSocketMapping(CDeviceSocketMapping * pMappingObj)
+void CDeviceManager::(IDeviceObserver * pObserver)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	_pMapping = pMappingObj;
+	_pObserver = pObserver;
 }
 
 void CDeviceManager::StartMonitoringDevices()
@@ -48,91 +48,104 @@ void CDeviceManager::StartMonitoringDevices()
 void CDeviceManager::SendCommand(const std::string& deviceName, const std::string& command)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	auto it = _devices.begin();
 
-	for(int i=0; i<_devices.size(); i++) {
-		if(_devices[i].state == DeviceState::ACTIVE) {
-			if(_devices[i].deviceName == deviceName) {
+	for(; it != _devices.end(); it++) {
+		if(it->state == DeviceState::ACTIVE) {
+			if(it->deviceName == deviceName) {
 				pLogger->LogDebug("CDeviceManager enqueue command: " + deviceName + ":" + command);
-				enqueueCommand(_devices[i], command);
+				enqueueCommand(*it, command);
 			}
 		}
+	}
+	if(it == _devices.end()) {
+		pLogger->LogError("CDeviceManager::SendCommand failed in sending: " + deviceName + ":" + command)
 	}
 }
 
 void CDeviceManager::checkDevices()
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-
-	//iterate each file in the folder /dev/serial/device_by_id
-	try
+	std::vector<std::string> deviceUnpluged;
 	{
-		DirectoryIterator end;
-		std::vector<bool> devicesExist;
+		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-		//firstly, take it for granted that add _devices[i] is lost
-		for(size_t i=0; i<_devices.size(); i++) {
-			devicesExist.push_back(false);
-		}
-
-		//open all DCD files.
-		for(DirectoryIterator it(DEVICE_FOLDER_PATH) ;it != end; it++)
+		//iterate each file in the folder /dev/serial/device_by_id
+		try
 		{
-			bool fileIsOpened = false;
-			Path p(it->path());
-			int fd;
+			DirectoryIterator end;
+			std::vector<bool> devicesExist;
 
-			//check if current device has been opened
-			for(size_t i = 0; i<_devices.size(); i++) {
-				if(_devices[i].fileName == p.getFileName()) {
-					fileIsOpened = true;
-					devicesExist[i] = true;
-					break;
+			//firstly, take it for granted that add _devices[i] is lost
+			for(size_t i=0; i<_devices.size(); i++) {
+				devicesExist.push_back(false);
+			}
+
+			//open all DCD files.
+			for(DirectoryIterator it(DEVICE_FOLDER_PATH) ;it != end; it++)
+			{
+				bool fileIsOpened = false;
+				Path p(it->path());
+				int fd;
+
+				//check if current device has been opened
+				for(size_t i = 0; i<_devices.size(); i++) {
+					if(_devices[i].fileName == p.getFileName()) {
+						fileIsOpened = true;
+						devicesExist[i] = true;
+						break;
+					}
+				}
+				if(fileIsOpened) {
+					continue;
+				}
+
+				//check if it is a DCD device
+				std::string fileName = it->path();
+				if(fileName.find(IDENTIFIER) == std::string::npos) {
+					// not a DCD device
+					continue;
+				}
+
+				//open device
+				fd = open(fileName.c_str(), O_RDWR | O_NOCTTY);
+				if(fd < 0){
+					//cannot open device file
+					continue;
+				}
+				struct Device device;
+				device.fd = fd;
+				device.fileName = p.getFileName();
+				device.state = DeviceState::OPENED;
+				_devices.push_back(device);
+				devicesExist.push_back(true);
+			}
+
+			//notify unplugged device files
+			for(auto i = (devicesExist.size() -1); i >= 0; i--)
+			{
+				//if an active device is missing, then it is unplugged.
+				if(devicesExist[i] == false) {
+					if(_devices[i].state == DeviceState::ACTIVE) {
+						deviceUnpluged.push_back(_devices[i].deviceName);
+						devicesExist.erase(devicesExist.begin() + i); //remove the tag
+						_devices.erase(_devices.begin() + i); // remove device from list.
+					}
 				}
 			}
-			if(fileIsOpened) {
-				continue;
-			}
 
-			//check if it is a DCD device
-			std::string fileName = it->path();
-			if(fileName.find(IDENTIFIER) == std::string::npos) {
-				// not a DCD device
-				continue;
-			}
-
-			//open device
-			fd = open(fileName.c_str(), O_RDWR | O_NOCTTY);
-			if(fd < 0){
-				//cannot open device file
-				continue;
-			}
-			struct Device device;
-			device.fd = fd;
-			device.fileName = p.getFileName();
-			device.state = DeviceState::OPENED;
-			_devices.push_back(device);
-			devicesExist.push_back(true);
 		}
-
-		//notify unplugged device files
-		for(auto i = (devicesExist.size() -1); i >= 0; i--)
+		catch (Poco::Exception& exc)
 		{
-			//if an active device is missing, then it is unplugged.
-			if(devicesExist[i] == false) {
-				if(_devices[i].state == DeviceState::ACTIVE) {
-					_pMapping->OnDeviceUnplugged(_devices[i].deviceName); //notify mapping of the unplug
-					devicesExist.erase(devicesExist.begin() + i); //remove the tag
-					_devices.erase(_devices.begin() + i); // remove device from list.
-				}
-			}
+			pLogger->Log(exc.displayText());
 		}
-
-	}
-	catch (Poco::Exception& exc)
-	{
-		pLogger->Log(exc.displayText());
 	}
 
+	//outside mutex protection to avoid dead lock.
+	if(deviceUnpluged.size() > 0) {
+		for(auto it = deviceUnpluged.begin(); it != deviceUnpluged.end(); it++) {
+			_pObserver->OnDeviceUnplugged(*it);
+		}
+	}
 }
 
 void CDeviceManager::onReply(struct Device& device, const std::string& reply)
@@ -143,13 +156,13 @@ void CDeviceManager::onReply(struct Device& device, const std::string& reply)
 		{
 			device.deviceName = reply;
 			device.state = DeviceState::ACTIVE;
-			_pMapping->OnDeviceInserted(device.deviceName);
+			_pObserver->OnDeviceInserted(device.deviceName);
 		}
 		break;
 
 		case DeviceState::ACTIVE:
 		{
-			_pMapping->OnDeviceReply(device.deviceName, reply);
+			_pObserver->OnDeviceReply(device.deviceName, reply);
 		}
 		break;
 
@@ -270,6 +283,8 @@ void CDeviceManager::onDeviceOutput(struct Device& device)
 {
 	int amount;
 	char c;
+
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	//internal command to query device name
 	{
@@ -399,7 +414,7 @@ void CDeviceManager::runTask()
 
 			{
 				Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-				if(_pMapping == NULL) {
+				if(_pObserver == NULL) {
 					sleep(10);
 					continue;
 				}

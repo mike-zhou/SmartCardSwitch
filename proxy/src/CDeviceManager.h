@@ -14,19 +14,21 @@
 #include <string>
 #include "Poco/Task.h"
 #include "Poco/Mutex.h"
+#include "IDevice.h"
 
 class CDeviceSocketMapping;
 
-class CDeviceManager: public Poco::Task
+class CDeviceManager: public Poco::Task, public IDevice
 {
 public:
 	CDeviceManager();
 	virtual ~CDeviceManager();
 
-	void SetDeviceSocketMapping(CDeviceSocketMapping * pMappingObj);
+	void SetObserver(IDeviceObserver * pObserver);
 	void StartMonitoringDevices();
+
 	// Called by DeviceSocketMapping object to send a command to device.
-	void SendCommand(const std::string& deviceName, const std::string& command);
+	virtual void SendCommand(const std::string& deviceName, const std::string& command) override;
 
 	void runTask();
 
@@ -77,7 +79,7 @@ private:
 	void enqueueCommand(struct Device& device, const char * pCommand);
 	void enqueueCommand(struct Device& device, const std::string command);
 
-	CDeviceSocketMapping * _pMapping;
+	CDeviceSocketMapping * _pObserver;
 };
 
 #endif /* CDEVICEMANAGER_H_ */
