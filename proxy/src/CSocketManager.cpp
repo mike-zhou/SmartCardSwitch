@@ -33,6 +33,11 @@ void CSocketManager::OnDeviceUnplugged(const long long socketId)
 
 }
 
+void CSocketManager::OnNewDevice(const std::string& deviceName)
+{
+
+}
+
 void CSocketManager::AddSocket(StreamSocket& socket)
 {
 

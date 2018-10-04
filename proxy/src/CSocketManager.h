@@ -24,6 +24,7 @@ public:
 	virtual ~CSocketManager();
 
 	void SetDeviceSocketMapping(CDeviceSocketMapping * pMapping);
+	void OnNewDevice(const std::string& deviceName);
 	void OnDeviceReply(const long long socketId, const std::string& reply);
 	void OnDeviceUnplugged(const long long socketId);
 

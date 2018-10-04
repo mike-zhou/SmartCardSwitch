@@ -34,7 +34,7 @@ public:
 	//interface with socket manager
 	/////////////////////////////////////////
 	// return a vector of device names
-	std::vector<std::string> GetDeviceNames();
+	std::map<std::string, long long> GetMapping();
 	// called by SocketManager when a socket bonds to a device
 	bool Bond(const long long socketId, const std::string& deviceName);
 	// called by SocketManager when a socket sends a command to device
@@ -45,7 +45,11 @@ public:
 private:
 	Poco::Mutex _mutex;
 
-	std::map<std::string, int> _deviceSocketMap;
+	const long long INVALID_SOCKET_ID = -1;
+
+	//device has a 1:1 relationship to socket
+	std::map<std::string, long long> _deviceSocketMap;
+
 	CDeviceManager * _pDeviceManager;
 	CSocketManager * _pSocketManager;
 };

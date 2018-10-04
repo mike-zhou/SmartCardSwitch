@@ -229,7 +229,7 @@ void CDeviceManager::onDeviceInput(struct Device& device)
 						pLogger->LogError("CDeviceManager illegal character in : " + device.fileName);
 						illegal = true;
 					}
-					reply.push_back(ILLEGAL_CHARACTER_REPRESENTIVE);
+					reply.push_back(ILLEGAL_CHARACTER_REPLACEMENT);
 				}
 			}
 		}
