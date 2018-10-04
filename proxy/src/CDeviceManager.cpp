@@ -325,20 +325,47 @@ void CDeviceManager::pollDevices()
 	}
 	else
 	{
-		//poll devices.
 		std::vector<struct pollfd> fdVector;
 
+		//poll devices output.
 		for(size_t i=0; i<_devices.size(); i++)
 		{
 			pollfd fd;
 
 			fd.fd = _devices[i].fd;
-			fd.events = POLLIN | POLLOUT | POLLERR;
+			fd.events = POLLOUT | POLLERR;
+			fd.revents = 0;
+			fdVector.push_back(fd);
+		}
+		auto rc = poll(fdVector.data(), fdVector.size(), 10);
+		if(rc > 0)
+		{
+			for(size_t i=0; i<_devices.size(); i++)
+			{
+				auto events = fdVector[i].revents;
+
+				if(events & POLLOUT) {
+					onDeviceOutput(_devices[i]);
+				}
+				if(events & POLLERR) {
+					onDeviceError(_devices[i]);
+				}
+			}
+		}
+
+		//poll devices input
+		fdVector.clear();
+		for(size_t i=0; i<_devices.size(); i++)
+		{
+			pollfd fd;
+
+			fd.fd = _devices[i].fd;
+			fd.events = POLLIN | POLLERR;
 			fd.revents = 0;
 			fdVector.push_back(fd);
 		}
 
-		auto rc = poll(fdVector.data(), fdVector.size(), 10);
+		rc = poll(fdVector.data(), fdVector.size(), 10);
 		if(rc > 0)
 		{
 			for(size_t i=0; i<_devices.size(); i++)
@@ -347,9 +374,6 @@ void CDeviceManager::pollDevices()
 
 				if(events & POLLIN) {
 					onDeviceInput(_devices[i]);
-				}
-				if(events & POLLOUT) {
-					onDeviceOutput(_devices[i]);
 				}
 				if(events & POLLERR) {
 					onDeviceError(_devices[i]);

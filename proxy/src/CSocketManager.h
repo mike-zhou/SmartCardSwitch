@@ -35,11 +35,15 @@ public:
 private:
 	Poco::Mutex _mutex;
 
+	const long long STARTING_SOCKET_ID = 1;
 	long long _lastSocketId;
-	std::map<std::string, long long> _deviceSocketMap;
-	CDeviceSocketMapping * _pDeviceSocketMappingObj;
+	std::map<long long, StreamSocket> _sockets;
+	CDeviceSocketMapping * _pMapping;
 
-	std::vector<StreamSocket> _sockets;
+	//send reply to socket
+	bool sendReply(StreamSocket& socket, const std::string& reply);
+	//process command from socket
+	void onCommand(StreamSocket& socket, const std::string& command);
 };
 
 #endif /* CSOCKETMANAGER_H_ */
