@@ -33,7 +33,7 @@ void CSocketManager::OnDeviceInserted(const std::string& deviceName)
 
 	if(_deviceSocketMap.end() == _deviceSocketMap.find(deviceName)) {
 		pLogger->LogInfo("CSocketManager::OnDeviceInserted new device is available: " + deviceName);
-		_deviceSocketMap[deviceName] = INVALID_SOCKET_ID;
+		_deviceSocketMap[deviceName].socketId = INVALID_SOCKET_ID;
 	}
 	else {
 		pLogger->LogError("CSocketManager::OnDeviceInserted: device has already existed: " + deviceName);
@@ -46,7 +46,7 @@ void CSocketManager::OnDeviceUnplugged(const std::string& deviceName)
 
 	auto it = _deviceSocketMap.find(deviceName);
 	if(_deviceSocketMap.end() != it) {
-		auto socketId = _deviceSocketMap[deviceName];
+		auto socketId = _deviceSocketMap[deviceName].socketId;
 
 		pLogger->LogInfo("CSocketManager::OnDeviceUnplugged: device is unplugged: " + deviceName);
 		_deviceSocketMap.erase(it);
@@ -66,20 +66,12 @@ void CSocketManager::OnDeviceReply(const std::string& deviceName, const std::str
 
 	auto it = _deviceSocketMap.find(deviceName);
 	if(_deviceSocketMap.end() != it) {
-		auto socketId = _deviceSocketMap[deviceName];
-
 		pLogger->LogInfo("CDeviceSocketMapping::OnDeviceReply: " + deviceName + ":" + reply);
-		if(socketId != INVALID_SOCKET_ID) {
-			onDeviceReply(socketId, reply);
-		}
-		else {
-			pLogger->LogError("CDeviceSocketMapping::OnDeviceReply: none wants reply from device: " + deviceName);
-		}
+		it->second.replyPool.push_back(reply);
 	}
 	else {
 		pLogger->LogError("CDeviceSocketMapping::OnDeviceReply: unknown device has a  reply: " + deviceName + ":" + reply);
 	}
-
 }
 
 void CSocketManager::onDeviceUnpluged(long long socketId)
@@ -92,7 +84,7 @@ void CSocketManager::onDeviceUnpluged(long long socketId)
 		if(it->socketId == socketId) {
 			auto reply = ReplyFactory::EventDeviceUnplugged();
 			for(auto c=reply.begin(); c!=reply.end(); c++) {
-				it->replyBuffer.push_back(*c);
+				it->outgoing.push_back(*c);
 			}
 			break;
 		}
@@ -102,7 +94,8 @@ void CSocketManager::onDeviceUnpluged(long long socketId)
 	}
 }
 
-void CSocketManager::onDeviceReply(long long socketId, const std::string& reply)
+
+void CSocketManager::moveReplyToSocket(long long socketId, const std::string& reply)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -115,16 +108,16 @@ void CSocketManager::onDeviceReply(long long socketId, const std::string& reply)
 			//append the reply to buffer
 			for(auto c = formatedReply.begin(); c != formatedReply.end(); c++)
 			{
-				it->replyBuffer.push_back(*c);
+				it->outgoing.push_back(*c);
 			}
 			break;
 		}
 	}
 	if(it == _sockets.end()) {
-		pLogger->LogError("CSocketManager::OnDeviceReply no socket for socketId: " + std::to_string(socketId));
+		pLogger->LogError("CSocketManager::onDeviceReplyAvailable no socket for socketId: " + std::to_string(socketId));
 	}
 	else {
-		pLogger->LogInfo("CSocketManager::OnDeviceReply send reply: " + std::to_string(socketId) + ":" + reply);
+		pLogger->LogInfo("CSocketManager::onDeviceReplyAvailable send reply: " + std::to_string(socketId) + ":" + reply);
 	}
 }
 
@@ -140,7 +133,7 @@ void CSocketManager::AddSocket(StreamSocket& socket)
 	_sockets.push_back(wrapper);
 }
 
-bool CSocketManager::sendReply(StreamSocket& socket, const std::string& reply)
+void CSocketManager::sendData(struct SocketWrapper& socketWrapper)
 {
 
 }

@@ -33,8 +33,8 @@ public:
 	}
 
 private:
-	static const unsigned short HEADER_TAG = 0xAAAA;
-	static const unsigned short TAIL_TAG = 0xCCCC;
+	static const unsigned short HEADER_TAG = 0xAABB;
+	static const unsigned short TAIL_TAG = 0xCCDD;
 
 	static void createReply(const std::string& reply, std::vector<unsigned char>& result)
 	{

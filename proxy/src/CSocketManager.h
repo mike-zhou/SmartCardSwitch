@@ -50,21 +50,28 @@ private:
 	{
 		long long socketId;
 		StreamSocket socket;
-		std::deque<unsigned char> replyBuffer;
+		std::deque<unsigned char> incoming;//reception stage to save partial command from socket
+		std::deque<unsigned char> outgoing;//sending stage for formatted outgoing reply
 	};
 	std::vector<struct SocketWrapper> _sockets;
 
 	IDevice * _pDevice;
 
 	//device has a 1:1 relationship to socket
-	// a map of device name vs socket id
-	std::map<std::string, long long> _deviceSocketMap;
+	// a map of device name vs Device wrapper.
+	struct DeviceWrapper
+	{
+		long long socketId;//which socket this device bonds to
+		std::deque<std::string> replyPool; //to save information from device.
+	};
+	std::map<std::string, struct DeviceWrapper> _deviceSocketMap;
 
 	void onDeviceUnpluged(long long socketId);
-	void onDeviceReply(long long socketId, const std::string& reply);
+	//transfer the reply to sending stage
+	void moveReplyToSocket(long long socketId, const std::string& reply);
 
-	//send reply to socket
-	bool sendReply(StreamSocket& socket, const std::string& reply);
+	//send outgoing data to socket
+	void sendData(struct SocketWrapper& socketWrapper);
 	//process command from socket
 	void onCommand(StreamSocket& socket, const std::string& command);
 
