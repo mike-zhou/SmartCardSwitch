@@ -9,7 +9,6 @@
 #include <iostream>
 
 #include "CDeviceManager.h"
-#include "CDeviceSocketMapping.h"
 #include "CSocketManager.h"
 #include "CListener.h"
 #include "ProxyLogger.h"
@@ -87,9 +86,12 @@ protected:
 			Poco::Net::SocketAddress serverAddress;
 
 			pLogger = new ProxyLogger;
+
 			CDeviceManager * pDeviceManager = new CDeviceManager;
 			CSocketManager * pSocketManager = new CSocketManager;
-			CDeviceSocketMapping deviceSocketMapping(pDeviceManager, pSocketManager);
+			pDeviceManager->SetObserver(pSocketManager);
+			pSocketManager->SetDevice(pDeviceManager);
+
 			CListener * pListener = new CListener(pSocketManager);
 
 			pListener->Bind(serverAddress);

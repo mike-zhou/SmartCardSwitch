@@ -7,7 +7,6 @@
 #include "stddef.h"
 #include "fcntl.h"
 #include "CDeviceManager.h"
-#include "CDeviceSocketMapping.h"
 #include "Poco/DirectoryIterator.h"
 #include "Poco/File.h"
 #include "Poco/Path.h"
@@ -33,7 +32,7 @@ CDeviceManager::~CDeviceManager() {
 	// TODO Auto-generated destructor stub
 }
 
-void CDeviceManager::(IDeviceObserver * pObserver)
+void CDeviceManager::SetObserver(IDeviceObserver * pObserver)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -59,7 +58,7 @@ void CDeviceManager::SendCommand(const std::string& deviceName, const std::strin
 		}
 	}
 	if(it == _devices.end()) {
-		pLogger->LogError("CDeviceManager::SendCommand failed in sending: " + deviceName + ":" + command)
+		pLogger->LogError("CDeviceManager::SendCommand failed in sending: " + deviceName + ":" + command);
 	}
 }
 

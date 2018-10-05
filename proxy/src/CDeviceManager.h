@@ -15,8 +15,8 @@
 #include "Poco/Task.h"
 #include "Poco/Mutex.h"
 #include "IDevice.h"
+#include "IDeviceObserver.h"
 
-class CDeviceSocketMapping;
 
 class CDeviceManager: public Poco::Task, public IDevice
 {
@@ -79,7 +79,7 @@ private:
 	void enqueueCommand(struct Device& device, const char * pCommand);
 	void enqueueCommand(struct Device& device, const std::string command);
 
-	CDeviceSocketMapping * _pObserver;
+	IDeviceObserver * _pObserver;
 };
 
 #endif /* CDEVICEMANAGER_H_ */

@@ -5,7 +5,6 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/CDeviceManager.cpp \
-../src/CDeviceSocketMapping.cpp \
 ../src/CListener.cpp \
 ../src/CSocketManager.cpp \
 ../src/ProxyLogger.cpp \
@@ -13,7 +12,6 @@ CPP_SRCS += \
 
 OBJS += \
 ./src/CDeviceManager.o \
-./src/CDeviceSocketMapping.o \
 ./src/CListener.o \
 ./src/CSocketManager.o \
 ./src/ProxyLogger.o \
@@ -21,7 +19,6 @@ OBJS += \
 
 CPP_DEPS += \
 ./src/CDeviceManager.d \
-./src/CDeviceSocketMapping.d \
 ./src/CListener.d \
 ./src/CSocketManager.d \
 ./src/ProxyLogger.d \
