@@ -16,11 +16,12 @@
 #include "Poco/Net/StreamSocket.h"
 #include "IDeviceObserver.h"
 #include "IDevice.h"
+#include "ISocketDeposit.h"
 
 
 using Poco::Net::StreamSocket;
 
-class CSocketManager : public Poco::Task, public IDeviceObserver {
+class CSocketManager : public Poco::Task, public IDeviceObserver, public ISocketDeposit {
 public:
 	CSocketManager();
 	virtual ~CSocketManager();
@@ -32,8 +33,8 @@ public:
 	virtual void OnDeviceUnplugged(const std::string& deviceName) override;
 	virtual void OnDeviceReply(const std::string& deviceName, const std::string& reply) override;
 
-
-	void AddSocket(StreamSocket& socket);
+	//ISocketDeposit
+	virtual void AddSocket(StreamSocket& socket) override;
 
 	void runTask();
 

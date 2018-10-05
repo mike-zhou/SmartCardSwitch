@@ -7,9 +7,9 @@
 
 #include "CListener.h"
 
-CListener::CListener(CSocketManager * pSocketManager):Task("Listener")
+CListener::CListener(ISocketDeposit * pSocketDeposit):Task("Listener")
 {
-	_pSocketManagerObj = pSocketManager;
+	_pSocketDeposit = pSocketDeposit;
 
 }
 

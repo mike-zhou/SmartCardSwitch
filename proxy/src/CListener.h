@@ -12,13 +12,14 @@
 #include "Poco/Net/SocketAddress.h"
 
 #include "CSocketManager.h"
+#include "ISocketDeposit.h"
 
 using Poco::Net::SocketAddress;
 
 class CListener : public Poco::Task
 {
 public:
-	CListener(CSocketManager * pSocketManager);
+	CListener(ISocketDeposit * pSocketDeposit);
 	virtual ~CListener();
 
 	void Bind(const SocketAddress& socketAddress);
@@ -26,7 +27,7 @@ public:
 	void runTask();
 
 private:
-	CSocketManager * _pSocketManagerObj;
+	ISocketDeposit * _pSocketDeposit;
 };
 
 #endif /* CLISTENER_H_ */
