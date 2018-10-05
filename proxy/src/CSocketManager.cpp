@@ -7,6 +7,7 @@
 
 #include "CSocketManager.h"
 #include "ProxyLogger.h"
+#include "ReplyFactory.h"
 
 extern ProxyLogger * pLogger;
 
@@ -83,7 +84,22 @@ void CSocketManager::OnDeviceReply(const std::string& deviceName, const std::str
 
 void CSocketManager::onDeviceUnpluged(long long socketId)
 {
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
+	auto it = _sockets.begin();
+	for(; it != _sockets.end(); it++)
+	{
+		if(it->socketId == socketId) {
+			auto reply = ReplyFactory::EventDeviceUnplugged();
+			for(auto c=reply.begin(); c!=reply.end(); c++) {
+				it->replyBuffer.push_back(*c);
+			}
+			break;
+		}
+	}
+	if(it == _sockets.end()) {
+		pLogger->LogError("CSocketManager::onDeviceUnpluged no socket for socketId is found: " + std::to_string(socketId));
+	}
 }
 
 void CSocketManager::onDeviceReply(long long socketId, const std::string& reply)
@@ -95,8 +111,9 @@ void CSocketManager::onDeviceReply(long long socketId, const std::string& reply)
 	{
 		if(it->socketId == socketId)
 		{
+			auto formatedReply = ReplyFactory::Reply(reply);
 			//append the reply to buffer
-			for(auto c = reply.begin(); c != reply.end(); c++)
+			for(auto c = formatedReply.begin(); c != formatedReply.end(); c++)
 			{
 				it->replyBuffer.push_back(*c);
 			}

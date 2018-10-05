@@ -49,7 +49,7 @@ private:
 	{
 		long long socketId;
 		StreamSocket socket;
-		std::deque<char> replyBuffer;
+		std::deque<unsigned char> replyBuffer;
 	};
 	std::vector<struct SocketWrapper> _sockets;
 
