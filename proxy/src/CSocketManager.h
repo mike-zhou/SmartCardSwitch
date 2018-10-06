@@ -46,10 +46,16 @@ private:
 	long long _lastSocketId;
 
 	//a map of socket id and socket object
+	enum SocketState
+	{
+		ACTIVE,
+		TO_BE_CLOSED
+	};
 	struct SocketWrapper
 	{
 		long long socketId;
 		StreamSocket socket;
+		enum SocketState state;
 		std::deque<unsigned char> incoming;//reception stage to save partial command from socket
 		std::deque<unsigned char> outgoing;//sending stage for formatted outgoing reply
 	};
@@ -70,12 +76,14 @@ private:
 	//transfer the reply to sending stage
 	void moveReplyToSocket(long long socketId, const std::string& reply);
 
-	//send outgoing data to socket
-	void sendData(struct SocketWrapper& socketWrapper);
-	//process command from socket
-	void onCommand(StreamSocket& socket, const std::string& command);
+	void onSocketReadable(struct SocketWrapper& socketWrapper);
+	void onSocketWritable(struct SocketWrapper& socketWrapper);
+	void onSocketError(struct SocketWrapper& socketWrapper);
 
 	long long newSocketId() { return ++_lastSocketId; }
+
+	void pollSockets();
+	void cleanupSockets();
 };
 
 #endif /* CSOCKETMANAGER_H_ */
