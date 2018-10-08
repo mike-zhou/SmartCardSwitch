@@ -13,6 +13,7 @@
 #include "Poco/Net/Socket.h"
 #include "Poco/Net/NetException.h"
 #include "Poco/Timespan.h"
+#include "CommandFactory.h"
 
 
 extern ProxyLogger * pLogger;
@@ -148,12 +149,76 @@ void CSocketManager::AddSocket(StreamSocket& socket)
 	_sockets.push_back(wrapper);
 }
 
+//retrieve commands from data
+void CSocketManager::retrieveCommands(std::deque<unsigned char>& data, std::vector<std::string>& commands)
+{
+	CommandFactory::RetrieveCommand(data, commands);
+}
+
+void CSocketManager::onCommand(const std::string& command)
+{
+
+}
+
 void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 {
 	const int bufferSize = 1024;
 	unsigned char buffer[bufferSize];
 	int dataRead;
+	Poco::Timespan zeroSpan;
 
+	//read data from socket
+	for(;;)
+	{
+		bool receivingError = true;
+		dataRead = 0;
+		if(socketWrapper.socket.poll(zeroSpan, Poco::Net::Socket::SELECT_READ))
+		{
+			try
+			{
+				dataRead = socketWrapper.socket.receiveBytes(buffer, bufferSize, 0);
+				receivingError = false;
+				for(int i=0; i<dataRead; i++) {
+					socketWrapper.incoming.push_back(buffer[i]); //save data to incoming stage.
+				}
+			}
+			catch(Poco::TimeoutException& e)
+			{
+				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketReadable timeout in socket: %d"),
+						socketWrapper.socketId));
+			}
+			catch(Poco::Net::NetException& e)
+			{
+				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketReadable NetException in socket: %d: %s"),
+						socketWrapper.socketId,
+						e.displayText()));
+			}
+			catch(...)
+			{
+				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketReadable unknown exception in socket: %d"),
+						socketWrapper.socketId));
+			}
+		}
+		else
+		{
+			break; //no data to read from socket
+		}
+
+		if(receivingError) {
+			break;
+		}
+	}
+
+	if(socketWrapper.incoming.size() < 1) {
+		return; //no input in incoming stage.
+	}
+
+	//parse commands from incoming stage
+	std::vector<std::string> commands;
+	retrieveCommands(socketWrapper.incoming, commands);
+	for(auto it=commands.begin(); it!=commands.end(); it++) {
+		onCommand(*it);
+	}
 }
 
 void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)

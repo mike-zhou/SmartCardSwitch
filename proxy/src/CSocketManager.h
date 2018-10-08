@@ -80,6 +80,9 @@ private:
 	void onSocketWritable(struct SocketWrapper& socketWrapper);
 	void onSocketError(struct SocketWrapper& socketWrapper);
 
+	void retrieveCommands(std::deque<unsigned char>& data, std::vector<std::string>& commands);
+	void onCommand(const std::string& command);
+
 	long long newSocketId() { return ++_lastSocketId; }
 
 	void pollSockets();

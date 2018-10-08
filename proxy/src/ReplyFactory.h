@@ -13,7 +13,7 @@
 class ReplyFactory
 {
 	//format of reply message:
-	// HEADER_TAG length JSON TAIL_TAG
+	// HEADER_TAG length version JSON TAIL_TAG
 public:
 	static std::vector<unsigned char> EventDeviceUnplugged()
 	{
@@ -34,27 +34,33 @@ public:
 
 private:
 	static const unsigned short HEADER_TAG = 0xAABB;
+	static const unsigned short VERSION = 0x0000;
 	static const unsigned short TAIL_TAG = 0xCCDD;
+
+	static const int lengthOfVersion = 2;
+	static const int lengthOfTail = 2;
 
 	static void createReply(const std::string& reply, std::vector<unsigned char>& result)
 	{
-		unsigned long length = reply.size();
+		unsigned long length = reply.size() + lengthOfVersion + lengthOfTail;
 
-		//header
-		result.push_back(HEADER_TAG & 0xff);
+		//********* little endian ************
+		//header, 2 bytes
 		result.push_back((HEADER_TAG >> 8) & 0xff);
-		//length
-		result.push_back(length & 0xff);
+		result.push_back(HEADER_TAG & 0xff);
+		//length, 2 bytes
 		result.push_back((length >> 8) & 0xff);
-		result.push_back((length >> 16) & 0xff);
-		result.push_back((length >> 24) & 0xff);
+		result.push_back(length & 0xff);
+		//version
+		result.push_back((VERSION >> 8) & 0xff);
+		result.push_back((VERSION) & 0xff);
 		//JSON
 		for(auto it = reply.begin(); it != reply.end(); it++) {
 			result.push_back(*it);
 		}
-		//tail
-		result.push_back(TAIL_TAG & 0xff);
+		//tail, 2 bytes
 		result.push_back((TAIL_TAG >> 8) & 0xff);
+		result.push_back(TAIL_TAG & 0xff);
 	}
 };
 
