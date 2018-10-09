@@ -674,7 +674,7 @@ public:
 	std::shared_ptr<CommandSteppersQueryPower> GetCommandSteppersQueryPower();
 	std::shared_ptr<CommandStepperQueryResolution> GetCommandStepperQueryResolution();
 	std::shared_ptr<CommandStepperConfigStep> GetCommandStepperConfigStep();
-	std::shared_ptr<CommandStepperAccelerationBuffer> GetCommandAccelerationBuffer();
+	std::shared_ptr<CommandStepperAccelerationBuffer> GetCommandStepperAccelerationBuffer();
 	std::shared_ptr<CommandStepperAccelerationBufferDecrement> GetCommandStepperAccelerationBufferDecrement();
 	std::shared_ptr<CommandStepperDecelerationBuffer> GetCommandStepperDecelerationBuffer();
 	std::shared_ptr<CommandStepperDecelerationBufferIncrement> GetCommandStepperDecelerationBufferIncrement();

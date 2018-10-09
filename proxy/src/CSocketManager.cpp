@@ -14,6 +14,7 @@
 #include "Poco/Net/NetException.h"
 #include "Poco/Timespan.h"
 #include "CommandFactory.h"
+#include "CommandTranslater.h"
 
 
 extern ProxyLogger * pLogger;
@@ -155,10 +156,230 @@ void CSocketManager::retrieveCommands(std::deque<unsigned char>& data, std::vect
 	CommandFactory::RetrieveCommand(data, commands);
 }
 
-void CSocketManager::onCommand(const std::string& command)
+void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::string& command)
+{
+	CommandTranslator translator(command);
+
+	switch(translator.Type())
+	{
+	case CommandType::DevicesGet:
+		onCommandDevicesGet(socketWrapper, translator.GetCommandDevicesGet());
+		break;
+
+	case CommandType::DeviceConnect:
+		onCommandDeviceConnect(socketWrapper, translator.GetCommandDeviceConnect());
+		break;
+
+	case CommandType::BdcsPowerOn:
+		onCommandBdcsPowerOn(socketWrapper, translator.GetCommandBdcsPowerOn());
+		break;
+
+	case CommandType::BdcsPowerOff:
+		onCommandBdcsPowerOff(socketWrapper, translator.GetCommandBdcsPowerOff());
+		break;
+
+	case CommandType::BdcsQueryPower:
+		onCommandBdcsQueryPower(socketWrapper, translator.GetCommandBdcsQueryPower());
+		break;
+
+	case CommandType::BdcCoast:
+		onCommandBdcCoast(socketWrapper, translator.GetCommandBdcCoast());
+		break;
+
+	case CommandType::BdcReverse:
+		onCommandBdcReverse(socketWrapper, translator.GetCommandBdcReverse());
+		break;
+
+	case CommandType::BdcForward:
+		onCommandBdcForward(socketWrapper, translator.GetCommandBdcForward());
+		break;
+
+	case CommandType::BdcBreak:
+		onCommandBdcBreak(socketWrapper, translator.GetCommandBdcBreak());
+		break;
+
+	case CommandType::BdcQuery:
+		onCommandBdcQuery(socketWrapper, translator.GetCommandBdcQuery());
+		break;
+
+	case CommandType::SteppersPowerOn:
+		onCommandSteppersPowerOn(socketWrapper, translator.GetCommandSteppersPowerOn());
+		break;
+
+	case CommandType::SteppersPowerOff:
+		onCommandSteppersPowerOff(socketWrapper, translator.GetCommandSteppersPowerOff());
+		break;
+
+	case CommandType::SteppersQueryPower:
+		onCommandSteppersQueryPower(socketWrapper, translator.GetCommandSteppersQueryPower());
+		break;
+
+	case CommandType::StepperQueryResolution:
+		onCommandStepperQueryResolution(socketWrapper, translator.GetCommandStepperQueryResolution());
+		break;
+
+	case CommandType::StepperConfigStep:
+		onCommandStepperConfigStep(socketWrapper, translator.GetCommandStepperConfigStep());
+		break;
+
+	case CommandType::StepperAccelerationBuffer:
+		onCommandStepperAccelerationBuffer(socketWrapper, translator.GetCommandStepperAccelerationBuffer());
+		break;
+
+	case CommandType::StepperAccelerationBufferDecrement:
+		onCommandStepperAccelerationBufferDecrement(socketWrapper, translator.GetCommandStepperAccelerationBufferDecrement());
+		break;
+
+	case CommandType::StepperDecelerationBuffer:
+		onCommandStepperDecelerationBuffer(socketWrapper, translator.GetCommandStepperDecelerationBuffer());
+		break;
+
+	case CommandType::StepperDecelerationBufferIncrement:
+		onCommandStepperDecelerationBufferIncrement(socketWrapper, translator.GetCommandStepperDecelerationBufferIncrement());
+		break;
+
+	case CommandType::StepperEnable:
+		onCommandStepperEnable(socketWrapper, translator.GetCommandStepperEnable());
+		break;
+
+	case CommandType::StepperForward:
+		onCommandStepperForward(socketWrapper, translator.GetCommandStepperForward());
+		break;
+
+	case CommandType::StepperSteps:
+		onCommandStepperSteps(socketWrapper, translator.GetCommandStepperSteps());
+		break;
+
+	case CommandType::StepperRun:
+		onCommandStepperRun(socketWrapper, translator.GetCommandStepperRun());
+		break;
+
+	case CommandType::StepperConfigHome:
+		onCommandStepperConfigHome(socketWrapper, translator.GetCommandStepperConfigHome());
+		break;
+
+	case CommandType::StepperQuery:
+		onCommandStepperQuery(socketWrapper, translator.GetCommandStepperQuery());
+		break;
+
+	case CommandType::LocatorQuery:
+		onCommandLocatorQuery(socketWrapper, translator.GetCommandLocatorQuery());
+		break;
+
+	case CommandType::Invalid:
+		break;
+
+	default:
+		break;
+	}
+}
+
+void CSocketManager::onCommandDevicesGet(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDevicesGet> cmdPtr)
 {
 
 }
+
+void CSocketManager::onCommandDeviceConnect(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDeviceConnect> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandBdcsPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcsPowerOn> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandBdcsPowerOff(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcsPowerOff> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandBdcsQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcsQueryPower> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandBdcCoast(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcCoast> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandBdcReverse(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcReverse> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandBdcForward(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcForward> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandBdcBreak(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcBreak> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandBdcQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcQuery> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandSteppersPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSteppersPowerOn> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandSteppersPowerOff(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSteppersPowerOff> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandSteppersQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSteppersQueryPower> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandStepperQueryResolution(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperQueryResolution> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandStepperConfigStep(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperConfigStep> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandStepperAccelerationBuffer(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperAccelerationBuffer> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandStepperAccelerationBufferDecrement(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperAccelerationBufferDecrement> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandStepperDecelerationBuffer(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperDecelerationBuffer> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandStepperDecelerationBufferIncrement(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperDecelerationBufferIncrement> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandStepperEnable(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperEnable> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandStepperForward(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperForward> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandStepperSteps(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperSteps> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandStepperRun(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperRun> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandStepperConfigHome(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperConfigHome> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandStepperQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperQuery> cmdPtr)
+{
+
+}
+void CSocketManager::onCommandLocatorQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandLocatorQuery> cmdPtr)
+{
+
+}
+
 
 void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 {
@@ -217,7 +438,7 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 	std::vector<std::string> commands;
 	retrieveCommands(socketWrapper.incoming, commands);
 	for(auto it=commands.begin(); it!=commands.end(); it++) {
-		onCommand(*it);
+		onCommand(socketWrapper, *it);
 	}
 }
 

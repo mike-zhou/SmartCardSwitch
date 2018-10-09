@@ -773,7 +773,7 @@ std::shared_ptr<CommandStepperConfigStep> CommandTranslator::GetCommandStepperCo
 	return nullptr;
 }
 
-std::shared_ptr<CommandStepperAccelerationBuffer> CommandTranslator::GetCommandAccelerationBuffer()
+std::shared_ptr<CommandStepperAccelerationBuffer> CommandTranslator::GetCommandStepperAccelerationBuffer()
 {
 	try
 	{
