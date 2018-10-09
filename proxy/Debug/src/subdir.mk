@@ -7,6 +7,7 @@ CPP_SRCS += \
 ../src/CDeviceManager.cpp \
 ../src/CListener.cpp \
 ../src/CSocketManager.cpp \
+../src/CommandTranslater.cpp \
 ../src/ProxyLogger.cpp \
 ../src/proxy.cpp 
 
@@ -14,6 +15,7 @@ OBJS += \
 ./src/CDeviceManager.o \
 ./src/CListener.o \
 ./src/CSocketManager.o \
+./src/CommandTranslater.o \
 ./src/ProxyLogger.o \
 ./src/proxy.o 
 
@@ -21,6 +23,7 @@ CPP_DEPS += \
 ./src/CDeviceManager.d \
 ./src/CListener.d \
 ./src/CSocketManager.d \
+./src/CommandTranslater.d \
 ./src/ProxyLogger.d \
 ./src/proxy.d 
 

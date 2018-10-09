@@ -9,6 +9,7 @@
 #define COMMANDPARSER_H_
 
 #include <memory>
+#include <string>
 #include "Poco/Format.h"
 #include "Poco/JSON/Parser.h"
 #include "Poco/Dynamic/Var.h"
@@ -78,7 +79,15 @@ public:
 //}
 class CommandDeviceConnect
 {
+private:
+	std::string deviceName;
+
 public:
+	CommandDeviceConnect(std::string deviceName)
+	{
+		this->deviceName = deviceName;
+	}
+
 	CommandType Type() { return CommandType::DeviceConnect; }
 
 	std::string ToString()
@@ -86,6 +95,8 @@ public:
 		std::string empty;
 		return empty;
 	}
+
+	std::string DeviceName() { return deviceName; }
 };
 
 //{
@@ -313,7 +324,7 @@ public:
 //{
 //	"command":"stepper query resolution"
 //}
-class CommandSteppersQueryResolution
+class CommandStepperQueryResolution
 {
 public:
 	CommandType Type() { return CommandType::StepperQueryResolution; }
@@ -339,7 +350,7 @@ private:
 	int lowClks;
 
 public:
-	CommandStepperConfigStep(int stepperIndex, int highClks, int lowClks)
+	CommandStepperConfigStep(int stepperIndex, int lowClks, int highClks)
 	{
 		this->stepperIndex = stepperIndex;
 		this->highClks = highClks;
@@ -642,180 +653,69 @@ public:
 
 class CommandTranslator
 {
+public:
+	CommandTranslator(std::string jsonCmd);
+
+	CommandType Type();
+	std::string JsonCommand();
+
+	std::shared_ptr<CommandDevicesGet> GetCommandDevicesGet();
+	std::shared_ptr<CommandDeviceConnect> GetCommandDeviceConnect();
+	std::shared_ptr<CommandBdcsPowerOn> GetCommandBdcsPowerOn();
+	std::shared_ptr<CommandBdcsPowerOff> GetCommandBdcsPowerOff();
+	std::shared_ptr<CommandBdcsQueryPower> GetCommandBdcsQueryPower();
+	std::shared_ptr<CommandBdcCoast> GetCommandBdcCoast();
+	std::shared_ptr<CommandBdcReverse> GetCommandBdcReverse();
+	std::shared_ptr<CommandBdcForward> GetCommandBdcForward();
+	std::shared_ptr<CommandBdcBreak> GetCommandBdcBreak();
+	std::shared_ptr<CommandBdcQuery> GetCommandBdcQuery();
+	std::shared_ptr<CommandSteppersPowerOn> GetCommandSteppersPowerOn();
+	std::shared_ptr<CommandSteppersPowerOff> GetCommandSteppersPowerOff();
+	std::shared_ptr<CommandSteppersQueryPower> GetCommandSteppersQueryPower();
+	std::shared_ptr<CommandStepperQueryResolution> GetCommandStepperQueryResolution();
+	std::shared_ptr<CommandStepperConfigStep> GetCommandStepperConfigStep();
+	std::shared_ptr<CommandStepperAccelerationBuffer> GetCommandAccelerationBuffer();
+	std::shared_ptr<CommandStepperAccelerationBufferDecrement> GetCommandStepperAccelerationBufferDecrement();
+	std::shared_ptr<CommandStepperDecelerationBuffer> GetCommandStepperDecelerationBuffer();
+	std::shared_ptr<CommandStepperDecelerationBufferIncrement> GetCommandStepperDecelerationBufferIncrement();
+	std::shared_ptr<CommandStepperEnable> GetCommandStepperEnable();
+	std::shared_ptr<CommandStepperForward> GetCommandStepperForward();
+	std::shared_ptr<CommandStepperSteps> GetCommandStepperSteps();
+	std::shared_ptr<CommandStepperRun> GetCommandStepperRun();
+	std::shared_ptr<CommandStepperConfigHome> GetCommandStepperConfigHome();
+	std::shared_ptr<CommandStepperQuery> GetCommandStepperQuery();
+	std::shared_ptr<CommandLocatorQuery> GetCommandLocatorQuery();
+
 private:
 	std::string jsonCmd;
 	CommandType type;
 
-	const static std::string strCommandDevicesGet = "devices get";
-	const static std::string strCommandDeviceConnect = "device connect";
-	const static std::string strCommandBdcsPowerOn = "bdcs power on";
-	const static std::string strCommandBdcsPowerOff = "bdcs power off";
-	const static std::string strCommandBdcsQueryPower = "bdcs query power";
-	const static std::string strCommandBdcCoast = "bdc coast";
-	const static std::string strCommandBdcReverse = "bdc reverse";
-	const static std::string strCommandBdcForward = "bdc forward";
-	const static std::string strCommandBdcBreak = "bdc break";
-	const static std::string strCommandBdcQuery = "bdc query";
-	const static std::string strCommandSteppersPowerOn = "steppers power on";
-	const static std::string strCommandSteppersPowerOff = "steppers power off";
-	const static std::string strCommandSteppersQueryPower = "steppers query power";
-	const static std::string strCommandStepperQueryResolution = "stepper query resolution";
-	const static std::string strCommandStepperConfigStep = "stepper config step";
-	const static std::string strCommandStepperAccelerationBuffer = "stepper acceleration buffer";
-	const static std::string strCommandStepperAccelerationBufferDecrement = "stepper acceleration buffer decrement";
-	const static std::string strCommandStepperDecelerationBuffer = "stepper deceleration buffer";
-	const static std::string strCommandStepperDecelerationBufferIncrement = "stepper deceleration buffer increment";
-	const static std::string strCommandStepperEnable = "stepper enable";
-	const static std::string strCommandStepperForward = "stepper forward";
-	const static std::string strCommandStepperSteps = "stepper steps";
-	const static std::string strCommandStepperRun = "stepper run";
-	const static std::string strCommandStepperConfigHome = "stepper config home";
-	const static std::string strCommandStepperQuery = "stepper query";
-	const static std::string strCommandLocatorQuery = "locator query";
-
-public:
-	CommandTranslator(std::string jsonCmd)
-	{
-		this->jsonCmd = jsonCmd;
-		type = CommandType::Invalid;
-	}
-
-	std::string JsonCommand() { return jsonCmd; }
-
-	CommandType CommandType()
-	{
-		bool exceptionOccur = false;
-		std::string command;
-
-		try
-		{
-			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(jsonCmd);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
-
-			if(objectPtr->has(std::string("command")))
-			{
-				command = objectPtr->getValue<std::string>("command");
-				if(command.size() < 1) {
-					pLogger->LogError("CommandTranslator::CommandType invalid command in " + jsonCmd);
-				}
-			}
-			else
-			{
-				pLogger->LogError("CommandTranslator::CommandType no command in " + jsonCmd);
-			}
-		}
-		catch(Poco::JSON::JSONException& e)
-		{
-			exceptionOccur = true;
-			pLogger->LogError("CommandTranslator::CommandType exception occurs: " + e.displayText());
-		}
-		catch(...)
-		{
-			exceptionOccur = true;
-			pLogger->LogError("CommandTranslator::CommandType unknown exception");
-		}
-
-		if(exceptionOccur)
-		{
-			type = CommandType::Invalid;
-		}
-		else
-		{
-			if(command == strCommandDevicesGet) {
-				type = CommandType::DevicesGet;
-			}
-			else if(command == strCommandDeviceConnect) {
-				type = CommandType::DeviceConnect;
-			}
-			else if(command == strCommandBdcsPowerOn) {
-				type = CommandType::BdcsPowerOn;
-			}
-			else if(command == strCommandBdcsPowerOff) {
-				type = CommandType::BdcsPowerOff;
-			}
-			else if(command == strCommandBdcsQueryPower) {
-				type = CommandType::BdcsQueryPower;
-			}
-			else if(command == strCommandBdcCoast) {
-				type = CommandType::BdcCoast;
-			}
-			else if(command == strCommandBdcReverse) {
-				type = CommandType::BdcReverse;
-			}
-			else if(command == strCommandBdcForward) {
-				type = CommandType::BdcForward;
-			}
-			else if(command == strCommandBdcBreak) {
-				type = CommandType::BdcBreak;
-			}
-			else if(command == strCommandBdcQuery) {
-				type = CommandType::BdcQuery;
-			}
-			else if(command == strCommandSteppersPowerOn) {
-				type = CommandType::SteppersPowerOn;
-			}
-			else if(command == strCommandSteppersPowerOff) {
-				type = CommandType::SteppersPowerOff;
-			}
-			else if(command == strCommandSteppersQueryPower) {
-				type = CommandType::SteppersQueryPower;
-			}
-			else if(command == strCommandStepperQueryResolution) {
-				type = CommandType::SteppersQueryPower;
-			}
-			else if(command == strCommandStepperConfigStep) {
-				type = CommandType::StepperConfigStep;
-			}
-			else if(command == strCommandStepperAccelerationBuffer) {
-				type = CommandType::StepperAccelerationBuffer;
-			}
-			else if(command == strCommandStepperAccelerationBufferDecrement) {
-				type = CommandType::StepperAccelerationBufferDecrement;
-			}
-			else if(command == strCommandStepperAccelerationBufferDecrement) {
-				type = CommandType::StepperAccelerationBufferDecrement;
-			}
-			else if(command == strCommandStepperDecelerationBuffer) {
-				type = CommandType::StepperDecelerationBuffer;
-			}
-			else if(command == strCommandStepperDecelerationBufferIncrement) {
-				type = CommandType::StepperDecelerationBufferIncrement;
-			}
-			else if(command == strCommandStepperEnable) {
-				type = CommandType::StepperEnable;
-			}
-			else if(command == strCommandStepperForward) {
-				type = CommandType::StepperForward;
-			}
-			else if(command == strCommandStepperSteps) {
-				type = CommandType::StepperSteps;
-			}
-			else if(command == strCommandStepperRun) {
-				type = CommandType::StepperRun;
-			}
-			else if(command == strCommandStepperConfigHome) {
-				type = CommandType::StepperConfigHome;
-			}
-			else if(command == strCommandStepperQuery) {
-				type = CommandType::StepperQuery;
-			}
-			else if(command == strCommandLocatorQuery) {
-				type = CommandType::LocatorQuery;
-			}
-			else {
-				pLogger->LogError("CommandTranslator::CommandType unknown command in " + jsonCmd);
-				type = CommandType::Invalid;
-			}
-		}
-
-		return type;
-	}
-
-	std::shared_ptr<CommandDevicesGet> GetCommandDevicesGet()
-	{
-		return nullptr;
-	}
+	const std::string strCommandDevicesGet = "devices get";
+	const std::string strCommandDeviceConnect = "device connect";
+	const std::string strCommandBdcsPowerOn = "bdcs power on";
+	const std::string strCommandBdcsPowerOff = "bdcs power off";
+	const std::string strCommandBdcsQueryPower = "bdcs query power";
+	const std::string strCommandBdcCoast = "bdc coast";
+	const std::string strCommandBdcReverse = "bdc reverse";
+	const std::string strCommandBdcForward = "bdc forward";
+	const std::string strCommandBdcBreak = "bdc break";
+	const std::string strCommandBdcQuery = "bdc query";
+	const std::string strCommandSteppersPowerOn = "steppers power on";
+	const std::string strCommandSteppersPowerOff = "steppers power off";
+	const std::string strCommandSteppersQueryPower = "steppers query power";
+	const std::string strCommandStepperQueryResolution = "stepper query resolution";
+	const std::string strCommandStepperConfigStep = "stepper config step";
+	const std::string strCommandStepperAccelerationBuffer = "stepper acceleration buffer";
+	const std::string strCommandStepperAccelerationBufferDecrement = "stepper acceleration buffer decrement";
+	const std::string strCommandStepperDecelerationBuffer = "stepper deceleration buffer";
+	const std::string strCommandStepperDecelerationBufferIncrement = "stepper deceleration buffer increment";
+	const std::string strCommandStepperEnable = "stepper enable";
+	const std::string strCommandStepperForward = "stepper forward";
+	const std::string strCommandStepperSteps = "stepper steps";
+	const std::string strCommandStepperRun = "stepper run";
+	const std::string strCommandStepperConfigHome = "stepper config home";
+	const std::string strCommandStepperQuery = "stepper query";
+	const std::string strCommandLocatorQuery = "locator query";
 };
 
 #endif /* COMMANDPARSER_H_ */
