@@ -6,6 +6,7 @@
 #include "Poco/TaskManager.h"
 #include "Poco/DateTimeFormatter.h"
 #include "Poco/Net/SocketAddress.h"
+#include "Poco/Exception.h"
 #include <iostream>
 
 #include "CDeviceManager.h"
@@ -85,6 +86,31 @@ protected:
 			TaskManager tm;
 			Poco::Net::SocketAddress serverAddress;
 
+			try
+			{
+				std::string ip = config().getString("listen_to_ip_address");
+				unsigned short port = config().getInt("listen_to_port");
+
+				Poco::Net::IPAddress ipAddr(ip);
+				serverAddress = Poco::Net::SocketAddress(ipAddr, port);
+			}
+			catch(Poco::NotFoundException& e)
+			{
+				logger().error("Config NotFoundException: " + e.displayText());
+			}
+			catch(Poco::SyntaxException& e)
+			{
+				logger().error("Config SyntaxException: " + e.displayText());
+			}
+			catch(Poco::Exception& e)
+			{
+				logger().error("Config Exception: " + e.displayText());
+			}
+			catch(...)
+			{
+				logger().error("Config unknown exception");
+			}
+
 			pLogger = new ProxyLogger;
 
 			CDeviceManager * pDeviceManager = new CDeviceManager;
@@ -93,7 +119,6 @@ protected:
 			pSocketManager->SetDevice(pDeviceManager);
 
 			CListener * pListener = new CListener(pSocketManager);
-
 			pListener->Bind(serverAddress);
 
 			tm.start(pLogger);
