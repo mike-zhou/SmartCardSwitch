@@ -10,6 +10,7 @@
 
 #include "Poco/Task.h"
 #include "Poco/Net/SocketAddress.h"
+#include "Poco/Net/ServerSocket.h"
 
 #include "CSocketManager.h"
 #include "ISocketDeposit.h"
@@ -28,6 +29,9 @@ public:
 
 private:
 	ISocketDeposit * _pSocketDeposit;
+
+	SocketAddress _svrAddress;
+	Poco::Net::ServerSocket _svrSocket;
 };
 
 #endif /* CLISTENER_H_ */
