@@ -52,6 +52,51 @@ std::vector<unsigned char> ReplyFactory::Reply(const std::string& reply)
 //return the pakcage containing a JSON array of devices
 std::vector<unsigned char> ReplyFactory::Devices(const std::vector<std::string>& devices)
 {
+	std::vector<unsigned char> vector;
+	std::string json;
 
+	//{
+	//	"command":"devices get",
+	//	"devices":["device1", "device2"]
+	//}
+
+	json = "{";
+	json += "\"command\":\"devices get\",";
+	json += "\"devices\":[";
+	for(auto it=devices.begin(); it!=devices.end(); it++) {
+		json += "\"" + *it + "\",";
+	}
+	if(devices.size() > 0) {
+		json.pop_back();//remove the last ','
+	}
+	json += "]";
+	json += "}";
+
+	createReply(json, vector);
+
+	return vector;
 }
 
+std::vector<unsigned char> ReplyFactory::DeviceConnect(const std::string& deviceName, bool result, const std::string& reason)
+{
+	std::vector<unsigned char> vector;
+	std::string json;
+
+	//{
+	//	"command":"device connect",
+	//	"device": "device12345",
+	//	"result":false,
+	//	"reason":"connected to IP:port"
+	//}
+
+	json = "{";
+	json = json + "\"command\":\"device connect\",";
+	json = json + "\"device\":\"" + deviceName + "\",";
+	json = json + "\"result\":" + (result?"true":"false") + ",";
+	json = json + "\"reason\":\"" + reason + "\"";
+	json = json + "}";
+
+	createReply(json, vector);
+
+	return vector;
+}

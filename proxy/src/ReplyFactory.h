@@ -26,6 +26,8 @@ public:
 	//return the pakcage containing a JSON array of devices
 	static std::vector<unsigned char> Devices(const std::vector<std::string>& devices);
 
+	static std::vector<unsigned char> DeviceConnect(const std::string& deviceName, bool result, const std::string& reason);
+
 private:
 	static const unsigned short HEADER_TAG = 0xAABB;
 	static const unsigned short VERSION = 0x0000;

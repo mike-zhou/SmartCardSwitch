@@ -110,6 +110,7 @@ private:
 	void onCommandStepperConfigHome(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperConfigHome> cmdPtr);
 	void onCommandStepperQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperQuery> cmdPtr);
 	void onCommandLocatorQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandLocatorQuery> cmdPtr);
+	void sendSocketCommandToDevice(long long socketId, const std::string& command);
 
 
 	long long newSocketId() { return ++_lastSocketId; }

@@ -286,108 +286,318 @@ void CSocketManager::onCommandDevicesGet(struct SocketWrapper& socketWrapper, st
 		devices.push_back(it->first);
 	}
 
-
+	auto package = ReplyFactory::Devices(devices);
+	for(auto it = package.begin(); it!=package.end(); it++) {
+		socketWrapper.outgoing.push_back(*it);
+	}
 }
 
 void CSocketManager::onCommandDeviceConnect(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDeviceConnect> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	bool success = false;
+	std::string device = cmdPtr->DeviceName();
+	std::string reason;
+
+	auto deviceIt=_deviceSocketMap.begin();
+	for(; deviceIt!=_deviceSocketMap.end(); deviceIt++)
+	{
+		if(deviceIt->first == device)
+		{
+			//the requested device is found.
+			if(deviceIt->second.socketId != INVALID_SOCKET_ID)
+			{
+				//who is using this device?
+				auto socketIt=_sockets.begin();
+				for(; socketIt!=_sockets.end(); socketIt++) {
+					if(deviceIt->second.socketId == socketIt->socketId) {
+						reason = "connected to " + socketIt->socket.address().toString();
+						break;
+					}
+				}
+				if(socketIt == _sockets.end()) {
+					//couldn't find the socket
+					reason = "internal error";
+				}
+			}
+			else
+			{
+				deviceIt->second.socketId = socketWrapper.socketId;
+				success = true;
+			}
+			break;
+		}
+	}
+	if(deviceIt == _deviceSocketMap.end()) {
+		//cannot find the device
+		reason = "cannot find " + device;
+	}
+
+	auto package = ReplyFactory::DeviceConnect(device, success, reason);
+	for(auto it = package.begin(); it!=package.end(); it++) {
+		socketWrapper.outgoing.push_back(*it);
+	}
 }
+
+void CSocketManager::sendSocketCommandToDevice(long long socketId, const std::string& command)
+{
+	auto deviceIt = _deviceSocketMap.begin();
+	for(; deviceIt!=_deviceSocketMap.end(); deviceIt++)
+	{
+		if(deviceIt->second.socketId == socketId)
+		{
+			pLogger->LogInfo(std::string(__FUNCTION__) + " " + command + " >> " + deviceIt->first);
+			_pDevice->SendCommand(deviceIt->first, command);
+			break;
+		}
+	}
+	if(deviceIt == _deviceSocketMap.end()) {
+		pLogger->LogError(std::string(__FUNCTION__) + " socketId hasn't be bonded to device: " + std::to_string(socketId));
+	}
+}
+
 void CSocketManager::onCommandBdcsPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcsPowerOn> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandBdcsPowerOff(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcsPowerOff> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandBdcsQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcsQueryPower> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandBdcCoast(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcCoast> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandBdcReverse(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcReverse> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandBdcForward(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcForward> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandBdcBreak(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcBreak> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandBdcQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcQuery> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandSteppersPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSteppersPowerOn> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandSteppersPowerOff(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSteppersPowerOff> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandSteppersQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSteppersQueryPower> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandStepperQueryResolution(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperQueryResolution> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandStepperConfigStep(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperConfigStep> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandStepperAccelerationBuffer(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperAccelerationBuffer> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandStepperAccelerationBufferDecrement(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperAccelerationBufferDecrement> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandStepperDecelerationBuffer(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperDecelerationBuffer> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandStepperDecelerationBufferIncrement(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperDecelerationBufferIncrement> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandStepperEnable(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperEnable> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandStepperForward(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperForward> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandStepperSteps(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperSteps> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandStepperRun(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperRun> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandStepperConfigHome(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperConfigHome> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandStepperQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperQuery> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
+
 void CSocketManager::onCommandLocatorQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandLocatorQuery> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
 
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 
