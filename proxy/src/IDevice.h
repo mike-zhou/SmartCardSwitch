@@ -4,5 +4,6 @@ class IDevice
 {
 public:
     virtual void SendCommand(const std::string& deviceName, const std::string& command) = 0;
+    virtual ~IDevice() {}
 };
 

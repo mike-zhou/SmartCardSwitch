@@ -63,7 +63,6 @@ private:
 	};
 	std::vector<struct SocketWrapper> _sockets;
 
-	IDevice * _pDevice;
 
 	//device has a 1:1 relationship to socket
 	// a map of device name vs Device wrapper.
@@ -73,6 +72,7 @@ private:
 		std::deque<std::string> replyPool; //to save information from device.
 	};
 	std::map<std::string, struct DeviceWrapper> _deviceSocketMap;
+	IDevice * _pDevice;
 
 	void onDeviceUnpluged(long long socketId);
 	//transfer the reply to sending stage

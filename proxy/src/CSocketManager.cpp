@@ -276,6 +276,16 @@ void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::s
 
 void CSocketManager::onCommandDevicesGet(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDevicesGet> cmdPtr)
 {
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
+
+	std::vector<std::string> devices;
+	for(auto it = _deviceSocketMap.begin(); it!=_deviceSocketMap.end(); it++) {
+		devices.push_back(it->first);
+	}
+
 
 }
 

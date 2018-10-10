@@ -9,6 +9,7 @@ CPP_SRCS += \
 ../src/CSocketManager.cpp \
 ../src/CommandTranslater.cpp \
 ../src/ProxyLogger.cpp \
+../src/ReplyFactory.cpp \
 ../src/proxy.cpp 
 
 OBJS += \
@@ -17,6 +18,7 @@ OBJS += \
 ./src/CSocketManager.o \
 ./src/CommandTranslater.o \
 ./src/ProxyLogger.o \
+./src/ReplyFactory.o \
 ./src/proxy.o 
 
 CPP_DEPS += \
@@ -25,6 +27,7 @@ CPP_DEPS += \
 ./src/CSocketManager.d \
 ./src/CommandTranslater.d \
 ./src/ProxyLogger.d \
+./src/ReplyFactory.d \
 ./src/proxy.d 
 
 
