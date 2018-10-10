@@ -46,9 +46,16 @@ void CDeviceManager::StartMonitoringDevices()
 
 void CDeviceManager::SendCommand(const std::string& deviceName, const std::string& command)
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-	auto it = _devices.begin();
+	for(auto it=command.begin(); it!=command.end(); it++) {
+		if((*it < ' ') || (*it > '~')) {
+			pLogger->LogError(std::string(__FUNCTION__) + " illegal character in command: " + deviceName + ":" + command);
+			return;
+		}
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	auto it = _devices.begin();
 	for(; it != _devices.end(); it++) {
 		if(it->state == DeviceState::ACTIVE) {
 			if(it->deviceName == deviceName) {
@@ -65,21 +72,17 @@ void CDeviceManager::SendCommand(const std::string& deviceName, const std::strin
 void CDeviceManager::checkDevices()
 {
 	std::vector<std::string> deviceUnpluged;
+	std::vector<std::string> currentFileList;
+
+	//iterate each file in the folder /dev/serial/device_by_id
+	try
 	{
-		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+		Poco::File folderFile(DEVICE_FOLDER_PATH);
 
-		//iterate each file in the folder /dev/serial/device_by_id
-		try
+		if(folderFile.exists() && folderFile.isDirectory())
 		{
-			DirectoryIterator end;
-			std::vector<bool> devicesExist;
-
-			//firstly, take it for granted that add _devices[i] is lost
-			for(size_t i=0; i<_devices.size(); i++) {
-				devicesExist.push_back(false);
-			}
-
 			//open all DCD files.
+			DirectoryIterator end;
 			for(DirectoryIterator it(DEVICE_FOLDER_PATH) ;it != end; it++)
 			{
 				bool fileIsOpened = false;
@@ -90,11 +93,11 @@ void CDeviceManager::checkDevices()
 				for(size_t i = 0; i<_devices.size(); i++) {
 					if(_devices[i].fileName == p.getFileName()) {
 						fileIsOpened = true;
-						devicesExist[i] = true;
 						break;
 					}
 				}
 				if(fileIsOpened) {
+					currentFileList.push_back(p.getFileName());
 					continue;
 				}
 
@@ -111,31 +114,55 @@ void CDeviceManager::checkDevices()
 					//cannot open device file
 					continue;
 				}
-				struct Device device;
-				device.fd = fd;
-				device.fileName = p.getFileName();
-				device.state = DeviceState::OPENED;
-				_devices.push_back(device);
-				devicesExist.push_back(true);
-			}
 
-			//notify unplugged device files
-			for(auto i = (devicesExist.size() -1); i >= 0; i--)
+				{
+					//remember this new device.
+					Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+					struct Device device;
+
+					device.fd = fd;
+					device.fileName = p.getFileName();
+					device.state = DeviceState::OPENED;
+					_devices.push_back(device);
+				}
+
+				currentFileList.push_back(p.getFileName());
+			}
+		}
+	}
+	catch (Poco::Exception& exc)
+	{
+		pLogger->Log(std::string(__FUNCTION__) + "exception: " + exc.displayText());
+	}
+	catch(...)
+	{
+		pLogger->LogError(std::string(__FUNCTION__) + " unknown exception");
+	}
+
+	{
+		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+		auto oldDeviceIt = _devices.begin();
+		for(; oldDeviceIt!=_devices.end(); )
+		{
+			auto newDeviceIt = currentFileList.begin();
+			for(; newDeviceIt!=currentFileList.end(); newDeviceIt++)
 			{
-				//if an active device is missing, then it is unplugged.
-				if(devicesExist[i] == false) {
-					if(_devices[i].state == DeviceState::ACTIVE) {
-						deviceUnpluged.push_back(_devices[i].deviceName);
-						devicesExist.erase(devicesExist.begin() + i); //remove the tag
-						_devices.erase(_devices.begin() + i); // remove device from list.
-					}
+				if(oldDeviceIt->fileName == *newDeviceIt) {
+					break;
 				}
 			}
-
-		}
-		catch (Poco::Exception& exc)
-		{
-			pLogger->Log(exc.displayText());
+			if(newDeviceIt == currentFileList.end()) {
+				//the old device is NOT found in the new file list
+				if(oldDeviceIt->state == DeviceState::ACTIVE) {
+					deviceUnpluged.push_back(oldDeviceIt->deviceName); // deviceName rather than fileName.
+				}
+				//delete the old device
+				oldDeviceIt = _devices.erase(oldDeviceIt);
+			}
+			else {
+				oldDeviceIt++;
+			}
 		}
 	}
 
@@ -199,8 +226,8 @@ void CDeviceManager::onDeviceInput(struct Device& device)
 		bool replyReady = false;
 
 		//check if there is a complete reply
-		for(int i=0; i<device.incoming.size(); i++) {
-			if(device.incoming[i] == '\n') {
+		for(auto it = device.incoming.begin(); it!=device.incoming.end(); it++) {
+			if(*it == '\n') {
 				replyReady = true;
 				break;
 			}
@@ -267,11 +294,8 @@ void CDeviceManager::enqueueCommand(struct Device& device, const std::string com
 		return;
 	}
 
-	for(int i=0; i<command.size(); i++) {
-		if(command[i] == '\r') {
-			continue; //skip '\r'
-		}
-		device.outgoing.push_back(command[i]);
+	for(auto it=command.begin(); it!=command.end(); it++) {
+		device.outgoing.push_back(*it);
 	}
 	device.outgoing.push_back(COMMAND_TERMINATER);
 }
