@@ -85,11 +85,18 @@ protected:
 		{
 			TaskManager tm;
 			Poco::Net::SocketAddress serverAddress;
+			std::string logFilePathName;
+			std::string logFileSize;
+			std::string logFileAmount;
+
 
 			try
 			{
-				std::string ip = config().getString("listen_to_ip_address");
-				unsigned short port = config().getInt("listen_to_port");
+				std::string ip = config().getString("listen_to_ip_address", "0.0.0.0");
+				unsigned short port = config().getInt("listen_to_port", 60000);
+				logFilePathName = config().getString("log_file_path_name", "./logs/log");
+				logFileSize = config().getString("log_file_size", "1M");
+				logFileAmount = config().getString("log_file_amount", "10");
 
 				Poco::Net::IPAddress ipAddr(ip);
 				serverAddress = Poco::Net::SocketAddress(ipAddr, port);
@@ -111,7 +118,8 @@ protected:
 				logger().error("Config unknown exception");
 			}
 
-			pLogger = new ProxyLogger;
+			pLogger = new ProxyLogger(logFilePathName, logFileSize, logFileAmount);
+			tm.start(pLogger);
 
 			CDeviceManager * pDeviceManager = new CDeviceManager;
 			CSocketManager * pSocketManager = new CSocketManager;
@@ -121,7 +129,6 @@ protected:
 			CListener * pListener = new CListener(pSocketManager);
 			pListener->Bind(serverAddress);
 
-			tm.start(pLogger);
 			tm.start(pDeviceManager);
 			tm.start(pSocketManager);
 			tm.start(pListener);
@@ -131,6 +138,7 @@ protected:
 			waitForTerminationRequest();
 			tm.cancelAll();
 			tm.joinAll();
+			delete pLogger;
 		}
 		return Application::EXIT_OK;
 	}

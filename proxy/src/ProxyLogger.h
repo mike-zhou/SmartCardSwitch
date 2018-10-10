@@ -8,18 +8,21 @@
 #ifndef PROXYLOGGER_H_
 #define PROXYLOGGER_H_
 
-#include <vector>
+#include <deque>
+#include <memory>
 #include "Poco/Task.h"
 #include "Poco/Path.h"
 #include "Poco/Mutex.h"
 #include "Poco/Logger.h"
+#include "Poco/FileChannel.h"
+#include "Poco/Channel.h"
+#include "Poco/Message.h"
 
 class ProxyLogger: public Poco::Task {
 public:
-	ProxyLogger();
+	ProxyLogger(const std::string& path, const std::string& fileSize, const std::string& fileAmount);
 	virtual ~ProxyLogger();
 
-	bool Init(const Poco::Path& path);
 	void Log(const std::string& log);
 	void LogError(const std::string& err);
 	void LogDebug(const std::string& debug);
@@ -31,9 +34,12 @@ private:
 	static const int MAX_LINES = 1024;
 
 	Poco::Mutex _mutex;
-	std::vector<std::string> _logBuffer;
+	std::deque<std::string> _logBuffer;
 
-	Poco::Logger * _pLogger;
+	Poco::Logger* _pLogger;
+	bool _initialized;
+
+	std::string currentTime();
 };
 
 #endif /* PROXYLOGGER_H_ */
