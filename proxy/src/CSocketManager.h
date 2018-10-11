@@ -55,7 +55,7 @@ private:
 	};
 	struct SocketWrapper
 	{
-		long long socketId;
+		long socketId;
 		StreamSocket socket;
 		enum SocketState state;
 		std::deque<unsigned char> incoming;//reception stage to save partial command from socket
@@ -68,7 +68,7 @@ private:
 	// a map of device name vs Device wrapper.
 	struct DeviceWrapper
 	{
-		long long socketId;//which socket this device bonds to
+		long socketId;//which socket this device bonds to
 		std::deque<std::string> replyPool; //to save information from device.
 	};
 	std::map<std::string, struct DeviceWrapper> _deviceSocketMap;

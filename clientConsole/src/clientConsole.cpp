@@ -14,6 +14,7 @@
 #include "Poco/TaskManager.h"
 #include "Poco/DateTimeFormatter.h"
 #include "Poco/Net/SocketAddress.h"
+#include "Poco/Net/StreamSocket.h"
 #include "Poco/Exception.h"
 #include <iostream>
 
@@ -83,12 +84,33 @@ protected:
 
 	int main(const ArgVec& args)
 	{
-		if (!_helpRequested)
-		{
-
-
-
+		if (_helpRequested) {
+			return Application::EXIT_OK;
 		}
+
+		try
+		{
+			Poco::Net::SocketAddress socketAddress("127.0.0.1:60000");
+			Poco::Net::StreamSocket socket;
+
+			printf("Connecting to %s\r\n", socketAddress.toString().c_str());
+			socket.connect(socketAddress);
+			printf("Connected to %s\r\n", socketAddress.toString().c_str());
+
+
+			printf("Socket is closing\r\n");
+			socket.close();
+			printf("Socket closed\r\n");
+		}
+		catch(Poco::Exception& e)
+		{
+			printf("Poco::Exception %s\r\n", e.displayText().c_str());
+		}
+		catch(...)
+		{
+			printf("Unknown exception occurs\r\n");
+		}
+
 		return Application::EXIT_OK;
 	}
 

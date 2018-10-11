@@ -146,6 +146,7 @@ void CSocketManager::AddSocket(StreamSocket& socket)
 	wrapper.socket = socket;
 	wrapper.socketId = newSocketId();
 	wrapper.state = SocketState::ACTIVE;
+	pLogger->LogInfo("CSocketManager::AddSocket socket received: " + socket.peerAddress().toString() + " socketId: " + std::to_string(wrapper.socketId));
 
 	_sockets.push_back(wrapper);
 }
@@ -315,7 +316,7 @@ void CSocketManager::onCommandDeviceConnect(struct SocketWrapper& socketWrapper,
 				auto socketIt=_sockets.begin();
 				for(; socketIt!=_sockets.end(); socketIt++) {
 					if(deviceIt->second.socketId == socketIt->socketId) {
-						reason = "connected to " + socketIt->socket.address().toString();
+						reason = "connected to " + socketIt->socket.peerAddress().toString();
 						break;
 					}
 				}
@@ -618,25 +619,34 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 			try
 			{
 				dataRead = socketWrapper.socket.receiveBytes(buffer, bufferSize, 0);
-				receivingError = false;
-				for(int i=0; i<dataRead; i++) {
-					socketWrapper.incoming.push_back(buffer[i]); //save data to incoming stage.
+				if(dataRead == 0) {
+					//Peer socket is closed.
+					pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketReadable socket closed: %s, socketId: %Ld"),
+							socketWrapper.socket.peerAddress().toString(),
+							socketWrapper.socketId));
+					socketWrapper.state = SocketState::TO_BE_CLOSED;
+				}
+				else {
+					receivingError = false;
+					for(int i=0; i<dataRead; i++) {
+						socketWrapper.incoming.push_back(buffer[i]); //save data to incoming stage.
+					}
 				}
 			}
 			catch(Poco::TimeoutException& e)
 			{
-				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketReadable timeout in socket: %d"),
+				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketReadable timeout in socket: %Ld"),
 						socketWrapper.socketId));
 			}
 			catch(Poco::Net::NetException& e)
 			{
-				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketReadable NetException in socket: %d: %s"),
+				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketReadable NetException in socket: %Ld: %s"),
 						socketWrapper.socketId,
 						e.displayText()));
 			}
 			catch(...)
 			{
-				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketReadable unknown exception in socket: %d"),
+				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketReadable unknown exception in socket: %Ld"),
 						socketWrapper.socketId));
 			}
 		}
@@ -650,6 +660,9 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 		}
 	}
 
+	if(socketWrapper.state == SocketState::TO_BE_CLOSED) {
+		return;
+	}
 	if(socketWrapper.incoming.size() < 1) {
 		return; //no input in incoming stage.
 	}
@@ -711,7 +724,7 @@ void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 			//write to socket
 			dataSent = 0;
 			if(dataSize > 0) {
-				pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketWritable write %d bytes to socket %d"), dataSize, socketWrapper.socketId));
+				pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketWritable write %Ld bytes to socket %Ld"), dataSize, socketWrapper.socketId));
 				dataSent = socketWrapper.socket.sendBytes(buffer, dataSize, 0);
 			}
 			else {
@@ -719,13 +732,13 @@ void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 			}
 			//remove the sent data from the sending stage.
 			if(dataSent > 0) {
-				pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketWritable wrote %d bytes to socket %d"), dataSize, socketWrapper.socketId));
+				pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketWritable wrote %Ld bytes to socket %Ld"), dataSize, socketWrapper.socketId));
 				for(;dataSent>0; dataSent--) {
 					socketWrapper.outgoing.pop_front();
 				}
 			}
 			else {
-				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketWritable wrote no byte to socket %d"), socketWrapper.socketId));
+				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketWritable wrote no byte to socket %Ld"), socketWrapper.socketId));
 				break;
 			}
 		}
@@ -745,6 +758,13 @@ void CSocketManager::cleanupSockets()
 	{
 		if(it->state == SocketState::TO_BE_CLOSED)
 		{
+			for(auto deviceIt=_deviceSocketMap.begin(); deviceIt!=_deviceSocketMap.end(); deviceIt++) {
+				if(it->socketId == deviceIt->second.socketId) {
+					pLogger->LogInfo("CSocketManager::cleanupSockets socket disconnects from device: " + std::to_string(it->socketId) + ":" + deviceIt->first);
+					deviceIt->second.socketId = INVALID_SOCKET_ID;
+				}
+			}
+
 			try {
 				it->socket.close();
 			}
