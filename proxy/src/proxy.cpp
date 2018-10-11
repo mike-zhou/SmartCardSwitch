@@ -123,6 +123,7 @@ protected:
 
 			pLogger = new ProxyLogger(logFolder, logFile, logFileSize, logFileAmount);
 			tm.start(pLogger);
+			pLogger->LogInfo("**** proxy verion 1.0.0 ****");
 
 			CDeviceManager * pDeviceManager = new CDeviceManager;
 			CSocketManager * pSocketManager = new CSocketManager;
