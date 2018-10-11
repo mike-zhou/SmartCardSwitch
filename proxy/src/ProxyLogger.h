@@ -31,13 +31,15 @@ public:
 	void runTask();
 
 private:
-	static const int MAX_LINES = 1024;
+	static const int MAX_LINES = 10240;
+	static const int OVERFLOW_DIFF = 1024;
+	bool _overflowed;
 
 	Poco::Mutex _mutex;
 	std::deque<std::string> _logBuffer;
 
 	Poco::Logger* _pLogger;
-	bool _initialized;
+	bool _logFileInitialized;
 
 	std::string currentTime();
 };

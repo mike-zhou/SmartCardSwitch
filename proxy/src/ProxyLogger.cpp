@@ -18,7 +18,8 @@ ProxyLogger::ProxyLogger(const std::string& folder,
 		const std::string& fileSize,
 		const std::string& fileAmount):Task("ProxyLogger")
 {
-	_initialized = false;
+	_logFileInitialized = false;
+	_overflowed = false;
 	try
 	{
 		Poco::File logFolder(folder);
@@ -28,6 +29,7 @@ ProxyLogger::ProxyLogger(const std::string& folder,
 		logFile.makeDirectory();
 		logFile.setFileName(name);
 
+		//who deletes the allocated FileChannel object?
 		Poco::FileChannel * pFileChannel = new Poco::FileChannel(logFile.toString());
 		pFileChannel->setProperty("rotation", fileSize);
 		pFileChannel->setProperty("archive", "timestamp");
@@ -35,7 +37,7 @@ ProxyLogger::ProxyLogger(const std::string& folder,
 
 		auto& logger = Poco::Logger::create("proxyLogger", pFileChannel, Poco::Message::PRIO_TRACE);
 		_pLogger = &logger;
-		_initialized = true;
+		_logFileInitialized = true;
 	}
 	catch(Poco::Exception& e)
 	{
@@ -68,12 +70,17 @@ void ProxyLogger::Log(const std::string& log)
 
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	if(!_initialized) {
-		printf("%s\r\n", logLine.c_str());
-		return;
+	if(_overflowed) {
+		if(_logBuffer.size() < (MAX_LINES - OVERFLOW_DIFF)) {
+			_overflowed = false;
+		}
 	}
-	else {
+	if(!_overflowed) {
 		_logBuffer.push_back(logLine);
+		if(_logBuffer.size() >= MAX_LINES) {
+			_overflowed = true;
+			_logBuffer.push_back(currentTime() + " !!!! overflowed !!!!");
+		}
 	}
 }
 
@@ -97,25 +104,25 @@ void ProxyLogger::runTask()
 	while(1)
 	{
 		if(isCancelled()) {
-			if(_initialized) {
+			if(_logFileInitialized) {
 				_pLogger->close();
 			}
 			break;
 		}
-		else {
-			if(!_initialized) {
-				sleep(100);//sleep 100 ms
-			}
-			else {
-				std::string logLine;
-				{
-					Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-					if(_logBuffer.size() > 0) {
-						logLine = _logBuffer.front();
-						_logBuffer.pop_front();
-					}
+		else
+		{
+			std::string logLine;
+			{
+				//retrieve a line of log
+				Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+				if(_logBuffer.size() > 0) {
+					logLine = _logBuffer.front();
+					_logBuffer.pop_front();
 				}
-				if(logLine.size() > 0)
+			}
+			if(logLine.size() > 0)
+			{
+				if(_logFileInitialized)
 				{
 					try
 					{
@@ -123,18 +130,22 @@ void ProxyLogger::runTask()
 					}
 					catch(Poco::Exception& e)
 					{
-						_initialized = false; //output to console
+						_logFileInitialized = false; //output to console
 						Log("ProxyLogger exception in log output: " + e.displayText());
 					}
 					catch(...)
 					{
-						_initialized = false; //output to console
+						_logFileInitialized = false; //output to console
 						Log("ProxyLogger unknown exception in log output");
 					}
 				}
-				else {
-					sleep(100);
+				else
+				{
+					printf("%s\r\n", logLine.c_str());
 				}
+			}
+			else {
+				sleep(10);
 			}
 		}
 	}
