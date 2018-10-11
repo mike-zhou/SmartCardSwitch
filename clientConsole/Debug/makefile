@@ -44,7 +44,7 @@ all: clientConsole
 clientConsole: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++  -o "clientConsole" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L/home/user1/Poco/poco-1.8.0.1/lib -o "clientConsole" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

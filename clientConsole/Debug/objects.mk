@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS :=
+LIBS := -lPocoZipd -lPocoNetd -lPocoUtild -lPocoXMLd -lPocoJSONd -lPocoFoundationd -lpthread
 
