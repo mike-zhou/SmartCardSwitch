@@ -85,21 +85,24 @@ protected:
 		{
 			TaskManager tm;
 			Poco::Net::SocketAddress serverAddress;
-			std::string logFilePathName;
+			std::string logFolder;
+			std::string logFile;
 			std::string logFileSize;
 			std::string logFileAmount;
 
 
 			try
 			{
+				//client listener
 				std::string ip = config().getString("listen_to_ip_address", "0.0.0.0");
 				unsigned short port = config().getInt("listen_to_port", 60000);
-				logFilePathName = config().getString("log_file_path_name", "./logs/log");
-				logFileSize = config().getString("log_file_size", "1M");
-				logFileAmount = config().getString("log_file_amount", "10");
-
 				Poco::Net::IPAddress ipAddr(ip);
 				serverAddress = Poco::Net::SocketAddress(ipAddr, port);
+				//logs
+				logFolder = config().getString("log_file_folder", "./logs/proxyLogs");
+				logFile = config().getString("log_file_name", "proxyLog");
+				logFileSize = config().getString("log_file_size", "1M");
+				logFileAmount = config().getString("log_file_amount", "10");
 			}
 			catch(Poco::NotFoundException& e)
 			{
@@ -118,7 +121,7 @@ protected:
 				logger().error("Config unknown exception");
 			}
 
-			pLogger = new ProxyLogger(logFilePathName, logFileSize, logFileAmount);
+			pLogger = new ProxyLogger(logFolder, logFile, logFileSize, logFileAmount);
 			tm.start(pLogger);
 
 			CDeviceManager * pDeviceManager = new CDeviceManager;

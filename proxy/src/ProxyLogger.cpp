@@ -10,13 +10,25 @@
 #include "stdio.h"
 #include "Poco/DateTimeFormat.h"
 #include "Poco/DateTimeFormatter.h"
+#include "Poco/Path.h"
+#include "Poco/File.h"
 
-ProxyLogger::ProxyLogger(const std::string& path, const std::string& fileSize, const std::string& fileAmount):Task("ProxyLogger")
+ProxyLogger::ProxyLogger(const std::string& folder,
+		const std::string& name,
+		const std::string& fileSize,
+		const std::string& fileAmount):Task("ProxyLogger")
 {
 	_initialized = false;
 	try
 	{
-		Poco::FileChannel * pFileChannel = new Poco::FileChannel(path);
+		Poco::File logFolder(folder);
+		logFolder.createDirectories();
+
+		Poco::Path logFile(folder);
+		logFile.makeDirectory();
+		logFile.setFileName(name);
+
+		Poco::FileChannel * pFileChannel = new Poco::FileChannel(logFile.toString());
 		pFileChannel->setProperty("rotation", fileSize);
 		pFileChannel->setProperty("archive", "timestamp");
 		pFileChannel->setProperty("purgeCount", fileAmount);

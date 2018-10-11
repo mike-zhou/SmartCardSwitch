@@ -20,7 +20,7 @@
 
 class ProxyLogger: public Poco::Task {
 public:
-	ProxyLogger(const std::string& path, const std::string& fileSize, const std::string& fileAmount);
+	ProxyLogger(const std::string& folder, const std::string& name, const std::string& fileSize, const std::string& fileAmount);
 	virtual ~ProxyLogger();
 
 	void Log(const std::string& log);
