@@ -107,15 +107,16 @@
 									<listOptionValue builtIn="false" value="/home/user1/Poco/poco-1.8.0.1/lib"/>
 								</option>
 								<option id="gnu.cpp.link.option.libs.1985999439" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="PocoZipd"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="PocoNetSSLd"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="PocoRedisd"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="PocoNetd"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="PocoUtild"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="PocoCryptod"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="PocoXMLd"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="PocoJSONd"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="PocoFoundationd"/>
+									<listOptionValue builtIn="false" value="PocoZip"/>
+									<listOptionValue builtIn="false" value="PocoNetSSL"/>
+									<listOptionValue builtIn="false" value="PocoRedis"/>
+									<listOptionValue builtIn="false" value="PocoNet"/>
+									<listOptionValue builtIn="false" value="PocoUtil"/>
+									<listOptionValue builtIn="false" value="PocoCrypto"/>
+									<listOptionValue builtIn="false" value="PocoXML"/>
+									<listOptionValue builtIn="false" value="PocoJSON"/>
+									<listOptionValue builtIn="false" value="PocoFoundation"/>
+									<listOptionValue builtIn="false" value="pthread"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1204676888" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -155,5 +156,12 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/proxy"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/proxy"/>
+		</configuration>
+	</storageModule>
 </cproject>
