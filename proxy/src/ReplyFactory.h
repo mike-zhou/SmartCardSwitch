@@ -24,7 +24,7 @@ public:
 	static std::vector<unsigned char> Reply(const std::string& reply);
 
 	//return the pakcage containing a JSON array of devices
-	static std::vector<unsigned char> Devices(const std::vector<std::string>& devices);
+	static std::vector<unsigned char> DevicesGet(const std::vector<std::string>& devices);
 
 	static std::vector<unsigned char> DeviceConnect(const std::string& deviceName, bool result, const std::string& reason);
 

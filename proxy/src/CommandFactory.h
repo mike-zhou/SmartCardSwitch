@@ -36,7 +36,7 @@ private:
 	};
 
 	//retrieve a command from deque and delete bytes of a complete command package
-	static DataState retrieveCommand(std::deque<unsigned char>& data, std::string& command)
+	static DataState retrieveCommand(std::deque<unsigned char>& data, std::string& jsonCmd)
 	{
 		unsigned short contentLength;
 		unsigned short version;
@@ -85,7 +85,7 @@ private:
 		//retrieve command
 		for(int i=0; i<(contentLength - versionWidth - tailWidth); i++) {
 			unsigned char c = data[headerWidth + lengthWidth + versionWidth +i];
-			command.push_back(c);
+			jsonCmd.push_back(c);
 		}
 		//delete data
 		for(int i=0; i<(headerWidth + lengthWidth + contentLength); i++) {
@@ -96,7 +96,7 @@ private:
 	}
 
 public:
-	static void RetrieveCommand(std::deque<unsigned char>& data/*input*/, std::vector<std::string>& commands/*output*/)
+	static void RetrieveCommand(std::deque<unsigned char>& data/*input*/, std::vector<std::string>& jsonCommands/*output*/)
 	{
 		for(;;)
 		{
@@ -119,7 +119,7 @@ public:
 			}
 			else if(rc == DataState::COMPLETE_COMMAND)
 			{
-				commands.push_back(cmd);
+				jsonCommands.push_back(cmd);
 			}
 		}
 	}

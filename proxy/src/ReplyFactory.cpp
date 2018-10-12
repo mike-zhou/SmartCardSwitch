@@ -6,10 +6,15 @@
  */
 
 #include "ReplyFactory.h"
+#include "ProxyLogger.h"
+
+extern ProxyLogger * pLogger;
 
 void ReplyFactory::createReply(const std::string& reply, std::vector<unsigned char>& result)
 {
 	unsigned long length = reply.size() + versionWidth + lengthWidth;
+
+	pLogger->LogDebug("ReplyFactory::createReply packaging: " + reply);
 
 	//********* little endian ************
 	//header, 2 bytes
@@ -50,7 +55,7 @@ std::vector<unsigned char> ReplyFactory::Reply(const std::string& reply)
 }
 
 //return the pakcage containing a JSON array of devices
-std::vector<unsigned char> ReplyFactory::Devices(const std::vector<std::string>& devices)
+std::vector<unsigned char> ReplyFactory::DevicesGet(const std::vector<std::string>& devices)
 {
 	std::vector<unsigned char> vector;
 	std::string json;

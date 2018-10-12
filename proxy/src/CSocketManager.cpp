@@ -152,14 +152,16 @@ void CSocketManager::AddSocket(StreamSocket& socket)
 }
 
 //retrieve commands from data
-void CSocketManager::retrieveCommands(std::deque<unsigned char>& data, std::vector<std::string>& commands)
+void CSocketManager::retrieveCommands(std::deque<unsigned char>& data, std::vector<std::string>& jsonCommands)
 {
-	CommandFactory::RetrieveCommand(data, commands);
+	CommandFactory::RetrieveCommand(data, jsonCommands);
 }
 
-void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::string& command)
+void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::string& jsonCommand)
 {
-	CommandTranslator translator(command);
+	pLogger->LogInfo("CSocketManager::onCommand JSON command from socket: " + std::to_string(socketWrapper.socketId) + ": " + jsonCommand);
+
+	CommandTranslator translator(jsonCommand);
 
 	switch(translator.Type())
 	{
@@ -287,7 +289,7 @@ void CSocketManager::onCommandDevicesGet(struct SocketWrapper& socketWrapper, st
 		devices.push_back(it->first);
 	}
 
-	auto package = ReplyFactory::Devices(devices);
+	auto package = ReplyFactory::DevicesGet(devices);
 	for(auto it = package.begin(); it!=package.end(); it++) {
 		socketWrapper.outgoing.push_back(*it);
 	}
@@ -620,13 +622,19 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 			{
 				dataRead = socketWrapper.socket.receiveBytes(buffer, bufferSize, 0);
 				if(dataRead == 0) {
-					//Peer socket is closed.
+					//if socket can be read but has not data, then peer socket is closed.
 					pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketReadable socket closed: %s, socketId: %Ld"),
 							socketWrapper.socket.peerAddress().toString(),
 							socketWrapper.socketId));
+
 					socketWrapper.state = SocketState::TO_BE_CLOSED;
 				}
 				else {
+					pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketReadable %d bytes from %s, socketId: %Ld"),
+							dataRead,
+							socketWrapper.socket.peerAddress().toString(),
+							socketWrapper.socketId));
+
 					receivingError = false;
 					for(int i=0; i<dataRead; i++) {
 						socketWrapper.incoming.push_back(buffer[i]); //save data to incoming stage.
@@ -724,7 +732,7 @@ void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 			//write to socket
 			dataSent = 0;
 			if(dataSize > 0) {
-				pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketWritable write %Ld bytes to socket %Ld"), dataSize, socketWrapper.socketId));
+				pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketWritable writing %d bytes to socket %Ld"), dataSize, socketWrapper.socketId));
 				dataSent = socketWrapper.socket.sendBytes(buffer, dataSize, 0);
 			}
 			else {
@@ -732,7 +740,7 @@ void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 			}
 			//remove the sent data from the sending stage.
 			if(dataSent > 0) {
-				pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketWritable wrote %Ld bytes to socket %Ld"), dataSize, socketWrapper.socketId));
+				pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketWritable wrote %d bytes to socket %Ld"), dataSize, socketWrapper.socketId));
 				for(;dataSent>0; dataSent--) {
 					socketWrapper.outgoing.pop_front();
 				}
