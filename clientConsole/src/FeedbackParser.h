@@ -1,17 +1,17 @@
 /*
- * CommandFactory.h
+ * FeedbackParser.h
  *
- *  Created on: Oct 7, 2018
+ *  Created on: Oct 13, 2018
  *      Author: user1
  */
 
-#ifndef COMMANDFACTORY_H_
-#define COMMANDFACTORY_H_
+#ifndef FEEDBACKPARSER_H_
+#define FEEDBACKPARSER_H_
 
 #include <vector>
 #include <deque>
 
-class CommandFactory
+class FeedbackParser
 {
 private:
 	static const unsigned short HEADER_TAG = 0xAABB;
@@ -36,7 +36,7 @@ private:
 	};
 
 	//retrieve a command from deque and delete bytes of a complete command package
-	static DataState retrieveCommand(std::deque<unsigned char>& data, std::string& jsonCmd)
+	static DataState retrieveJson(std::deque<unsigned char>& data, std::string& json)
 	{
 		unsigned short contentLength;
 		unsigned short version;
@@ -85,7 +85,7 @@ private:
 		//retrieve command
 		for(int i=0; i<(contentLength - versionWidth - tailWidth); i++) {
 			unsigned char c = data[headerWidth + lengthWidth + versionWidth +i];
-			jsonCmd.push_back(c);
+			json.push_back(c);
 		}
 		//delete data
 		for(int i=0; i<(headerWidth + lengthWidth + contentLength); i++) {
@@ -99,13 +99,13 @@ public:
 	// make JSON command with data.
 	// invalid data at the beginning of data will be deleted.
 	// if a JSON command is created, the relevant content in data is deleted.
-	static void RetrieveCommand(std::deque<unsigned char>& data/*input*/, std::vector<std::string>& jsonCommands/*output*/)
+	static void RetrieveFeedbacks(std::deque<unsigned char>& data/*input*/, std::vector<std::string>& jsons/*output*/)
 	{
 		for(;;)
 		{
-			std::string cmd;
+			std::string json;
 
-			auto rc = retrieveCommand(data, cmd);
+			auto rc = retrieveJson(data, json);
 
 			if((rc == DataState::HEADER_ERROR) ||
 				(rc == DataState::LENGTH_ERROR) ||
@@ -122,11 +122,13 @@ public:
 			}
 			else if(rc == DataState::COMPLETE_COMMAND)
 			{
-				jsonCommands.push_back(cmd);
+				jsons.push_back(json);
 			}
 		}
 	}
 };
 
 
-#endif /* COMMANDFACTORY_H_ */
+
+
+#endif /* FEEDBACKPARSER_H_ */

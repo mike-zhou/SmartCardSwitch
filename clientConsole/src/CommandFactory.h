@@ -13,8 +13,12 @@
 
 class CommandFactory
 {
+	// Format of command package: HEADER_TAG length version jsonCommand TAIL_TAG
 public:
+	//return command package of devices get.
 	static std::vector<unsigned char> DevicesGet();
+
+	//return command package of device connect.
 	static std::vector<unsigned char> DeviceConnect(const std::string& deviceName);
 
 private:
@@ -27,7 +31,7 @@ private:
 	static const int versionWidth = 2;
 	static const int tailWidth = 2;
 
-
+	//put the jsonCmd to a package of TagLengthValue.
 	static void packageJsonCmd(const std::string& jsonCmd /*input*/, std::vector<unsigned char>& result/*output*/);
 };
 

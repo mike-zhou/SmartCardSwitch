@@ -18,6 +18,7 @@
 #include "Poco/Exception.h"
 #include <iostream>
 #include "CommandFactory.h"
+#include "FeedbackParser.h"
 
 using namespace std;
 
@@ -110,6 +111,36 @@ protected:
 		}
 	}
 
+	void receiveFeedbacks(Poco::Net::StreamSocket& socket, std::vector<std::string>& jsons)
+	{
+		std::deque<unsigned char> data;
+		unsigned char buffer[1024];
+
+		for(;;)
+		{
+			Poco::Timespan timeSpan(1000000);// 1 second
+
+			if(socket.poll(timeSpan, Poco::Net::StreamSocket::SELECT_READ)) {
+				int amount = socket.receiveBytes(buffer, 1024, 0);
+				for(int i=0; i<amount; i++) {
+					data.push_back(buffer[i]);
+				}
+				printf("receiveFeedbacks %d bytes of feedback arrives\r\n", amount);
+				FeedbackParser::RetrieveFeedbacks(data, jsons);
+				if(data.size() == 0) {
+					break;
+				}
+				else {
+					printf("receiveFeedbacks continue receiving data\r\n");
+				}
+			}
+			else {
+				printf("ERROR: receiveFeedbacks no data arrives in time constrain\r\n");
+				break;
+			}
+		}
+	}
+
 	int main(const ArgVec& args)
 	{
 		if (_helpRequested) {
@@ -128,9 +159,19 @@ protected:
 			{
 				auto cmdVector = CommandFactory::DevicesGet();
 				sendCmdPkg(socket, cmdVector);
-
-				printf("DeviceGet was sent, press any key to continue \r\n");
-				getchar();
+			}
+			{
+				std::vector<std::string> jsons;
+				receiveFeedbacks(socket, jsons);
+				if(jsons.size() > 0) {
+					for(auto it=jsons.begin(); it!=jsons.end(); it++)
+					{
+						printf("feedback: %s\r\n", it->c_str());
+					}
+				}
+				else {
+					printf("ERROR: no feedback in time constrain\r\n");
+				}
 			}
 
 			printf("Socket is closing\r\n");
