@@ -4,12 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/CommandFactory.cpp \
 ../src/clientConsole.cpp 
 
 OBJS += \
+./src/CommandFactory.o \
 ./src/clientConsole.o 
 
 CPP_DEPS += \
+./src/CommandFactory.d \
 ./src/clientConsole.d 
 
 

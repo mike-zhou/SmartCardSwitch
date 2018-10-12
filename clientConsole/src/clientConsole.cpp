@@ -17,6 +17,7 @@
 #include "Poco/Net/StreamSocket.h"
 #include "Poco/Exception.h"
 #include <iostream>
+#include "CommandFactory.h"
 
 using namespace std;
 
@@ -30,14 +31,14 @@ using Poco::Task;
 using Poco::TaskManager;
 using Poco::DateTimeFormatter;
 
-class Proxy: public ServerApplication
+class ClientConsole: public ServerApplication
 {
 public:
-	Proxy(): _helpRequested(false)
+	ClientConsole(): _helpRequested(false)
 	{
 	}
 
-	~Proxy()
+	~ClientConsole()
 	{
 	}
 
@@ -63,7 +64,7 @@ protected:
 			Option("help", "h", "display help information on command line arguments")
 				.required(false)
 				.repeatable(false)
-				.callback(OptionCallback<Proxy>(this, &Proxy::handleHelp)));
+				.callback(OptionCallback<ClientConsole>(this, &ClientConsole::handleHelp)));
 	}
 
 	void handleHelp(const std::string& name, const std::string& value)
@@ -82,6 +83,33 @@ protected:
 		helpFormatter.format(std::cout);
 	}
 
+	void sendCmdPkg(Poco::Net::StreamSocket& socket, std::vector<unsigned char>& cmdPkg)
+	{
+		unsigned int amount = 0;
+
+		for(;;)
+		{
+			int count;
+
+			count = cmdPkg.size() - amount;
+			printf("sendCmdPkg: %d bytes to send\r\n", count);
+			count = socket.sendBytes(cmdPkg.data() + amount, count, 0);
+			if(count < 0) {
+				printf("ERROR: sendCmdPkg error in socket.sendBytes\r\n");
+			}
+			printf("sendCmdPkg: %d bytes have been sent\r\n", count);
+			amount += count;
+
+			if(amount == cmdPkg.size()) {
+				break;
+			}
+			if(amount > cmdPkg.size()) {
+				printf("ERROR: sendCmdPkg sent more data out: %d:%d\r\n", amount, cmdPkg.size());
+				break;
+			}
+		}
+	}
+
 	int main(const ArgVec& args)
 	{
 		if (_helpRequested) {
@@ -97,6 +125,13 @@ protected:
 			socket.connect(socketAddress);
 			printf("Connected to %s\r\n", socketAddress.toString().c_str());
 
+			{
+				auto cmdVector = CommandFactory::DevicesGet();
+				sendCmdPkg(socket, cmdVector);
+
+				printf("DeviceGet was sent, press any key to continue \r\n");
+				getchar();
+			}
 
 			printf("Socket is closing\r\n");
 			socket.close();
@@ -119,4 +154,4 @@ private:
 };
 
 
-POCO_SERVER_MAIN(Proxy)
+POCO_SERVER_MAIN(ClientConsole)
