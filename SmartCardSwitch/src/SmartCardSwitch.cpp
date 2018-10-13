@@ -16,10 +16,11 @@
 #include "Poco/Net/SocketAddress.h"
 #include "Poco/Net/StreamSocket.h"
 #include "Poco/Exception.h"
+#include "Poco/Format.h"
 #include <iostream>
 #include "CommandFactory.h"
 #include "Logger.h"
-#include "MsgPackager.h"
+#include "DeviceAccessor.h"
 
 using namespace std;
 
@@ -87,69 +88,13 @@ protected:
 		helpFormatter.format(std::cout);
 	}
 
-	void sendCmdPkg(Poco::Net::StreamSocket& socket, std::vector<unsigned char>& cmdPkg)
-	{
-		unsigned int amount = 0;
-
-		for(;;)
-		{
-			int count;
-
-			count = cmdPkg.size() - amount;
-			printf("sendCmdPkg: %d bytes to send\r\n", count);
-			count = socket.sendBytes(cmdPkg.data() + amount, count, 0);
-			if(count < 0) {
-				printf("ERROR: sendCmdPkg error in socket.sendBytes\r\n");
-			}
-			printf("sendCmdPkg: %d bytes have been sent\r\n", count);
-			amount += count;
-
-			if(amount == cmdPkg.size()) {
-				break;
-			}
-			if(amount > cmdPkg.size()) {
-				printf("ERROR: sendCmdPkg sent more data out: %d:%d\r\n", amount, cmdPkg.size());
-				break;
-			}
-		}
-	}
-
-	void receiveFeedbacks(Poco::Net::StreamSocket& socket, std::vector<std::string>& jsons)
-	{
-		std::deque<unsigned char> data;
-		unsigned char buffer[1024];
-
-		for(;;)
-		{
-			Poco::Timespan timeSpan(1000000);// 1 second
-
-			if(socket.poll(timeSpan, Poco::Net::StreamSocket::SELECT_READ)) {
-				int amount = socket.receiveBytes(buffer, 1024, 0);
-				for(int i=0; i<amount; i++) {
-					data.push_back(buffer[i]);
-				}
-				printf("receiveFeedbacks %d bytes of feedback arrives\r\n", amount);
-				MsgPackager::RetrieveMsgs(data, jsons);
-				if(data.size() == 0) {
-					break;
-				}
-				else {
-					printf("receiveFeedbacks continue receiving data\r\n");
-				}
-			}
-			else {
-				printf("ERROR: receiveFeedbacks no data arrives in time constrain\r\n");
-				break;
-			}
-		}
-	}
-
 	int main(const ArgVec& args)
 	{
 		if (_helpRequested) {
 			return Application::EXIT_OK;
 		}
 
+		TaskManager tmLogger;
 		TaskManager tm;
 
 		std::string logFolder;
@@ -183,39 +128,22 @@ protected:
 		}
 
 		pLogger = new Logger(logFolder, logFile, logFileSize, logFileAmount);
-		tm.start(pLogger);
+		tmLogger.start(pLogger); //tmLogger takes the ownership of pLogger.
 		pLogger->LogInfo("**** SmartCardSwitch V1.0.0 ****");
 
 		try
 		{
-			Poco::Net::SocketAddress socketAddress("127.0.0.1:60000");
-			Poco::Net::StreamSocket socket;
+			DeviceAccessor * pDeviceAccessor;
 
-			printf("Connecting to %s\r\n", socketAddress.toString().c_str());
-			socket.connect(socketAddress);
-			printf("Connected to %s\r\n", socketAddress.toString().c_str());
 
-			{
-				auto cmdVector = CommandFactory::DevicesGet();
-				sendCmdPkg(socket, cmdVector);
-			}
-			{
-				std::vector<std::string> jsons;
-				receiveFeedbacks(socket, jsons);
-				if(jsons.size() > 0) {
-					for(auto it=jsons.begin(); it!=jsons.end(); it++)
-					{
-						printf("feedback: %s\r\n", it->c_str());
-					}
-				}
-				else {
-					printf("ERROR: no feedback in time constrain\r\n");
-				}
-			}
+			std::string proxyIp = config().getString("proxy_ip_address", "127.0.0.1");
+			std::string proxyPort = config().getString("proxy_port", "60000");
+			proxyIp = proxyIp + ":" + proxyPort;
+			Poco::Net::SocketAddress socketAddress(proxyIp);
+			pDeviceAccessor = new DeviceAccessor;
+			pDeviceAccessor->Init(socketAddress);
 
-			printf("Socket is closing\r\n");
-			socket.close();
-			printf("Socket closed\r\n");
+			tm.start(pDeviceAccessor); //tm takes the ownership of pDeviceAccessor.
 		}
 		catch(Poco::Exception& e)
 		{
@@ -226,14 +154,15 @@ protected:
 			printf("Unknown exception occurs\r\n");
 		}
 
-		//waitForTerminationRequest();
+		waitForTerminationRequest();
 
-		printf("Press any key to exit");
-		getchar();
-
+		//stop tasks
 		tm.cancelAll();
 		tm.joinAll();
-		delete pLogger;
+
+		//stop logger task.
+		tmLogger.cancelAll();
+		tmLogger.joinAll();
 
 		return Application::EXIT_OK;
 	}
