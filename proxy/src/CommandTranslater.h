@@ -651,6 +651,7 @@ public:
 	}
 };
 
+// translate JSON command to device command
 class CommandTranslator
 {
 public:
