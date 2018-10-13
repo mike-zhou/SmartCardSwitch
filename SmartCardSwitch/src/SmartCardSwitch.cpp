@@ -18,8 +18,8 @@
 #include "Poco/Exception.h"
 #include <iostream>
 #include "CommandFactory.h"
-#include "FeedbackParser.h"
 #include "Logger.h"
+#include "MsgPackager.h"
 
 using namespace std;
 
@@ -129,7 +129,7 @@ protected:
 					data.push_back(buffer[i]);
 				}
 				printf("receiveFeedbacks %d bytes of feedback arrives\r\n", amount);
-				FeedbackParser::RetrieveFeedbacks(data, jsons);
+				MsgPackager::RetrieveMsgs(data, jsons);
 				if(data.size() == 0) {
 					break;
 				}
@@ -226,7 +226,11 @@ protected:
 			printf("Unknown exception occurs\r\n");
 		}
 
-		waitForTerminationRequest();
+		//waitForTerminationRequest();
+
+		printf("Press any key to exit");
+		getchar();
+
 		tm.cancelAll();
 		tm.joinAll();
 		delete pLogger;
