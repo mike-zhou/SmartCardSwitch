@@ -15,33 +15,16 @@ unsigned long Command::_commandIdSeed = 1;
 ///////////////////////////////////////////////////////////
 // CommandDevicesGet
 ///////////////////////////////////////////////////////////
-std::string CommandDevicesGet::GetInitialState()
-{
-	std::string empty;
-	return empty;
-}
-
-std::string CommandDevicesGet::GetFinalState()
-{
-	std::string empty;
-	return empty;
-}
-
-std::string CommandDevicesGet::ToCommandUndo()
-{
-	std::string empty;
-	return empty;
-}
-
 std::string CommandDevicesGet::ToCommand()
 {
-	std::string jsonCmd;
+	std::string cmd;
 
-	jsonCmd = "{";
-	jsonCmd = jsonCmd + "\"command\":\"devices get\"";
-	jsonCmd += "}";
+	cmd = "{";
+	cmd = cmd + "\"command\":\"devices get\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+	cmd += "}";
 
-	return jsonCmd;
+	return cmd;
 }
 
 //////////////////////////////////////////////////////////
@@ -86,6 +69,21 @@ std::string CommandDeviceConnect::ToCommandUndo()
 	cmd = cmd + "\"command\":\"device disconnect\",";
 	cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId()) + ",";
 	cmd = cmd + "\"device\":\"" + _deviceName +"\"";
+	cmd += "}";
+
+	return cmd;
+}
+
+///////////////////////////////////////////////////////////
+// CommandDeviceQueryPower
+///////////////////////////////////////////////////////////
+std::string CommandDeviceQueryPower::ToCommand()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"device query power\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
 	cmd += "}";
 
 	return cmd;
@@ -172,19 +170,19 @@ std::string CommandBdcsPowerOff::ToCommandUndo()
 ///////////////////////////////////////////////////////
 // CommandBdcsPowerQuery
 ///////////////////////////////////////////////////////
-std::string CommandBdcsPowerQuery::GetInitialState()
+std::string CommandBdcsQueryPower::GetInitialState()
 {
 	std::string empty;
 	return empty;
 }
 
-std::string CommandBdcsPowerQuery::GetFinalState()
+std::string CommandBdcsQueryPower::GetFinalState()
 {
 	std::string empty;
 	return empty;
 }
 
-std::string CommandBdcsPowerQuery::ToCommand()
+std::string CommandBdcsQueryPower::ToCommand()
 {
 	std::string cmd;
 
@@ -196,7 +194,7 @@ std::string CommandBdcsPowerQuery::ToCommand()
 	return cmd;
 }
 
-std::string CommandBdcsPowerQuery::ToCommandUndo()
+std::string CommandBdcsQueryPower::ToCommandUndo()
 {
 	std::string empty;
 	return empty;
@@ -345,6 +343,22 @@ std::string CommandBdcOperation::ToCommandUndo()
 		cmd = cmd + "\"delayMs\":" + std::to_string(_delayMs);
 		cmd += "}";
 	}
+
+	return cmd;
+}
+
+
+///////////////////////////////////////////////////////////
+// CommandStepperQueryClkPeriod
+///////////////////////////////////////////////////////////
+std::string CommandStepperQueryClkPeriod::ToCommand()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper query clkPeriod\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+	cmd += "}";
 
 	return cmd;
 }

@@ -20,13 +20,13 @@ public:
 	}
 	virtual ~Command() {}
 
-	virtual std::string GetInitialState() = 0;
-	virtual std::string GetFinalState() = 0;
+	virtual std::string GetInitialState() { std::string empty; return empty; }
+	virtual std::string GetFinalState() { std::string empty; return empty; }
 
-	virtual std::string ToCommand() = 0;
+	virtual std::string ToCommand() { std::string empty; return empty; }
 	unsigned long CommandId() { return _commandId; }
 
-	virtual std::string ToCommandUndo() = 0;
+	virtual std::string ToCommandUndo() { std::string empty; return empty; }
 	unsigned long CommandUndoId() { return _commandUndoId; }
 
 private:
@@ -42,11 +42,7 @@ public:
 	CommandDevicesGet() {}
 	~CommandDevicesGet() {}
 
-	virtual std::string GetInitialState() override;
-	virtual std::string GetFinalState() override;
-
 	virtual std::string ToCommand() override;
-	virtual std::string ToCommandUndo() override;
 };
 
 class CommandDeviceConnect: public Command
@@ -63,6 +59,12 @@ public:
 
 private:
 	std::string _deviceName;
+};
+
+class CommandDeviceQueryPower: public Command
+{
+public:
+	virtual std::string ToCommand() override;
 };
 
 class CommandBdcsPowerOn: public Command
@@ -91,11 +93,11 @@ public:
 	virtual std::string ToCommandUndo() override;
 };
 
-class CommandBdcsPowerQuery: public Command
+class CommandBdcsQueryPower: public Command
 {
 public:
-	CommandBdcsPowerQuery() {}
-	~CommandBdcsPowerQuery() {}
+	CommandBdcsQueryPower() {}
+	~CommandBdcsQueryPower() {}
 
 	virtual std::string GetInitialState() override;
 	virtual std::string GetFinalState() override;
@@ -129,6 +131,12 @@ private:
 	enum BdcMode _initialMode;
 	enum BdcMode _finalMode;
 	unsigned long _delayMs; //millisecond.
+};
+
+class CommandStepperQueryClkPeriod: public Command
+{
+public:
+	virtual std::string ToCommand() override;
 };
 
 #endif /* COMMAND_H_ */
