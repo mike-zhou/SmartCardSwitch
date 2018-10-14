@@ -9,17 +9,18 @@
 #define COMMANDFACTORY_H_
 
 #include <string>
-#include <vector>
+#include <memory>
+#include "Command.h"
 
 class CommandFactory
 {
 	// Format of command package: HEADER_TAG length version jsonCommand TAIL_TAG
 public:
 	//return command package of devices get.
-	static std::vector<unsigned char> DevicesGet();
+	static std::shared_ptr<Command> DevicesGet();
 
 	//return command package of device connect.
-	static std::vector<unsigned char> DeviceConnect(const std::string& deviceName);
+	static std::shared_ptr<Command> DeviceConnect(const std::string& deviceName);
 };
 
 

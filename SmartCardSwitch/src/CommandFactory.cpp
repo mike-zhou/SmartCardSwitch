@@ -8,32 +8,17 @@
 #include "CommandFactory.h"
 #include "MsgPackager.h"
 
-std::vector<unsigned char> CommandFactory::DevicesGet()
+std::shared_ptr<Command> CommandFactory::DevicesGet()
 {
-	std::string jsonCmd;
-	std::vector<unsigned char> cmdPkg;
+	std::shared_ptr<Command> ptr(new CommandDevicesGet());
 
-	jsonCmd = "{";
-	jsonCmd = jsonCmd + "\"command\":\"devices get\"";
-	jsonCmd += "}";
-
-	MsgPackager::PackageMsg(jsonCmd, cmdPkg);
-
-	return cmdPkg;
+	return ptr;
 }
 
-std::vector<unsigned char> CommandFactory::DeviceConnect(const std::string& deviceName)
+std::shared_ptr<Command> CommandFactory::DeviceConnect(const std::string& deviceName)
 {
-	std::string jsonCmd;
-	std::vector<unsigned char> cmdPkg;
+	std::shared_ptr<Command> ptr(new CommandDeviceConnect(deviceName));
 
-	jsonCmd = "{";
-	jsonCmd = jsonCmd + "\"command\":\"device connect\",";
-	jsonCmd = jsonCmd + "\"device\":\"" + deviceName + "\"";
-	jsonCmd += "}";
-
-	MsgPackager::PackageMsg(jsonCmd, cmdPkg);
-
-	return cmdPkg;
+	return ptr;
 }
 
