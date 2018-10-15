@@ -22,14 +22,14 @@ std::shared_ptr<Command> CommandFactory::DeviceConnect(const std::string& device
 	return ptr;
 }
 
-std::shared_ptr<Command> DeviceQueryPower()
+std::shared_ptr<Command> CommandFactory::DeviceQueryPower()
 {
 	std::shared_ptr<Command> ptr(new CommandDeviceQueryPower());
 
 	return ptr;
 }
 
-std::shared_ptr<Command> BdcsPowerOn()
+std::shared_ptr<Command> CommandFactory::BdcsPowerOn()
 {
 	std::shared_ptr<Command> ptr(new CommandBdcsPowerOn());
 
@@ -37,7 +37,7 @@ std::shared_ptr<Command> BdcsPowerOn()
 }
 
 
-std::shared_ptr<Command> BdcsPowerOff()
+std::shared_ptr<Command> CommandFactory::BdcsPowerOff()
 {
 	std::shared_ptr<Command> ptr(new CommandBdcsPowerOff());
 
@@ -45,7 +45,7 @@ std::shared_ptr<Command> BdcsPowerOff()
 }
 
 
-std::shared_ptr<Command> BdcsQueryPower()
+std::shared_ptr<Command> CommandFactory::BdcsQueryPower()
 {
 	std::shared_ptr<Command> ptr(new CommandBdcsQueryPower());
 
@@ -53,7 +53,7 @@ std::shared_ptr<Command> BdcsQueryPower()
 }
 
 
-std::shared_ptr<Command> BdcOperation(unsigned int bdcIndex,
+std::shared_ptr<Command> CommandFactory::BdcOperation(unsigned int bdcIndex,
 											CommandBdcOperation::BdcMode initialMode,
 											CommandBdcOperation::BdcMode finalMode,
 											unsigned long delayMs)
@@ -64,12 +64,18 @@ std::shared_ptr<Command> BdcOperation(unsigned int bdcIndex,
 }
 
 
-std::shared_ptr<Command> StepperQueryClkPeriod()
+std::shared_ptr<Command> CommandFactory::StepperQueryClkPeriod()
 {
 	std::shared_ptr<Command> ptr(new CommandStepperQueryClkPeriod());
 
 	return ptr;
 }
 
+std::shared_ptr<Command> CommandFactory::StepperConfigStep(unsigned int stepperIndex, unsigned long lowClks, unsigned long highClks)
+{
+	std::shared_ptr<Command> ptr(new CommandStepperConfigStep(stepperIndex, lowClks, highClks));
+
+	return ptr;
+}
 
 

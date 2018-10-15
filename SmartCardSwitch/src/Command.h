@@ -20,7 +20,7 @@ public:
 	}
 	virtual ~Command() {}
 
-	virtual std::string GetInitialState() { std::string empty; return empty; }
+	virtual std::string GetUndoState() { std::string empty; return empty; }
 	virtual std::string GetFinalState() { std::string empty; return empty; }
 
 	virtual std::string ToCommand() { std::string empty; return empty; }
@@ -39,9 +39,6 @@ private:
 class CommandDevicesGet: public Command
 {
 public:
-	CommandDevicesGet() {}
-	~CommandDevicesGet() {}
-
 	virtual std::string ToCommand() override;
 };
 
@@ -49,9 +46,8 @@ class CommandDeviceConnect: public Command
 {
 public:
 	CommandDeviceConnect(const std::string& deviceName);
-	~CommandDeviceConnect() {}
 
-	virtual std::string GetInitialState() override;
+	virtual std::string GetUndoState() override;
 	virtual std::string GetFinalState() override;
 
 	virtual std::string ToCommand() override;
@@ -70,10 +66,7 @@ public:
 class CommandBdcsPowerOn: public Command
 {
 public:
-	CommandBdcsPowerOn() {}
-	~CommandBdcsPowerOn() {}
-
-	virtual std::string GetInitialState() override;
+	virtual std::string GetUndoState() override;
 	virtual std::string GetFinalState() override;
 
 	virtual std::string ToCommand() override;
@@ -83,10 +76,7 @@ public:
 class CommandBdcsPowerOff: public Command
 {
 public:
-	CommandBdcsPowerOff() {}
-	~CommandBdcsPowerOff() {}
-
-	virtual std::string GetInitialState() override;
+	virtual std::string GetUndoState() override;
 	virtual std::string GetFinalState() override;
 
 	virtual std::string ToCommand() override;
@@ -96,10 +86,7 @@ public:
 class CommandBdcsQueryPower: public Command
 {
 public:
-	CommandBdcsQueryPower() {}
-	~CommandBdcsQueryPower() {}
-
-	virtual std::string GetInitialState() override;
+	virtual std::string GetUndoState() override;
 	virtual std::string GetFinalState() override;
 
 	virtual std::string ToCommand() override;
@@ -117,10 +104,9 @@ public:
 		BREAK
 	};
 
-	CommandBdcOperation(unsigned int bdcIndex, BdcMode initialMode, BdcMode finalMode, unsigned long delayMs);
-	~CommandBdcOperation() {}
+	CommandBdcOperation(unsigned int bdcIndex, BdcMode undoMode, BdcMode finalMode, unsigned long delayMs);
 
-	virtual std::string GetInitialState() override;
+	virtual std::string GetUndoState() override;
 	virtual std::string GetFinalState() override;
 
 	virtual std::string ToCommand() override;
@@ -128,15 +114,134 @@ public:
 
 private:
 	unsigned int _bdcIndex;
-	enum BdcMode _initialMode;
+	enum BdcMode _undoMode;
 	enum BdcMode _finalMode;
-	unsigned long _delayMs; //millisecond.
+	unsigned long _delayMs; //milliseconds to delay before result is returned.
 };
 
 class CommandStepperQueryClkPeriod: public Command
 {
 public:
 	virtual std::string ToCommand() override;
+};
+
+class CommandStepperConfigStep: public Command
+{
+public:
+	CommandStepperConfigStep(unsigned int stepperIndex, unsigned long lowClks, unsigned long highClks);
+
+	virtual std::string ToCommand() override;
+	virtual std::string GetFinalState() override;
+
+private:
+	unsigned int _stepperIndex;
+	unsigned long _lowClks;
+	unsigned long _highClks;
+};
+
+class CommandStepperAccelerationBuffer: public Command
+{
+public:
+	CommandStepperAccelerationBuffer(unsigned int stepperIndex, unsigned long value);
+
+	virtual std::string ToCommand() override;
+	virtual std::string GetFinalState() override;
+
+private:
+	unsigned int _stepperIndex;
+	unsigned long _value;
+};
+
+class CommandStepperAccelerationBufferDecrement: public Command
+{
+public:
+	CommandStepperAccelerationBufferDecrement(unsigned int stepperIndex, unsigned long value);
+
+	virtual std::string ToCommand() override;
+	virtual std::string GetFinalState() override;
+
+private:
+	unsigned int _stepperIndex;
+	unsigned long _value;
+};
+
+class CommandStepperDecelrationBuffer: public Command
+{
+public:
+	CommandStepperDecelrationBuffer(unsigned int stepperIndex, unsigned long value);
+
+	virtual std::string ToCommand() override;
+	virtual std::string GetFinalState() override;
+
+private:
+	unsigned int _stepperIndex;
+	unsigned long _value;
+};
+
+class CommandStepperDecelrationBufferIncrement: public Command
+{
+public:
+	CommandStepperDecelrationBufferIncrement(unsigned int stepperIndex, unsigned long value);
+
+	virtual std::string ToCommand() override;
+	virtual std::string GetFinalState() override;
+
+private:
+	unsigned int _stepperIndex;
+	unsigned long _value;
+};
+
+class CommandStepperEnable: public Command
+{
+public:
+	CommandStepperEnable(unsigned int stepperIndex, bool enable);
+
+	virtual std::string GetUndoState() override;
+	virtual std::string GetFinalState() override;
+
+	virtual std::string ToCommand() override;
+	virtual std::string ToCommandUndo() override;
+
+private:
+	unsigned int _stepperIndex;
+	bool _enable;
+};
+
+class CommandStepperConfigHome: public Command
+{
+public:
+	CommandStepperConfigHome(unsigned int stepperIndex,
+							unsigned int locatorIndex,
+							unsigned int lineNumberStart,
+							unsigned int lineNumberTerminal);
+
+	virtual std::string GetFinalState() override;
+
+	virtual std::string ToCommand() override;
+
+private:
+	unsigned int _stepperIndex;
+	unsigned int _locatorIndex;
+	unsigned int _lineNumberStart;
+	unsigned int _lineNumberTerminal;
+};
+
+class CommandStepperMove: public Command
+{
+public:
+	CommandStepperMove(unsigned int stepperIndex, unsigned long position, bool forward, unsigned long steps);
+
+	virtual std::string GetUndoState() override;
+	virtual std::string GetFinalState() override;
+
+	virtual std::string ToCommand() override;
+	virtual std::string ToCommandUndo() override;
+
+private:
+	unsigned int _stepperIndex;
+	unsigned long _position;
+	bool _forward;
+	unsigned long _steps;
 };
 
 #endif /* COMMAND_H_ */

@@ -35,7 +35,7 @@ CommandDeviceConnect::CommandDeviceConnect(const std::string& deviceName)
 	_deviceName = deviceName;
 }
 
-std::string CommandDeviceConnect::GetInitialState()
+std::string CommandDeviceConnect::GetUndoState()
 {
 	std::string state = "disconnected from " + _deviceName;
 	return state;
@@ -92,7 +92,7 @@ std::string CommandDeviceQueryPower::ToCommand()
 ///////////////////////////////////////////////////////
 // CommandBdcsPowerOn
 ///////////////////////////////////////////////////////
-std::string CommandBdcsPowerOn::GetInitialState()
+std::string CommandBdcsPowerOn::GetUndoState()
 {
 	std::string state = "bdcs is powered off";
 	return state;
@@ -131,7 +131,7 @@ std::string CommandBdcsPowerOn::ToCommandUndo()
 ///////////////////////////////////////////////////////
 // CommandBdcsPowerOff
 ///////////////////////////////////////////////////////
-std::string CommandBdcsPowerOff::GetInitialState()
+std::string CommandBdcsPowerOff::GetUndoState()
 {
 	std::string state = "bdcs is powered on";
 	return state;
@@ -170,7 +170,7 @@ std::string CommandBdcsPowerOff::ToCommandUndo()
 ///////////////////////////////////////////////////////
 // CommandBdcsPowerQuery
 ///////////////////////////////////////////////////////
-std::string CommandBdcsQueryPower::GetInitialState()
+std::string CommandBdcsQueryPower::GetUndoState()
 {
 	std::string empty;
 	return empty;
@@ -203,19 +203,20 @@ std::string CommandBdcsQueryPower::ToCommandUndo()
 ///////////////////////////////////////////////////////
 // CommandBdcOperation
 ///////////////////////////////////////////////////////
-CommandBdcOperation::CommandBdcOperation(unsigned int bdcIndex, BdcMode initialMode, BdcMode finalMode, unsigned long delayMs)
+CommandBdcOperation::CommandBdcOperation(unsigned int bdcIndex, BdcMode undoMode, BdcMode finalMode, unsigned long delayMs)
 {
 	_bdcIndex = bdcIndex;
-	_initialMode = initialMode;
+	_undoMode = undoMode;
 	_finalMode = finalMode;
 	_delayMs = delayMs;
 }
 
-std::string CommandBdcOperation::GetInitialState()
+std::string CommandBdcOperation::GetUndoState()
 {
+	std::string state;
 	std::string mode;
 
-	switch(_initialMode)
+	switch(_undoMode)
 	{
 	case BdcMode::COAST:
 		mode = "coast";
@@ -234,14 +235,16 @@ std::string CommandBdcOperation::GetInitialState()
 		break;
 
 	default:
-		pLogger->LogError("CommandBdcOperation::GetInitialState wrong mode: " + std::to_string(_initialMode));
+		pLogger->LogError("CommandBdcOperation::GetInitialState wrong mode: " + std::to_string(_undoMode));
 	}
 
-	return mode;
+	state = "\"bdcIndex\":" + std::to_string(_bdcIndex) + ",\"mode\":\"" + mode + "\"";
+	return state;
 }
 
 std::string CommandBdcOperation::GetFinalState()
 {
+	std::string state;
 	std::string mode;
 
 	switch(_finalMode)
@@ -266,7 +269,8 @@ std::string CommandBdcOperation::GetFinalState()
 		pLogger->LogError("CommandBdcOperation::GetFinalState wrong mode: " + std::to_string(_finalMode));
 	}
 
-	return mode;
+	state = "\"bdcIndex\":" + std::to_string(_bdcIndex) + ",\"mode\":\"" + mode + "\"";
+	return state;
 }
 
 std::string CommandBdcOperation::ToCommand()
@@ -313,7 +317,7 @@ std::string CommandBdcOperation::ToCommandUndo()
 	std::string cmd;
 	std::string mode;
 
-	switch(_initialMode)
+	switch(_undoMode)
 	{
 	case BdcMode::COAST:
 		mode = "coast";
@@ -332,14 +336,14 @@ std::string CommandBdcOperation::ToCommandUndo()
 		break;
 
 	default:
-		pLogger->LogError("CommandBdcOperation::ToCommandUndo wrong mode: " + std::to_string(_initialMode));
+		pLogger->LogError("CommandBdcOperation::ToCommandUndo wrong mode: " + std::to_string(_undoMode));
 	}
 
 	//cmd is empty if mode is wrong.
 	if(mode.size() > 0) {
 		cmd = "{";
 		cmd = cmd + "\"command\":\"bdc " + mode + "\",";
-		cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+		cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId());
 		cmd = cmd + "\"delayMs\":" + std::to_string(_delayMs);
 		cmd += "}";
 	}
@@ -362,3 +366,315 @@ std::string CommandStepperQueryClkPeriod::ToCommand()
 
 	return cmd;
 }
+
+
+///////////////////////////////////////////////////////////
+// CommandStepperConfigStep
+///////////////////////////////////////////////////////////
+CommandStepperConfigStep::CommandStepperConfigStep(unsigned int stepperIndex, unsigned long lowClks, unsigned long highClks)
+{
+	_stepperIndex = stepperIndex;
+	_lowClks = lowClks;
+	_highClks = highClks;
+}
+
+std::string CommandStepperConfigStep::ToCommand()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper config step\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
+	cmd = cmd + "\"lowClks\":" + std::to_string(_lowClks) + ",";
+	cmd = cmd + "\"highClks\":" + std::to_string(_highClks);
+	cmd += "}";
+
+	return cmd;
+}
+
+std::string CommandStepperConfigStep::GetFinalState()
+{
+	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"lowClks\":" + std::to_string(_lowClks)+ ",\"highClks\":" + std::to_string(_highClks);
+	return state;
+}
+
+
+///////////////////////////////////////////////////////////
+// CommandStepperAccelerationBuffer
+///////////////////////////////////////////////////////////
+CommandStepperAccelerationBuffer::CommandStepperAccelerationBuffer(unsigned int stepperIndex, unsigned long value)
+{
+	_stepperIndex = stepperIndex;
+	_value = value;
+}
+
+std::string CommandStepperAccelerationBuffer::ToCommand()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper acceleration buffer\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
+	cmd = cmd + "\"value\":" + std::to_string(_value);
+	cmd += "}";
+
+	return cmd;
+}
+
+std::string CommandStepperAccelerationBuffer::GetFinalState()
+{
+	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"accelerationBuffer\":" + std::to_string(_value);
+	return state;
+}
+
+
+///////////////////////////////////////////////////////////
+// CommandStepperAccelerationBufferDecrement
+///////////////////////////////////////////////////////////
+CommandStepperAccelerationBufferDecrement::CommandStepperAccelerationBufferDecrement(unsigned int stepperIndex, unsigned long value)
+{
+	_stepperIndex = stepperIndex;
+	_value = value;
+}
+
+std::string CommandStepperAccelerationBufferDecrement::ToCommand()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper acceleration buffer decrement\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
+	cmd = cmd + "\"value\":" + std::to_string(_value);
+	cmd += "}";
+
+	return cmd;
+}
+
+std::string CommandStepperAccelerationBufferDecrement::GetFinalState()
+{
+	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"accelerationBufferDecrement\":" + std::to_string(_value);
+	return state;
+}
+
+
+///////////////////////////////////////////////////////////
+// CommandStepperDecelrationBuffer
+///////////////////////////////////////////////////////////
+CommandStepperDecelrationBuffer::CommandStepperDecelrationBuffer(unsigned int stepperIndex, unsigned long value)
+{
+	_stepperIndex = stepperIndex;
+	_value = value;
+}
+
+std::string CommandStepperDecelrationBuffer::ToCommand()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper deceleration buffer\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
+	cmd = cmd + "\"value\":" + std::to_string(_value);
+	cmd += "}";
+
+	return cmd;
+}
+
+std::string CommandStepperDecelrationBuffer::GetFinalState()
+{
+	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"decelerationBuffer\":" + std::to_string(_value);
+	return state;
+}
+
+///////////////////////////////////////////////////////////
+// CommandStepperDecelrationBufferIncrement
+///////////////////////////////////////////////////////////
+CommandStepperDecelrationBufferIncrement::CommandStepperDecelrationBufferIncrement(unsigned int stepperIndex, unsigned long value)
+{
+	_stepperIndex = stepperIndex;
+	_value = value;
+}
+
+std::string CommandStepperDecelrationBufferIncrement::ToCommand()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper deceleration buffer increment\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
+	cmd = cmd + "\"value\":" + std::to_string(_value);
+	cmd += "}";
+
+	return cmd;
+}
+
+std::string CommandStepperDecelrationBufferIncrement::GetFinalState()
+{
+	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"decelerationBufferIncrement\":" + std::to_string(_value);
+	return state;
+}
+
+///////////////////////////////////////////////////////////
+// CommandStepperEnable
+///////////////////////////////////////////////////////////
+CommandStepperEnable::CommandStepperEnable(unsigned int stepperIndex, bool enable)
+{
+	_stepperIndex = stepperIndex;
+	_enable = enable;
+}
+
+std::string CommandStepperEnable::ToCommand()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper enable\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
+	cmd = cmd + "\"enable\":" + std::string(_enable?"true":"false");
+	cmd += "}";
+
+	return cmd;
+}
+
+std::string CommandStepperEnable::ToCommandUndo()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper enable\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
+	cmd = cmd + "\"enable\":" + std::string(_enable?"false":"true");
+	cmd += "}";
+
+	return cmd;
+}
+
+std::string CommandStepperEnable::GetUndoState()
+{
+	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"enabled\":";
+	if(_enable) {
+		state = state + "false";
+	}
+	else {
+		state = state + "true";
+	}
+
+	return state;
+}
+
+std::string CommandStepperEnable::GetFinalState()
+{
+	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"enabled\":";
+	if(_enable) {
+		state = state + "true";
+	}
+	else {
+		state = state + "false";
+	}
+
+	return state;
+}
+
+
+///////////////////////////////////////////////////////////
+// CommandStepperConfigHome
+///////////////////////////////////////////////////////////
+CommandStepperConfigHome::CommandStepperConfigHome(unsigned int stepperIndex,
+													unsigned int locatorIndex,
+													unsigned int lineNumberStart,
+													unsigned int lineNumberTerminal)
+{
+	_stepperIndex = stepperIndex;
+	_locatorIndex = locatorIndex;
+	_lineNumberStart = lineNumberStart;
+	_lineNumberTerminal = lineNumberTerminal;
+}
+
+std::string CommandStepperConfigHome::ToCommand()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper config home\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
+	cmd = cmd + "\"locatorIndex\":" + std::to_string(_locatorIndex) + ",";
+	cmd = cmd + "\"lineNumberStart\":" + std::to_string(_lineNumberStart) + ",";
+	cmd = cmd + "\"lineNumberTerminal\":" + std::to_string(_lineNumberTerminal);
+	cmd += "}";
+
+	return cmd;
+}
+
+std::string CommandStepperConfigHome::GetFinalState()
+{
+	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":0";
+	return state;
+}
+
+///////////////////////////////////////////////////////////
+// CommandStepperMove
+///////////////////////////////////////////////////////////
+CommandStepperMove::CommandStepperMove(unsigned int stepperIndex, unsigned long position, bool forward, unsigned long steps)
+{
+	_stepperIndex = stepperIndex;
+	_position = position;
+	_forward = forward;
+	_steps = steps;
+}
+
+std::string CommandStepperMove::ToCommand()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper move\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
+	cmd = cmd + "\"forward\":" + std::string(_forward?"true":"false") + ",";
+	cmd = cmd + "\"steps\":" + std::to_string(_steps);
+	cmd += "}";
+
+	return cmd;
+}
+
+std::string CommandStepperMove::ToCommandUndo()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper move\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
+	cmd = cmd + "\"forward\":" + std::string(_forward?"false":"true") + ",";
+	cmd = cmd + "\"steps\":" + std::to_string(_steps);
+	cmd += "}";
+
+	return cmd;
+}
+
+std::string CommandStepperMove::GetUndoState()
+{
+	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":" + std::to_string(_position);
+	return state;
+}
+
+std::string CommandStepperMove::GetFinalState()
+{
+	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":";
+	if(_forward) {
+		state = state + std::to_string(_position + _steps);
+	}
+	else {
+		state = state + std::to_string(_position - _steps);
+	}
+	return state;
+}
+
+

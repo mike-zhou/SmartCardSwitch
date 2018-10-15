@@ -21,12 +21,13 @@ public:
 	static std::shared_ptr<Command> DeviceQueryPower();
 	static std::shared_ptr<Command> BdcsPowerOn();
 	static std::shared_ptr<Command> BdcsPowerOff();
-	static std::shared_ptr<Command> BdcsPowerQueryPower();
+	static std::shared_ptr<Command> BdcsQueryPower();
 	static std::shared_ptr<Command> BdcOperation(unsigned int bdcIndex,
 												CommandBdcOperation::BdcMode initialMode,
 												CommandBdcOperation::BdcMode finalMode,
 												unsigned long delayMs);
 	static std::shared_ptr<Command> StepperQueryClkPeriod();
+	static std::shared_ptr<Command> StepperConfigStep(unsigned int stepperIndex, unsigned long lowClks, unsigned long highClks);
 };
 
 
