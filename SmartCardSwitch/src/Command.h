@@ -10,15 +10,15 @@
 
 #include <string>
 
-class Command
+class DeviceCommand
 {
 public:
-	Command()
+	DeviceCommand()
 	{
 		_commandId = _commandIdSeed++;
 		_commandUndoId = _commandIdSeed++;
 	}
-	virtual ~Command() {}
+	virtual ~DeviceCommand() {}
 
 	virtual std::string GetUndoState() { std::string empty; return empty; }
 	virtual std::string GetFinalState() { std::string empty; return empty; }
@@ -36,13 +36,13 @@ private:
 	unsigned long _commandUndoId;
 };
 
-class CommandDevicesGet: public Command
+class CommandDevicesGet: public DeviceCommand
 {
 public:
 	virtual std::string ToCommand() override;
 };
 
-class CommandDeviceConnect: public Command
+class CommandDeviceConnect: public DeviceCommand
 {
 public:
 	CommandDeviceConnect(const std::string& deviceName);
@@ -57,23 +57,13 @@ private:
 	std::string _deviceName;
 };
 
-class CommandDeviceQueryPower: public Command
+class CommandDeviceQueryPower: public DeviceCommand
 {
 public:
 	virtual std::string ToCommand() override;
 };
 
-class CommandBdcsPowerOn: public Command
-{
-public:
-	virtual std::string GetUndoState() override;
-	virtual std::string GetFinalState() override;
-
-	virtual std::string ToCommand() override;
-	virtual std::string ToCommandUndo() override;
-};
-
-class CommandBdcsPowerOff: public Command
+class CommandBdcsPowerOn: public DeviceCommand
 {
 public:
 	virtual std::string GetUndoState() override;
@@ -83,7 +73,7 @@ public:
 	virtual std::string ToCommandUndo() override;
 };
 
-class CommandBdcsQueryPower: public Command
+class CommandBdcsPowerOff: public DeviceCommand
 {
 public:
 	virtual std::string GetUndoState() override;
@@ -93,7 +83,17 @@ public:
 	virtual std::string ToCommandUndo() override;
 };
 
-class CommandBdcOperation: public Command
+class CommandBdcsQueryPower: public DeviceCommand
+{
+public:
+	virtual std::string GetUndoState() override;
+	virtual std::string GetFinalState() override;
+
+	virtual std::string ToCommand() override;
+	virtual std::string ToCommandUndo() override;
+};
+
+class CommandBdcOperation: public DeviceCommand
 {
 public:
 	enum BdcMode
@@ -118,13 +118,13 @@ private:
 	enum BdcMode _finalMode;
 };
 
-class CommandStepperQueryClkPeriod: public Command
+class CommandStepperQueryClkPeriod: public DeviceCommand
 {
 public:
 	virtual std::string ToCommand() override;
 };
 
-class CommandStepperConfigStep: public Command
+class CommandStepperConfigStep: public DeviceCommand
 {
 public:
 	CommandStepperConfigStep(unsigned int stepperIndex, unsigned long lowClks, unsigned long highClks);
@@ -138,7 +138,7 @@ private:
 	unsigned long _highClks;
 };
 
-class CommandStepperAccelerationBuffer: public Command
+class CommandStepperAccelerationBuffer: public DeviceCommand
 {
 public:
 	CommandStepperAccelerationBuffer(unsigned int stepperIndex, unsigned long value);
@@ -151,7 +151,7 @@ private:
 	unsigned long _value;
 };
 
-class CommandStepperAccelerationBufferDecrement: public Command
+class CommandStepperAccelerationBufferDecrement: public DeviceCommand
 {
 public:
 	CommandStepperAccelerationBufferDecrement(unsigned int stepperIndex, unsigned long value);
@@ -164,7 +164,7 @@ private:
 	unsigned long _value;
 };
 
-class CommandStepperDecelerationBuffer: public Command
+class CommandStepperDecelerationBuffer: public DeviceCommand
 {
 public:
 	CommandStepperDecelerationBuffer(unsigned int stepperIndex, unsigned long value);
@@ -177,7 +177,7 @@ private:
 	unsigned long _value;
 };
 
-class CommandStepperDecelerationBufferIncrement: public Command
+class CommandStepperDecelerationBufferIncrement: public DeviceCommand
 {
 public:
 	CommandStepperDecelerationBufferIncrement(unsigned int stepperIndex, unsigned long value);
@@ -190,7 +190,7 @@ private:
 	unsigned long _value;
 };
 
-class CommandStepperEnable: public Command
+class CommandStepperEnable: public DeviceCommand
 {
 public:
 	CommandStepperEnable(unsigned int stepperIndex, bool enable);
@@ -206,7 +206,7 @@ private:
 	bool _enable;
 };
 
-class CommandStepperConfigHome: public Command
+class CommandStepperConfigHome: public DeviceCommand
 {
 public:
 	CommandStepperConfigHome(unsigned int stepperIndex,
@@ -225,7 +225,7 @@ private:
 	unsigned int _lineNumberTerminal;
 };
 
-class CommandStepperMove: public Command
+class CommandStepperMove: public DeviceCommand
 {
 public:
 	CommandStepperMove(unsigned int stepperIndex, unsigned long position, bool forward, unsigned long steps);

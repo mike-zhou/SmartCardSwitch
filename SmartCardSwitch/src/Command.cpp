@@ -10,7 +10,7 @@
 
 extern Logger * pLogger;
 
-unsigned long Command::_commandIdSeed = 1;
+unsigned long DeviceCommand::_commandIdSeed = 1;
 
 ///////////////////////////////////////////////////////////
 // CommandDevicesGet
