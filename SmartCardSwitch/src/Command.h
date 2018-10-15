@@ -165,10 +165,10 @@ private:
 	unsigned long _value;
 };
 
-class CommandStepperDecelrationBuffer: public Command
+class CommandStepperDecelerationBuffer: public Command
 {
 public:
-	CommandStepperDecelrationBuffer(unsigned int stepperIndex, unsigned long value);
+	CommandStepperDecelerationBuffer(unsigned int stepperIndex, unsigned long value);
 
 	virtual std::string ToCommand() override;
 	virtual std::string GetFinalState() override;
@@ -178,10 +178,10 @@ private:
 	unsigned long _value;
 };
 
-class CommandStepperDecelrationBufferIncrement: public Command
+class CommandStepperDecelerationBufferIncrement: public Command
 {
 public:
-	CommandStepperDecelrationBufferIncrement(unsigned int stepperIndex, unsigned long value);
+	CommandStepperDecelerationBufferIncrement(unsigned int stepperIndex, unsigned long value);
 
 	virtual std::string ToCommand() override;
 	virtual std::string GetFinalState() override;

@@ -463,13 +463,13 @@ std::string CommandStepperAccelerationBufferDecrement::GetFinalState()
 ///////////////////////////////////////////////////////////
 // CommandStepperDecelrationBuffer
 ///////////////////////////////////////////////////////////
-CommandStepperDecelrationBuffer::CommandStepperDecelrationBuffer(unsigned int stepperIndex, unsigned long value)
+CommandStepperDecelerationBuffer::CommandStepperDecelerationBuffer(unsigned int stepperIndex, unsigned long value)
 {
 	_stepperIndex = stepperIndex;
 	_value = value;
 }
 
-std::string CommandStepperDecelrationBuffer::ToCommand()
+std::string CommandStepperDecelerationBuffer::ToCommand()
 {
 	std::string cmd;
 
@@ -483,7 +483,7 @@ std::string CommandStepperDecelrationBuffer::ToCommand()
 	return cmd;
 }
 
-std::string CommandStepperDecelrationBuffer::GetFinalState()
+std::string CommandStepperDecelerationBuffer::GetFinalState()
 {
 	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"decelerationBuffer\":" + std::to_string(_value);
 	return state;
@@ -492,13 +492,13 @@ std::string CommandStepperDecelrationBuffer::GetFinalState()
 ///////////////////////////////////////////////////////////
 // CommandStepperDecelrationBufferIncrement
 ///////////////////////////////////////////////////////////
-CommandStepperDecelrationBufferIncrement::CommandStepperDecelrationBufferIncrement(unsigned int stepperIndex, unsigned long value)
+CommandStepperDecelerationBufferIncrement::CommandStepperDecelerationBufferIncrement(unsigned int stepperIndex, unsigned long value)
 {
 	_stepperIndex = stepperIndex;
 	_value = value;
 }
 
-std::string CommandStepperDecelrationBufferIncrement::ToCommand()
+std::string CommandStepperDecelerationBufferIncrement::ToCommand()
 {
 	std::string cmd;
 
@@ -512,7 +512,7 @@ std::string CommandStepperDecelrationBufferIncrement::ToCommand()
 	return cmd;
 }
 
-std::string CommandStepperDecelrationBufferIncrement::GetFinalState()
+std::string CommandStepperDecelerationBufferIncrement::GetFinalState()
 {
 	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"decelerationBufferIncrement\":" + std::to_string(_value);
 	return state;

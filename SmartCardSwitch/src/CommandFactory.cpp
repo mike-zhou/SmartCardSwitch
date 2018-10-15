@@ -78,4 +78,59 @@ std::shared_ptr<Command> CommandFactory::StepperConfigStep(unsigned int stepperI
 	return ptr;
 }
 
+std::shared_ptr<Command> CommandFactory::StepperAccelerationBuffer(unsigned int stepperIndex, unsigned long value)
+{
+	std::shared_ptr<Command> ptr(new CommandStepperAccelerationBuffer(stepperIndex, value));
+
+	return ptr;
+}
+
+std::shared_ptr<Command> CommandFactory::StepperAccelerationBufferDecrement(unsigned int stepperIndex, unsigned long value)
+{
+	std::shared_ptr<Command> ptr(new CommandStepperAccelerationBufferDecrement(stepperIndex, value));
+
+	return ptr;
+}
+
+
+std::shared_ptr<Command> CommandFactory::StepperDecelerationBuffer(unsigned int stepperIndex, unsigned long value)
+{
+	std::shared_ptr<Command> ptr(new CommandStepperDecelerationBuffer(stepperIndex, value));
+
+	return ptr;
+}
+
+
+std::shared_ptr<Command> CommandFactory::StepperDecelerationBufferIncrement(unsigned int stepperIndex, unsigned long value)
+{
+	std::shared_ptr<Command> ptr(new CommandStepperDecelerationBufferIncrement(stepperIndex, value));
+
+	return ptr;
+}
+
+
+std::shared_ptr<Command> CommandFactory::StepperEnable(unsigned int stepperIndex, bool enable)
+{
+	std::shared_ptr<Command> ptr(new CommandStepperEnable(stepperIndex, enable));
+
+	return ptr;
+}
+
+
+std::shared_ptr<Command> CommandFactory::StepperConfigHome(unsigned int stepperIndex, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal)
+{
+	std::shared_ptr<Command> ptr(new CommandStepperConfigHome(stepperIndex, locatorIndex, lineNumberStart, lineNumberTerminal));
+
+	return ptr;
+}
+
+
+std::shared_ptr<Command> CommandFactory::StepperMove(unsigned int stepperIndex, unsigned long position, bool forward, unsigned long steps)
+{
+	std::shared_ptr<Command> ptr(new CommandStepperMove(stepperIndex, position, forward, steps));
+
+	return ptr;
+}
+
+
 

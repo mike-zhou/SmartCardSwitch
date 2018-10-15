@@ -28,6 +28,13 @@ public:
 												unsigned long delayMs);
 	static std::shared_ptr<Command> StepperQueryClkPeriod();
 	static std::shared_ptr<Command> StepperConfigStep(unsigned int stepperIndex, unsigned long lowClks, unsigned long highClks);
+	static std::shared_ptr<Command> StepperAccelerationBuffer(unsigned int stepperIndex, unsigned long value);
+	static std::shared_ptr<Command> StepperAccelerationBufferDecrement(unsigned int stepperIndex, unsigned long value);
+	static std::shared_ptr<Command> StepperDecelerationBuffer(unsigned int stepperIndex, unsigned long value);
+	static std::shared_ptr<Command> StepperDecelerationBufferIncrement(unsigned int stepperIndex, unsigned long value);
+	static std::shared_ptr<Command> StepperEnable(unsigned int stepperIndex, bool enable);
+	static std::shared_ptr<Command> StepperConfigHome(unsigned int stepperIndex, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal);
+	static std::shared_ptr<Command> StepperMove(unsigned int stepperIndex, unsigned long position, bool forward, unsigned long steps);
 };
 
 
