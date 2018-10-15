@@ -104,7 +104,7 @@ public:
 		BREAK
 	};
 
-	CommandBdcOperation(unsigned int bdcIndex, BdcMode undoMode, BdcMode finalMode, unsigned long delayMs);
+	CommandBdcOperation(unsigned int bdcIndex, BdcMode undoMode, BdcMode finalMode);
 
 	virtual std::string GetUndoState() override;
 	virtual std::string GetFinalState() override;
@@ -116,7 +116,6 @@ private:
 	unsigned int _bdcIndex;
 	enum BdcMode _undoMode;
 	enum BdcMode _finalMode;
-	unsigned long _delayMs; //milliseconds to delay before result is returned.
 };
 
 class CommandStepperQueryClkPeriod: public Command

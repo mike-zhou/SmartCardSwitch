@@ -203,12 +203,11 @@ std::string CommandBdcsQueryPower::ToCommandUndo()
 ///////////////////////////////////////////////////////
 // CommandBdcOperation
 ///////////////////////////////////////////////////////
-CommandBdcOperation::CommandBdcOperation(unsigned int bdcIndex, BdcMode undoMode, BdcMode finalMode, unsigned long delayMs)
+CommandBdcOperation::CommandBdcOperation(unsigned int bdcIndex, BdcMode undoMode, BdcMode finalMode)
 {
 	_bdcIndex = bdcIndex;
 	_undoMode = undoMode;
 	_finalMode = finalMode;
-	_delayMs = delayMs;
 }
 
 std::string CommandBdcOperation::GetUndoState()
@@ -305,7 +304,6 @@ std::string CommandBdcOperation::ToCommand()
 		cmd = "{";
 		cmd = cmd + "\"command\":\"bdc " + mode + "\",";
 		cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
-		cmd = cmd + "\"delayMs\":" + std::to_string(_delayMs);
 		cmd += "}";
 	}
 
@@ -344,7 +342,6 @@ std::string CommandBdcOperation::ToCommandUndo()
 		cmd = "{";
 		cmd = cmd + "\"command\":\"bdc " + mode + "\",";
 		cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId());
-		cmd = cmd + "\"delayMs\":" + std::to_string(_delayMs);
 		cmd += "}";
 	}
 

@@ -55,10 +55,9 @@ std::shared_ptr<Command> CommandFactory::BdcsQueryPower()
 
 std::shared_ptr<Command> CommandFactory::BdcOperation(unsigned int bdcIndex,
 											CommandBdcOperation::BdcMode initialMode,
-											CommandBdcOperation::BdcMode finalMode,
-											unsigned long delayMs)
+											CommandBdcOperation::BdcMode finalMode)
 {
-	std::shared_ptr<Command> ptr(new CommandBdcOperation(bdcIndex, initialMode, finalMode, delayMs));
+	std::shared_ptr<Command> ptr(new CommandBdcOperation(bdcIndex, initialMode, finalMode));
 
 	return ptr;
 }
