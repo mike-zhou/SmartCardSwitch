@@ -43,7 +43,7 @@ public:
 	//		false: cmd cannot be sent out
 	bool SendCommand(const std::string& cmd);
 
-	void AddObserver(std::shared_ptr<IDeviceObserver> observerPtr);
+	void AddObserver(IDeviceObserver * pObserver);
 
 	void runTask();
 
@@ -57,9 +57,9 @@ private:
 	Poco::Net::SocketAddress _socketAddress;
 	Poco::Net::StreamSocket _socket;
 	std::deque<unsigned char> _incoming; //incoming data from socket
-	std::deque<unsigned char> _outgoing; //outgoing data to socket, one command at most at any time
+	std::deque<unsigned char> _outgoing; //outgoing data to socket
 
-	std::vector<std::shared_ptr<IDeviceObserver>> _observerPtrArray;
+	std::vector<IDeviceObserver*> _observerPtrArray;
 
 	void onIncoming();
 };

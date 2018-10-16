@@ -77,9 +77,6 @@ bool DeviceAccessor::SendCommand(const std::string& cmd)
 	if(!_connected) {
 		return false;
 	}
-	if(_outgoing.size() > 0) {
-		return false;
-	}
 
 	std::vector<unsigned char> pkg;
 	MsgPackager::PackageMsg(cmd, pkg);
@@ -92,20 +89,20 @@ bool DeviceAccessor::SendCommand(const std::string& cmd)
 	return true;
 }
 
-void DeviceAccessor::AddObserver(std::shared_ptr<IDeviceObserver> observerPtr)
+void DeviceAccessor::AddObserver(IDeviceObserver * pObserver)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	auto observerIt = _observerPtrArray.begin();
 	for(; observerIt!= _observerPtrArray.end(); observerIt++) {
-		if(*observerIt == observerPtr) {
+		if(*observerIt == pObserver) {
 			break;
 		}
 	}
 	if(observerIt == _observerPtrArray.end())
 	{
 		//new observer
-		_observerPtrArray.push_back(observerPtr);
+		_observerPtrArray.push_back(pObserver);
 	}
 	else
 	{

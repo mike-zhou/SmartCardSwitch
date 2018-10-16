@@ -21,6 +21,7 @@
 #include "CommandFactory.h"
 #include "Logger.h"
 #include "DeviceAccessor.h"
+#include "CommandRunner.h"
 
 using namespace std;
 
@@ -102,6 +103,7 @@ protected:
 		std::string logFileSize;
 		std::string logFileAmount;
 
+		//launch Logger
 		try
 		{
 			//logs
@@ -131,11 +133,13 @@ protected:
 		tmLogger.start(pLogger); //tmLogger takes the ownership of pLogger.
 		pLogger->LogInfo("**** SmartCardSwitch V1.0.0 ****");
 
+		// launch tasks
 		try
 		{
 			DeviceAccessor * pDeviceAccessor;
+			CommandRunner * pCommandRunner;
 
-
+			//device accessor
 			std::string proxyIp = config().getString("proxy_ip_address", "127.0.0.1");
 			std::string proxyPort = config().getString("proxy_port", "60000");
 			proxyIp = proxyIp + ":" + proxyPort;
@@ -143,7 +147,16 @@ protected:
 			pDeviceAccessor = new DeviceAccessor;
 			pDeviceAccessor->Init(socketAddress);
 
-			tm.start(pDeviceAccessor); //tm takes the ownership of pDeviceAccessor.
+			//command runner
+			pCommandRunner = CommandRunner::GetInstance();
+
+			//couple command runner and device accessor
+			pCommandRunner->SetDevice(pDeviceAccessor);
+			pDeviceAccessor->AddObserver(pCommandRunner);
+
+			//tm takes the ownership of tasks
+			tm.start(pCommandRunner);
+			tm.start(pDeviceAccessor);
 		}
 		catch(Poco::Exception& e)
 		{
@@ -153,6 +166,8 @@ protected:
 		{
 			printf("Unknown exception occurs\r\n");
 		}
+
+
 
 		waitForTerminationRequest();
 
