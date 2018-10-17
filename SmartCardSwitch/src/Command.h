@@ -13,19 +13,19 @@
 class DeviceCommand
 {
 public:
+
 	DeviceCommand()
 	{
 		_commandId = _commandIdSeed++;
 		_commandUndoId = _commandIdSeed++;
 	}
+
 	virtual ~DeviceCommand() {}
 
-	virtual std::string GetUndoState() { std::string empty; return empty; }
 	virtual std::string GetFinalState() { std::string empty; return empty; }
-
+	virtual std::string GetUndoState() { std::string empty; return empty; }
 	virtual std::string ToCommand() { std::string empty; return empty; }
 	unsigned long CommandId() { return _commandId; }
-
 	virtual std::string ToCommandUndo() { std::string empty; return empty; }
 	unsigned long CommandUndoId() { return _commandUndoId; }
 
@@ -86,11 +86,7 @@ public:
 class CommandBdcsQueryPower: public DeviceCommand
 {
 public:
-	virtual std::string GetUndoState() override;
-	virtual std::string GetFinalState() override;
-
 	virtual std::string ToCommand() override;
-	virtual std::string ToCommandUndo() override;
 };
 
 class CommandBdcOperation: public DeviceCommand

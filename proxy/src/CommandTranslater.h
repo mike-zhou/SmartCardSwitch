@@ -24,6 +24,7 @@ enum CommandType
 	Invalid = -1,
 	DevicesGet,
 	DeviceConnect,
+	DeviceQueryPower,
 	OptPowerOn,
 	OptPowerOff,
 	OptQueryPower,

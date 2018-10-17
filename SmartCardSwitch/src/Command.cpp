@@ -170,18 +170,6 @@ std::string CommandBdcsPowerOff::ToCommandUndo()
 ///////////////////////////////////////////////////////
 // CommandBdcsPowerQuery
 ///////////////////////////////////////////////////////
-std::string CommandBdcsQueryPower::GetUndoState()
-{
-	std::string empty;
-	return empty;
-}
-
-std::string CommandBdcsQueryPower::GetFinalState()
-{
-	std::string empty;
-	return empty;
-}
-
 std::string CommandBdcsQueryPower::ToCommand()
 {
 	std::string cmd;
@@ -192,12 +180,6 @@ std::string CommandBdcsQueryPower::ToCommand()
 	cmd += "}";
 
 	return cmd;
-}
-
-std::string CommandBdcsQueryPower::ToCommandUndo()
-{
-	std::string empty;
-	return empty;
 }
 
 ///////////////////////////////////////////////////////
@@ -237,7 +219,7 @@ std::string CommandBdcOperation::GetUndoState()
 		pLogger->LogError("CommandBdcOperation::GetInitialState wrong mode: " + std::to_string(_undoMode));
 	}
 
-	state = "\"bdcIndex\":" + std::to_string(_bdcIndex) + ",\"mode\":\"" + mode + "\"";
+	state = "{\"bdcIndex\":" + std::to_string(_bdcIndex) + ",\"mode\":\"" + mode + "\"}";
 	return state;
 }
 
@@ -268,7 +250,7 @@ std::string CommandBdcOperation::GetFinalState()
 		pLogger->LogError("CommandBdcOperation::GetFinalState wrong mode: " + std::to_string(_finalMode));
 	}
 
-	state = "\"bdcIndex\":" + std::to_string(_bdcIndex) + ",\"mode\":\"" + mode + "\"";
+	state = "{\"bdcIndex\":" + std::to_string(_bdcIndex) + ",\"mode\":\"" + mode + "\"}";
 	return state;
 }
 
@@ -392,7 +374,7 @@ std::string CommandStepperConfigStep::ToCommand()
 
 std::string CommandStepperConfigStep::GetFinalState()
 {
-	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"lowClks\":" + std::to_string(_lowClks)+ ",\"highClks\":" + std::to_string(_highClks);
+	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"lowClks\":" + std::to_string(_lowClks)+ ",\"highClks\":" + std::to_string(_highClks) + "}";
 	return state;
 }
 
@@ -422,7 +404,7 @@ std::string CommandStepperAccelerationBuffer::ToCommand()
 
 std::string CommandStepperAccelerationBuffer::GetFinalState()
 {
-	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"accelerationBuffer\":" + std::to_string(_value);
+	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"accelerationBuffer\":" + std::to_string(_value) + "}";
 	return state;
 }
 
@@ -452,7 +434,7 @@ std::string CommandStepperAccelerationBufferDecrement::ToCommand()
 
 std::string CommandStepperAccelerationBufferDecrement::GetFinalState()
 {
-	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"accelerationBufferDecrement\":" + std::to_string(_value);
+	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"accelerationBufferDecrement\":" + std::to_string(_value) + "}";
 	return state;
 }
 
@@ -482,7 +464,7 @@ std::string CommandStepperDecelerationBuffer::ToCommand()
 
 std::string CommandStepperDecelerationBuffer::GetFinalState()
 {
-	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"decelerationBuffer\":" + std::to_string(_value);
+	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"decelerationBuffer\":" + std::to_string(_value) + "}";
 	return state;
 }
 
@@ -511,7 +493,7 @@ std::string CommandStepperDecelerationBufferIncrement::ToCommand()
 
 std::string CommandStepperDecelerationBufferIncrement::GetFinalState()
 {
-	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"decelerationBufferIncrement\":" + std::to_string(_value);
+	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"decelerationBufferIncrement\":" + std::to_string(_value) + "}";
 	return state;
 }
 
@@ -554,26 +536,28 @@ std::string CommandStepperEnable::ToCommandUndo()
 
 std::string CommandStepperEnable::GetUndoState()
 {
-	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"enabled\":";
+	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"enabled\":";
 	if(_enable) {
 		state = state + "false";
 	}
 	else {
 		state = state + "true";
 	}
+	state = state + "}";
 
 	return state;
 }
 
 std::string CommandStepperEnable::GetFinalState()
 {
-	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"enabled\":";
+	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"enabled\":";
 	if(_enable) {
 		state = state + "true";
 	}
 	else {
 		state = state + "false";
 	}
+	state = state + "}";
 
 	return state;
 }
@@ -611,7 +595,7 @@ std::string CommandStepperConfigHome::ToCommand()
 
 std::string CommandStepperConfigHome::GetFinalState()
 {
-	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":0";
+	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":0}";
 	return state;
 }
 
@@ -658,19 +642,21 @@ std::string CommandStepperMove::ToCommandUndo()
 
 std::string CommandStepperMove::GetUndoState()
 {
-	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":" + std::to_string(_position);
+	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":" + std::to_string(_position) + "}";
 	return state;
 }
 
 std::string CommandStepperMove::GetFinalState()
 {
-	std::string state = "\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":";
+	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":";
 	if(_forward) {
 		state = state + std::to_string(_position + _steps);
 	}
 	else {
 		state = state + std::to_string(_position - _steps);
 	}
+	state = state + "}";
+
 	return state;
 }
 
