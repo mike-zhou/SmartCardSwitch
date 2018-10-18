@@ -22,6 +22,7 @@
 #include "Logger.h"
 #include "DeviceAccessor.h"
 #include "CommandRunner.h"
+#include "ConsoleOperator.h"
 
 using namespace std;
 
@@ -138,6 +139,7 @@ protected:
 		{
 			DeviceAccessor * pDeviceAccessor;
 			CommandRunner * pCommandRunner;
+			ConsoleOperator * pConsoleOperator;
 
 			//device accessor
 			std::string proxyIp = config().getString("proxy_ip_address", "127.0.0.1");
@@ -149,13 +151,20 @@ protected:
 
 			//command runner
 			pCommandRunner = CommandRunner::GetInstance();
+			//console operator
+			pConsoleOperator = new ConsoleOperator;
 
 			//couple command runner and device accessor
 			pCommandRunner->SetDevice(pDeviceAccessor);
 			pDeviceAccessor->AddObserver(pCommandRunner);
+			//couple console operator and device accessor
+			pConsoleOperator->SetDevice(pDeviceAccessor);
+			pDeviceAccessor->AddObserver(pConsoleOperator);
+
 
 			//tm takes the ownership of tasks
 			tm.start(pCommandRunner);
+			tm.start(pConsoleOperator);
 			tm.start(pDeviceAccessor);
 		}
 		catch(Poco::Exception& e)
