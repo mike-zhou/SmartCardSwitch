@@ -43,6 +43,8 @@ private:
 	std::deque<std::string> _feedbacks;
 	DeviceAccessor * _pDeviceAccessor;
 
+	void showHelp();
+
 	void processInput();
 	void processFeedbacks();
 
@@ -92,7 +94,6 @@ private:
 			IDLE = 0,
 			CANCELLED,
 			FINISHED,
-			COMMAND_READY,
 			COMMAND_SENT
 		} state;
 
@@ -104,6 +105,12 @@ private:
 		int bdcIndex;
 		int stepperIndex;
 		int locatorIndex;
+
+		//results
+		// DevicesGet
+		std::vector<std::string> resultDevices;
+		// DeviceConnect
+		std::string resultConnectedDevice;
 
 
 	} _userCommand;
