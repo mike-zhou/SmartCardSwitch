@@ -30,6 +30,7 @@ void ConsoleOperator::OnFeedback(const std::string& feedback)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 	_feedbacks.push_back(feedback);
+	std::cout << "Feedback: " << feedback << '\n';
 	_event.set();
 }
 
@@ -71,7 +72,27 @@ void ConsoleOperator::runTask()
 
 void ConsoleOperator::processInput()
 {
+	if(_input.size() < 1) {
+		return;
+	}
 
+	bool bCommandAvailable = false;
+	std::string command;
+
+	//find '\n' in the input
+	for(auto it=_input.begin(); it!=_input.end(); it++)
+	{
+		if(*it == '\n') {
+			command.push_back(*it);
+			bCommandAvailable = true;
+			break;
+		}
+	}
+	if(!bCommandAvailable) {
+		return;
+	}
+
+	//process command
 }
 
 void ConsoleOperator::processFeedbacks()
@@ -104,10 +125,17 @@ void ConsoleOperator::Keyboard::run()
 	while(!_terminate)
 	{
 		std::string str;
+		char buffer[64];
+
 		char c = getchar();
 
-		str.push_back(c);
-		pLogger->LogDebug("ConsoleOperator::Keyboard::run received '" + str + "'");
+		sprintf(buffer, "0x%02d", c);
+		str += buffer;
+		if((c >= ' ') && (c <= '~')) {
+			sprintf(buffer, " '%c'", c);
+			str += buffer;
+		}
+		pLogger->LogDebug("ConsoleOperator::Keyboard::run received: " + str);
 		_pReceiver->OnKeypressing(c);
 	}
 	pLogger->LogInfo("ConsoleOperator::Keyboard::run exited");
