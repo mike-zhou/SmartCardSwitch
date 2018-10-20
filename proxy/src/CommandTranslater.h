@@ -62,10 +62,14 @@ enum CommandType
 //}
 class CommandDevicesGet
 {
+private:
+	unsigned long _commandId;
+
 public:
-	CommandDevicesGet() { }
+	CommandDevicesGet(unsigned long commandId) { _commandId = commandId; }
 
 	CommandType Type() { return CommandType::DevicesGet; }
+	unsigned long CommandId() { return _commandId; }
 
 	std::string ToString()
 	{
@@ -81,15 +85,18 @@ public:
 class CommandDeviceConnect
 {
 private:
-	std::string deviceName;
+	std::string _deviceName;
+	unsigned long _commandId;
 
 public:
-	CommandDeviceConnect(std::string deviceName)
+	CommandDeviceConnect(unsigned long commandId, std::string deviceName)
 	{
-		this->deviceName = deviceName;
+		_commandId = commandId;
+		_deviceName = deviceName;
 	}
 
 	CommandType Type() { return CommandType::DeviceConnect; }
+	unsigned long CommandId() { return _commandId; }
 
 	std::string ToString()
 	{
@@ -97,7 +104,7 @@ public:
 		return empty;
 	}
 
-	std::string DeviceName() { return deviceName; }
+	std::string DeviceName() { return _deviceName; }
 };
 
 //{
@@ -689,8 +696,9 @@ public:
 	std::shared_ptr<CommandLocatorQuery> GetCommandLocatorQuery();
 
 private:
-	std::string jsonCmd;
-	CommandType type;
+	std::string _jsonCmd;
+	CommandType _type;
+	unsigned long _commandId;
 
 	const std::string strCommandDevicesGet = "devices get";
 	const std::string strCommandDeviceConnect = "device connect";

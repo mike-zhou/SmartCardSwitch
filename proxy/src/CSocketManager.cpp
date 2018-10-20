@@ -289,7 +289,7 @@ void CSocketManager::onCommandDevicesGet(struct SocketWrapper& socketWrapper, st
 		devices.push_back(it->first);
 	}
 
-	auto package = ReplyFactory::DevicesGet(devices);
+	auto package = ReplyFactory::DevicesGet(cmdPtr->CommandId(), devices);
 	for(auto it = package.begin(); it!=package.end(); it++) {
 		socketWrapper.outgoing.push_back(*it);
 	}
@@ -340,7 +340,7 @@ void CSocketManager::onCommandDeviceConnect(struct SocketWrapper& socketWrapper,
 		reason = "cannot find " + device;
 	}
 
-	auto package = ReplyFactory::DeviceConnect(device, success, reason);
+	auto package = ReplyFactory::DeviceConnect(cmdPtr->CommandId(), device, success, reason);
 	for(auto it = package.begin(); it!=package.end(); it++) {
 		socketWrapper.outgoing.push_back(*it);
 	}

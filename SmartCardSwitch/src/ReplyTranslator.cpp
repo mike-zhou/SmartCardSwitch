@@ -57,6 +57,7 @@ ReplyTranslator::ReplyTranslator(const std::string& reply)
 
 		if(objectPtr->has(std::string("command")))
 		{
+			//dispose reply to command.
 			std::string command;
 
 			command = objectPtr->getValue<std::string>("command");
@@ -69,6 +70,7 @@ ReplyTranslator::ReplyTranslator(const std::string& reply)
 		}
 		else if(objectPtr->has(std::string("event")))
 		{
+			//dispose event.
 			std::string event;
 
 			event = objectPtr->getValue<std::string>("event");
@@ -103,8 +105,10 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 
 	if(command == strCommandDevicesGet)
 	{
+		_type = ReplyType::DevicesGet;
+
 		std::vector<std::string> devices;
-		auto size = ds["devices"];
+		auto size = ds["devices"].size();
 
 		for(int i=0; i<size; i++) {
 			auto device = ds["devices"][i];

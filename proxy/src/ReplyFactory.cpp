@@ -55,18 +55,20 @@ std::vector<unsigned char> ReplyFactory::Reply(const std::string& reply)
 }
 
 //return the pakcage containing a JSON array of devices
-std::vector<unsigned char> ReplyFactory::DevicesGet(const std::vector<std::string>& devices)
+std::vector<unsigned char> ReplyFactory::DevicesGet(unsigned long cmdId, const std::vector<std::string>& devices)
 {
 	std::vector<unsigned char> vector;
 	std::string json;
 
 	//{
 	//	"command":"devices get",
+	//  "commandId":1,
 	//	"devices":["device1", "device2"]
 	//}
 
 	json = "{";
 	json += "\"command\":\"devices get\",";
+	json += "\"commandId\":" + std::to_string(cmdId) + ",";
 	json += "\"devices\":[";
 	for(auto it=devices.begin(); it!=devices.end(); it++) {
 		json += "\"" + *it + "\",";
@@ -82,13 +84,14 @@ std::vector<unsigned char> ReplyFactory::DevicesGet(const std::vector<std::strin
 	return vector;
 }
 
-std::vector<unsigned char> ReplyFactory::DeviceConnect(const std::string& deviceName, bool result, const std::string& reason)
+std::vector<unsigned char> ReplyFactory::DeviceConnect(unsigned long cmdId, const std::string& deviceName, bool result, const std::string& reason)
 {
 	std::vector<unsigned char> vector;
 	std::string json;
 
 	//{
 	//	"command":"device connect",
+	//  "commandId":1,
 	//	"device": "device12345",
 	//	"result":false,
 	//	"reason":"connected to IP:port"
@@ -96,6 +99,7 @@ std::vector<unsigned char> ReplyFactory::DeviceConnect(const std::string& device
 
 	json = "{";
 	json = json + "\"command\":\"device connect\",";
+	json = json + "\"commandId\":" + std::to_string(cmdId) + ",";
 	json = json + "\"device\":\"" + deviceName + "\",";
 	json = json + "\"result\":" + (result?"true":"false") + ",";
 	json = json + "\"reason\":\"" + reason + "\"";

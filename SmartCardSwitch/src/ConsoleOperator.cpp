@@ -205,7 +205,7 @@ void ConsoleOperator::processInput()
 		}
 		else {
 			_userCommand.command = cmdPtr->ToCommand();
-			_userCommand.commandId = cmdPtr->CommandUndoId();
+			_userCommand.commandId = cmdPtr->CommandId();
 			_userCommand.expectedResult = cmdPtr->GetFinalState();
 			_userCommand.resultDevices.clear();
 		}
