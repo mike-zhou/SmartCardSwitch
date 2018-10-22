@@ -36,10 +36,10 @@ private:
 	Poco::Mutex _mutex;
 
 	const std::string DEVICE_FOLDER_PATH = "/dev/serial/by-id";
-	const std::string IDENTIFIER = "Deeply_Customized_Device_Name_needs_to_be_queried";;
+	const std::string IDENTIFIER = "Deeply_Customized_Device_Name_needs_to_be_queried";
 	const char ILLEGAL_CHARACTER_REPLACEMENT = '?';
 	const char * COMMAND_QUERY_NAME = "C 1";
-	const char COMMAND_TERMINATER = '\n';
+	const char COMMAND_TERMINATER = 0x0D; //carriage return
 
 	bool _startMonitoringDevices;
 

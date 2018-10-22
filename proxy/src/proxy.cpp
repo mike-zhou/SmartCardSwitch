@@ -83,6 +83,7 @@ protected:
 	{
 		if (!_helpRequested)
 		{
+			TaskManager tmLogger;
 			TaskManager tm;
 			Poco::Net::SocketAddress serverAddress;
 			std::string logFolder;
@@ -122,7 +123,7 @@ protected:
 			}
 
 			pLogger = new ProxyLogger(logFolder, logFile, logFileSize, logFileAmount);
-			tm.start(pLogger);
+			tmLogger.start(pLogger);
 			pLogger->LogInfo("**** proxy verion 1.0.0 ****");
 
 			CDeviceManager * pDeviceManager = new CDeviceManager;
@@ -140,9 +141,12 @@ protected:
 			pDeviceManager->StartMonitoringDevices();
 
 			waitForTerminationRequest();
+			//stop tasks
 			tm.cancelAll();
 			tm.joinAll();
-			delete pLogger;
+			//stop logger
+			tmLogger.cancelAll();
+			tmLogger.joinAll();
 		}
 		return Application::EXIT_OK;
 	}

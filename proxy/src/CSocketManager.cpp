@@ -929,5 +929,7 @@ void CSocketManager::runTask()
 			}
 		}
 	}
+
+	pLogger->LogInfo("CSocketManager::runTask exited");
 }
 

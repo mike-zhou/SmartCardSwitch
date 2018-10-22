@@ -67,4 +67,6 @@ void CListener::runTask()
 			}
 		}
 	}
+
+	pLogger->LogInfo("CListener::runTask exited");
 }
