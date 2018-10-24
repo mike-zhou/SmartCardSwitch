@@ -5,17 +5,15 @@
  *      Author: user1
  */
 
-#include "CSocketManager.h"
-#include "ProxyLogger.h"
-#include "ReplyFactory.h"
 #include <poll.h>
 #include <stddef.h>
+#include "Poco/Timespan.h"
 #include "Poco/Net/Socket.h"
 #include "Poco/Net/NetException.h"
-#include "Poco/Timespan.h"
+#include "ReplyFactory.h"
+#include "CSocketManager.h"
+#include "ProxyLogger.h"
 #include "CommandFactory.h"
-#include "CommandTranslater.h"
-
 
 extern ProxyLogger * pLogger;
 
@@ -808,7 +806,7 @@ void CSocketManager::pollSockets()
 	Timespan timedSpan(10*1000); //10 ms
 	int socketAmount;
 
-	//poll devices output.
+	//check if socket can accept replies/events.
 	{
 		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 		for(auto it = _sockets.begin(); it != _sockets.end(); it++)
@@ -862,7 +860,7 @@ void CSocketManager::pollSockets()
 	writeList.clear();
 	exceptionList.clear();
 
-	//poll devices input.
+	//check if socket has new commands.
 	{
 		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 		for(auto it = _sockets.begin(); it != _sockets.end(); it++)

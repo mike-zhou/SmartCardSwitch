@@ -10,10 +10,10 @@
 
 #include <memory>
 #include <deque>
-#include "Poco/Net/SocketAddress.h"
-#include "Poco/Net/StreamSocket.h"
 #include "Poco/Task.h"
 #include "Poco/Mutex.h"
+#include "Poco/Net/SocketAddress.h"
+#include "Poco/Net/StreamSocket.h"
 
 
 class IDeviceObserver
@@ -24,6 +24,12 @@ public:
 	virtual ~IDeviceObserver() {}
 };
 
+/**********************
+ * Functionalities of this class object:
+ * 1. maintain socket connection between SmartCardSwitch and proxy
+ * 2. send JSON command to proxy through socket
+ * 3. receive JSON reply from proxy through socket
+ *********************/
 class DeviceAccessor: public Poco::Task
 {
 public:
@@ -45,6 +51,7 @@ public:
 
 	void AddObserver(IDeviceObserver * pObserver);
 
+private:
 	void runTask();
 
 private:

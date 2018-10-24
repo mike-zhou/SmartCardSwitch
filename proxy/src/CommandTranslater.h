@@ -139,12 +139,17 @@ public:
 //}
 class CommandBdcsPowerOn
 {
+private:
+	unsigned long _commandId;
+
 public:
+	CommandBdcsPowerOn(unsigned long commandId) { _commandId = commandId; }
 	CommandType Type() { return CommandType::BdcsPowerOn; }
+	unsigned long CommandId() { return _commandId; }
 
 	std::string ToString()
 	{
-		std::string cmd = "C 40";
+		std::string cmd = "C 40 " + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
 };
@@ -154,12 +159,17 @@ public:
 //}
 class CommandBdcsPowerOff
 {
+private:
+	unsigned long _commandId;
+
 public:
+	CommandBdcsPowerOff(unsigned long commandId) { _commandId = commandId; }
 	CommandType Type() { return CommandType::BdcsPowerOff; }
+	unsigned long CommandId() { return _commandId; }
 
 	std::string ToString()
 	{
-		std::string cmd = "C 41";
+		std::string cmd = "C 41" + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
 };
@@ -169,12 +179,17 @@ public:
 //}
 class CommandBdcsQueryPower
 {
+private:
+	unsigned long _commandId;
+
 public:
+	CommandBdcsQueryPower(unsigned long commandId) { _commandId = commandId; }
 	CommandType Type() { return CommandType::BdcsQueryPower; }
+	unsigned long CommandId() { return _commandId; }
 
 	std::string ToString()
 	{
-		std::string cmd = "C 42";
+		std::string cmd = "C 42" + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
 };
@@ -185,19 +200,24 @@ public:
 //}
 class CommandBdcCoast
 {
+private:
+	unsigned long _commandId;
+	unsigned int _bdcIndex;
+
 public:
-	CommandBdcCoast(int bdcIndex) { this->bdcIndex = bdcIndex; }
+	CommandBdcCoast(unsigned int bdcIndex, unsigned long commandId)
+	{
+		_bdcIndex = bdcIndex;
+		_commandId = commandId;
+	}
 
 	CommandType Type() { return CommandType::BdcCoast; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 43 %d"), bdcIndex);
+		std::string cmd = Poco::format(std::string("C 43 %d %d"), _bdcIndex, _commandId & 0xffff);
 		return cmd;
 	}
-
-private:
-	int bdcIndex;
 };
 
 //{
@@ -206,19 +226,25 @@ private:
 //}
 class CommandBdcReverse
 {
+private:
+	unsigned int _bdcIndex;
+	unsigned long _commandId;
+
 public:
-	CommandBdcReverse(int bdcIndex) { this->bdcIndex = bdcIndex; }
+	CommandBdcReverse(unsigned int bdcIndex, unsigned long commandId)
+	{
+		_bdcIndex = bdcIndex;
+		_commandId = commandId;
+	}
 
 	CommandType Type() { return CommandType::BdcReverse; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 44 %d"), bdcIndex);
+		std::string cmd = Poco::format(std::string("C 44 %d %d"), _bdcIndex, _commandId & 0xffff);
 		return cmd;
 	}
 
-private:
-	int bdcIndex;
 };
 
 //{
@@ -698,7 +724,6 @@ public:
 private:
 	std::string _jsonCmd;
 	CommandType _type;
-	unsigned long _commandId;
 
 	const std::string strCommandDevicesGet = "devices get";
 	const std::string strCommandDeviceConnect = "device connect";

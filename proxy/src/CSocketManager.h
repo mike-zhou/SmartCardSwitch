@@ -23,6 +23,12 @@
 
 using Poco::Net::StreamSocket;
 
+/******************
+ * Functionalities of this class object
+ * 1. maintain connections between sockets and devices
+ * 2. translate JSON command to device command
+ * 3. translate device reply to JSON reply
+ ******************/
 class CSocketManager : public Poco::Task, public IDeviceObserver, public ISocketDeposit {
 public:
 	CSocketManager();
@@ -30,6 +36,7 @@ public:
 
 	void SetDevice(IDevice * pDevice);
 
+private:
 	//IDeviceObserver
 	virtual void OnDeviceInserted(const std::string& deviceName) override;
 	virtual void OnDeviceUnplugged(const std::string& deviceName) override;
@@ -68,7 +75,7 @@ private:
 	// a map of device name vs Device wrapper.
 	struct DeviceWrapper
 	{
-		long socketId;//which socket this device bonds to
+		long long socketId;//which socket this device bonds to
 		std::deque<std::string> replyPool; //to save information from device.
 	};
 	std::map<std::string, struct DeviceWrapper> _deviceSocketMap;

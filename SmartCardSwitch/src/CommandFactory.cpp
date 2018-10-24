@@ -115,6 +115,26 @@ std::shared_ptr<DeviceCommand> CommandFactory::StepperEnable(unsigned int steppe
 	return ptr;
 }
 
+std::shared_ptr<DeviceCommand> CommandFactory::StepperForward(unsigned int stepperIndex, bool forward)
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandStepperForward(stepperIndex, forward));
+
+	return ptr;
+}
+
+std::shared_ptr<DeviceCommand> CommandFactory::StepperSteps(unsigned int stepperIndex, unsigned long steps)
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandStepperSteps(stepperIndex, steps));
+
+	return ptr;
+}
+
+std::shared_ptr<DeviceCommand> CommandFactory::StepperRun(unsigned int stepperIndex, unsigned long initialPosition, unsigned long finalPosition)
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandStepperRun(stepperIndex, initialPosition, finalPosition));
+
+	return ptr;
+}
 
 std::shared_ptr<DeviceCommand> CommandFactory::StepperConfigHome(unsigned int stepperIndex, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal)
 {
@@ -123,7 +143,6 @@ std::shared_ptr<DeviceCommand> CommandFactory::StepperConfigHome(unsigned int st
 	return ptr;
 }
 
-
 std::shared_ptr<DeviceCommand> CommandFactory::StepperMove(unsigned int stepperIndex, unsigned long position, bool forward, unsigned long steps)
 {
 	std::shared_ptr<DeviceCommand> ptr(new CommandStepperMove(stepperIndex, position, forward, steps));
@@ -131,5 +150,10 @@ std::shared_ptr<DeviceCommand> CommandFactory::StepperMove(unsigned int stepperI
 	return ptr;
 }
 
+std::shared_ptr<DeviceCommand> CommandFactory::LocatorQuery(unsigned int locatorIndex)
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandLocatorQuery(locatorIndex));
 
+	return ptr;
+}
 

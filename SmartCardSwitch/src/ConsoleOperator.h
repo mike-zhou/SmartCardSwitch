@@ -20,6 +20,11 @@
 #include "Command.h"
 #include "CommandFactory.h"
 
+/***************************************
+ * This class receives user input from a console,
+ * creates JSON command accordingly, sends it to DeviceAccessor object,
+ * and handles replies.
+ ***************************************/
 class ConsoleOperator: public Poco::Task, public IDeviceObserver
 {
 public:

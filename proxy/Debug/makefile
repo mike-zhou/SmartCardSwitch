@@ -44,7 +44,7 @@ all: proxy
 proxy: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L/home/user1/Poco/poco-1.8.0.1/lib -o "proxy" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L/home/mikez/Poco/poco-1.9.0/lib -o "proxy" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

@@ -12,6 +12,10 @@
 #include "Poco/Path.h"
 #include "Poco/Exception.h"
 #include "Poco/Format.h"
+#include "Poco/JSON/Parser.h"
+#include "Poco/Dynamic/Var.h"
+#include "Poco/JSON/Object.h"
+#include "Poco/JSON/JSONException.h"
 #include "ProxyLogger.h"
 #include <poll.h>
 #include <stddef.h>
@@ -83,7 +87,7 @@ void CDeviceManager::checkDevices()
 		if(folderFile.exists() && folderFile.isDirectory())
 		{
 			//open all DCD files.
-			DirectoryIterator end;
+			Poco::DirectoryIterator end;
 			for(DirectoryIterator it(DEVICE_FOLDER_PATH) ;it != end; it++)
 			{
 				bool fileIsOpened = false;
@@ -180,20 +184,65 @@ void CDeviceManager::checkDevices()
 
 void CDeviceManager::onReply(struct Device& device, const std::string& reply)
 {
+	//convert the reply to a JSON object.
+	std::string json = "{" + reply + "}";
+
 	switch(device.state)
 	{
 		case DeviceState::RECEIVING_NAME:
 		{
-			device.deviceName = reply;
-			device.state = DeviceState::ACTIVE;
-			pLogger->LogInfo("CDeviceManager::onReply device insertion: " + device.deviceName);
-			_pObserver->OnDeviceInserted(device.deviceName);
+			if(reply != std::string(COMMAND_QUERY_NAME))
+			{
+				bool exceptionOccur = false;
+				bool nameAvailable = false;
+				std::string name;
+
+				try
+				{
+					Poco::JSON::Parser parser;
+					Poco::Dynamic::Var result = parser.parse(json);
+					Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+
+					if(objectPtr->has(std::string("name")))
+					{
+						name = objectPtr->getValue<std::string>("name");
+						if(name.size() < 1) {
+							pLogger->LogError("CDeviceManager::onReply invalid name in " + reply);
+						}
+						else {
+							nameAvailable = true;
+						}
+					}
+					else
+					{
+						pLogger->LogError("CDeviceManager::onReply no name in " + reply);
+					}
+				}
+				catch(Poco::JSON::JSONException& e)
+				{
+					exceptionOccur = true;
+					pLogger->LogError("CDeviceManager::onReply exception occurs: " + e.displayText() + " : " + json);
+				}
+				catch(...)
+				{
+					exceptionOccur = true;
+					pLogger->LogError("CDeviceManager::onReply unknown exception in " + json);
+				}
+
+				if(!exceptionOccur && nameAvailable)
+				{
+					device.deviceName = name;
+					device.state = DeviceState::ACTIVE;
+					pLogger->LogInfo("CDeviceManager::onReply device inserted: " + device.deviceName + ":" + device.fileName);
+					_pObserver->OnDeviceInserted(device.deviceName);
+				}
+			}
 		}
 		break;
 
 		case DeviceState::ACTIVE:
 		{
-			_pObserver->OnDeviceReply(device.deviceName, reply);
+			_pObserver->OnDeviceReply(device.deviceName, json);
 		}
 		break;
 
@@ -221,9 +270,9 @@ void CDeviceManager::onDeviceInput(struct Device& device)
 		for(int i=0; i<amount; i++)
 		{
 			char tmpBuffer[256];
-
 			sprintf(tmpBuffer, "CDeviceManager::onDeviceInput 0x%02x:%c", buffer[i], buffer[i]);
 			pLogger->LogDebug(tmpBuffer);
+
 			device.incoming.push_back(buffer[i]);
 		}
 		if(amount < 1) {
@@ -238,53 +287,55 @@ void CDeviceManager::onDeviceInput(struct Device& device)
 
 		//check if there is a complete reply
 		for(auto it = device.incoming.begin(); it!=device.incoming.end(); it++) {
-			if(*it == '\n') {
-				replyReady = true;
+			if(*it == 0x0D) {
+				replyReady = true; //a reply is found.
 				break;
 			}
 		}
 
-		if(replyReady)
+		if(!replyReady) {
+			break; //no complete reply, break the loop.
+		}
+		else
 		{
-			std::vector<char> reply;
+			std::string reply;
 			bool illegal = false;
 
-			//retrieve the reply from the incoming deque.
+			//retrieve the first reply from the incoming deque.
 			for(; device.incoming.size() > 0; )
 			{
 				unsigned char c = device.incoming.front();
-				device.incoming.pop_front();
+				device.incoming.pop_front(); //delete the first character.
 
 				if((c >= ' ') && (c <= '~')) {
 					reply.push_back(c);
 				}
-				else if(c == '\r') {
-					//ignore this character
+				else if(c == 0x0A) {
+					//ignore the line feed.
 					continue;
 				}
-				else if(c == '\n') {
-					//a complete reply is found
+				else if(c == 0x0D) {
+					// a carriage return means that a complete reply is found
 					if(illegal) {
-						pLogger->LogError("CDeviceManager illegal reply: " + device.fileName + ":" + reply.data());
+						pLogger->LogError("CDeviceManager::onDeviceInput illegal reply from: " + device.fileName + " : " + reply.data());
 					}
 					else {
-						onReply(device, std::string(reply.data()));
-						pLogger->LogDebug("CDeviceManager rely: " + device.fileName + ":" + std::string(reply.data()));
+						pLogger->LogDebug("CDeviceManager::onDeviceInput rely: " + device.fileName + ":" + std::string(reply.data()));
+						onReply(device, reply);
 					}
 					break;
 				}
 				else {
 					//illegal character
 					if(illegal == false) {
-						pLogger->LogError("CDeviceManager illegal character in : " + device.fileName);
+						char tmpBuffer[512];
+						sprintf(tmpBuffer, "CDeviceManager::onDeviceInput illegal character 0x%02x from: %s", c, device.fileName);
+						pLogger->LogError(tmpBuffer);
 						illegal = true;
 					}
 					reply.push_back(ILLEGAL_CHARACTER_REPLACEMENT);
 				}
 			}
-		}
-		else {
-			break;
 		}
 	}
 }
@@ -322,24 +373,22 @@ void CDeviceManager::onDeviceOutput(struct Device& device)
 
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	//internal command to query device name
+	switch(device.state)
 	{
-		switch(device.state)
+		case DeviceState::OPENED:
 		{
-			case DeviceState::OPENED:
-			{
-				std::string command(COMMAND_QUERY_NAME);
-				enqueueCommand(device, command);
-				device.state = DeviceState::RECEIVING_NAME;
-			}
-			break;
-
-			default:
-			{
-				//nothing to do
-			}
-			break;
+			//internal command to query device name
+			std::string command(COMMAND_QUERY_NAME);
+			enqueueCommand(device, command);
+			device.state = DeviceState::RECEIVING_NAME;
 		}
+		break;
+
+		default:
+		{
+			//nothing to do
+		}
+		break;
 	}
 
 	if(device.outgoing.size() > 0)
@@ -388,7 +437,7 @@ void CDeviceManager::pollDevices()
 	{
 		std::vector<struct pollfd> fdVector;
 
-		//poll devices output.
+		//check if device can be written.
 		for(size_t i=0; i<_devices.size(); i++)
 		{
 			pollfd fd;
@@ -406,6 +455,7 @@ void CDeviceManager::pollDevices()
 				auto events = fdVector[i].revents;
 
 				if(events & POLLOUT) {
+					//device can be written.
 					onDeviceOutput(_devices[i]);
 				}
 				if(events & POLLERR) {
@@ -414,7 +464,7 @@ void CDeviceManager::pollDevices()
 			}
 		}
 
-		//poll devices input
+		//check if device can be read
 		fdVector.clear();
 		for(size_t i=0; i<_devices.size(); i++)
 		{
@@ -434,6 +484,7 @@ void CDeviceManager::pollDevices()
 				auto events = fdVector[i].revents;
 
 				if(events & POLLIN) {
+					//device can be read.
 					onDeviceInput(_devices[i]);
 				}
 				if(events & POLLERR) {

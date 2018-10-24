@@ -161,6 +161,7 @@ std::shared_ptr<CommandDevicesGet> CommandTranslator::GetCommandDevicesGet()
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandDevicesGet invalid command in " + _jsonCmd);
@@ -170,7 +171,7 @@ std::shared_ptr<CommandDevicesGet> CommandTranslator::GetCommandDevicesGet()
 			}
 			else
 			{
-				std::shared_ptr<CommandDevicesGet> p(new CommandDevicesGet(_commandId));
+				std::shared_ptr<CommandDevicesGet> p(new CommandDevicesGet(commandId));
 				return p;
 			}
 		}
@@ -202,6 +203,7 @@ std::shared_ptr<CommandDeviceConnect> CommandTranslator::GetCommandDeviceConnect
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandDeviceConnect invalid command in " + _jsonCmd);
@@ -212,7 +214,7 @@ std::shared_ptr<CommandDeviceConnect> CommandTranslator::GetCommandDeviceConnect
 			else
 			{
 				std::string deviceName = objectPtr->getValue<std::string>("device");
-				std::shared_ptr<CommandDeviceConnect> p(new CommandDeviceConnect(_commandId, deviceName));
+				std::shared_ptr<CommandDeviceConnect> p(new CommandDeviceConnect(commandId, deviceName));
 				return p;
 			}
 		}

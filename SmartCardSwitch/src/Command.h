@@ -10,6 +10,7 @@
 
 #include <string>
 
+//base of all commands which are to be sent to DeviceAccessor object.
 class DeviceCommand
 {
 public:
@@ -114,6 +115,16 @@ private:
 	enum BdcMode _finalMode;
 };
 
+class CommandBdcQuery: public DeviceCommand
+{
+public:
+	CommandBdcQuery(unsigned int bdcIndex);
+	virtual std::string ToCommand() override;
+
+private:
+	unsigned int _bdcIndex;
+};
+
 class CommandStepperQueryClkPeriod: public DeviceCommand
 {
 public:
@@ -202,6 +213,55 @@ private:
 	bool _enable;
 };
 
+class CommandStepperForward: public DeviceCommand
+{
+public:
+	CommandStepperForward(unsigned int stepperIndex, bool bForward);
+
+	virtual std::string GetUndoState() override;
+	virtual std::string GetFinalState() override;
+
+	virtual std::string ToCommand() override;
+	virtual std::string ToCommandUndo() override;
+
+private:
+	unsigned int _stepperIndex;
+	bool _bForward;
+};
+
+class CommandStepperSteps: public DeviceCommand
+{
+public:
+	CommandStepperSteps(unsigned int stepperIndex, unsigned long steps);
+
+	virtual std::string GetUndoState() override;
+	virtual std::string GetFinalState() override;
+
+	virtual std::string ToCommand() override;
+	virtual std::string ToCommandUndo() override;
+
+private:
+	unsigned int _stepperIndex;
+	unsigned long _steps;
+};
+
+class CommandStepperRun: public DeviceCommand
+{
+public:
+	CommandStepperRun(unsigned int stepperIndex, unsigned long initialPosition, unsigned long finalPosition);
+
+	virtual std::string GetUndoState() override;
+	virtual std::string GetFinalState() override;
+
+	virtual std::string ToCommand() override;
+	virtual std::string ToCommandUndo() override;
+
+private:
+	unsigned int _stepperIndex;
+	unsigned long _initialPosition;
+	unsigned long _finalPosition;
+};
+
 class CommandStepperConfigHome: public DeviceCommand
 {
 public:
@@ -237,6 +297,16 @@ private:
 	unsigned long _position;
 	bool _forward;
 	unsigned long _steps;
+};
+
+class CommandLocatorQuery: public DeviceCommand
+{
+public:
+	CommandLocatorQuery(unsigned int locatorIndex);
+	virtual std::string ToCommand() override;
+
+private:
+	unsigned int _locatorIndex;
 };
 
 #endif /* COMMAND_H_ */

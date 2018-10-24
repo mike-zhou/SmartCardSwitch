@@ -112,15 +112,15 @@ void DeviceAccessor::AddObserver(IDeviceObserver * pObserver)
 
 void DeviceAccessor::onIncoming()
 {
-	std::vector<std::string> feedbacks;
+	std::vector<std::string> jsons;
 
-	MsgPackager::RetrieveMsgs(_incoming, feedbacks);
+	MsgPackager::RetrieveMsgs(_incoming, jsons);
 
 	//notify observers
-	for(auto feedbackIt=feedbacks.begin(); feedbackIt!=feedbacks.end(); feedbackIt++) {
-		pLogger->LogDebug("DeviceAccessor::onIncoming notify observer of " + (*feedbackIt));
+	for(auto it=jsons.begin(); it!=jsons.end(); it++) {
+		pLogger->LogDebug("DeviceAccessor::onIncoming notify observer of " + (*it));
 		for(auto observerIt=_observerPtrArray.begin(); observerIt!=_observerPtrArray.end(); observerIt++) {
-			(*observerIt)->OnFeedback(*feedbackIt);
+			(*observerIt)->OnFeedback(*it);
 		}
 	}
 }
@@ -182,13 +182,13 @@ void DeviceAccessor::runTask()
 			if(_socket.poll(timeSpan, Poco::Net::Socket::SELECT_READ))
 			{
 				int amount = 0;
-				bool disconnect = false;
+				bool errorOccur = false;
 
 				try {
 					amount = _socket.receiveBytes(buffer, bufferLength, 0);
 					if(amount <= 0) {
 						//peer socket has shut down
-						disconnect = true;
+						errorOccur = true;
 						pLogger->Log("DeviceAccessor::runTask peer socket shut down: " + std::to_string(amount));
 					}
 					else {
@@ -202,15 +202,15 @@ void DeviceAccessor::runTask()
 					; // timeout exception can be ignored.
 				}
 				catch(Poco::Net::NetException& e) {
-					disconnect = true;
+					errorOccur = true;
 					pLogger->LogError("DeviceAccessor::runTask exception: " + e.displayText());
 				}
 				catch(...) {
-					disconnect = true;
+					errorOccur = true;
 					pLogger->LogError("DeviceAccessor::runTask unknown exception");
 				}
 
-				if(disconnect)
+				if(errorOccur)
 				{
 					pLogger->LogInfo("DeviceAccessor::runTask disconnect from " + _socketAddress.toString());
 					_socket.close();
