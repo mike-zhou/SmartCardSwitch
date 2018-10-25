@@ -62,9 +62,6 @@ enum CommandType
 //}
 class CommandDevicesGet
 {
-private:
-	unsigned long _commandId;
-
 public:
 	CommandDevicesGet(unsigned long commandId) { _commandId = commandId; }
 
@@ -76,6 +73,9 @@ public:
 		std::string empty;
 		return empty;
 	}
+
+private:
+	unsigned long _commandId;
 };
 
 //{
@@ -84,10 +84,6 @@ public:
 //}
 class CommandDeviceConnect
 {
-private:
-	std::string _deviceName;
-	unsigned long _commandId;
-
 public:
 	CommandDeviceConnect(unsigned long commandId, std::string deviceName)
 	{
@@ -105,6 +101,36 @@ public:
 	}
 
 	std::string DeviceName() { return _deviceName; }
+
+private:
+	std::string _deviceName;
+	unsigned long _commandId;
+};
+
+
+//{
+//	"command":"device query power",
+//	"commandId":1
+//}
+class CommandDeviceQueryPower
+{
+public:
+	CommandDeviceQueryPower(unsigned long commandId)
+	{
+		_commandId = commandId;
+	}
+
+	CommandType Type() { return CommandType::DeviceQueryPower; }
+	unsigned long CommandId() { return _commandId; }
+
+	std::string ToString()
+	{
+		std::string cmd = "C 2 " + std::to_string(_commandId & 0xffff);
+		return cmd;
+	}
+
+private:
+	unsigned long _commandId;
 };
 
 //{
@@ -139,9 +165,6 @@ public:
 //}
 class CommandBdcsPowerOn
 {
-private:
-	unsigned long _commandId;
-
 public:
 	CommandBdcsPowerOn(unsigned long commandId) { _commandId = commandId; }
 	CommandType Type() { return CommandType::BdcsPowerOn; }
@@ -152,6 +175,9 @@ public:
 		std::string cmd = "C 40 " + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
+
+private:
+	unsigned long _commandId;
 };
 
 //{
@@ -159,9 +185,6 @@ public:
 //}
 class CommandBdcsPowerOff
 {
-private:
-	unsigned long _commandId;
-
 public:
 	CommandBdcsPowerOff(unsigned long commandId) { _commandId = commandId; }
 	CommandType Type() { return CommandType::BdcsPowerOff; }
@@ -172,6 +195,9 @@ public:
 		std::string cmd = "C 41" + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
+
+private:
+	unsigned long _commandId;
 };
 
 //{
@@ -179,9 +205,6 @@ public:
 //}
 class CommandBdcsQueryPower
 {
-private:
-	unsigned long _commandId;
-
 public:
 	CommandBdcsQueryPower(unsigned long commandId) { _commandId = commandId; }
 	CommandType Type() { return CommandType::BdcsQueryPower; }
@@ -192,6 +215,9 @@ public:
 		std::string cmd = "C 42" + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
+
+private:
+	unsigned long _commandId;
 };
 
 //{
@@ -200,10 +226,6 @@ public:
 //}
 class CommandBdcCoast
 {
-private:
-	unsigned long _commandId;
-	unsigned int _bdcIndex;
-
 public:
 	CommandBdcCoast(unsigned int bdcIndex, unsigned long commandId)
 	{
@@ -218,6 +240,10 @@ public:
 		std::string cmd = Poco::format(std::string("C 43 %d %d"), _bdcIndex, _commandId & 0xffff);
 		return cmd;
 	}
+
+private:
+	unsigned long _commandId;
+	unsigned int _bdcIndex;
 };
 
 //{
@@ -226,10 +252,6 @@ public:
 //}
 class CommandBdcReverse
 {
-private:
-	unsigned int _bdcIndex;
-	unsigned long _commandId;
-
 public:
 	CommandBdcReverse(unsigned int bdcIndex, unsigned long commandId)
 	{
@@ -245,6 +267,9 @@ public:
 		return cmd;
 	}
 
+private:
+	unsigned int _bdcIndex;
+	unsigned long _commandId;
 };
 
 //{
@@ -254,18 +279,23 @@ public:
 class CommandBdcForward
 {
 public:
-	CommandBdcForward(int bdcIndex) { this->bdcIndex = bdcIndex; }
+	CommandBdcForward(unsigned int bdcIndex, unsigned long commandId)
+	{
+		_bdcIndex = bdcIndex;
+		_commandId = commandId;
+	}
 
 	CommandType Type() { return CommandType::BdcForward; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 45 %d"), bdcIndex);
+		std::string cmd = Poco::format(std::string("C 45 %d %d"), _bdcIndex, _commandId & 0xffff);
 		return cmd;
 	}
 
 private:
-	int bdcIndex;
+	int _bdcIndex;
+	unsigned long _commandId;
 };
 
 //{
@@ -275,18 +305,23 @@ private:
 class CommandBdcBreak
 {
 public:
-	CommandBdcBreak(int bdcIndex) { this->bdcIndex = bdcIndex; }
+	CommandBdcBreak(unsigned int bdcIndex, unsigned long commandId)
+	{
+		_bdcIndex = bdcIndex;
+		_commandId = commandId;
+	}
 
 	CommandType Type() { return CommandType::BdcBreak; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 46 %d"), bdcIndex);
+		std::string cmd = Poco::format(std::string("C 46 %d %d"), _bdcIndex, _commandId & 0xffff);
 		return cmd;
 	}
 
 private:
-	int bdcIndex;
+	unsigned int _bdcIndex;
+	unsigned long _commandId;
 };
 
 //{
@@ -296,18 +331,23 @@ private:
 class CommandBdcQuery
 {
 public:
-	CommandBdcQuery(int bdcIndex) { this->bdcIndex = bdcIndex; }
+	CommandBdcQuery(unsigned int bdcIndex, unsigned long commandId)
+	{
+		_bdcIndex = bdcIndex;
+		_commandId = commandId;
+	}
 
 	CommandType Type() { return CommandType::BdcQuery; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 47 %d"), bdcIndex);
+		std::string cmd = Poco::format(std::string("C 47 %d %d"), _bdcIndex, _commandId & 0xffff);
 		return cmd;
 	}
 
 private:
-	int bdcIndex;
+	unsigned int _bdcIndex;
+	unsigned long _commandId;
 };
 
 //{
@@ -316,13 +356,21 @@ private:
 class CommandSteppersPowerOn
 {
 public:
+	CommandSteppersPowerOn(unsigned long commandId)
+	{
+		_commandId = commandId;
+	}
+
 	CommandType Type() { return CommandType::SteppersPowerOn; }
 
 	std::string ToString()
 	{
-		std::string cmd = "C 13";
+		std::string cmd = "C 13 " + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
+
+private:
+	unsigned long _commandId;
 };
 
 //{
@@ -331,13 +379,21 @@ public:
 class CommandSteppersPowerOff
 {
 public:
+	CommandSteppersPowerOff(unsigned long commandId)
+	{
+		_commandId = commandId;
+	}
+
 	CommandType Type() { return CommandType::SteppersPowerOff; }
 
 	std::string ToString()
 	{
-		std::string cmd = "C 14";
+		std::string cmd = "C 14 " + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
+
+private:
+	unsigned long _commandId;
 };
 
 //{
@@ -346,13 +402,21 @@ public:
 class CommandSteppersQueryPower
 {
 public:
+	CommandSteppersQueryPower(unsigned long commandId)
+	{
+		_commandId = commandId;
+	}
+
 	CommandType Type() { return CommandType::SteppersQueryPower; }
 
 	std::string ToString()
 	{
-		std::string cmd = "C 15";
+		std::string cmd = "C 15 " + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
+
+private:
+	unsigned long _commandId;
 };
 
 //{
@@ -361,13 +425,21 @@ public:
 class CommandStepperQueryResolution
 {
 public:
+	CommandStepperQueryResolution(unsigned long commandId)
+	{
+		_commandId = commandId;
+	}
+
 	CommandType Type() { return CommandType::StepperQueryResolution; }
 
 	std::string ToString()
 	{
-		std::string cmd = "C 50";
+		std::string cmd = "C 50 " + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
+
+private:
+	unsigned long _commandId;
 };
 
 //{
@@ -379,23 +451,25 @@ public:
 class CommandStepperConfigStep
 {
 private:
-	int stepperIndex;
-	int highClks;
-	int lowClks;
+	int _stepperIndex;
+	int _highClks;
+	int _lowClks;
+	unsigned long _commandId;
 
 public:
-	CommandStepperConfigStep(int stepperIndex, int lowClks, int highClks)
+	CommandStepperConfigStep(int stepperIndex, int lowClks, int highClks, unsigned long commandId)
 	{
-		this->stepperIndex = stepperIndex;
-		this->highClks = highClks;
-		this->lowClks = lowClks;
+		_stepperIndex = stepperIndex;
+		_highClks = highClks;
+		_lowClks = lowClks;
+		_commandId = commandId;
 	}
 
 	CommandType Type() { return CommandType::StepperConfigStep; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 51 %d %d %d"), stepperIndex, lowClks, highClks);
+		std::string cmd = Poco::format(std::string("C 51 %d %d %d %d"), _stepperIndex, _lowClks, _highClks, _commandId & 0xffff);
 		return cmd;
 	}
 };
@@ -408,21 +482,23 @@ public:
 class CommandStepperAccelerationBuffer
 {
 private:
-	int stepperIndex;
-	int buffer;
+	int _stepperIndex;
+	int _buffer;
+	unsigned long _commandId;
 
 public:
-	CommandStepperAccelerationBuffer(int stepperIndex, int buffer)
+	CommandStepperAccelerationBuffer(int stepperIndex, int buffer, unsigned long commandId)
 	{
-		this->stepperIndex = stepperIndex;
-		this->buffer = buffer;
+		_stepperIndex = stepperIndex;
+		_buffer = buffer;
+		_commandId = commandId;
 	}
 
 	CommandType Type() { return CommandType::StepperAccelerationBuffer; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 52 %d %d"), stepperIndex, buffer);
+		std::string cmd = Poco::format(std::string("C 52 %d %d %d"), _stepperIndex, _buffer, _commandId);
 		return cmd;
 	}
 };
@@ -435,21 +511,23 @@ public:
 class CommandStepperAccelerationBufferDecrement
 {
 private:
-	int stepperIndex;
-	int decrement;
+	int _stepperIndex;
+	int _decrement;
+	unsigned long _commandId;
 
 public:
-	CommandStepperAccelerationBufferDecrement(int stepperIndex, int decrement)
+	CommandStepperAccelerationBufferDecrement(int stepperIndex, int decrement, unsigned long commandId)
 	{
-		this->stepperIndex = stepperIndex;
-		this->decrement = decrement;
+		_stepperIndex = stepperIndex;
+		_decrement = decrement;
+		_commandId = commandId;
 	}
 
 	CommandType Type() { return CommandType::StepperAccelerationBufferDecrement; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 53 %d %d"), stepperIndex, decrement);
+		std::string cmd = Poco::format(std::string("C 53 %d %d %d"), _stepperIndex, _decrement, _commandId);
 		return cmd;
 	}
 };
@@ -462,21 +540,23 @@ public:
 class CommandStepperDecelerationBuffer
 {
 private:
-	int stepperIndex;
-	int buffer;
+	int _stepperIndex;
+	int _buffer;
+	unsigned long _commandId;
 
 public:
-	CommandStepperDecelerationBuffer(int stepperIndex, int buffer)
+	CommandStepperDecelerationBuffer(int stepperIndex, int buffer, unsigned long commandId)
 	{
-		this->stepperIndex = stepperIndex;
-		this->buffer = buffer;
+		_stepperIndex = stepperIndex;
+		_buffer = buffer;
+		_commandId = commandId;
 	}
 
 	CommandType Type() { return CommandType::StepperDecelerationBuffer; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 54 %d %d"), stepperIndex, buffer);
+		std::string cmd = Poco::format(std::string("C 54 %d %d %d"), _stepperIndex, _buffer, _commandId & 0xffff);
 		return cmd;
 	}
 };
@@ -489,21 +569,23 @@ public:
 class CommandStepperDecelerationBufferIncrement
 {
 private:
-	int stepperIndex;
-	int increment;
+	int _stepperIndex;
+	int _increment;
+	unsigned long _commandId;
 
 public:
-	CommandStepperDecelerationBufferIncrement(int stepperIndex, int increment)
+	CommandStepperDecelerationBufferIncrement(int stepperIndex, int increment, unsigned long commandId)
 	{
-		this->stepperIndex = stepperIndex;
-		this->increment = increment;
+		_stepperIndex = stepperIndex;
+		_increment = increment;
+		_commandId = commandId;
 	}
 
 	CommandType Type() { return CommandType::StepperDecelerationBufferIncrement; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 55 %d %d"), stepperIndex, increment);
+		std::string cmd = Poco::format(std::string("C 55 %d %d %d"), _stepperIndex, _increment, _commandId & 0xffff);
 		return cmd;
 	}
 };
@@ -516,21 +598,23 @@ public:
 class CommandStepperEnable
 {
 private:
-	int stepperIndex;
-	bool enable;
+	int _stepperIndex;
+	bool _enable;
+	unsigned long _commandId;
 
 public:
-	CommandStepperEnable(int stepperIndex, bool enable)
+	CommandStepperEnable(int stepperIndex, bool enable, unsigned long commandId)
 	{
-		this->stepperIndex = stepperIndex;
-		this->enable = enable;
+		_stepperIndex = stepperIndex;
+		_enable = enable;
+		_commandId = commandId;
 	}
 
 	CommandType Type() { return CommandType::StepperEnable; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 56 %d %d"), stepperIndex, enable ? 1 : 0);
+		std::string cmd = Poco::format(std::string("C 56 %d %d %d"), _stepperIndex, _enable ? 1 : 0, _commandId & 0xffff);
 		return cmd;
 	}
 };
@@ -543,21 +627,23 @@ public:
 class CommandStepperForward
 {
 private:
-	int stepperIndex;
-	bool forward;
+	int _stepperIndex;
+	bool _forward;
+	unsigned long _commandId;
 
 public:
-	CommandStepperForward(int stepperIndex, bool forward)
+	CommandStepperForward(int stepperIndex, bool forward, unsigned long commandId)
 	{
-		this->stepperIndex = stepperIndex;
-		this->forward = forward;
+		_stepperIndex = stepperIndex;
+		_forward = forward;
+		_commandId = commandId;
 	}
 
 	CommandType Type() { return CommandType::StepperForward; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 57 %d %d"), stepperIndex, forward ? 1 : 0);
+		std::string cmd = Poco::format(std::string("C 57 %d %d %d"), _stepperIndex, _forward ? 1 : 0, _commandId & 0xffff);
 		return cmd;
 	}
 };
@@ -570,21 +656,23 @@ public:
 class CommandStepperSteps
 {
 private:
-	int stepperIndex;
-	int steps;
+	int _stepperIndex;
+	int _steps;
+	unsigned long _commandId;
 
 public:
-	CommandStepperSteps(int stepperIndex, int steps)
+	CommandStepperSteps(int stepperIndex, int steps, unsigned long commandId)
 	{
-		this->stepperIndex = stepperIndex;
-		this->steps = steps;
+		_stepperIndex = stepperIndex;
+		_steps = steps;
+		_commandId = commandId;
 	}
 
 	CommandType Type() { return CommandType::StepperSteps; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 58 %d %d"), stepperIndex, steps);
+		std::string cmd = Poco::format(std::string("C 58 %d %d %d"), _stepperIndex, _steps, _commandId & 0xffff);
 		return cmd;
 	}
 };
@@ -595,13 +683,23 @@ public:
 class CommandStepperRun
 {
 public:
+	CommandStepperRun(unsigned int stepperIndex, unsigned long commandId)
+	{
+		_stepperIndex = stepperIndex;
+		_commandId = commandId;
+	}
+
 	CommandType Type() { return CommandType::StepperRun; }
 
 	std::string ToString()
 	{
-		std::string cmd = "C 59";
+		std::string cmd = Poco::format(std::string("C 59 %d %d"), _stepperIndex, _commandId & 0xffff);
 		return cmd;
 	}
+
+private:
+	unsigned int _stepperIndex;
+	unsigned long _commandId;
 };
 
 //{
@@ -614,25 +712,32 @@ public:
 class CommandStepperConfigHome
 {
 private:
-	int stepperIndex;
-	int locatorIndex;
-	int lineNumberStart;
-	int lineNumberTerminal;
+	int _stepperIndex;
+	int _locatorIndex;
+	int _lineNumberStart;
+	int _lineNumberTerminal;
+	unsigned long _commandId;
 
 public:
-	CommandStepperConfigHome(int stepperIndex, int locatorIndex, int lineNumberStart, int lineNumberTerminal)
+	CommandStepperConfigHome(int stepperIndex, int locatorIndex, int lineNumberStart, int lineNumberTerminal, unsigned long commandId)
 	{
-		this->stepperIndex = stepperIndex;
-		this->locatorIndex = locatorIndex;
-		this->lineNumberStart = lineNumberStart;
-		this->lineNumberTerminal = lineNumberTerminal;
+		_stepperIndex = stepperIndex;
+		_locatorIndex = locatorIndex;
+		_lineNumberStart = lineNumberStart;
+		_lineNumberTerminal = lineNumberTerminal;
+		_commandId = commandId;
 	}
 
 	CommandType Type() { return CommandType::StepperConfigHome; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 60 %d %d %d %d"), stepperIndex, locatorIndex, lineNumberStart, lineNumberTerminal);
+		std::string cmd = Poco::format(std::string("C 60 %d %d %d %d %d"),
+				_stepperIndex,
+				_locatorIndex,
+				_lineNumberStart,
+				_lineNumberTerminal,
+				_commandId & 0xffff);
 		return cmd;
 	}
 };
@@ -644,19 +749,21 @@ public:
 class CommandStepperQuery
 {
 private:
-	int stepperIndex;
+	int _stepperIndex;
+	unsigned long _commandId;
 
 public:
-	CommandStepperQuery(int stepperIndex)
+	CommandStepperQuery(int stepperIndex, unsigned long commandId)
 	{
-		this->stepperIndex = stepperIndex;
+		_stepperIndex = stepperIndex;
+		_commandId = commandId;
 	}
 
 	CommandType Type() { return CommandType::StepperQuery; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 61 %d"), stepperIndex);
+		std::string cmd = Poco::format(std::string("C 61 %d %d"), _stepperIndex, _commandId & 0xffff);
 		return cmd;
 	}
 };
@@ -668,19 +775,21 @@ public:
 class CommandLocatorQuery
 {
 private:
-	int locatorIndex;
+	int _locatorIndex;
+	unsigned long _commandId;
 
 public:
-	CommandLocatorQuery(int locatorIndex)
+	CommandLocatorQuery(int locatorIndex, unsigned long commandId)
 	{
-		this->locatorIndex = locatorIndex;
+		_locatorIndex = locatorIndex;
+		_commandId = commandId;
 	}
 
 	CommandType Type() { return CommandType::LocatorQuery; }
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 100 %d"), locatorIndex);
+		std::string cmd = Poco::format(std::string("C 100 %d %d"), _locatorIndex, _commandId & 0xffff);
 		return cmd;
 	}
 };
@@ -696,6 +805,7 @@ public:
 
 	std::shared_ptr<CommandDevicesGet> GetCommandDevicesGet();
 	std::shared_ptr<CommandDeviceConnect> GetCommandDeviceConnect();
+	std::shared_ptr<CommandDeviceQueryPower> GetCommandDeviceQueryPower();
 	std::shared_ptr<CommandBdcsPowerOn> GetCommandBdcsPowerOn();
 	std::shared_ptr<CommandBdcsPowerOff> GetCommandBdcsPowerOff();
 	std::shared_ptr<CommandBdcsQueryPower> GetCommandBdcsQueryPower();
@@ -727,6 +837,7 @@ private:
 
 	const std::string strCommandDevicesGet = "devices get";
 	const std::string strCommandDeviceConnect = "device connect";
+	const std::string strCommandDeviceQueryPower = "device query power";
 	const std::string strCommandBdcsPowerOn = "bdcs power on";
 	const std::string strCommandBdcsPowerOff = "bdcs power off";
 	const std::string strCommandBdcsQueryPower = "bdcs query power";

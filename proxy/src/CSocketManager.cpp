@@ -10,8 +10,8 @@
 #include "Poco/Timespan.h"
 #include "Poco/Net/Socket.h"
 #include "Poco/Net/NetException.h"
-#include "ReplyFactory.h"
 #include "CSocketManager.h"
+#include "ReplyFactory.h"
 #include "ProxyLogger.h"
 #include "CommandFactory.h"
 
@@ -170,6 +170,9 @@ void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::s
 	case CommandType::DeviceConnect:
 		onCommandDeviceConnect(socketWrapper, translator.GetCommandDeviceConnect());
 		break;
+
+	case CommandType::DeviceQueryPower:
+
 
 	case CommandType::BdcsPowerOn:
 		onCommandBdcsPowerOn(socketWrapper, translator.GetCommandBdcsPowerOn());
@@ -359,6 +362,16 @@ void CSocketManager::sendSocketCommandToDevice(long long socketId, const std::st
 	if(deviceIt == _deviceSocketMap.end()) {
 		pLogger->LogError(std::string(__FUNCTION__) + " socketId hasn't be bonded to device: " + std::to_string(socketId));
 	}
+}
+
+void CSocketManager::onCommandDeviceQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDeviceQueryPower> cmdPtr)
+{
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
+
+	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandBdcsPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcsPowerOn> cmdPtr)

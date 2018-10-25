@@ -35,8 +35,6 @@ CommandType CommandTranslator::Type()
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::CommandType invalid command in " + _jsonCmd);
 			}
-			_commandId = objectPtr->getValue<unsigned long>("commandId");
-
 		}
 		else
 		{
@@ -65,6 +63,9 @@ CommandType CommandTranslator::Type()
 		}
 		else if(command == strCommandDeviceConnect) {
 			_type = CommandType::DeviceConnect;
+		}
+		else if(command == strCommandDeviceQueryPower) {
+			_type = CommandType::DeviceQueryPower;
 		}
 		else if(command == strCommandBdcsPowerOn) {
 			_type = CommandType::BdcsPowerOn;
@@ -235,6 +236,48 @@ std::shared_ptr<CommandDeviceConnect> CommandTranslator::GetCommandDeviceConnect
 	return nullptr;
 }
 
+std::shared_ptr<CommandDeviceQueryPower> CommandTranslator::GetCommandDeviceQueryPower()
+{
+	try
+	{
+		Poco::JSON::Parser parser;
+		Poco::Dynamic::Var result = parser.parse(_jsonCmd);
+		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+
+		if(objectPtr->has(std::string("command")))
+		{
+			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
+
+			if(command.size() < 1) {
+				pLogger->LogError("CommandTranslator::GetCommandDeviceQueryPower invalid command in " + _jsonCmd);
+			}
+			else if(command != strCommandDeviceConnect) {
+				pLogger->LogError("CommandTranslator::GetCommandDeviceQueryPower wrong command in " + _jsonCmd);
+			}
+			else
+			{
+				std::shared_ptr<CommandDeviceQueryPower> p(new CommandDeviceQueryPower(commandId));
+				return p;
+			}
+		}
+		else
+		{
+			pLogger->LogError("CommandTranslator::GetCommandDeviceQueryPower no command in " + _jsonCmd);
+		}
+	}
+	catch(Poco::JSON::JSONException& e)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandDeviceQueryPower exception occurs: " + e.displayText() + " in " + _jsonCmd);
+	}
+	catch(...)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandDeviceQueryPower unknown exception in " + _jsonCmd);
+	}
+
+	return nullptr;
+}
+
 std::shared_ptr<CommandBdcsPowerOn> CommandTranslator::GetCommandBdcsPowerOn()
 {
 	try
@@ -246,6 +289,7 @@ std::shared_ptr<CommandBdcsPowerOn> CommandTranslator::GetCommandBdcsPowerOn()
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandBdcsPowerOn invalid command in " + _jsonCmd);
@@ -255,7 +299,7 @@ std::shared_ptr<CommandBdcsPowerOn> CommandTranslator::GetCommandBdcsPowerOn()
 			}
 			else
 			{
-				std::shared_ptr<CommandBdcsPowerOn> p(new CommandBdcsPowerOn);
+				std::shared_ptr<CommandBdcsPowerOn> p(new CommandBdcsPowerOn(commandId));
 				return p;
 			}
 		}
@@ -287,6 +331,7 @@ std::shared_ptr<CommandBdcsPowerOff> CommandTranslator::GetCommandBdcsPowerOff()
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandBdcsPowerOff invalid command in " + _jsonCmd);
@@ -296,7 +341,7 @@ std::shared_ptr<CommandBdcsPowerOff> CommandTranslator::GetCommandBdcsPowerOff()
 			}
 			else
 			{
-				std::shared_ptr<CommandBdcsPowerOff> p(new CommandBdcsPowerOff);
+				std::shared_ptr<CommandBdcsPowerOff> p(new CommandBdcsPowerOff(commandId));
 				return p;
 			}
 		}
@@ -328,6 +373,7 @@ std::shared_ptr<CommandBdcsQueryPower> CommandTranslator::GetCommandBdcsQueryPow
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandBdcsQueryPower invalid command in " + _jsonCmd);
@@ -337,7 +383,7 @@ std::shared_ptr<CommandBdcsQueryPower> CommandTranslator::GetCommandBdcsQueryPow
 			}
 			else
 			{
-				std::shared_ptr<CommandBdcsQueryPower> p(new CommandBdcsQueryPower);
+				std::shared_ptr<CommandBdcsQueryPower> p(new CommandBdcsQueryPower(commandId));
 				return p;
 			}
 		}
@@ -369,6 +415,7 @@ std::shared_ptr<CommandBdcCoast> CommandTranslator::GetCommandBdcCoast()
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandBdcCoast invalid command in " + _jsonCmd);
@@ -379,7 +426,7 @@ std::shared_ptr<CommandBdcCoast> CommandTranslator::GetCommandBdcCoast()
 			else
 			{
 				int index = objectPtr->getValue<int>("index");
-				std::shared_ptr<CommandBdcCoast> p(new CommandBdcCoast(index));
+				std::shared_ptr<CommandBdcCoast> p(new CommandBdcCoast(index, commandId));
 				return p;
 			}
 		}
@@ -411,6 +458,7 @@ std::shared_ptr<CommandBdcReverse> CommandTranslator::GetCommandBdcReverse()
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandBdcReverse invalid command in " + _jsonCmd);
@@ -421,7 +469,7 @@ std::shared_ptr<CommandBdcReverse> CommandTranslator::GetCommandBdcReverse()
 			else
 			{
 				int index = objectPtr->getValue<int>("index");
-				std::shared_ptr<CommandBdcReverse> p(new CommandBdcReverse(index));
+				std::shared_ptr<CommandBdcReverse> p(new CommandBdcReverse(index, commandId));
 				return p;
 			}
 		}
@@ -453,6 +501,7 @@ std::shared_ptr<CommandBdcForward> CommandTranslator::GetCommandBdcForward()
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandBdcForward invalid command in " + _jsonCmd);
@@ -463,7 +512,7 @@ std::shared_ptr<CommandBdcForward> CommandTranslator::GetCommandBdcForward()
 			else
 			{
 				int index = objectPtr->getValue<int>("index");
-				std::shared_ptr<CommandBdcForward> p(new CommandBdcForward(index));
+				std::shared_ptr<CommandBdcForward> p(new CommandBdcForward(index, commandId));
 				return p;
 			}
 		}
@@ -495,6 +544,7 @@ std::shared_ptr<CommandBdcBreak> CommandTranslator::GetCommandBdcBreak()
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandBdcBreak invalid command in " + _jsonCmd);
@@ -505,7 +555,7 @@ std::shared_ptr<CommandBdcBreak> CommandTranslator::GetCommandBdcBreak()
 			else
 			{
 				int index = objectPtr->getValue<int>("index");
-				std::shared_ptr<CommandBdcBreak> p(new CommandBdcBreak(index));
+				std::shared_ptr<CommandBdcBreak> p(new CommandBdcBreak(index, commandId));
 				return p;
 			}
 		}
@@ -537,6 +587,7 @@ std::shared_ptr<CommandBdcQuery> CommandTranslator::GetCommandBdcQuery()
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandBdcQuery invalid command in " + _jsonCmd);
@@ -547,7 +598,7 @@ std::shared_ptr<CommandBdcQuery> CommandTranslator::GetCommandBdcQuery()
 			else
 			{
 				int index = objectPtr->getValue<int>("index");
-				std::shared_ptr<CommandBdcQuery> p(new CommandBdcQuery(index));
+				std::shared_ptr<CommandBdcQuery> p(new CommandBdcQuery(index, commandId));
 				return p;
 			}
 		}
@@ -579,6 +630,7 @@ std::shared_ptr<CommandSteppersPowerOn> CommandTranslator::GetCommandSteppersPow
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandSteppersPowerOn invalid command in " + _jsonCmd);
@@ -588,7 +640,7 @@ std::shared_ptr<CommandSteppersPowerOn> CommandTranslator::GetCommandSteppersPow
 			}
 			else
 			{
-				std::shared_ptr<CommandSteppersPowerOn> p(new CommandSteppersPowerOn);
+				std::shared_ptr<CommandSteppersPowerOn> p(new CommandSteppersPowerOn(commandId));
 				return p;
 			}
 		}
@@ -620,6 +672,7 @@ std::shared_ptr<CommandSteppersPowerOff> CommandTranslator::GetCommandSteppersPo
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandSteppersPowerOff invalid command in " + _jsonCmd);
@@ -629,7 +682,7 @@ std::shared_ptr<CommandSteppersPowerOff> CommandTranslator::GetCommandSteppersPo
 			}
 			else
 			{
-				std::shared_ptr<CommandSteppersPowerOff> p(new CommandSteppersPowerOff);
+				std::shared_ptr<CommandSteppersPowerOff> p(new CommandSteppersPowerOff(commandId));
 				return p;
 			}
 		}
@@ -661,6 +714,7 @@ std::shared_ptr<CommandSteppersQueryPower> CommandTranslator::GetCommandSteppers
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandSteppersQueryPower invalid command in " + _jsonCmd);
@@ -670,7 +724,7 @@ std::shared_ptr<CommandSteppersQueryPower> CommandTranslator::GetCommandSteppers
 			}
 			else
 			{
-				std::shared_ptr<CommandSteppersQueryPower> p(new CommandSteppersQueryPower);
+				std::shared_ptr<CommandSteppersQueryPower> p(new CommandSteppersQueryPower(commandId));
 				return p;
 			}
 		}
@@ -702,6 +756,7 @@ std::shared_ptr<CommandStepperQueryResolution> CommandTranslator::GetCommandStep
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandStepperQueryResolution invalid command in " + _jsonCmd);
@@ -711,7 +766,7 @@ std::shared_ptr<CommandStepperQueryResolution> CommandTranslator::GetCommandStep
 			}
 			else
 			{
-				std::shared_ptr<CommandStepperQueryResolution> p(new CommandStepperQueryResolution);
+				std::shared_ptr<CommandStepperQueryResolution> p(new CommandStepperQueryResolution(commandId));
 				return p;
 			}
 		}
@@ -743,6 +798,7 @@ std::shared_ptr<CommandStepperConfigStep> CommandTranslator::GetCommandStepperCo
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandStepperConfigStep invalid command in " + _jsonCmd);
@@ -756,7 +812,7 @@ std::shared_ptr<CommandStepperConfigStep> CommandTranslator::GetCommandStepperCo
 				int lowClks = objectPtr->getValue<int>("lowClks");
 				int highClks = objectPtr->getValue<int>("highClks");
 
-				std::shared_ptr<CommandStepperConfigStep> p(new CommandStepperConfigStep(index, lowClks, highClks));
+				std::shared_ptr<CommandStepperConfigStep> p(new CommandStepperConfigStep(index, lowClks, highClks, commandId));
 				return p;
 			}
 		}
@@ -788,6 +844,7 @@ std::shared_ptr<CommandStepperAccelerationBuffer> CommandTranslator::GetCommandS
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandAccelerationBuffer invalid command in " + _jsonCmd);
@@ -800,7 +857,7 @@ std::shared_ptr<CommandStepperAccelerationBuffer> CommandTranslator::GetCommandS
 				int index = objectPtr->getValue<int>("index");
 				int value = objectPtr->getValue<int>("value");
 
-				std::shared_ptr<CommandStepperAccelerationBuffer> p(new CommandStepperAccelerationBuffer(index, value));
+				std::shared_ptr<CommandStepperAccelerationBuffer> p(new CommandStepperAccelerationBuffer(index, value, commandId));
 				return p;
 			}
 		}
@@ -832,6 +889,7 @@ std::shared_ptr<CommandStepperAccelerationBufferDecrement> CommandTranslator::Ge
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandStepperAccelerationBufferDecrement invalid command in " + _jsonCmd);
@@ -844,7 +902,7 @@ std::shared_ptr<CommandStepperAccelerationBufferDecrement> CommandTranslator::Ge
 				int index = objectPtr->getValue<int>("index");
 				int value = objectPtr->getValue<int>("value");
 
-				std::shared_ptr<CommandStepperAccelerationBufferDecrement> p(new CommandStepperAccelerationBufferDecrement(index, value));
+				std::shared_ptr<CommandStepperAccelerationBufferDecrement> p(new CommandStepperAccelerationBufferDecrement(index, value, commandId));
 				return p;
 			}
 		}
@@ -876,6 +934,7 @@ std::shared_ptr<CommandStepperDecelerationBuffer> CommandTranslator::GetCommandS
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandStepperDecelerationBuffer invalid command in " + _jsonCmd);
@@ -888,7 +947,7 @@ std::shared_ptr<CommandStepperDecelerationBuffer> CommandTranslator::GetCommandS
 				int index = objectPtr->getValue<int>("index");
 				int value = objectPtr->getValue<int>("value");
 
-				std::shared_ptr<CommandStepperDecelerationBuffer> p(new CommandStepperDecelerationBuffer(index, value));
+				std::shared_ptr<CommandStepperDecelerationBuffer> p(new CommandStepperDecelerationBuffer(index, value,  commandId));
 				return p;
 			}
 		}
@@ -920,6 +979,7 @@ std::shared_ptr<CommandStepperDecelerationBufferIncrement> CommandTranslator::Ge
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandStepperDecelerationBufferIncrement invalid command in " + _jsonCmd);
@@ -932,7 +992,7 @@ std::shared_ptr<CommandStepperDecelerationBufferIncrement> CommandTranslator::Ge
 				int index = objectPtr->getValue<int>("index");
 				int value = objectPtr->getValue<int>("value");
 
-				std::shared_ptr<CommandStepperDecelerationBufferIncrement> p(new CommandStepperDecelerationBufferIncrement(index, value));
+				std::shared_ptr<CommandStepperDecelerationBufferIncrement> p(new CommandStepperDecelerationBufferIncrement(index, value, commandId));
 				return p;
 			}
 		}
@@ -964,6 +1024,7 @@ std::shared_ptr<CommandStepperEnable> CommandTranslator::GetCommandStepperEnable
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandStepperEnable invalid command in " + _jsonCmd);
@@ -976,7 +1037,7 @@ std::shared_ptr<CommandStepperEnable> CommandTranslator::GetCommandStepperEnable
 				int index = objectPtr->getValue<int>("index");
 				bool enable = objectPtr->getValue<bool>("enable");
 
-				std::shared_ptr<CommandStepperEnable> p(new CommandStepperEnable(index, enable));
+				std::shared_ptr<CommandStepperEnable> p(new CommandStepperEnable(index, enable, commandId));
 				return p;
 			}
 		}
@@ -1008,6 +1069,7 @@ std::shared_ptr<CommandStepperForward> CommandTranslator::GetCommandStepperForwa
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandStepperForward invalid command in " + _jsonCmd);
@@ -1020,7 +1082,7 @@ std::shared_ptr<CommandStepperForward> CommandTranslator::GetCommandStepperForwa
 				int index = objectPtr->getValue<int>("index");
 				bool forward = objectPtr->getValue<bool>("forward");
 
-				std::shared_ptr<CommandStepperForward> p(new CommandStepperForward(index, forward));
+				std::shared_ptr<CommandStepperForward> p(new CommandStepperForward(index, forward, commandId));
 				return p;
 			}
 		}
@@ -1052,6 +1114,7 @@ std::shared_ptr<CommandStepperSteps> CommandTranslator::GetCommandStepperSteps()
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandStepperSteps invalid command in " + _jsonCmd);
@@ -1064,7 +1127,7 @@ std::shared_ptr<CommandStepperSteps> CommandTranslator::GetCommandStepperSteps()
 				int index = objectPtr->getValue<int>("index");
 				int value = objectPtr->getValue<int>("value");
 
-				std::shared_ptr<CommandStepperSteps> p(new CommandStepperSteps(index, value));
+				std::shared_ptr<CommandStepperSteps> p(new CommandStepperSteps(index, value, commandId));
 				return p;
 			}
 		}
@@ -1096,6 +1159,7 @@ std::shared_ptr<CommandStepperRun> CommandTranslator::GetCommandStepperRun()
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandStepperRun invalid command in " + _jsonCmd);
@@ -1105,7 +1169,9 @@ std::shared_ptr<CommandStepperRun> CommandTranslator::GetCommandStepperRun()
 			}
 			else
 			{
-				std::shared_ptr<CommandStepperRun> p(new CommandStepperRun);
+				int index = objectPtr->getValue<int>("index");
+
+				std::shared_ptr<CommandStepperRun> p(new CommandStepperRun(index, commandId));
 				return p;
 			}
 		}
@@ -1137,6 +1203,7 @@ std::shared_ptr<CommandStepperConfigHome> CommandTranslator::GetCommandStepperCo
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandStepperConfigHome invalid command in " + _jsonCmd);
@@ -1151,7 +1218,7 @@ std::shared_ptr<CommandStepperConfigHome> CommandTranslator::GetCommandStepperCo
 				int lineNumberStart = objectPtr->getValue<int>("lineNumberStart");
 				int lineNumberTerminal = objectPtr->getValue<int>("lineNumberTerminal");
 
-				std::shared_ptr<CommandStepperConfigHome> p(new CommandStepperConfigHome(stepperIndex, locatorIndex, lineNumberStart, lineNumberTerminal));
+				std::shared_ptr<CommandStepperConfigHome> p(new CommandStepperConfigHome(stepperIndex, locatorIndex, lineNumberStart, lineNumberTerminal, commandId));
 				return p;
 			}
 		}
@@ -1183,6 +1250,7 @@ std::shared_ptr<CommandStepperQuery> CommandTranslator::GetCommandStepperQuery()
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandStepperQuery invalid command in " + _jsonCmd);
@@ -1194,7 +1262,7 @@ std::shared_ptr<CommandStepperQuery> CommandTranslator::GetCommandStepperQuery()
 			{
 				int stepperIndex = objectPtr->getValue<int>("index");
 
-				std::shared_ptr<CommandStepperQuery> p(new CommandStepperQuery(stepperIndex));
+				std::shared_ptr<CommandStepperQuery> p(new CommandStepperQuery(stepperIndex, commandId));
 				return p;
 			}
 		}
@@ -1226,6 +1294,7 @@ std::shared_ptr<CommandLocatorQuery> CommandTranslator::GetCommandLocatorQuery()
 		if(objectPtr->has(std::string("command")))
 		{
 			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
 
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandLocatorQuery invalid command in " + _jsonCmd);
@@ -1237,7 +1306,7 @@ std::shared_ptr<CommandLocatorQuery> CommandTranslator::GetCommandLocatorQuery()
 			{
 				int index = objectPtr->getValue<int>("index");
 
-				std::shared_ptr<CommandLocatorQuery> p(new CommandLocatorQuery(index));
+				std::shared_ptr<CommandLocatorQuery> p(new CommandLocatorQuery(index, commandId));
 				return p;
 			}
 		}
