@@ -10,6 +10,7 @@ CPP_SRCS += \
 ../src/CommandTranslater.cpp \
 ../src/ProxyLogger.cpp \
 ../src/ReplyFactory.cpp \
+../src/ReplyTranslater.cpp \
 ../src/proxy.cpp 
 
 OBJS += \
@@ -19,6 +20,7 @@ OBJS += \
 ./src/CommandTranslater.o \
 ./src/ProxyLogger.o \
 ./src/ReplyFactory.o \
+./src/ReplyTranslater.o \
 ./src/proxy.o 
 
 CPP_DEPS += \
@@ -28,6 +30,7 @@ CPP_DEPS += \
 ./src/CommandTranslater.d \
 ./src/ProxyLogger.d \
 ./src/ReplyFactory.d \
+./src/ReplyTranslater.d \
 ./src/proxy.d 
 
 

@@ -14,6 +14,7 @@
 #include "ReplyFactory.h"
 #include "ProxyLogger.h"
 #include "CommandFactory.h"
+#include "ReplyTranslater.h"
 
 extern ProxyLogger * pLogger;
 
@@ -37,9 +38,9 @@ void CSocketManager::OnDeviceInserted(const std::string& deviceName)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	if(_deviceSocketMap.end() == _deviceSocketMap.find(deviceName)) {
+	if(_deviceMap.end() == _deviceMap.find(deviceName)) {
 		pLogger->LogInfo("CSocketManager::OnDeviceInserted new device is available: " + deviceName);
-		_deviceSocketMap[deviceName].socketId = INVALID_SOCKET_ID;
+		_deviceMap[deviceName].socketId = INVALID_SOCKET_ID;
 	}
 	else {
 		pLogger->LogError("CSocketManager::OnDeviceInserted: device has already existed: " + deviceName);
@@ -50,28 +51,15 @@ void CSocketManager::OnDeviceUnplugged(const std::string& deviceName)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	auto it = _deviceSocketMap.find(deviceName);
-	if(_deviceSocketMap.end() != it) {
-		auto socketId = _deviceSocketMap[deviceName].socketId;
-
-		pLogger->LogInfo("CSocketManager::OnDeviceUnplugged: device is unplugged: " + deviceName);
-		_deviceSocketMap.erase(it);
-
-		if(socketId != INVALID_SOCKET_ID) {
-			onDeviceUnpluged(socketId);
-		}
-	}
-	else {
-		pLogger->LogError("CDeviceSocketMapping::OnDeviceUnplugged: unknown device is unplugged: " + deviceName);
-	}
+	_unpluggedDevices.push_back(deviceName);
 }
 
 void CSocketManager::OnDeviceReply(const std::string& deviceName, const std::string& reply)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	auto it = _deviceSocketMap.find(deviceName);
-	if(_deviceSocketMap.end() != it) {
+	auto it = _deviceMap.find(deviceName);
+	if(_deviceMap.end() != it) {
 		pLogger->LogInfo("CDeviceSocketMapping::OnDeviceReply: " + deviceName + ":" + reply);
 		it->second.replyPool.push_back(reply);
 	}
@@ -88,6 +76,7 @@ void CSocketManager::onDeviceUnpluged(long long socketId)
 	for(; it != _sockets.end(); it++)
 	{
 		if(it->socketId == socketId) {
+			//enqueue event to the outgoing stage.
 			auto reply = ReplyFactory::EventDeviceUnplugged();
 			for(auto c=reply.begin(); c!=reply.end(); c++) {
 				it->outgoing.push_back(*c);
@@ -99,6 +88,36 @@ void CSocketManager::onDeviceUnpluged(long long socketId)
 		pLogger->LogError("CSocketManager::onDeviceUnpluged no socket for socketId is found: " + std::to_string(socketId));
 	}
 }
+
+void CSocketManager::processUnpluggedDevice()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	for(; _unpluggedDevices.size()>0; )
+	{
+		//retrieve the first element.
+		std::string deviceName = _unpluggedDevices.front();
+		_unpluggedDevices.erase(_unpluggedDevices.begin());
+
+		auto it = _deviceMap.find(deviceName);
+		if(_deviceMap.end() != it) {
+			auto socketId = _deviceMap[deviceName].socketId;
+
+			pLogger->LogInfo("CSocketManager::OnDeviceUnplugged: device is unplugged: " + deviceName);
+			_deviceMap.erase(it);
+
+			if(socketId != INVALID_SOCKET_ID) {
+				//a socket has connected to this device
+				onDeviceUnpluged(socketId);
+			}
+		}
+		else {
+			pLogger->LogError("CDeviceSocketMapping::OnDeviceUnplugged: unknown device is unplugged: " + deviceName);
+		}
+	}
+
+}
+
 
 
 void CSocketManager::moveReplyToSocket(long long socketId, const std::string& reply)
@@ -120,13 +139,47 @@ void CSocketManager::moveReplyToSocket(long long socketId, const std::string& re
 		}
 	}
 	if(it == _sockets.end()) {
-		pLogger->LogError("CSocketManager::onDeviceReplyAvailable no socket for socketId: " + std::to_string(socketId));
+		pLogger->LogError("CSocketManager::moveReplyToSocket no socket for socketId: " + std::to_string(socketId));
 	}
 	else {
-		pLogger->LogInfo("CSocketManager::onDeviceReplyAvailable send reply: " + std::to_string(socketId) + ":" + reply);
+		pLogger->LogInfo("CSocketManager::moveReplyToSocket send reply: " + std::to_string(socketId) + ":" + reply);
 	}
 }
 
+void CSocketManager::processReplies()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	for(auto deviceIt = _deviceMap.begin(); deviceIt != _deviceMap.end(); deviceIt++)
+	{
+		std::string formatedReply;
+		auto& deviceData = deviceIt->second;
+
+		if(deviceData.replyPool.empty()) {
+			continue;
+		}
+		if(deviceData.socketId == INVALID_SOCKET_ID) {
+			//no socket connects to this device.
+			deviceData.replyPool.clear();
+			continue;
+		}
+
+		for(auto it = deviceData.replyPool.begin(); it != deviceData.replyPool.end(); it++) {
+			ReplyTranslater translater(*it);
+			std::string jsonReply = translater.ToJsonReply();
+			if(jsonReply.empty()) {
+				char buf[512];
+
+				sprintf(buf, "CSocketManager::processReplies unknown reply from device %s : %s", deviceIt->first.c_str(), it->c_str());
+				pLogger->LogError(buf);
+			}
+			else {
+				moveReplyToSocket(deviceData.socketId, jsonReply);
+			}
+		}
+		deviceData.replyPool.clear();
+	}
+}
 
 void CSocketManager::AddSocket(StreamSocket& socket)
 {
@@ -172,7 +225,8 @@ void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::s
 		break;
 
 	case CommandType::DeviceQueryPower:
-
+		onCommandDeviceQueryPower(socketWrapper, translator.GetCommandDeviceQueryPower());
+		break;
 
 	case CommandType::BdcsPowerOn:
 		onCommandBdcsPowerOn(socketWrapper, translator.GetCommandBdcsPowerOn());
@@ -286,7 +340,7 @@ void CSocketManager::onCommandDevicesGet(struct SocketWrapper& socketWrapper, st
 	}
 
 	std::vector<std::string> devices;
-	for(auto it = _deviceSocketMap.begin(); it!=_deviceSocketMap.end(); it++) {
+	for(auto it = _deviceMap.begin(); it!=_deviceMap.end(); it++) {
 		devices.push_back(it->first);
 	}
 
@@ -307,8 +361,8 @@ void CSocketManager::onCommandDeviceConnect(struct SocketWrapper& socketWrapper,
 	std::string device = cmdPtr->DeviceName();
 	std::string reason;
 
-	auto deviceIt=_deviceSocketMap.begin();
-	for(; deviceIt!=_deviceSocketMap.end(); deviceIt++)
+	auto deviceIt=_deviceMap.begin();
+	for(; deviceIt!=_deviceMap.end(); deviceIt++)
 	{
 		if(deviceIt->first == device)
 		{
@@ -336,7 +390,7 @@ void CSocketManager::onCommandDeviceConnect(struct SocketWrapper& socketWrapper,
 			break;
 		}
 	}
-	if(deviceIt == _deviceSocketMap.end()) {
+	if(deviceIt == _deviceMap.end()) {
 		//cannot find the device
 		reason = "cannot find " + device;
 	}
@@ -347,19 +401,20 @@ void CSocketManager::onCommandDeviceConnect(struct SocketWrapper& socketWrapper,
 	}
 }
 
-void CSocketManager::sendSocketCommandToDevice(long long socketId, const std::string& command)
+void CSocketManager::sendTranslatedCommandToDevice(long long socketId, const std::string& cmdString)
 {
-	auto deviceIt = _deviceSocketMap.begin();
-	for(; deviceIt!=_deviceSocketMap.end(); deviceIt++)
+	auto deviceIt = _deviceMap.begin();
+	for(; deviceIt!=_deviceMap.end(); deviceIt++)
 	{
 		if(deviceIt->second.socketId == socketId)
 		{
-			pLogger->LogInfo(std::string(__FUNCTION__) + " " + command + " >> " + deviceIt->first);
-			_pDevice->SendCommand(deviceIt->first, command);
+			pLogger->LogInfo(std::string(__FUNCTION__) + " " + cmdString + " >> " + deviceIt->first);
+			auto& deviceName = deviceIt->first;
+			_pDevice->SendCommand(deviceName, cmdString);
 			break;
 		}
 	}
-	if(deviceIt == _deviceSocketMap.end()) {
+	if(deviceIt == _deviceMap.end()) {
 		pLogger->LogError(std::string(__FUNCTION__) + " socketId hasn't be bonded to device: " + std::to_string(socketId));
 	}
 }
@@ -371,7 +426,7 @@ void CSocketManager::onCommandDeviceQueryPower(struct SocketWrapper& socketWrapp
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandBdcsPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcsPowerOn> cmdPtr)
@@ -381,7 +436,7 @@ void CSocketManager::onCommandBdcsPowerOn(struct SocketWrapper& socketWrapper, s
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandBdcsPowerOff(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcsPowerOff> cmdPtr)
@@ -391,7 +446,7 @@ void CSocketManager::onCommandBdcsPowerOff(struct SocketWrapper& socketWrapper, 
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandBdcsQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcsQueryPower> cmdPtr)
@@ -401,7 +456,7 @@ void CSocketManager::onCommandBdcsQueryPower(struct SocketWrapper& socketWrapper
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandBdcCoast(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcCoast> cmdPtr)
@@ -411,7 +466,7 @@ void CSocketManager::onCommandBdcCoast(struct SocketWrapper& socketWrapper, std:
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandBdcReverse(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcReverse> cmdPtr)
@@ -421,7 +476,7 @@ void CSocketManager::onCommandBdcReverse(struct SocketWrapper& socketWrapper, st
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandBdcForward(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcForward> cmdPtr)
@@ -431,7 +486,7 @@ void CSocketManager::onCommandBdcForward(struct SocketWrapper& socketWrapper, st
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandBdcBreak(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcBreak> cmdPtr)
@@ -441,7 +496,7 @@ void CSocketManager::onCommandBdcBreak(struct SocketWrapper& socketWrapper, std:
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandBdcQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcQuery> cmdPtr)
@@ -451,7 +506,7 @@ void CSocketManager::onCommandBdcQuery(struct SocketWrapper& socketWrapper, std:
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandSteppersPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSteppersPowerOn> cmdPtr)
@@ -461,7 +516,7 @@ void CSocketManager::onCommandSteppersPowerOn(struct SocketWrapper& socketWrappe
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandSteppersPowerOff(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSteppersPowerOff> cmdPtr)
@@ -471,7 +526,7 @@ void CSocketManager::onCommandSteppersPowerOff(struct SocketWrapper& socketWrapp
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandSteppersQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSteppersQueryPower> cmdPtr)
@@ -481,7 +536,7 @@ void CSocketManager::onCommandSteppersQueryPower(struct SocketWrapper& socketWra
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandStepperQueryResolution(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperQueryResolution> cmdPtr)
@@ -491,7 +546,7 @@ void CSocketManager::onCommandStepperQueryResolution(struct SocketWrapper& socke
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandStepperConfigStep(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperConfigStep> cmdPtr)
@@ -501,7 +556,7 @@ void CSocketManager::onCommandStepperConfigStep(struct SocketWrapper& socketWrap
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandStepperAccelerationBuffer(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperAccelerationBuffer> cmdPtr)
@@ -511,7 +566,7 @@ void CSocketManager::onCommandStepperAccelerationBuffer(struct SocketWrapper& so
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandStepperAccelerationBufferDecrement(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperAccelerationBufferDecrement> cmdPtr)
@@ -521,7 +576,7 @@ void CSocketManager::onCommandStepperAccelerationBufferDecrement(struct SocketWr
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandStepperDecelerationBuffer(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperDecelerationBuffer> cmdPtr)
@@ -531,7 +586,7 @@ void CSocketManager::onCommandStepperDecelerationBuffer(struct SocketWrapper& so
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandStepperDecelerationBufferIncrement(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperDecelerationBufferIncrement> cmdPtr)
@@ -541,7 +596,7 @@ void CSocketManager::onCommandStepperDecelerationBufferIncrement(struct SocketWr
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandStepperEnable(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperEnable> cmdPtr)
@@ -551,7 +606,7 @@ void CSocketManager::onCommandStepperEnable(struct SocketWrapper& socketWrapper,
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandStepperForward(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperForward> cmdPtr)
@@ -561,7 +616,7 @@ void CSocketManager::onCommandStepperForward(struct SocketWrapper& socketWrapper
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandStepperSteps(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperSteps> cmdPtr)
@@ -571,7 +626,7 @@ void CSocketManager::onCommandStepperSteps(struct SocketWrapper& socketWrapper, 
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandStepperRun(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperRun> cmdPtr)
@@ -581,7 +636,7 @@ void CSocketManager::onCommandStepperRun(struct SocketWrapper& socketWrapper, st
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandStepperConfigHome(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperConfigHome> cmdPtr)
@@ -591,7 +646,7 @@ void CSocketManager::onCommandStepperConfigHome(struct SocketWrapper& socketWrap
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandStepperQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperQuery> cmdPtr)
@@ -601,7 +656,7 @@ void CSocketManager::onCommandStepperQuery(struct SocketWrapper& socketWrapper, 
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandLocatorQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandLocatorQuery> cmdPtr)
@@ -611,7 +666,7 @@ void CSocketManager::onCommandLocatorQuery(struct SocketWrapper& socketWrapper, 
 		return;
 	}
 
-	sendSocketCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 
@@ -697,8 +752,8 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 {
 	//move pending replies in device wrapper to socket wrapper
-	auto it = _deviceSocketMap.begin();
-	for(; it!=_deviceSocketMap.end(); it++)
+	auto it = _deviceMap.begin();
+	for(; it!=_deviceMap.end(); it++)
 	{
 		auto& deviceWrapper = it->second;
 		if(socketWrapper.socketId == deviceWrapper.socketId)
@@ -777,7 +832,7 @@ void CSocketManager::cleanupSockets()
 	{
 		if(it->state == SocketState::TO_BE_CLOSED)
 		{
-			for(auto deviceIt=_deviceSocketMap.begin(); deviceIt!=_deviceSocketMap.end(); deviceIt++) {
+			for(auto deviceIt=_deviceMap.begin(); deviceIt!=_deviceMap.end(); deviceIt++) {
 				if(it->socketId == deviceIt->second.socketId) {
 					pLogger->LogInfo("CSocketManager::cleanupSockets socket disconnects from device: " + std::to_string(it->socketId) + ":" + deviceIt->first);
 					deviceIt->second.socketId = INVALID_SOCKET_ID;
@@ -805,7 +860,6 @@ void CSocketManager::cleanupSockets()
 
 void CSocketManager::pollSockets()
 {
-
 	if(_sockets.size() < 1) {
 		return;
 	}
@@ -935,9 +989,12 @@ void CSocketManager::runTask()
 			if(_sockets.size() < 1) {
 				sleep(100);
 			}
-			else {
-				pollSockets();
-			}
+
+			processUnpluggedDevice();
+
+			processReplies();
+
+			pollSockets();
 		}
 	}
 

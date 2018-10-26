@@ -72,24 +72,27 @@ private:
 
 
 	//device has a 1:1 relationship to socket
-	// a map of device name vs Device wrapper.
-	struct DeviceWrapper
+	struct DeviceData
 	{
 		long long socketId;//which socket this device bonds to
 		std::deque<std::string> replyPool; //to save information from device.
 	};
-	std::map<std::string, struct DeviceWrapper> _deviceSocketMap;
+	std::map<std::string, struct DeviceData> _deviceMap;
 	IDevice * _pDevice;
 
+	//unplugged devices
+	std::vector<std::string> _unpluggedDevices;
+	void processUnpluggedDevice();
 	void onDeviceUnpluged(long long socketId);
-	//transfer the reply to sending stage
+
+	//process replies from devices
 	void moveReplyToSocket(long long socketId, const std::string& reply);
+	void processReplies();
 
-	void onSocketReadable(struct SocketWrapper& socketWrapper);
-	void onSocketWritable(struct SocketWrapper& socketWrapper);
-	void onSocketError(struct SocketWrapper& socketWrapper);
 
+	//retrieve commands from data
 	void retrieveCommands(std::deque<unsigned char>& data, std::vector<std::string>& commands);
+	//JSON command processors
 	void onCommand(struct SocketWrapper& socketWrapper, const std::string& command);
 	void onCommandDevicesGet(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDevicesGet> cmdPtr);
 	void onCommandDeviceConnect(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDeviceConnect> cmdPtr);
@@ -118,11 +121,14 @@ private:
 	void onCommandStepperConfigHome(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperConfigHome> cmdPtr);
 	void onCommandStepperQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperQuery> cmdPtr);
 	void onCommandLocatorQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandLocatorQuery> cmdPtr);
-	void sendSocketCommandToDevice(long long socketId, const std::string& command);
-
+	void sendTranslatedCommandToDevice(long long socketId, const std::string& cmdString);
 
 	long long newSocketId() { return ++_lastSocketId; }
 
+	//socket accessing
+	void onSocketReadable(struct SocketWrapper& socketWrapper);
+	void onSocketWritable(struct SocketWrapper& socketWrapper);
+	void onSocketError(struct SocketWrapper& socketWrapper);
 	void pollSockets();
 	void cleanupSockets();
 };
