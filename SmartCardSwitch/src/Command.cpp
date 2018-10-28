@@ -15,7 +15,12 @@ unsigned long DeviceCommand::_commandIdSeed = 1;
 ///////////////////////////////////////////////////////////
 // CommandDevicesGet
 ///////////////////////////////////////////////////////////
-std::string CommandDevicesGet::ToCommand()
+std::string CommandDevicesGet::CommandKey()
+{
+	return std::string("devices get");
+}
+
+std::string CommandDevicesGet::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -35,6 +40,11 @@ CommandDeviceConnect::CommandDeviceConnect(const std::string& deviceName)
 	_deviceName = deviceName;
 }
 
+std::string CommandDeviceConnect::CommandKey()
+{
+	return std::string("device connect");
+}
+
 std::string CommandDeviceConnect::GetUndoState()
 {
 	std::string state = "disconnected from " + _deviceName;
@@ -48,7 +58,7 @@ std::string CommandDeviceConnect::GetFinalState()
 	return state;
 }
 
-std::string CommandDeviceConnect::ToCommand()
+std::string CommandDeviceConnect::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -61,7 +71,7 @@ std::string CommandDeviceConnect::ToCommand()
 	return cmd;
 }
 
-std::string CommandDeviceConnect::ToCommandUndo()
+std::string CommandDeviceConnect::ToJsonCommandUndoString()
 {
 	std::string cmd;
 
@@ -77,7 +87,12 @@ std::string CommandDeviceConnect::ToCommandUndo()
 ///////////////////////////////////////////////////////////
 // CommandDeviceQueryPower
 ///////////////////////////////////////////////////////////
-std::string CommandDeviceQueryPower::ToCommand()
+std::string CommandDeviceQueryPower::CommandKey()
+{
+	return std::string("device query power");
+}
+
+std::string CommandDeviceQueryPower::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -104,7 +119,7 @@ std::string CommandBdcsPowerOn::GetFinalState()
 	return state;
 }
 
-std::string CommandBdcsPowerOn::ToCommand()
+std::string CommandBdcsPowerOn::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -116,7 +131,7 @@ std::string CommandBdcsPowerOn::ToCommand()
 	return cmd;
 }
 
-std::string CommandBdcsPowerOn::ToCommandUndo()
+std::string CommandBdcsPowerOn::ToJsonCommandUndoString()
 {
 	std::string cmd;
 
@@ -143,7 +158,7 @@ std::string CommandBdcsPowerOff::GetFinalState()
 	return state;
 }
 
-std::string CommandBdcsPowerOff::ToCommand()
+std::string CommandBdcsPowerOff::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -155,7 +170,7 @@ std::string CommandBdcsPowerOff::ToCommand()
 	return cmd;
 }
 
-std::string CommandBdcsPowerOff::ToCommandUndo()
+std::string CommandBdcsPowerOff::ToJsonCommandUndoString()
 {
 	std::string cmd;
 
@@ -170,7 +185,7 @@ std::string CommandBdcsPowerOff::ToCommandUndo()
 ///////////////////////////////////////////////////////
 // CommandBdcsPowerQuery
 ///////////////////////////////////////////////////////
-std::string CommandBdcsQueryPower::ToCommand()
+std::string CommandBdcsQueryPower::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -254,7 +269,7 @@ std::string CommandBdcOperation::GetFinalState()
 	return state;
 }
 
-std::string CommandBdcOperation::ToCommand()
+std::string CommandBdcOperation::ToJsonCommandString()
 {
 	std::string cmd;
 	std::string mode;
@@ -292,7 +307,7 @@ std::string CommandBdcOperation::ToCommand()
 	return cmd;
 }
 
-std::string CommandBdcOperation::ToCommandUndo()
+std::string CommandBdcOperation::ToJsonCommandUndoString()
 {
 	std::string cmd;
 	std::string mode;
@@ -338,7 +353,7 @@ CommandBdcQuery::CommandBdcQuery(unsigned int bdcIndex)
 	_bdcIndex = bdcIndex;
 }
 
-std::string CommandBdcQuery::ToCommand()
+std::string CommandBdcQuery::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -354,7 +369,7 @@ std::string CommandBdcQuery::ToCommand()
 ///////////////////////////////////////////////////////////
 // CommandStepperQueryClkPeriod
 ///////////////////////////////////////////////////////////
-std::string CommandStepperQueryClkPeriod::ToCommand()
+std::string CommandStepperQueryClkPeriod::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -377,7 +392,7 @@ CommandStepperConfigStep::CommandStepperConfigStep(unsigned int stepperIndex, un
 	_highClks = highClks;
 }
 
-std::string CommandStepperConfigStep::ToCommand()
+std::string CommandStepperConfigStep::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -408,7 +423,7 @@ CommandStepperAccelerationBuffer::CommandStepperAccelerationBuffer(unsigned int 
 	_value = value;
 }
 
-std::string CommandStepperAccelerationBuffer::ToCommand()
+std::string CommandStepperAccelerationBuffer::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -438,7 +453,7 @@ CommandStepperAccelerationBufferDecrement::CommandStepperAccelerationBufferDecre
 	_value = value;
 }
 
-std::string CommandStepperAccelerationBufferDecrement::ToCommand()
+std::string CommandStepperAccelerationBufferDecrement::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -468,7 +483,7 @@ CommandStepperDecelerationBuffer::CommandStepperDecelerationBuffer(unsigned int 
 	_value = value;
 }
 
-std::string CommandStepperDecelerationBuffer::ToCommand()
+std::string CommandStepperDecelerationBuffer::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -497,7 +512,7 @@ CommandStepperDecelerationBufferIncrement::CommandStepperDecelerationBufferIncre
 	_value = value;
 }
 
-std::string CommandStepperDecelerationBufferIncrement::ToCommand()
+std::string CommandStepperDecelerationBufferIncrement::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -526,7 +541,7 @@ CommandStepperEnable::CommandStepperEnable(unsigned int stepperIndex, bool enabl
 	_enable = enable;
 }
 
-std::string CommandStepperEnable::ToCommand()
+std::string CommandStepperEnable::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -540,7 +555,7 @@ std::string CommandStepperEnable::ToCommand()
 	return cmd;
 }
 
-std::string CommandStepperEnable::ToCommandUndo()
+std::string CommandStepperEnable::ToJsonCommandUndoString()
 {
 	std::string cmd;
 
@@ -620,7 +635,7 @@ std::string CommandStepperForward::GetFinalState()
 	return state;
 }
 
-std::string CommandStepperForward::ToCommand()
+std::string CommandStepperForward::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -634,7 +649,7 @@ std::string CommandStepperForward::ToCommand()
 	return cmd;
 }
 
-std::string CommandStepperForward::ToCommandUndo()
+std::string CommandStepperForward::ToJsonCommandUndoString()
 {
 	std::string cmd;
 
@@ -669,7 +684,7 @@ std::string CommandStepperSteps::GetFinalState()
 	return state;
 }
 
-std::string CommandStepperSteps::ToCommand()
+std::string CommandStepperSteps::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -683,7 +698,7 @@ std::string CommandStepperSteps::ToCommand()
 	return cmd;
 }
 
-std::string CommandStepperSteps::ToCommandUndo()
+std::string CommandStepperSteps::ToJsonCommandUndoString()
 {
 	std::string cmd;
 
@@ -720,7 +735,7 @@ std::string CommandStepperRun::GetFinalState()
 	return state;
 }
 
-std::string CommandStepperRun::ToCommand()
+std::string CommandStepperRun::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -733,7 +748,7 @@ std::string CommandStepperRun::ToCommand()
 	return cmd;
 }
 
-std::string CommandStepperRun::ToCommandUndo()
+std::string CommandStepperRun::ToJsonCommandUndoString()
 {
 	std::string cmd;
 
@@ -761,7 +776,7 @@ CommandStepperConfigHome::CommandStepperConfigHome(unsigned int stepperIndex,
 	_lineNumberTerminal = lineNumberTerminal;
 }
 
-std::string CommandStepperConfigHome::ToCommand()
+std::string CommandStepperConfigHome::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -794,7 +809,7 @@ CommandStepperMove::CommandStepperMove(unsigned int stepperIndex, unsigned long 
 	_steps = steps;
 }
 
-std::string CommandStepperMove::ToCommand()
+std::string CommandStepperMove::ToJsonCommandString()
 {
 	std::string cmd;
 
@@ -809,7 +824,7 @@ std::string CommandStepperMove::ToCommand()
 	return cmd;
 }
 
-std::string CommandStepperMove::ToCommandUndo()
+std::string CommandStepperMove::ToJsonCommandUndoString()
 {
 	std::string cmd;
 
@@ -852,7 +867,7 @@ CommandLocatorQuery::CommandLocatorQuery(unsigned int locatorIndex)
 	_locatorIndex = locatorIndex;
 }
 
-std::string CommandLocatorQuery::ToCommand()
+std::string CommandLocatorQuery::ToJsonCommandString()
 {
 	std::string cmd;
 

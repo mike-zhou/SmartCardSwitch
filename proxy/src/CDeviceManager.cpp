@@ -262,22 +262,16 @@ void CDeviceManager::onDeviceInput(struct Device& device)
 	ssize_t amount;
 
 	//read data from device
-	for(;;)
+	amount =  read(device.fd, buffer, BUFFER_SIZE);
+	pLogger->LogDebug("CDeviceManager::onDeviceInput " + std::to_string(amount) + " from " + device.fileName);
+
+	for(int i=0; i<amount; i++)
 	{
-		amount =  read(device.fd, buffer, BUFFER_SIZE);
-		pLogger->LogDebug("CDeviceManager::onDeviceInput " + std::to_string(amount) + " from " + device.fileName);
+		char tmpBuffer[256];
+		sprintf(tmpBuffer, "CDeviceManager::onDeviceInput 0x%02x:%c", buffer[i], buffer[i]);
+		pLogger->LogDebug(tmpBuffer);
 
-		for(int i=0; i<amount; i++)
-		{
-			char tmpBuffer[256];
-			sprintf(tmpBuffer, "CDeviceManager::onDeviceInput 0x%02x:%c", buffer[i], buffer[i]);
-			pLogger->LogDebug(tmpBuffer);
-
-			device.incoming.push_back(buffer[i]);
-		}
-		if(amount < 1) {
-			break;
-		}
+		device.incoming.push_back(buffer[i]);
 	}
 
 	//notify mapping of complete replies

@@ -64,8 +64,9 @@ public:
 	struct ReplyCommon
 	{
 		std::string originalString;
-		unsigned long commandId;
-		std::string state;
+		std::string commandKey;
+		unsigned short commandId; //proxy replies commandId in type of unsigned short.
+		std::string errorInfo; //no error if empty
 	};
 
 	struct ReplyDevicesGet: ReplyCommon
@@ -75,7 +76,9 @@ public:
 
 	struct ReplyDeviceConnect: ReplyCommon
 	{
-		//empty
+		std::string deviceName;
+		bool connected;
+		std::string reason;
 	};
 
 	struct ReplyDeviceQueryPower: ReplyCommon
@@ -261,6 +264,7 @@ private:
 	//replies to command
 	const std::string strCommandDevicesGet = "devices get";
 	const std::string strCommandDeviceConnect = "device connect";
+	const std::string strCommandDeviceQueryPower = "device query power";
 	const std::string strCommandBdcsPowerOn = "bdcs power on";
 	const std::string strCommandBdcsPowerOff = "bdcs power off";
 	const std::string strCommandBdcsQueryPower = "bdcs query power";

@@ -51,6 +51,8 @@ private:
 	void showHelp();
 
 	void processInput();
+
+	bool isCorrespondingReply(const std::string& command, unsigned short commandId);
 	void processFeedbacks();
 
 	struct UserCommand
@@ -61,6 +63,7 @@ private:
 			DevicesGet = 0,
 			DeviceConnect = 1,
 			DeviceQueryPower = 2,
+			DeviceQueryFuse = 3,
 			OptPowerOn = 20,
 			OptPowerOff = 21,
 			OptQueryPower = 22,
@@ -94,15 +97,25 @@ private:
 			LocatorQuery = 90,
 		} type;
 
-		enum State
+		enum CommandState
 		{
 			IDLE = 0,
+			COMMAND_SENT,
 			CANCELLED,
-			FINISHED,
-			COMMAND_SENT
-		} state;
+			SUCCEEDED,
+			FAILED
+		};
 
-		std::string command;
+		enum PowerStatus
+		{
+			UNKNOWN,
+			POWERED_ON,
+			POWERED_OFF
+		};
+
+		CommandState state;
+		std::string jsonCommandString;
+		std::string commandKey;
 		unsigned long commandId;
 		std::string expectedResult;
 
@@ -115,7 +128,9 @@ private:
 		// DevicesGet
 		std::vector<std::string> resultDevices;
 		// DeviceConnect
-		std::string resultConnectedDevice;
+		std::string resultConnectedDeviceName;
+		//device query power
+		PowerStatus devicePowerStatus;
 
 
 	} _userCommand;

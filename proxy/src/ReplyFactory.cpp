@@ -92,16 +92,16 @@ std::vector<unsigned char> ReplyFactory::DeviceConnect(unsigned long cmdId, cons
 	//{
 	//	"command":"device connect",
 	//  "commandId":1,
-	//	"device": "device12345",
-	//	"result":false,
+	//	"deviceName": "device12345",
+	//	"connected":false,
 	//	"reason":"connected to IP:port"
 	//}
 
 	json = "{";
 	json = json + "\"command\":\"device connect\",";
 	json = json + "\"commandId\":" + std::to_string(cmdId) + ",";
-	json = json + "\"device\":\"" + deviceName + "\",";
-	json = json + "\"result\":" + (result?"true":"false") + ",";
+	json = json + "\"deviceName\":\"" + deviceName + "\",";
+	json = json + "\"connected\":" + (result?"true":"false") + ",";
 	json = json + "\"reason\":\"" + reason + "\"";
 	json = json + "}";
 

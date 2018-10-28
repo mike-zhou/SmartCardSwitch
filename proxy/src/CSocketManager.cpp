@@ -115,9 +115,7 @@ void CSocketManager::processUnpluggedDevice()
 			pLogger->LogError("CDeviceSocketMapping::OnDeviceUnplugged: unknown device is unplugged: " + deviceName);
 		}
 	}
-
 }
-
 
 
 void CSocketManager::moveReplyToSocket(long long socketId, const std::string& reply)
@@ -384,6 +382,7 @@ void CSocketManager::onCommandDeviceConnect(struct SocketWrapper& socketWrapper,
 			}
 			else
 			{
+				pLogger->LogInfo("CSocketManager::onCommandDeviceConnect socket " + std::to_string(socketWrapper.socketId) + " connected to " + deviceIt->first);
 				deviceIt->second.socketId = socketWrapper.socketId;
 				success = true;
 			}

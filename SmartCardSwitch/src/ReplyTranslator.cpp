@@ -87,7 +87,7 @@ ReplyTranslator::ReplyTranslator(const std::string& reply)
 		}
 
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("ReplyTranslator::ReplyTranslator exception occurs: " + e.displayText());
 	}
@@ -101,7 +101,13 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 {
 	Poco::DynamicStruct ds = *objectPtr;
 
-	unsigned long commandId = ds["commandId"];
+	//common attributes
+	std::string commandKey = ds["command"].toString();
+	unsigned short commandId = ds["commandId"];
+	std::string errorInfo;
+	if(objectPtr->has("error")) {
+		errorInfo = ds["error"].toString();
+	}
 
 	if(command == strCommandDevicesGet)
 	{
@@ -111,18 +117,47 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 		auto size = ds["devices"].size();
 
 		for(int i=0; i<size; i++) {
-			auto device = ds["devices"][i];
+			auto device = ds["devices"][i].toString();
 			devices.push_back(device);
 		}
 
 		std::shared_ptr<ReplyDevicesGet> ptr (new ReplyDevicesGet);
-		ptr->commandId = commandId;
-		ptr->devices = devices;
+		//common attributes
 		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		ptr->devices = devices;
 
 		_devicesGetPtr = ptr;
 	}
 	else if(command == strCommandDeviceConnect)
+	{
+		_type = ReplyType::DeviceConnect;
+
+		std::string deviceName;
+		bool connected;
+		std::string reason;
+
+		deviceName = ds["deviceName"].toString();
+		connected = ds["connected"];
+		reason = ds["reason"].toString();
+
+		std::shared_ptr<ReplyDeviceConnect> ptr (new ReplyDeviceConnect);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		ptr->deviceName = deviceName;
+		ptr->connected = connected;
+		ptr->reason = reason;
+
+		_deviceConnectPtr = ptr;
+	}
+	else if(command == strCommandDeviceQueryPower)
 	{
 
 	}
@@ -180,7 +215,6 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 	else {
 
 	}
-
 }
 
 void ReplyTranslator::parseEvent(Poco::JSON::Object::Ptr objectPtr, const std::string& event)

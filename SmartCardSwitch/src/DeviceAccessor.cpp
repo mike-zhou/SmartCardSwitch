@@ -192,9 +192,11 @@ void DeviceAccessor::runTask()
 						pLogger->Log("DeviceAccessor::runTask peer socket shut down: " + std::to_string(amount));
 					}
 					else {
+						//save content read to incoming queue
 						for(int i=0; i<amount; i++) {
 							_incoming.push_back(buffer[i]);
 						}
+						//process incoming data
 						onIncoming();
 					}
 				}

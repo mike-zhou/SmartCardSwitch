@@ -24,9 +24,11 @@ public:
 private:
 	std::string _reply;
 
+	//commands
 	const std::string strCommandDevicesGet = "devices get";
 	const std::string strCommandDeviceConnect = "device connect";
 	const std::string strCommandDeviceQueryPower = "device query power";
+	const std::string strCommandDeviceQueryFuse = "device query fuse";
 	const std::string strCommandBdcsPowerOn = "bdcs power on";
 	const std::string strCommandBdcsPowerOff = "bdcs power off";
 	const std::string strCommandBdcsQueryPower = "bdcs query power";
@@ -51,11 +53,44 @@ private:
 	const std::string strCommandStepperConfigHome = "stepper config home";
 	const std::string strCommandStepperQuery = "stepper query";
 	const std::string strCommandLocatorQuery = "locator query";
+	//events
+	const std::string strEventMainPowerOn = "main power is on";
+	const std::string strEventMainPowerOff = "main fuse is off";
+	const std::string strEventMainFuseOn = "main fuse is on";
+	const std::string strEventMainFuseOff = "main fuse is off";
+	const std::string strEventOptPoweredOn = "OPT is powered on";
+	const std::string strEventOptPoweredOff = "OPT is powered off";
+	const std::string strEventBdcsPoweredOn = "BDCs are powered on";
+	const std::string strEventBdcsPoweredOff = "BDCs are powered off";
+	const std::string strEventBdcCoast = "BDC coast";
+	const std::string strEventBdcReverse = "BDC reverse";
+	const std::string strEventBdcForward = "BDC forward";
+	const std::string strEventBdcBreak = "BDC break";
+	const std::string strEventBdcWrongState = "BDC wrong state";
+	const std::string strEventSteppersPoweredOn = "steppers are powered on";
+	const std::string strEventSteppersPoweredOff = "steppers are powered off";
+	const std::string strEventStepperEnabled = "stepper is enabled";
+	const std::string strEventStepperDisabled = "stepper is disabled";
+	const std::string strEventStepperForward = "stepper forward";
+	const std::string strEventStepperBackward = "stepper backward";
+	const std::string strEventStepperUnknownPosition = "stepper unknown position";
+	const std::string strEventStepperApproachingHomeLocator = "stepper approach home locator";
+	const std::string strEventStepperLeavingHomeLocator = "stepper leave home locator";
+	const std::string strEventStepperGoHome = "stepper go home";
+	const std::string strEventStepperKnownPosition = "stepper known position";
+	const std::string strEventStepperAccelerate = "stepper accelerate";
+	const std::string strEventStepperCruise = "stepper cruise";
+	const std::string strEventStepperDecelerate = "stepper decelerate";
+	const std::string strEventStepperWrongState = "stepper wrong state";
+	const std::string strEventLocator = "locator";
+
 
 	char getDigitalValue(char c);
 	unsigned long getHexValue(const std::string& hexString);
-
+	//commands
+	std::string formatCmdReply(Poco::JSON::Object::Ptr& replyPtr);
 	std::string deviceQueryPower(Poco::JSON::Object::Ptr& replyPtr);
+	std::string deviceQueryFuse(Poco::JSON::Object::Ptr& replyPtr);
 	std::string bdcsPowerOn(Poco::JSON::Object::Ptr& replyPtr);
 	std::string bdcsPowerOff(Poco::JSON::Object::Ptr& replyPtr);
 	std::string bdcsQueryPower(Poco::JSON::Object::Ptr& replyPtr);
@@ -80,8 +115,7 @@ private:
 	std::string stepperConfigHome(Poco::JSON::Object::Ptr& replyPtr);
 	std::string stepperQuery(Poco::JSON::Object::Ptr& replyPtr);
 	std::string locatorQuery(Poco::JSON::Object::Ptr& replyPtr);
-
-	std::string formatCmdReply(Poco::JSON::Object::Ptr& replyPtr);
+	//events
 	std::string formatEvent(Poco::JSON::Object::Ptr& replyPtr);
 };
 
