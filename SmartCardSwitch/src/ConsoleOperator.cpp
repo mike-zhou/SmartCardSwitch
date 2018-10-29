@@ -11,6 +11,7 @@
 #include "Logger.h"
 #include "CommandFactory.h"
 #include "ReplyTranslator.h"
+#include "Command.h"
 
 extern Logger * pLogger;
 
@@ -274,6 +275,162 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
+		case UserCommand::Type::BdcsPowerOn:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				cmdPtr = CommandFactory::BdcsPowerOn();
+				if(cmdPtr == nullptr) {
+					pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcsPowerOn");
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::BdcsPowerOff:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				cmdPtr = CommandFactory::BdcsPowerOff();
+				if(cmdPtr == nullptr) {
+					pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcsPowerOff");
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::BdcsQueryPower:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				cmdPtr = CommandFactory::BdcsQueryPower();
+				if(cmdPtr == nullptr) {
+					pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcsQueryPower");
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::BdcCoast:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+
+				if(index >= BDC_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid BDC index: " + std::to_string(d1));
+				}
+				else
+				{
+					//set the intial state to BREAK.
+					cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::COAST);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcOperation");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::BdcReverse:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+
+				if(index >= BDC_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid BDC index: " + std::to_string(d1));
+				}
+				else
+				{
+					//set the intial state to BREAK.
+					cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::REVERSE);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcOperation");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::BdcForward:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+
+				if(index >= BDC_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid BDC index: " + std::to_string(d1));
+				}
+				else
+				{
+					//set the intial state to BREAK.
+					cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::FORWARD);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcOperation");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::BdcBreak:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+
+				if(index >= BDC_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid BDC index: " + std::to_string(d1));
+				}
+				else
+				{
+					//set the intial state to BREAK.
+					cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::BREAK);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcOperation");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::BdcQuery:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+
+				if(index >= BDC_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid BDC index: " + std::to_string(d1));
+				}
+				else
+				{
+					cmdPtr = CommandFactory::BdcQuery(index);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcQuery");
+					}
+				}
+			}
+		}
+		break;
+
 		default:
 		{
 
@@ -413,6 +570,47 @@ void ConsoleOperator::onFeedbackDeviceQueryFuse(std::shared_ptr<ReplyTranslator:
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
 }
+
+void ConsoleOperator::onFeedbackBdcsPowerOn(std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOn> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackBdcsPowerOff(std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOff> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackBdcsQueryPower(std::shared_ptr<ReplyTranslator::ReplyBdcsQueryPower> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackBdcCoast(std::shared_ptr<ReplyTranslator::ReplyBdcCoast> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackBdcReverse(std::shared_ptr<ReplyTranslator::ReplyBdcReverse> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackBdcForward(std::shared_ptr<ReplyTranslator::ReplyBdcForward> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackBdcBreak(std::shared_ptr<ReplyTranslator::ReplyBdcBreak> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackBdcQuery(std::shared_ptr<ReplyTranslator::ReplyBdcQuery> replyPtr)
+{
+
+}
+
 
 void ConsoleOperator::processFeedbacks()
 {

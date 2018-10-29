@@ -69,10 +69,16 @@ std::shared_ptr<DeviceCommand> CommandFactory::BdcOperation(unsigned int bdcInde
 	return ptr;
 }
 
+std::shared_ptr<DeviceCommand> CommandFactory::BdcQuery(unsigned int bdcIndex)
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandBdcQuery(bdcIndex));
+
+	return ptr;
+}
 
 std::shared_ptr<DeviceCommand> CommandFactory::StepperQueryClkPeriod()
 {
-	std::shared_ptr<DeviceCommand> ptr(new CommandStepperQueryClkPeriod());
+	std::shared_ptr<DeviceCommand> ptr(new CommandStepperQueryResolution());
 
 	return ptr;
 }

@@ -157,14 +157,16 @@ void CSocketManager::processReplies()
 			continue;
 		}
 		if(deviceData.socketId == INVALID_SOCKET_ID) {
-			//no socket connects to this device.
+			//no socket connects to this device, discard replies.
 			deviceData.replyPool.clear();
 			continue;
 		}
 
-		for(auto it = deviceData.replyPool.begin(); it != deviceData.replyPool.end(); it++) {
+		for(auto it = deviceData.replyPool.begin(); it != deviceData.replyPool.end(); it++)
+		{
 			ReplyTranslater translater(*it);
 			std::string jsonReply = translater.ToJsonReply();
+
 			if(jsonReply.empty()) {
 				char buf[512];
 
