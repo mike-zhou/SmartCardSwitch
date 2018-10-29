@@ -41,7 +41,7 @@ CommandType CommandTranslator::Type()
 			pLogger->LogError("CommandTranslator::CommandType no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		exceptionOccur = true;
 		pLogger->LogError("CommandTranslator::CommandType exception occurs: " + e.displayText());
@@ -66,6 +66,9 @@ CommandType CommandTranslator::Type()
 		}
 		else if(command == strCommandDeviceQueryPower) {
 			_type = CommandType::DeviceQueryPower;
+		}
+		else if(command == strCommandDeviceQueryFuse) {
+			_type = CommandType::DeviceQueryFuse;
 		}
 		else if(command == strCommandBdcsPowerOn) {
 			_type = CommandType::BdcsPowerOn;
@@ -181,7 +184,7 @@ std::shared_ptr<CommandDevicesGet> CommandTranslator::GetCommandDevicesGet()
 			pLogger->LogError("CommandTranslator::GetCommandDevicesGet no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandDevicesGet exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -224,7 +227,7 @@ std::shared_ptr<CommandDeviceConnect> CommandTranslator::GetCommandDeviceConnect
 			pLogger->LogError("CommandTranslator::GetCommandDeviceConnect no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandDeviceConnect exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -266,13 +269,55 @@ std::shared_ptr<CommandDeviceQueryPower> CommandTranslator::GetCommandDeviceQuer
 			pLogger->LogError("CommandTranslator::GetCommandDeviceQueryPower no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandDeviceQueryPower exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
 	catch(...)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandDeviceQueryPower unknown exception in " + _jsonCmd);
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<CommandDeviceQueryFuse> CommandTranslator::GetCommandDeviceQueryFuse()
+{
+	try
+	{
+		Poco::JSON::Parser parser;
+		Poco::Dynamic::Var result = parser.parse(_jsonCmd);
+		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+
+		if(objectPtr->has(std::string("command")))
+		{
+			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
+
+			if(command.size() < 1) {
+				pLogger->LogError("CommandTranslator::GetCommandDeviceQueryFuse invalid command in " + _jsonCmd);
+			}
+			else if(command != strCommandDeviceConnect) {
+				pLogger->LogError("CommandTranslator::GetCommandDeviceQueryFuse wrong command in " + _jsonCmd);
+			}
+			else
+			{
+				std::shared_ptr<CommandDeviceQueryFuse> p(new CommandDeviceQueryFuse(commandId));
+				return p;
+			}
+		}
+		else
+		{
+			pLogger->LogError("CommandTranslator::GetCommandDeviceQueryFuse no command in " + _jsonCmd);
+		}
+	}
+	catch(Poco::Exception& e)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandDeviceQueryFuse exception occurs: " + e.displayText() + " in " + _jsonCmd);
+	}
+	catch(...)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandDeviceQueryFuse unknown exception in " + _jsonCmd);
 	}
 
 	return nullptr;
@@ -308,7 +353,7 @@ std::shared_ptr<CommandBdcsPowerOn> CommandTranslator::GetCommandBdcsPowerOn()
 			pLogger->LogError("CommandTranslator::GetCommandBdcsPowerOn no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandBdcsPowerOn exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -350,7 +395,7 @@ std::shared_ptr<CommandBdcsPowerOff> CommandTranslator::GetCommandBdcsPowerOff()
 			pLogger->LogError("CommandTranslator::GetCommandBdcsPowerOff no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandBdcsPowerOff exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -392,7 +437,7 @@ std::shared_ptr<CommandBdcsQueryPower> CommandTranslator::GetCommandBdcsQueryPow
 			pLogger->LogError("CommandTranslator::GetCommandBdcsQueryPower no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandBdcsQueryPower exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -435,7 +480,7 @@ std::shared_ptr<CommandBdcCoast> CommandTranslator::GetCommandBdcCoast()
 			pLogger->LogError("CommandTranslator::GetCommandBdcCoast no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandBdcCoast exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -478,7 +523,7 @@ std::shared_ptr<CommandBdcReverse> CommandTranslator::GetCommandBdcReverse()
 			pLogger->LogError("CommandTranslator::GetCommandBdcReverse no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandBdcReverse exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -521,7 +566,7 @@ std::shared_ptr<CommandBdcForward> CommandTranslator::GetCommandBdcForward()
 			pLogger->LogError("CommandTranslator::GetCommandBdcForward no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandBdcForward exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -564,7 +609,7 @@ std::shared_ptr<CommandBdcBreak> CommandTranslator::GetCommandBdcBreak()
 			pLogger->LogError("CommandTranslator::GetCommandBdcBreak no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandBdcBreak exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -607,7 +652,7 @@ std::shared_ptr<CommandBdcQuery> CommandTranslator::GetCommandBdcQuery()
 			pLogger->LogError("CommandTranslator::GetCommandBdcQuery no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandBdcQuery exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -649,7 +694,7 @@ std::shared_ptr<CommandSteppersPowerOn> CommandTranslator::GetCommandSteppersPow
 			pLogger->LogError("CommandTranslator::GetCommandSteppersPowerOn no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandSteppersPowerOn exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -691,7 +736,7 @@ std::shared_ptr<CommandSteppersPowerOff> CommandTranslator::GetCommandSteppersPo
 			pLogger->LogError("CommandTranslator::GetCommandSteppersPowerOff no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandSteppersPowerOff exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -733,7 +778,7 @@ std::shared_ptr<CommandSteppersQueryPower> CommandTranslator::GetCommandSteppers
 			pLogger->LogError("CommandTranslator::GetCommandSteppersQueryPower no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandSteppersQueryPower exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -775,7 +820,7 @@ std::shared_ptr<CommandStepperQueryResolution> CommandTranslator::GetCommandStep
 			pLogger->LogError("CommandTranslator::GetCommandStepperQueryResolution no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandStepperQueryResolution exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -821,7 +866,7 @@ std::shared_ptr<CommandStepperConfigStep> CommandTranslator::GetCommandStepperCo
 			pLogger->LogError("CommandTranslator::GetCommandStepperConfigStep no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandStepperConfigStep exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -866,7 +911,7 @@ std::shared_ptr<CommandStepperAccelerationBuffer> CommandTranslator::GetCommandS
 			pLogger->LogError("CommandTranslator::GetCommandAccelerationBuffer no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandAccelerationBuffer exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -911,7 +956,7 @@ std::shared_ptr<CommandStepperAccelerationBufferDecrement> CommandTranslator::Ge
 			pLogger->LogError("CommandTranslator::GetCommandStepperAccelerationBufferDecrement no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandStepperAccelerationBufferDecrement exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -956,7 +1001,7 @@ std::shared_ptr<CommandStepperDecelerationBuffer> CommandTranslator::GetCommandS
 			pLogger->LogError("CommandTranslator::GetCommandStepperDecelerationBuffer no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandStepperDecelerationBuffer exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -1001,7 +1046,7 @@ std::shared_ptr<CommandStepperDecelerationBufferIncrement> CommandTranslator::Ge
 			pLogger->LogError("CommandTranslator::GetCommandStepperDecelerationBufferIncrement no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandStepperDecelerationBufferIncrement exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -1046,7 +1091,7 @@ std::shared_ptr<CommandStepperEnable> CommandTranslator::GetCommandStepperEnable
 			pLogger->LogError("CommandTranslator::GetCommandStepperEnable no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandStepperEnable exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -1091,7 +1136,7 @@ std::shared_ptr<CommandStepperForward> CommandTranslator::GetCommandStepperForwa
 			pLogger->LogError("CommandTranslator::GetCommandStepperForward no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandStepperForward exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -1136,7 +1181,7 @@ std::shared_ptr<CommandStepperSteps> CommandTranslator::GetCommandStepperSteps()
 			pLogger->LogError("CommandTranslator::GetCommandStepperSteps no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandStepperSteps exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -1180,7 +1225,7 @@ std::shared_ptr<CommandStepperRun> CommandTranslator::GetCommandStepperRun()
 			pLogger->LogError("CommandTranslator::GetCommandStepperRun no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandStepperRun exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -1227,7 +1272,7 @@ std::shared_ptr<CommandStepperConfigHome> CommandTranslator::GetCommandStepperCo
 			pLogger->LogError("CommandTranslator::GetCommandStepperConfigHome no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandStepperConfigHome exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -1271,7 +1316,7 @@ std::shared_ptr<CommandStepperQuery> CommandTranslator::GetCommandStepperQuery()
 			pLogger->LogError("CommandTranslator::GetCommandStepperQuery no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandStepperQuery exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}
@@ -1315,7 +1360,7 @@ std::shared_ptr<CommandLocatorQuery> CommandTranslator::GetCommandLocatorQuery()
 			pLogger->LogError("CommandTranslator::GetCommandLocatorQuery no command in " + _jsonCmd);
 		}
 	}
-	catch(Poco::JSON::JSONException& e)
+	catch(Poco::Exception& e)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandLocatorQuery exception occurs: " + e.displayText() + " in " + _jsonCmd);
 	}

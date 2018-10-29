@@ -29,6 +29,13 @@ std::shared_ptr<DeviceCommand> CommandFactory::DeviceQueryPower()
 	return ptr;
 }
 
+std::shared_ptr<DeviceCommand> CommandFactory::DeviceQueryFuse()
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandDeviceQueryFuse());
+
+	return ptr;
+}
+
 std::shared_ptr<DeviceCommand> CommandFactory::BdcsPowerOn()
 {
 	std::shared_ptr<DeviceCommand> ptr(new CommandBdcsPowerOn());

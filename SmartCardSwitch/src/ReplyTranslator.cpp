@@ -159,7 +159,71 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 	}
 	else if(command == strCommandDeviceQueryPower)
 	{
+		_type = ReplyType::DeviceQueryPower;
 
+		std::string errorInfo;
+		std::string state;
+
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+		else {
+			state = ds["state"].toString();
+		}
+
+		std::shared_ptr<ReplyDeviceQueryPower> ptr (new ReplyDeviceQueryPower);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			if(state == "powered on") {
+				ptr->bPoweredOn = true;
+			}
+			else if(state == "powered off") {
+				ptr->bPoweredOn = false;
+			}
+			else {
+				pLogger->LogError("ReplyTranslator::parseReply unknown device power status: " + state);
+				ptr->errorInfo = "unknown device power status";
+			}
+		}
+	}
+	else if(command == strCommandDeviceQueryFuse)
+	{
+		_type = ReplyType::DeviceQueryFuse;
+
+		std::string errorInfo;
+		std::string state;
+
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+		else {
+			state = ds["state"].toString();
+		}
+
+		std::shared_ptr<ReplyDeviceQueryFuse> ptr (new ReplyDeviceQueryFuse);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			if(state == "main fuse on") {
+				ptr->bFuseOn = true;
+			}
+			else if(state == "main fuse off") {
+				ptr->bFuseOn = false;
+			}
+			else {
+				pLogger->LogError("ReplyTranslator::parseReply unknown device power status: " + state);
+				ptr->errorInfo = "unknown device power status";
+			}
+		}
 	}
 	else if(command == strCommandBdcsPowerOn) {
 	}
@@ -240,6 +304,11 @@ std::shared_ptr<ReplyTranslator::ReplyDeviceConnect> ReplyTranslator::ToDeviceCo
 std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> ReplyTranslator::ToDeviceQueryPower()
 {
 	return _deviceQueryPowerPtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplyDeviceQueryFuse> ReplyTranslator::ToDeviceQueryFuse()
+{
+	return _deviceQueryFusePtr;
 }
 
 std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOn> ReplyTranslator::ToBdcsPowerOn()

@@ -17,7 +17,12 @@ extern Logger * pLogger;
 ConsoleOperator::ConsoleOperator(): Task("ConsoleOperator")
 {
 	_userCommand.state = UserCommand::CommandState::IDLE;
-	_userCommand.devicePowerStatus = UserCommand::PowerStatus::UNKNOWN;
+	_userCommand.resultDevicePowerStatus = UserCommand::PowerStatus::UNKNOWN;
+	_userCommand.resultDeviceFuseStatus = UserCommand::FuseStatus::UNKNOWN;
+	_userCommand.resultBdcsPowerStatus = UserCommand::PowerStatus::UNKNOWN;
+	for(int i=0; i<BDC_AMOUNT; i++) {
+		_userCommand.resultBdcStatus[i] = UserCommand::BdcStatus::UNKNOWN;
+	}
 
 	_pDeviceAccessor = nullptr;
 
@@ -255,6 +260,20 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
+		case UserCommand::Type::DeviceQueryFuse:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				cmdPtr = CommandFactory::DeviceQueryFuse();
+				if(cmdPtr == nullptr) {
+					pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::DeviceQueryFuse");
+				}
+			}
+		}
+		break;
+
 		default:
 		{
 
@@ -276,7 +295,7 @@ void ConsoleOperator::processInput()
 
 		//send out command
 		_pDeviceAccessor->SendCommand(_userCommand.jsonCommandString);
-		_userCommand.state = UserCommand::COMMAND_SENT;
+		_userCommand.state = UserCommand::CommandState::COMMAND_SENT;
 	}
 }
 
@@ -284,7 +303,7 @@ bool ConsoleOperator::isCorrespondingReply(const std::string& commandKey, unsign
 {
 	bool bCorrespondingReply = false;
 
-	if(_userCommand.state != UserCommand::State::COMMAND_SENT) {
+	if(_userCommand.state != UserCommand::CommandState::COMMAND_SENT) {
 		pLogger->LogError("ConsoleOperator::isCorrespondingReply obsolete reply");
 	}
 	else if(_userCommand.commandKey != commandKey) {
@@ -298,6 +317,101 @@ bool ConsoleOperator::isCorrespondingReply(const std::string& commandKey, unsign
 	}
 
 	return bCorrespondingReply;
+}
+
+void ConsoleOperator::onFeedbackDevicesGet(std::shared_ptr<ReplyTranslator::ReplyDevicesGet> replyPtr)
+{
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
+
+	//update device list
+	_userCommand.resultDevices.clear();
+	if(replyPtr->devices.empty()) {
+		pLogger->LogError("ConsoleOperator::onFeedbackDevicesGet no devices in: " + replyPtr->originalString);
+	}
+	else {
+		int number = 0;
+		for(auto it=replyPtr->devices.begin(); it!=replyPtr->devices.end(); it++, number++) {
+			_userCommand.resultDevices.push_back(*it);
+			pLogger->LogInfo("ConsoleOperator::onFeedbackDevicesGet device: " + std::to_string(number) + ". " + *it);
+			std::cout << "ConsoleOperator::onFeedbackDevicesGet device: " << number << ". " << *it << "\r\n";
+		}
+	}
+
+	_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+}
+
+void ConsoleOperator::onFeedbackDeviceConnect(std::shared_ptr<ReplyTranslator::ReplyDeviceConnect> replyPtr)
+{
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
+
+	if(replyPtr->connected) {
+		pLogger->LogInfo("ConsoleOperator::onFeedbackDeviceConnect connected to device: " + replyPtr->deviceName);
+		_userCommand.resultConnectedDeviceName = replyPtr->deviceName;
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		pLogger->LogInfo("ConsoleOperator::onFeedbackDeviceConnect couldn't connect to device: " + replyPtr->deviceName + " reason: " + replyPtr->reason);
+		_userCommand.resultConnectedDeviceName.clear();
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+}
+
+void ConsoleOperator::onFeedbackDeviceQueryPower(std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> replyPtr)
+{
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
+
+	if(replyPtr->errorInfo.empty()) {
+		//no error
+		if(replyPtr->bPoweredOn) {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackDeviceQueryPower device is powered on");
+			_userCommand.resultDevicePowerStatus = UserCommand::PowerStatus::POWERED_ON;
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackDeviceQueryPower device is powered off");
+			_userCommand.resultDevicePowerStatus = UserCommand::PowerStatus::POWERED_OFF;
+		}
+
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		//error happened
+		pLogger->LogInfo("ConsoleOperator::onFeedbackDeviceQueryPower unknown device power status due to: " + replyPtr->errorInfo);
+		_userCommand.resultDevicePowerStatus = UserCommand::PowerStatus::UNKNOWN;
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+}
+
+void ConsoleOperator::onFeedbackDeviceQueryFuse(std::shared_ptr<ReplyTranslator::ReplyDeviceQueryFuse> replyPtr)
+{
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
+
+	if(replyPtr->errorInfo.empty()) {
+		//no error
+		if(replyPtr->bFuseOn) {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackDeviceQueryFuse main fuse is on");
+			_userCommand.resultDeviceFuseStatus = UserCommand::FuseStatus::FUSE_ON;
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackDeviceQueryFuse main fuse is off");
+			_userCommand.resultDeviceFuseStatus = UserCommand::FuseStatus::FUSE_OFF;
+		}
+
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		//error happened
+		pLogger->LogInfo("ConsoleOperator::onFeedbackDeviceQueryFuse unknown main fuse status due to: " + replyPtr->errorInfo);
+		_userCommand.resultDeviceFuseStatus = UserCommand::FuseStatus::UNKNOWN;
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::processFeedbacks()
@@ -315,60 +429,38 @@ void ConsoleOperator::processFeedbacks()
 		std::string feedback = _feedbacks.front();
 		_feedbacks.pop_front();
 		pLogger->LogInfo("ConsoleOperator::processFeedbacks dispose feedback: " + feedback);
+
 		//create a ReplyTranslater object.
 		ReplyTranslator translator(feedback);
-
 		auto replyType = translator.Type();
+
 		switch(replyType)
 		{
 			case ReplyTranslator::ReplyType::DevicesGet:
 			{
 				auto replyPtr = translator.ToDevicesGet();
-
-				if(isCorrespondingReply("devices get", replyPtr->commandId))
-				{
-					//update device list
-					_userCommand.resultDevices.clear();
-					if(replyPtr->devices.empty()) {
-						pLogger->LogError("ConsoleOperator::processFeedbacks no devices in: " + feedback);
-					}
-					else {
-						int number = 0;
-						for(auto it=replyPtr->devices.begin(); it!=replyPtr->devices.end(); it++, number++) {
-							_userCommand.resultDevices.push_back(*it);
-							pLogger->LogInfo("ConsoleOperator::processFeedbacks device: " + std::to_string(number) + ". " + *it);
-							std::cout << "ConsoleOperator::processFeedbacks device: " << number << ". " << *it << "\r\n";
-						}
-					}
-
-					_userCommand.state = UserCommand::CommandState::SUCCEEDED;
-				}
+				onFeedbackDevicesGet(replyPtr);
 			}
 			break;
 
 			case ReplyTranslator::ReplyType::DeviceConnect:
 			{
 				auto replyPtr = translator.ToDeviceConnect();
-
-				if(isCorrespondingReply("device connect", replyPtr->commandId))
-				{
-					if(replyPtr->connected) {
-						pLogger->LogInfo("ConsoleOperator::processFeedbacks connected to device: " + replyPtr->deviceName);
-						_userCommand.resultConnectedDeviceName = replyPtr->deviceName;
-						_userCommand.state = UserCommand::CommandState::SUCCEEDED;
-					}
-					else {
-						pLogger->LogInfo("ConsoleOperator::processFeedbacks couldn't connect to device: " + replyPtr->deviceName + " reason: " + replyPtr->reason);
-						_userCommand.resultConnectedDeviceName.clear();
-						_userCommand.state = UserCommand::CommandState::FAILED;
-					}
-				}
+				onFeedbackDeviceConnect(replyPtr);
 			}
 			break;
 
 			case ReplyTranslator::ReplyType::DeviceQueryPower:
 			{
+				auto replyPtr = translator.ToDeviceQueryPower();
+				onFeedbackDeviceQueryPower(replyPtr);
+			}
+			break;
 
+			case ReplyTranslator::ReplyType::DeviceQueryFuse:
+			{
+				auto replyPtr = translator.ToDeviceQueryFuse();
+				onFeedbackDeviceQueryFuse(replyPtr);
 			}
 			break;
 

@@ -226,6 +226,10 @@ void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::s
 		onCommandDeviceQueryPower(socketWrapper, translator.GetCommandDeviceQueryPower());
 		break;
 
+	case CommandType::DeviceQueryFuse:
+		onCommandDeviceQueryFuse(socketWrapper, translator.GetCommandDeviceQueryFuse());
+		break;
+
 	case CommandType::BdcsPowerOn:
 		onCommandBdcsPowerOn(socketWrapper, translator.GetCommandBdcsPowerOn());
 		break;
@@ -419,6 +423,16 @@ void CSocketManager::sendTranslatedCommandToDevice(long long socketId, const std
 }
 
 void CSocketManager::onCommandDeviceQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDeviceQueryPower> cmdPtr)
+{
+	if(cmdPtr == nullptr) {
+		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
+
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+}
+
+void CSocketManager::onCommandDeviceQueryFuse(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDeviceQueryFuse> cmdPtr)
 {
 	if(cmdPtr == nullptr) {
 		pLogger->LogError(std::string(__FUNCTION__) + " failed in translating JSON");

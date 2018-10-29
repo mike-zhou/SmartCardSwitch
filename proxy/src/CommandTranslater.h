@@ -25,6 +25,7 @@ enum CommandType
 	DevicesGet,
 	DeviceConnect,
 	DeviceQueryPower,
+	DeviceQueryFuse,
 	OptPowerOn,
 	OptPowerOff,
 	OptQueryPower,
@@ -126,6 +127,31 @@ public:
 	std::string ToString()
 	{
 		std::string cmd = "C 2 " + std::to_string(_commandId & 0xffff);
+		return cmd;
+	}
+
+private:
+	unsigned long _commandId;
+};
+
+//{
+//	"command":"device query fuse",
+//	"commandId":1
+//}
+class CommandDeviceQueryFuse
+{
+public:
+	CommandDeviceQueryFuse(unsigned long commandId)
+	{
+		_commandId = commandId;
+	}
+
+	CommandType Type() { return CommandType::DeviceQueryFuse; }
+	unsigned long CommandId() { return _commandId; }
+
+	std::string ToString()
+	{
+		std::string cmd = "C 3 " + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
 
@@ -806,6 +832,7 @@ public:
 	std::shared_ptr<CommandDevicesGet> GetCommandDevicesGet();
 	std::shared_ptr<CommandDeviceConnect> GetCommandDeviceConnect();
 	std::shared_ptr<CommandDeviceQueryPower> GetCommandDeviceQueryPower();
+	std::shared_ptr<CommandDeviceQueryFuse> GetCommandDeviceQueryFuse();
 	std::shared_ptr<CommandBdcsPowerOn> GetCommandBdcsPowerOn();
 	std::shared_ptr<CommandBdcsPowerOff> GetCommandBdcsPowerOff();
 	std::shared_ptr<CommandBdcsQueryPower> GetCommandBdcsQueryPower();
@@ -838,6 +865,7 @@ private:
 	const std::string strCommandDevicesGet = "devices get";
 	const std::string strCommandDeviceConnect = "device connect";
 	const std::string strCommandDeviceQueryPower = "device query power";
+	const std::string strCommandDeviceQueryFuse = "device query fuse";
 	const std::string strCommandBdcsPowerOn = "bdcs power on";
 	const std::string strCommandBdcsPowerOff = "bdcs power off";
 	const std::string strCommandBdcsQueryPower = "bdcs query power";

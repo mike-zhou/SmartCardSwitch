@@ -68,6 +68,13 @@ public:
 	virtual std::string ToJsonCommandString() override;
 };
 
+class CommandDeviceQueryFuse: public DeviceCommand
+{
+public:
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+};
+
 class CommandBdcsPowerOn: public DeviceCommand
 {
 public:

@@ -23,6 +23,7 @@ public:
 		DevicesGet,
 		DeviceConnect,
 		DeviceQueryPower,
+		DeviceQueryFuse,
 		OptPowerOn,
 		OptPowerOff,
 		OptQueryPower,
@@ -84,6 +85,11 @@ public:
 	struct ReplyDeviceQueryPower: ReplyCommon
 	{
 		bool bPoweredOn;
+	};
+
+	struct ReplyDeviceQueryFuse: ReplyCommon
+	{
+		bool bFuseOn;
 	};
 
 	struct ReplyBdcsPowerOn: ReplyCommon
@@ -229,6 +235,7 @@ public:
 	std::shared_ptr<ReplyTranslator::ReplyDevicesGet> ToDevicesGet();
 	std::shared_ptr<ReplyTranslator::ReplyDeviceConnect> ToDeviceConnect();
 	std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> ToDeviceQueryPower();
+	std::shared_ptr<ReplyTranslator::ReplyDeviceQueryFuse> ToDeviceQueryFuse();
 	std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOn> ToBdcsPowerOn();
 	std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOff> ToBdcsPowerOff();
 	std::shared_ptr<ReplyTranslator::ReplyBdcsQueryPower> ToBdcsQueryPower();
@@ -265,6 +272,7 @@ private:
 	const std::string strCommandDevicesGet = "devices get";
 	const std::string strCommandDeviceConnect = "device connect";
 	const std::string strCommandDeviceQueryPower = "device query power";
+	const std::string strCommandDeviceQueryFuse = "device query fuse";
 	const std::string strCommandBdcsPowerOn = "bdcs power on";
 	const std::string strCommandBdcsPowerOff = "bdcs power off";
 	const std::string strCommandBdcsQueryPower = "bdcs query power";
@@ -299,6 +307,7 @@ private:
 	std::shared_ptr<ReplyTranslator::ReplyDevicesGet> _devicesGetPtr;
 	std::shared_ptr<ReplyTranslator::ReplyDeviceConnect> _deviceConnectPtr;
 	std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> _deviceQueryPowerPtr;
+	std::shared_ptr<ReplyTranslator::ReplyDeviceQueryFuse> _deviceQueryFusePtr;
 	std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOn> _bdcsPowerOnPtr;
 	std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOff> _bdcsPowerOffPtr;
 	std::shared_ptr<ReplyTranslator::ReplyBdcsQueryPower> _bdcsQueryPowerPtr;

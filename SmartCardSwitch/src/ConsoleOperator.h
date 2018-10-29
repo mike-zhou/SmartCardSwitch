@@ -19,6 +19,7 @@
 #include "DeviceAccessor.h"
 #include "Command.h"
 #include "CommandFactory.h"
+#include "ReplyTranslator.h"
 
 /***************************************
  * This class receives user input from a console,
@@ -41,6 +42,8 @@ private:
 	void runTask();
 
 private:
+	static const int BDC_AMOUNT = 6;
+
 	Poco::Mutex _mutex;
 
 	Poco::Event _event;
@@ -52,8 +55,12 @@ private:
 
 	void processInput();
 
-	bool isCorrespondingReply(const std::string& command, unsigned short commandId);
 	void processFeedbacks();
+	bool isCorrespondingReply(const std::string& command, unsigned short commandId);
+	void onFeedbackDevicesGet(std::shared_ptr<ReplyTranslator::ReplyDevicesGet> replyPtr);
+	void onFeedbackDeviceConnect(std::shared_ptr<ReplyTranslator::ReplyDeviceConnect> replyPtr);
+	void onFeedbackDeviceQueryPower(std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> replyPtr);
+	void onFeedbackDeviceQueryFuse(std::shared_ptr<ReplyTranslator::ReplyDeviceQueryFuse> replyPtr);
 
 	struct UserCommand
 	{
@@ -97,7 +104,7 @@ private:
 			LocatorQuery = 90,
 		} type;
 
-		enum CommandState
+		enum class CommandState
 		{
 			IDLE = 0,
 			COMMAND_SENT,
@@ -106,11 +113,27 @@ private:
 			FAILED
 		};
 
-		enum PowerStatus
+		enum class PowerStatus
 		{
 			UNKNOWN,
 			POWERED_ON,
 			POWERED_OFF
+		};
+
+		enum class FuseStatus
+		{
+			UNKNOWN,
+			FUSE_ON,
+			FUSE_OFF
+		};
+
+		enum class BdcStatus
+		{
+			UNKNOWN,
+			COAST,
+			REVERSE,
+			FORWARD,
+			BREAK
 		};
 
 		CommandState state;
@@ -130,8 +153,19 @@ private:
 		// DeviceConnect
 		std::string resultConnectedDeviceName;
 		//device query power
-		PowerStatus devicePowerStatus;
-
+		PowerStatus resultDevicePowerStatus;
+		//device query fuse
+		FuseStatus resultDeviceFuseStatus;
+		//BDCs power on
+		//BDCs power off
+		//BDCs query power
+		PowerStatus resultBdcsPowerStatus;
+		//BDC coast
+		//BDC reverse
+		//BDC forward
+		//BDC break
+		//BDC query
+		BdcStatus resultBdcStatus[BDC_AMOUNT];
 
 	} _userCommand;
 

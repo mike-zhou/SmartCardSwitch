@@ -104,6 +104,26 @@ std::string CommandDeviceQueryPower::ToJsonCommandString()
 	return cmd;
 }
 
+///////////////////////////////////////////////////////////
+// CommandDeviceQueryFuse
+///////////////////////////////////////////////////////////
+std::string CommandDeviceQueryFuse::CommandKey()
+{
+	return std::string("device query fuse");
+}
+
+std::string CommandDeviceQueryFuse::ToJsonCommandString()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"device query fuse\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+	cmd += "}";
+
+	return cmd;
+}
+
 ///////////////////////////////////////////////////////
 // CommandBdcsPowerOn
 ///////////////////////////////////////////////////////
