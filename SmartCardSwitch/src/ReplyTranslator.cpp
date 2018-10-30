@@ -40,6 +40,9 @@ ReplyTranslator::ReplyTranslator(const std::string& reply)
 	_stepperDecelerationBufferPtr = nullptr;
 	_stepperDecelerationBufferIncrementPtr = nullptr;
 	_stepperEnablePtr = nullptr;
+	_stepperForwardPtr = nullptr;
+	_stepperStepsPtr = nullptr;
+	_stepperRunPtr = nullptr;
 	_stepperConfigHomePtr = nullptr;
 	_stepperMovePtr = nullptr;
 	_stepperQueryPtr = nullptr;
@@ -459,7 +462,7 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 		ptr->commandId = commandId;
 		ptr->errorInfo = errorInfo;
 
-		_steppersPowerOnPtr = ptr;
+		_steppersPowerOffPtr = ptr;
 	}
 	else if(command == strCommandSteppersQueryPower)
 	{
@@ -488,39 +491,255 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 			}
 		}
 
-		_steppersPowerOnPtr = ptr;
+		_steppersQueryPowerPtr = ptr;
 	}
-	else if(command == strCommandStepperQueryResolution) {
-	}
-	else if(command == strCommandStepperConfigStep) {
-	}
-	else if(command == strCommandStepperAccelerationBuffer) {
-	}
-	else if(command == strCommandStepperAccelerationBufferDecrement) {
-	}
-	else if(command == strCommandStepperDecelerationBuffer) {
-	}
-	else if(command == strCommandStepperDecelerationBufferIncrement) {
-	}
-	else if(command == strCommandStepperEnable) {
-	}
-	else if(command == strCommandStepperForward) {
-	}
-	else if(command == strCommandStepperSteps) {
-	}
-	else if(command == strCommandStepperRun) {
-	}
-	else if(command == strCommandStepperConfigHome) {
-	}
-	else if(command == strCommandStepperMove) {
-	}
-	else if(command == strCommandStepperQuery) {
-	}
-	else if(command == strCommandLocatorQuery) {
+	else if(command == strCommandStepperQueryResolution)
+	{
+		_type = ReplyType::StepperQueryResolution;
 
-	}
-	else {
+		std::shared_ptr<ReplyStepperQueryResolution> ptr (new ReplyStepperQueryResolution);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty())
+		{
+			//no error
+			ptr->resolutionUs = ds["resolution"];
+		}
 
+		_stepperQueryResolutionPtr = ptr;
+	}
+	else if(command == strCommandStepperConfigStep)
+	{
+		_type = ReplyType::StepperConfigStep;
+
+		std::shared_ptr<ReplyStepperConfigStep> ptr (new ReplyStepperConfigStep);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			ptr->index = ds["index"];
+		}
+
+		_stepperConfigStepPtr = ptr;
+	}
+	else if(command == strCommandStepperAccelerationBuffer)
+	{
+		_type = ReplyType::StepperAccelerationBuffer;
+
+		std::shared_ptr<ReplyStepperAccelerationBuffer> ptr (new ReplyStepperAccelerationBuffer);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			ptr->index = ds["index"];
+		}
+
+		_stepperAccelerationBufferPtr = ptr;
+	}
+	else if(command == strCommandStepperAccelerationBufferDecrement)
+	{
+		_type = ReplyType::StepperAccelerationBufferDecrement;
+
+		std::shared_ptr<ReplyStepperAccelerationBufferDecrement> ptr (new ReplyStepperAccelerationBufferDecrement);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			ptr->index = ds["index"];
+		}
+
+		_stepperAccelerationBufferDecrementPtr = ptr;
+	}
+	else if(command == strCommandStepperDecelerationBuffer)
+	{
+		_type = ReplyType::StepperDecelerationBuffer;
+
+		std::shared_ptr<ReplyStepperDecelerationBuffer> ptr (new ReplyStepperDecelerationBuffer);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			ptr->index = ds["index"];
+		}
+
+		_stepperDecelerationBufferPtr = ptr;
+	}
+	else if(command == strCommandStepperDecelerationBufferIncrement)
+	{
+		_type = ReplyType::StepperDecelerationBufferIncrement;
+
+		std::shared_ptr<ReplyStepperDecelerationBufferIncrement> ptr (new ReplyStepperDecelerationBufferIncrement);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			ptr->index = ds["index"];
+		}
+
+		_stepperDecelerationBufferIncrementPtr = ptr;
+	}
+	else if(command == strCommandStepperEnable)
+	{
+		_type = ReplyType::StepperEnable;
+
+		std::shared_ptr<ReplyStepperEnable> ptr (new ReplyStepperEnable);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			ptr->index = ds["index"];
+		}
+
+		_stepperEnablePtr = ptr;
+	}
+	else if(command == strCommandStepperForward)
+	{
+		_type = ReplyType::StepperForward;
+
+		std::shared_ptr<ReplyStepperForward> ptr (new ReplyStepperForward);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			ptr->index = ds["index"];
+		}
+
+		_stepperForwardPtr = ptr;
+	}
+	else if(command == strCommandStepperSteps)
+	{
+		_type = ReplyType::StepperSteps;
+
+		std::shared_ptr<ReplyStepperSteps> ptr (new ReplyStepperSteps);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			ptr->index = ds["index"];
+		}
+
+		_stepperStepsPtr = ptr;
+	}
+	else if(command == strCommandStepperRun)
+	{
+		_type = ReplyType::StepperRun;
+
+		std::shared_ptr<ReplyStepperRun> ptr (new ReplyStepperRun);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			ptr->index = ds["index"];
+		}
+
+		_stepperRunPtr = ptr;
+	}
+	else if(command == strCommandStepperConfigHome)
+	{
+		_type = ReplyType::StepperConfigHome;
+
+		std::shared_ptr<ReplyStepperConfigHome> ptr (new ReplyStepperConfigHome);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			ptr->index = ds["index"];
+		}
+
+		_stepperConfigHomePtr = ptr;
+	}
+	else if(command == strCommandStepperMove)
+	{
+		//not implemented
+		_type = ReplyType::StepperMove;
+		pLogger->LogError("ReplyTranslator::parseReply unimplemented reply translator: " + strCommandStepperMove);
+	}
+	else if(command == strCommandStepperQuery)
+	{
+		_type = ReplyType::StepperQuery;
+
+		std::shared_ptr<ReplyStepperQuery> ptr (new ReplyStepperQuery);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty())
+		{
+			ptr->index = ds["index"];
+			ptr->state = ds["state"].toString();
+			ptr->bEnabled = ds["enabled"];
+			ptr->bForward = ds["forward"];
+			ptr->locatorIndex = ds["locatorIndex"];
+			ptr->locatorLineNumberStart = ds["locatorLineNumberStart"];
+			ptr->locatorLineNumberTerminal = ds["locatorLineNumberTerminal"];
+			ptr->homeOffset = ds["homeOffset"];
+			ptr->lowClks = ds["lowClks"];
+			ptr->highClks = ds["highClks"];
+			ptr->accelerationBuffer = ds["accelerationBuffer"];
+			ptr->accelerationBufferDecrement = ds["accelerationBufferDecrement"];
+			ptr->decelerationBuffer = ds["decelerationBuffer"];
+			ptr->decelerationBufferIncrement = ds["decelerationBufferIncrement"];
+		}
+
+		_stepperQueryPtr = ptr;
+	}
+	else if(command == strCommandLocatorQuery)
+	{
+		_type = ReplyType::LocatorQuery;
+
+		std::shared_ptr<ReplyLocatorQuery> ptr (new ReplyLocatorQuery);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			ptr->index = ds["index"];
+			ptr->lowInput = ds["lowInput"];
+		}
+
+		_locatorQueryPtr = ptr;
+	}
+	else
+	{
+		throw Poco::Exception("ReplyTranslator::parseReply unknown reply");
 	}
 }
 
@@ -642,6 +861,21 @@ std::shared_ptr<ReplyTranslator::ReplyStepperDecelerationBufferIncrement> ReplyT
 std::shared_ptr<ReplyTranslator::ReplyStepperEnable> ReplyTranslator::ToStepperEnable()
 {
 	return _stepperEnablePtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplyStepperForward> ReplyTranslator::ToStepperForward()
+{
+	return _stepperForwardPtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplyStepperSteps> ReplyTranslator::ToStepperSteps()
+{
+	return _stepperStepsPtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplyStepperRun> ReplyTranslator::ToStepperRun()
+{
+	return _stepperRunPtr;
 }
 
 std::shared_ptr<ReplyTranslator::ReplyStepperConfigHome> ReplyTranslator::ToStepperConfigHome()

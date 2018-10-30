@@ -1096,6 +1096,90 @@ void ConsoleOperator::onFeedbackBdcQuery(std::shared_ptr<ReplyTranslator::ReplyB
 	}
 }
 
+void ConsoleOperator::onFeedbackSteppersPowerOn(std::shared_ptr<ReplyTranslator::ReplySteppersPowerOn> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackSteppersPowerOff(std::shared_ptr<ReplyTranslator::ReplySteppersPowerOff> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackSteppersQueryPower(std::shared_ptr<ReplyTranslator::ReplySteppersQueryPower> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperQueryResolution(std::shared_ptr<ReplyTranslator::ReplyStepperQueryResolution> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperConfigStep(std::shared_ptr<ReplyTranslator::ReplyStepperConfigStep> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperAccelerationBuffer(std::shared_ptr<ReplyTranslator::ReplyStepperAccelerationBuffer> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperAccelerationBufferDecrement(std::shared_ptr<ReplyTranslator::ReplyStepperAccelerationBufferDecrement> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperDecelerationBuffer(std::shared_ptr<ReplyTranslator::ReplyStepperDecelerationBuffer> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperDecelerationBufferIncrement(std::shared_ptr<ReplyTranslator::ReplyStepperDecelerationBufferIncrement> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperEnable(std::shared_ptr<ReplyTranslator::ReplyStepperEnable> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperForward(std::shared_ptr<ReplyTranslator::ReplyStepperForward> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperSteps(std::shared_ptr<ReplyTranslator::ReplyStepperSteps> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperRun(std::shared_ptr<ReplyTranslator::ReplyStepperRun> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperConfigHome(std::shared_ptr<ReplyTranslator::ReplyStepperConfigHome> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperMove(std::shared_ptr<ReplyTranslator::ReplyStepperMove> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackStepperQuery(std::shared_ptr<ReplyTranslator::ReplyStepperQuery> replyPtr)
+{
+
+}
+
+void ConsoleOperator::onFeedbackLocatorQuery(std::shared_ptr<ReplyTranslator::ReplyLocatorQuery> replyPtr)
+{
+
+}
 
 void ConsoleOperator::processFeedbacks()
 {
@@ -1200,6 +1284,125 @@ void ConsoleOperator::processFeedbacks()
 			{
 				auto replyPtr = translator.ToBdcQuery();
 				onFeedbackBdcQuery(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::SteppersPowerOn:
+			{
+				auto replyPtr = translator.ToSteppersPowerOn();
+				onFeedbackSteppersPowerOn(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::SteppersPowerOff:
+			{
+				auto replyPtr = translator.ToSteppersPowerOff();
+				onFeedbackSteppersPowerOff(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::SteppersQueryPower:
+			{
+				auto replyPtr = translator.ToSteppersQueryPower();
+				onFeedbackSteppersQueryPower(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperQueryResolution:
+			{
+				auto replyPtr = translator.ToStepperQueryResolution();
+				onFeedbackStepperQueryResolution(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperConfigStep:
+			{
+				auto replyPtr = translator.ToStepperConfigStep();
+				onFeedbackStepperConfigStep(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperAccelerationBuffer:
+			{
+				auto replyPtr = translator.ToStepperAccelerationBuffer();
+				onFeedbackStepperAccelerationBuffer(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperAccelerationBufferDecrement:
+			{
+				auto replyPtr = translator.ToStepperAccelerationBufferDecrement();
+				onFeedbackStepperAccelerationBufferDecrement(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperDecelerationBuffer:
+			{
+				auto replyPtr = translator.ToStepperDecelerationBuffer();
+				onFeedbackStepperDecelerationBuffer(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperDecelerationBufferIncrement:
+			{
+				auto replyPtr = translator.ToStepperDecelerationBufferIncrement();
+				onFeedbackStepperDecelerationBufferIncrement(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperEnable:
+			{
+				auto replyPtr = translator.ToStepperEnable();
+				onFeedbackStepperEnable(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperForward:
+			{
+				auto replyPtr = translator.ToStepperForward();
+				onFeedbackStepperForward(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperSteps:
+			{
+				auto replyPtr = translator.ToStepperSteps();
+				onFeedbackStepperSteps(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperRun:
+			{
+				auto replyPtr = translator.ToStepperRun();
+				onFeedbackStepperRun(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperConfigHome:
+			{
+				auto replyPtr = translator.ToStepperConfigHome();
+				onFeedbackStepperConfigHome(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperMove:
+			{
+				auto replyPtr = translator.ToStepperMove();
+				onFeedbackStepperMove(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::StepperQuery:
+			{
+				auto replyPtr = translator.ToStepperQuery();
+				onFeedbackStepperQuery(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::LocatorQuery:
+			{
+				auto replyPtr = translator.ToLocatorQuery();
+				onFeedbackLocatorQuery(replyPtr);
 			}
 			break;
 

@@ -162,41 +162,49 @@ public:
 	struct ReplyStepperConfigStep: ReplyCommon
 	{
 		unsigned int index;
-		unsigned long lowClks;
-		unsigned long highClks;
 	};
 
 	struct ReplyStepperAccelerationBuffer: ReplyCommon
 	{
 		unsigned int index;
-		unsigned long buffer;
 	};
 
 	struct ReplyStepperAccelerationBufferDecrement: ReplyCommon
 	{
 		unsigned int index;
-		unsigned long decrement;
 	};
 
 	struct ReplyStepperDecelerationBuffer: ReplyCommon
 	{
 		unsigned int index;
-		unsigned long buffer;
 	};
 
 	struct ReplyStepperDecelerationBufferIncrement: ReplyCommon
 	{
 		unsigned int index;
-		unsigned long increment;;
 	};
 
 	struct ReplyStepperEnable: ReplyCommon
 	{
 		unsigned int index;
-		bool bEnabled;
+	};
+
+	struct ReplyStepperForward: ReplyCommon
+	{
+		unsigned int index;
+	};
+
+	struct ReplyStepperSteps: ReplyCommon
+	{
+		unsigned int index;
 	};
 
 	struct ReplyStepperConfigHome: ReplyCommon
+	{
+		unsigned int index;
+	};
+
+	struct ReplyStepperRun: ReplyCommon
 	{
 		unsigned int index;
 		unsigned long position;
@@ -286,6 +294,9 @@ public:
 	std::shared_ptr<ReplyTranslator::ReplyStepperDecelerationBuffer> ToStepperDecelerationBuffer();
 	std::shared_ptr<ReplyTranslator::ReplyStepperDecelerationBufferIncrement> ToStepperDecelerationBufferIncrement();
 	std::shared_ptr<ReplyTranslator::ReplyStepperEnable> ToStepperEnable();
+	std::shared_ptr<ReplyTranslator::ReplyStepperForward> ToStepperForward();
+	std::shared_ptr<ReplyTranslator::ReplyStepperSteps> ToStepperSteps();
+	std::shared_ptr<ReplyTranslator::ReplyStepperRun> ToStepperRun();
 	std::shared_ptr<ReplyTranslator::ReplyStepperConfigHome> ToStepperConfigHome();
 	std::shared_ptr<ReplyTranslator::ReplyStepperMove> ToStepperMove();
 	std::shared_ptr<ReplyTranslator::ReplyStepperQuery> ToStepperQuery();
@@ -361,6 +372,9 @@ private:
 	std::shared_ptr<ReplyTranslator::ReplyStepperDecelerationBuffer> _stepperDecelerationBufferPtr;
 	std::shared_ptr<ReplyTranslator::ReplyStepperDecelerationBufferIncrement> _stepperDecelerationBufferIncrementPtr;
 	std::shared_ptr<ReplyTranslator::ReplyStepperEnable> _stepperEnablePtr;
+	std::shared_ptr<ReplyTranslator::ReplyStepperForward> _stepperForwardPtr;
+	std::shared_ptr<ReplyTranslator::ReplyStepperSteps> _stepperStepsPtr;
+	std::shared_ptr<ReplyTranslator::ReplyStepperRun> _stepperRunPtr;
 	std::shared_ptr<ReplyTranslator::ReplyStepperConfigHome> _stepperConfigHomePtr;
 	std::shared_ptr<ReplyTranslator::ReplyStepperMove> _stepperMovePtr;
 	std::shared_ptr<ReplyTranslator::ReplyStepperQuery> _stepperQueryPtr;
