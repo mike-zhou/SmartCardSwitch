@@ -84,40 +84,41 @@ void ConsoleOperator::runTask()
 void ConsoleOperator::showHelp()
 {
 	std::cout << "Command format:\r\n";
-	std::cout << "DevicesGet: "<<  "0" << "\r\n";
-	std::cout << "DeviceConnect: "<< "1 deviceNumber" << "\r\n";
-	std::cout << "DeviceQueryPower: "<< "2" << "\r\n";
-	std::cout << "OptPowerOn: "<< "20" << "\r\n";
-	std::cout << "OptPowerOff: "<< "21" << "\r\n";
-	std::cout << "OptQueryPower: "<< "22" << "\r\n";
-	std::cout << "DcmPowerOn: "<< "30" << "\r\n";
-	std::cout << "DcmPowerOff: "<< "31" << "\r\n";
-	std::cout << "DcmQueryPower: "<< "32" << "\r\n";
-	std::cout << "BdcsPowerOn: "<< "40" << "\r\n";
-	std::cout << "BdcsPowerOff: "<< "41" << "\r\n";
-	std::cout << "BdcsQueryPower: "<< "42" << "\r\n";
-	std::cout << "BdcCoast: "<< "43 bdcIndex" << "\r\n";
-	std::cout << "BdcReverse: "<< "44 bdcIndex" << "\r\n";
-	std::cout << "BdcForward: "<< "45 bdcIndex" << "\r\n";
-	std::cout << "BdcBreak: "<< "46 bdcIndex" << "\r\n";
-	std::cout << "BdcQuery: "<< "47 bdcIndex" << "\r\n";
-	std::cout << "SteppersPowerOn: "<< "60" << "\r\n";
-	std::cout << "SteppersPowerOff: "<< "61" << "\r\n";
-	std::cout << "SteppersQueryPower: "<< "62" << "\r\n";
-	std::cout << "StepperQueryResolution: "<< "63" << "\r\n";
-	std::cout << "StepperConfigStep: "<< "64 stepperIndex lowClks highClks" << "\r\n";
-	std::cout << "StepperAccelerationBuffer: "<< "65 stepperIndex value" << "\r\n";
+	std::cout << "DevicesGet:------------------------ "<< "0" << "\r\n";
+	std::cout << "DeviceConnect:--------------------- "<< "1 deviceNumber" << "\r\n";
+	std::cout << "DeviceQueryPower:------------------ "<< "2" << "\r\n";
+	std::cout << "DeviceQueryFuse:------------------- "<< "3" << "\r\n";
+	std::cout << "OptPowerOn:------------------------ "<< "20" << "\r\n";
+	std::cout << "OptPowerOff:----------------------- "<< "21" << "\r\n";
+	std::cout << "OptQueryPower:--------------------- "<< "22" << "\r\n";
+	std::cout << "DcmPowerOn:------------------------ "<< "30" << "\r\n";
+	std::cout << "DcmPowerOff:----------------------- "<< "31" << "\r\n";
+	std::cout << "DcmQueryPower:--------------------- "<< "32" << "\r\n";
+	std::cout << "BdcsPowerOn:----------------------- "<< "40" << "\r\n";
+	std::cout << "BdcsPowerOff:---------------------- "<< "41" << "\r\n";
+	std::cout << "BdcsQueryPower:-------------------- "<< "42" << "\r\n";
+	std::cout << "BdcCoast:-------------------------- "<< "43 bdcIndex" << "\r\n";
+	std::cout << "BdcReverse:------------------------ "<< "44 bdcIndex" << "\r\n";
+	std::cout << "BdcForward:------------------------ "<< "45 bdcIndex" << "\r\n";
+	std::cout << "BdcBreak:-------------------------- "<< "46 bdcIndex" << "\r\n";
+	std::cout << "BdcQuery:-------------------------- "<< "47 bdcIndex" << "\r\n";
+	std::cout << "SteppersPowerOn:------------------- "<< "60" << "\r\n";
+	std::cout << "SteppersPowerOff:------------------ "<< "61" << "\r\n";
+	std::cout << "SteppersQueryPower:---------------- "<< "62" << "\r\n";
+	std::cout << "StepperQueryResolution: ----------- "<< "63" << "\r\n";
+	std::cout << "StepperConfigStep:----------------- "<< "64 stepperIndex lowClks highClks" << "\r\n";
+	std::cout << "StepperAccelerationBuffer:--------- "<< "65 stepperIndex value" << "\r\n";
 	std::cout << "StepperAccelerationBufferDecrement: "<< "66 stepperIndex value" << "\r\n";
-	std::cout << "StepperDecelerationBuffer: "<< "67 stepperIndex value" << "\r\n";
+	std::cout << "StepperDecelerationBuffer:          "<< "67 stepperIndex value" << "\r\n";
 	std::cout << "StepperDecelerationBufferIncrement: "<< "68 stepperIndex value" << "\r\n";
-	std::cout << "StepperEnable: "<< "69 stepperIndex 1/0" << "\r\n";
-	std::cout << "StepperForward: "<< "70 stepperIndex 1/0" << "\r\n";
-	std::cout << "StepperSteps: "<< "71 stepperIndex stepAmount" << "\r\n";
-	std::cout << "StepperRun: "<< "72" << "\r\n";
-	std::cout << "StepperConfigHome: "<< "73 stepperIndex locatorIndex lineNumberStart lineNumberTerminal" << "\r\n";
-	std::cout << "StepperMove: "<< "74 stepperIndex forward stepAmount" << "\r\n";
-	std::cout << "StepperQuery: "<< "75 stepperIndex" << "\r\n";
-	std::cout << "LocatorQuery: "<< "90 locatorIndex" << "\r\n";
+	std::cout << "StepperEnable: -------------------- "<< "69 stepperIndex 1/0" << "\r\n";
+	std::cout << "StepperForward: ------------------- "<< "70 stepperIndex 1/0" << "\r\n";
+	std::cout << "StepperSteps: --------------------- "<< "71 stepperIndex stepAmount" << "\r\n";
+	std::cout << "StepperRun: ----------------------- "<< "72" << "\r\n";
+	std::cout << "StepperConfigHome:----------------- "<< "73 stepperIndex locatorIndex lineNumberStart lineNumberTerminal" << "\r\n";
+	std::cout << "StepperMove:----------------------- "<< "74 stepperIndex forward stepAmount" << "\r\n";
+	std::cout << "StepperQuery: --------------------- "<< "75 stepperIndex" << "\r\n";
+	std::cout << "LocatorQuery:---------------------- "<< "90 locatorIndex" << "\r\n";
 }
 
 void ConsoleOperator::processInput()
@@ -431,6 +432,349 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
+		case UserCommand::Type::SteppersPowerOn:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				cmdPtr = CommandFactory::SteppersPowerOn();
+				if(cmdPtr == nullptr) {
+					pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::SteppersPowerOn");
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::SteppersPowerOff:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				cmdPtr = CommandFactory::SteppersPowerOff();
+				if(cmdPtr == nullptr) {
+					pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::SteppersPowerOff");
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::SteppersQueryPower:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				cmdPtr = CommandFactory::SteppersQueryPower();
+				if(cmdPtr == nullptr) {
+					pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::SteppersQueryPower");
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::StepperQueryResolution:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				cmdPtr = CommandFactory::StepperQueryResolution();
+				if(cmdPtr == nullptr) {
+					pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperQueryResolution");
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::StepperConfigStep:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+				unsigned int lowClks = d2;
+				unsigned int highClks = d3;
+
+				if(index >= STEPPER_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid stepper index: " + std::to_string(d1));
+				}
+				else
+				{
+					cmdPtr = CommandFactory::StepperConfigStep(index, lowClks, highClks);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperConfigStep");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::StepperAccelerationBuffer:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+				unsigned int value = d2;
+
+				if(index >= STEPPER_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid stepper index: " + std::to_string(d1));
+				}
+				else
+				{
+					cmdPtr = CommandFactory::StepperAccelerationBuffer(index, value);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperAccelerationBuffer");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::StepperAccelerationBufferDecrement:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+				unsigned int value = d2;
+
+				if(index >= STEPPER_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid stepper index: " + std::to_string(d1));
+				}
+				else
+				{
+					cmdPtr = CommandFactory::StepperAccelerationBufferDecrement(index, value);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperAccelerationBufferDecrement");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::StepperDecelerationBuffer:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+				unsigned int value = d2;
+
+				if(index >= STEPPER_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid stepper index: " + std::to_string(d1));
+				}
+				else
+				{
+					cmdPtr = CommandFactory::StepperDecelerationBuffer(index, value);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperDecelerationBuffer");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::StepperDecelerationBufferIncrement:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+				unsigned int value = d2;
+
+				if(index >= STEPPER_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid stepper index: " + std::to_string(d1));
+				}
+				else
+				{
+					cmdPtr = CommandFactory::StepperDecelerationBufferIncrement(index, value);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperDecelerationBufferIncrement");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::StepperEnable:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+				bool enable = (d2 != 0);
+
+				if(index >= STEPPER_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid stepper index: " + std::to_string(d1));
+				}
+				else
+				{
+					cmdPtr = CommandFactory::StepperEnable(index, enable);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperEnable");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::StepperForward:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+				bool forward = (d2 != 0);
+
+				if(index >= STEPPER_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid stepper index: " + std::to_string(d1));
+				}
+				else
+				{
+					cmdPtr = CommandFactory::StepperForward(index, forward);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperForward");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::StepperSteps:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+				unsigned int value = d2;
+
+				if(index >= STEPPER_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid stepper index: " + std::to_string(d1));
+				}
+				else
+				{
+					cmdPtr = CommandFactory::StepperSteps(index, value);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperSteps");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::StepperRun:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+				unsigned int initialPos = d2;
+				unsigned int finalPos = d3;
+
+				if(index >= STEPPER_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid stepper index: " + std::to_string(d1));
+				}
+				else
+				{
+					cmdPtr = CommandFactory::StepperRun(index, initialPos, finalPos);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperRun");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::StepperConfigHome:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+				unsigned int locatorIndex = d2;
+				unsigned int lineNumberStart = d3;
+				unsigned int lineNumberTerminal = d4;
+
+				if(index >= STEPPER_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid stepper index: " + std::to_string(d1));
+				}
+				else if((lineNumberStart < LOCATOR_LINE_NUMBER_MIN) || (lineNumberStart > LOCATOR_LINE_NUMBER_MAX)) {
+					pLogger->LogError("ConsoleOperator::processInput lineNumberStart is out of range: " + std::to_string(lineNumberStart));
+				}
+				else if((lineNumberTerminal < LOCATOR_LINE_NUMBER_MIN) || (lineNumberTerminal > LOCATOR_LINE_NUMBER_MAX)) {
+					pLogger->LogError("ConsoleOperator::processInput lineNumberStart is out of range: " + std::to_string(lineNumberTerminal));
+				}
+				else if(lineNumberTerminal == lineNumberStart) {
+					pLogger->LogError("ConsoleOperator::processInput lineNumberStart is same as lineNumberTerminal");
+				}
+				else
+				{
+					cmdPtr = CommandFactory::StepperConfigHome(index, locatorIndex, lineNumberStart, lineNumberTerminal);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperConfigHome");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::StepperQuery:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+
+				if(index >= STEPPER_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid stepper index: " + std::to_string(d1));
+				}
+				else
+				{
+					cmdPtr = CommandFactory::StepperQuery(index);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperQuery");
+					}
+				}
+			}
+		}
+		break;
+
+		case UserCommand::Type::LocatorQuery:
+		{
+			if(_userCommand.resultConnectedDeviceName.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput hasn't connected to any device");
+			}
+			else {
+				unsigned int index = d1;
+
+				if(index >= LOCATOR_AMOUNT) {
+					pLogger->LogError("ConsoleOperator::processInput invalid stepper index: " + std::to_string(d1));
+				}
+				else
+				{
+					cmdPtr = CommandFactory::LocatorQuery(index);
+					if(cmdPtr == nullptr) {
+						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::LocatorQuery");
+					}
+				}
+			}
+		}
+		break;
+
 		default:
 		{
 
@@ -538,7 +882,7 @@ void ConsoleOperator::onFeedbackDeviceQueryPower(std::shared_ptr<ReplyTranslator
 	}
 	else {
 		//error happened
-		pLogger->LogInfo("ConsoleOperator::onFeedbackDeviceQueryPower unknown device power status due to: " + replyPtr->errorInfo);
+		pLogger->LogError("ConsoleOperator::onFeedbackDeviceQueryPower unknown device power status due to: " + replyPtr->errorInfo);
 		_userCommand.resultDevicePowerStatus = UserCommand::PowerStatus::UNKNOWN;
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
@@ -565,7 +909,7 @@ void ConsoleOperator::onFeedbackDeviceQueryFuse(std::shared_ptr<ReplyTranslator:
 	}
 	else {
 		//error happened
-		pLogger->LogInfo("ConsoleOperator::onFeedbackDeviceQueryFuse unknown main fuse status due to: " + replyPtr->errorInfo);
+		pLogger->LogError("ConsoleOperator::onFeedbackDeviceQueryFuse unknown main fuse status due to: " + replyPtr->errorInfo);
 		_userCommand.resultDeviceFuseStatus = UserCommand::FuseStatus::UNKNOWN;
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
@@ -573,42 +917,183 @@ void ConsoleOperator::onFeedbackDeviceQueryFuse(std::shared_ptr<ReplyTranslator:
 
 void ConsoleOperator::onFeedbackBdcsPowerOn(std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOn> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	if(replyPtr->errorInfo.empty()) {
+		//no error
+		pLogger->LogInfo("ConsoleOperator::onFeedbackBdcsPowerOn bdcs is powered on");
+		_userCommand.resultBdcsPowerStatus = UserCommand::PowerStatus::POWERED_ON;
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackBdcsPowerOn error: " + replyPtr->errorInfo);
+		//keep bdcs power status unchanged.
+	}
 }
 
 void ConsoleOperator::onFeedbackBdcsPowerOff(std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOff> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	if(replyPtr->errorInfo.empty()) {
+		//no error
+		pLogger->LogInfo("ConsoleOperator::onFeedbackBdcsPowerOff bdcs is powered off");
+		_userCommand.resultBdcsPowerStatus = UserCommand::PowerStatus::POWERED_OFF;
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackBdcsPowerOff error: " + replyPtr->errorInfo);
+		//keep bdcs power status unchanged.
+	}
 }
 
 void ConsoleOperator::onFeedbackBdcsQueryPower(std::shared_ptr<ReplyTranslator::ReplyBdcsQueryPower> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	if(replyPtr->errorInfo.empty()) {
+		//no error
+		if(replyPtr->bPoweredOn) {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcsQueryPower bdcs is powered on");
+			_userCommand.resultBdcsPowerStatus = UserCommand::PowerStatus::POWERED_ON;
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcsQueryPower bdcs is powered off");
+			_userCommand.resultBdcsPowerStatus = UserCommand::PowerStatus::POWERED_OFF;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackBdcsQueryPower error: " + replyPtr->errorInfo);
+		//keep bdcs power status unchanged.
+	}
 }
 
 void ConsoleOperator::onFeedbackBdcCoast(std::shared_ptr<ReplyTranslator::ReplyBdcCoast> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	if(replyPtr->errorInfo.empty()) {
+		//no error
+		if(replyPtr->index >= BDC_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackBdcCoast index out of range in bdc coast: " + std::to_string(replyPtr->index));
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcCoast index: " + std::to_string(replyPtr->index));
+			_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::COAST;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackBdcCoast error: " + replyPtr->errorInfo + " index: " + std::to_string(replyPtr->index));
+	}
 }
 
 void ConsoleOperator::onFeedbackBdcReverse(std::shared_ptr<ReplyTranslator::ReplyBdcReverse> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	if(replyPtr->errorInfo.empty()) {
+		//no error
+		if(replyPtr->index >= BDC_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackBdcReverse index out of range in bdc coast: " + std::to_string(replyPtr->index));
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcReverse index: " + std::to_string(replyPtr->index));
+			_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::REVERSE;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackBdcReverse error: " + replyPtr->errorInfo + " index: " + std::to_string(replyPtr->index));
+	}
 }
 
 void ConsoleOperator::onFeedbackBdcForward(std::shared_ptr<ReplyTranslator::ReplyBdcForward> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	if(replyPtr->errorInfo.empty()) {
+		//no error
+		if(replyPtr->index >= BDC_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackBdcForward index out of range in bdc coast: " + std::to_string(replyPtr->index));
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcForward index: " + std::to_string(replyPtr->index));
+			_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::FORWARD;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackBdcForward error: " + replyPtr->errorInfo + " index: " + std::to_string(replyPtr->index));
+	}
 }
 
 void ConsoleOperator::onFeedbackBdcBreak(std::shared_ptr<ReplyTranslator::ReplyBdcBreak> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	if(replyPtr->errorInfo.empty()) {
+		//no error
+		if(replyPtr->index >= BDC_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackBdcBreak index out of range in bdc coast: " + std::to_string(replyPtr->index));
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcBreak index: " + std::to_string(replyPtr->index));
+			_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::BREAK;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackBdcBreak error: " + replyPtr->errorInfo + " index: " + std::to_string(replyPtr->index));
+	}
 }
 
 void ConsoleOperator::onFeedbackBdcQuery(std::shared_ptr<ReplyTranslator::ReplyBdcQuery> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	if(replyPtr->errorInfo.empty()) {
+		//no error
+		if(replyPtr->index >= BDC_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackBdcQuery index out of range in bdc coast: " + std::to_string(replyPtr->index));
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcQuery index: " + std::to_string(replyPtr->index) + " mode: " + std::to_string(replyPtr->index));
+
+			switch(replyPtr->mode)
+			{
+				case ReplyTranslator::ReplyBdcQuery::BdcMode::COAST:
+					_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::COAST;
+					break;
+				case ReplyTranslator::ReplyBdcQuery::BdcMode::REVERSE:
+					_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::REVERSE;
+					break;
+				case ReplyTranslator::ReplyBdcQuery::BdcMode::FORWARD:
+					_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::FORWARD;
+					break;
+				case ReplyTranslator::ReplyBdcQuery::BdcMode::BREAK:
+					_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::BREAK;
+					break;
+				default:
+					pLogger->LogError("ConsoleOperator::onFeedbackBdcQuery unknown bdc status");
+					_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::UNKNOWN;
+					break;
+			}
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackBdcQuery error: " + replyPtr->errorInfo + " index: " + std::to_string(replyPtr->index));
+	}
 }
 
 
@@ -659,6 +1144,62 @@ void ConsoleOperator::processFeedbacks()
 			{
 				auto replyPtr = translator.ToDeviceQueryFuse();
 				onFeedbackDeviceQueryFuse(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::BdcsPowerOn:
+			{
+				auto replyPtr = translator.ToBdcsPowerOn();
+				onFeedbackBdcsPowerOn(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::BdcsPowerOff:
+			{
+				auto replyPtr = translator.ToBdcsPowerOff();
+				onFeedbackBdcsPowerOff(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::BdcsQueryPower:
+			{
+				auto replyPtr = translator.ToBdcsQueryPower();
+				onFeedbackBdcsQueryPower(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::BdcCoast:
+			{
+				auto replyPtr = translator.ToBdcCoast();
+				onFeedbackBdcCoast(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::BdcReverse:
+			{
+				auto replyPtr = translator.ToBdcReverse();
+				onFeedbackBdcReverse(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::BdcForward:
+			{
+				auto replyPtr = translator.ToBdcCoast();
+				onFeedbackBdcCoast(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::BdcBreak:
+			{
+				auto replyPtr = translator.ToBdcBreak();
+				onFeedbackBdcBreak(replyPtr);
+			}
+			break;
+
+			case ReplyTranslator::ReplyType::BdcQuery:
+			{
+				auto replyPtr = translator.ToBdcQuery();
+				onFeedbackBdcQuery(replyPtr);
 			}
 			break;
 

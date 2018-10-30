@@ -255,7 +255,7 @@ std::shared_ptr<CommandDeviceQueryPower> CommandTranslator::GetCommandDeviceQuer
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandDeviceQueryPower invalid command in " + _jsonCmd);
 			}
-			else if(command != strCommandDeviceConnect) {
+			else if(command != strCommandDeviceQueryPower) {
 				pLogger->LogError("CommandTranslator::GetCommandDeviceQueryPower wrong command in " + _jsonCmd);
 			}
 			else

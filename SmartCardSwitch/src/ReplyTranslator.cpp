@@ -49,6 +49,7 @@ ReplyTranslator::ReplyTranslator(const std::string& reply)
 	_proxyConnectionPtr = nullptr;
 	_stepperOutOfRangePtr = nullptr;
 
+	//parse the reply in the constructor
 	try
 	{
 		Poco::JSON::Parser parser;
@@ -190,6 +191,8 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 				ptr->errorInfo = "unknown device power status";
 			}
 		}
+
+		_deviceQueryPowerPtr = ptr;
 	}
 	else if(command == strCommandDeviceQueryFuse)
 	{
@@ -224,28 +227,268 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 				ptr->errorInfo = "unknown device power status";
 			}
 		}
+
+		_deviceQueryFusePtr = ptr;
 	}
-	else if(command == strCommandBdcsPowerOn) {
+	else if(command == strCommandBdcsPowerOn)
+	{
+		_type = ReplyType::BdcsPowerOn;
+
+		std::string errorInfo;
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+
+		std::shared_ptr<ReplyBdcsPowerOn> ptr (new ReplyBdcsPowerOn);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+
+		_bdcsPowerOnPtr = ptr;
 	}
-	else if(command == strCommandBdcsPowerOff) {
+	else if(command == strCommandBdcsPowerOff)
+	{
+		_type = ReplyType::BdcsPowerOff;
+
+		std::string errorInfo;
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+
+		std::shared_ptr<ReplyBdcsPowerOff> ptr (new ReplyBdcsPowerOff);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+
+		_bdcsPowerOffPtr = ptr;
 	}
-	else if(command == strCommandBdcsQueryPower) {
+	else if(command == strCommandBdcsQueryPower)
+	{
+		_type = ReplyType::BdcsQueryPower;
+
+		std::string errorInfo;
+		std::string state;
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+		else {
+			state = ds["state"].toString();
+		}
+
+		std::shared_ptr<ReplyBdcsQueryPower> ptr (new ReplyBdcsQueryPower);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty())
+		{
+			if(state == "BDCs are powered on") {
+				ptr->bPoweredOn = true;
+			}
+			else if(state == "BDCs are powered off") {
+				ptr->bPoweredOn = false;
+			}
+			else {
+				pLogger->LogError("ReplyTranslator::parseReply unknown bdcs power status: " + state);
+				ptr->errorInfo = "unknown bdcs power status";
+			}
+		}
+
+		_bdcsQueryPowerPtr = ptr;
 	}
-	else if(command == strCommandBdcCoast) {
+	else if(command == strCommandBdcCoast)
+	{
+		_type = ReplyType::BdcCoast;
+
+		unsigned int index = ds["index"];
+
+		std::string errorInfo;
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+
+		std::shared_ptr<ReplyBdcCoast> ptr (new ReplyBdcCoast);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		ptr->index = index;
+
+		_bdcCoastPtr = ptr;
 	}
-	else if(command == strCommandBdcReverse) {
+	else if(command == strCommandBdcReverse)
+	{
+		_type = ReplyType::BdcReverse;
+
+		unsigned int index = ds["index"];
+
+		std::string errorInfo;
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+
+		std::shared_ptr<ReplyBdcReverse> ptr (new ReplyBdcReverse);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		ptr->index = index;
+
+		_bdcReversePtr = ptr;
 	}
-	else if(command == strCommandBdcForward) {
+	else if(command == strCommandBdcForward)
+	{
+		_type = ReplyType::BdcForward;
+
+		unsigned int index = ds["index"];
+
+		std::string errorInfo;
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+
+		std::shared_ptr<ReplyBdcForward> ptr (new ReplyBdcForward);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		ptr->index = index;
+
+		_bdcForwardPtr = ptr;
 	}
-	else if(command == strCommandBdcBreak) {
+	else if(command == strCommandBdcBreak)
+	{
+		_type = ReplyType::BdcBreak;
+
+		unsigned int index = ds["index"];
+
+		std::string errorInfo;
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+
+		std::shared_ptr<ReplyBdcBreak> ptr (new ReplyBdcBreak);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		ptr->index = index;
+
+		_bdcBreakPtr = ptr;
 	}
-	else if(command == strCommandBdcQuery) {
+	else if(command == strCommandBdcQuery)
+	{
+		_type = ReplyType::BdcQuery;
+
+		unsigned int index = ds["index"];
+
+		std::string errorInfo;
+		std::string state;
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+		else {
+			state = ds["state"].toString();
+		}
+
+		std::shared_ptr<ReplyBdcQuery> ptr (new ReplyBdcQuery);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		ptr->index = index;
+		if(errorInfo.empty())
+		{
+			if(state == "coast") {
+				ptr->mode = ReplyBdcQuery::BdcMode::COAST;
+			}
+			else if(state == "reverse") {
+				ptr->mode = ReplyBdcQuery::BdcMode::REVERSE;
+			}
+			else if(state == "forward") {
+				ptr->mode = ReplyBdcQuery::BdcMode::FORWARD;
+			}
+			else if(state == "break") {
+				ptr->mode = ReplyBdcQuery::BdcMode::BREAK;
+			}
+			else {
+				pLogger->LogError("ReplyTranslator::parseReply wrong bdc state: " + state);
+				ptr->errorInfo = "wrong bdc status";
+			}
+		}
+
+		_bdcQueryPtr = ptr;
 	}
-	else if(command == strCommandSteppersPowerOn) {
+	else if(command == strCommandSteppersPowerOn)
+	{
+		_type = ReplyType::SteppersPowerOn;
+
+		std::shared_ptr<ReplySteppersPowerOn> ptr (new ReplySteppersPowerOn);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+
+		_steppersPowerOnPtr = ptr;
 	}
-	else if(command == strCommandSteppersPowerOff) {
+	else if(command == strCommandSteppersPowerOff)
+	{
+		_type = ReplyType::SteppersPowerOff;
+
+		std::shared_ptr<ReplySteppersPowerOff> ptr (new ReplySteppersPowerOff);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+
+		_steppersPowerOnPtr = ptr;
 	}
-	else if(command == strCommandSteppersQueryPower) {
+	else if(command == strCommandSteppersQueryPower)
+	{
+		_type = ReplyType::SteppersQueryPower;
+
+		std::shared_ptr<ReplySteppersQueryPower> ptr (new ReplySteppersQueryPower);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty())
+		{
+			//no error
+			std::string state = ds["state"].toString();
+			if(state == "steppers are powered on") {
+				ptr->bPowered = true;
+			}
+			else if(state == "steppers are powered off") {
+				ptr->bPowered = false;
+			}
+			else {
+				pLogger->LogError("ReplyTranslator::parseReply wrong steppers power status: " + state);
+				ptr->errorInfo = "unknown steppers power status";
+			}
+		}
+
+		_steppersPowerOnPtr = ptr;
 	}
 	else if(command == strCommandStepperQueryResolution) {
 	}
@@ -349,6 +592,21 @@ std::shared_ptr<ReplyTranslator::ReplyBdcBreak> ReplyTranslator::ToBdcBreak()
 std::shared_ptr<ReplyTranslator::ReplyBdcQuery> ReplyTranslator::ToBdcQuery()
 {
 	return _bdcQueryPtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplySteppersPowerOn> ReplyTranslator::ToSteppersPowerOn()
+{
+	return _steppersPowerOnPtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplySteppersPowerOff> ReplyTranslator::ToSteppersPowerOff()
+{
+	return _steppersPowerOffPtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplySteppersQueryPower> ReplyTranslator::ToSteppersQueryPower()
+{
+	return _steppersQueryPowerPtr;
 }
 
 std::shared_ptr<ReplyTranslator::ReplyStepperQueryResolution> ReplyTranslator::ToStepperQueryResolution()

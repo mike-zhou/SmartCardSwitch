@@ -452,6 +452,65 @@ std::string CommandStepperQueryResolution::ToJsonCommandString()
 	return cmd;
 }
 
+//////////////////////////////////////////////////////////
+//CommandSteppersPowerOn
+//////////////////////////////////////////////////////////
+std::string CommandSteppersPowerOn::CommandKey()
+{
+	return std::string("steppers power on");
+}
+
+std::string CommandSteppersPowerOn::ToJsonCommandString()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"steppers power on\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+	cmd += "}";
+
+	return cmd;
+}
+
+//////////////////////////////////////////////////////////
+//CommandSteppersPowerOff
+//////////////////////////////////////////////////////////
+std::string CommandSteppersPowerOff::CommandKey()
+{
+	return std::string("steppers power off");
+}
+
+std::string CommandSteppersPowerOff::ToJsonCommandString()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"steppers power off\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+	cmd += "}";
+
+	return cmd;
+}
+
+//////////////////////////////////////////////////////////
+//CommandSteppersQueryPower
+//////////////////////////////////////////////////////////
+std::string CommandSteppersQueryPower::CommandKey()
+{
+	return std::string("steppers query power");
+}
+
+std::string CommandSteppersQueryPower::ToJsonCommandString()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"steppers query power\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+	cmd += "}";
+
+	return cmd;
+}
 
 ///////////////////////////////////////////////////////////
 // CommandStepperConfigStep
@@ -917,6 +976,32 @@ std::string CommandStepperConfigHome::GetFinalState()
 {
 	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":0}";
 	return state;
+}
+
+///////////////////////////////////////////////////////////
+//CommandStepperQuery
+///////////////////////////////////////////////////////////
+CommandStepperQuery::CommandStepperQuery(unsigned int stepperIndex)
+{
+	_stepperIndex = stepperIndex;
+}
+
+std::string CommandStepperQuery::CommandKey()
+{
+	return std::string("stepper query");
+}
+
+std::string CommandStepperQuery::ToJsonCommandString()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper query\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex);
+	cmd += "}";
+
+	return cmd;
 }
 
 ///////////////////////////////////////////////////////////

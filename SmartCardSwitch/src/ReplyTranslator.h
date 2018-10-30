@@ -109,22 +109,22 @@ public:
 
 	struct ReplyBdcCoast: ReplyCommon
 	{
-		//empty
+		unsigned int index;
 	};
 
 	struct ReplyBdcReverse: ReplyCommon
 	{
-		//empty
+		unsigned int index;
 	};
 
 	struct ReplyBdcForward: ReplyCommon
 	{
-		//empty
+		unsigned int index;
 	};
 
 	struct ReplyBdcBreak: ReplyCommon
 	{
-		//empty
+		unsigned int index;
 	};
 
 	struct ReplyBdcQuery: ReplyCommon
@@ -136,6 +136,22 @@ public:
 			FORWARD,
 			BREAK
 		} mode;
+		unsigned int index;
+	};
+
+	struct ReplySteppersPowerOn: ReplyCommon
+	{
+		//empty
+	};
+
+	struct ReplySteppersPowerOff: ReplyCommon
+	{
+		//empty
+	};
+
+	struct ReplySteppersQueryPower: ReplyCommon
+	{
+		bool bPowered;
 	};
 
 	struct ReplyStepperQueryResolution: ReplyCommon
@@ -145,60 +161,76 @@ public:
 
 	struct ReplyStepperConfigStep: ReplyCommon
 	{
+		unsigned int index;
 		unsigned long lowClks;
 		unsigned long highClks;
 	};
 
 	struct ReplyStepperAccelerationBuffer: ReplyCommon
 	{
+		unsigned int index;
 		unsigned long buffer;
 	};
 
 	struct ReplyStepperAccelerationBufferDecrement: ReplyCommon
 	{
+		unsigned int index;
 		unsigned long decrement;
 	};
 
 	struct ReplyStepperDecelerationBuffer: ReplyCommon
 	{
+		unsigned int index;
 		unsigned long buffer;
 	};
 
 	struct ReplyStepperDecelerationBufferIncrement: ReplyCommon
 	{
+		unsigned int index;
 		unsigned long increment;;
 	};
 
 	struct ReplyStepperEnable: ReplyCommon
 	{
+		unsigned int index;
 		bool bEnabled;
 	};
 
 	struct ReplyStepperConfigHome: ReplyCommon
 	{
+		unsigned int index;
 		unsigned long position;
 	};
 
 	struct ReplyStepperMove: ReplyCommon
 	{
+		unsigned int index;
 		unsigned long position;
 	};
 
 	struct ReplyStepperQuery: ReplyCommon
 	{
-		struct StepperStatus
-		{
-			bool bEnabled;
-			bool bForward;
-			unsigned long position;
-		};
+		unsigned int index;
 
-		std::vector<StepperStatus> status;
+		std::string state;
+		bool bEnabled;
+		bool bForward;
+		unsigned int locatorIndex;
+		unsigned int locatorLineNumberStart;
+		unsigned int locatorLineNumberTerminal;
+		unsigned long homeOffset;
+		unsigned int lowClks;
+		unsigned int highClks;
+		unsigned int accelerationBuffer;
+		unsigned int accelerationBufferDecrement;
+		unsigned int decelerationBuffer;
+		unsigned int decelerationBufferIncrement;
 	};
 
 	struct ReplyLocatorQuery: ReplyCommon
 	{
-		std::vector<std::vector<int>> status;
+		unsigned int index;
+		unsigned int lowInput;
 	};
 
 	struct EventDevicePower
@@ -244,6 +276,9 @@ public:
 	std::shared_ptr<ReplyTranslator::ReplyBdcForward> ToBdcForward();
 	std::shared_ptr<ReplyTranslator::ReplyBdcBreak> ToBdcBreak();
 	std::shared_ptr<ReplyTranslator::ReplyBdcQuery> ToBdcQuery();
+	std::shared_ptr<ReplyTranslator::ReplySteppersPowerOn> ToSteppersPowerOn();
+	std::shared_ptr<ReplyTranslator::ReplySteppersPowerOff> ToSteppersPowerOff();
+	std::shared_ptr<ReplyTranslator::ReplySteppersQueryPower> ToSteppersQueryPower();
 	std::shared_ptr<ReplyTranslator::ReplyStepperQueryResolution> ToStepperQueryResolution();
 	std::shared_ptr<ReplyTranslator::ReplyStepperConfigStep> ToStepperConfigStep();
 	std::shared_ptr<ReplyTranslator::ReplyStepperAccelerationBuffer> ToStepperAccelerationBuffer();
@@ -316,6 +351,9 @@ private:
 	std::shared_ptr<ReplyTranslator::ReplyBdcForward> _bdcForwardPtr;
 	std::shared_ptr<ReplyTranslator::ReplyBdcBreak> _bdcBreakPtr;
 	std::shared_ptr<ReplyTranslator::ReplyBdcQuery> _bdcQueryPtr;
+	std::shared_ptr<ReplyTranslator::ReplySteppersPowerOn> _steppersPowerOnPtr;
+	std::shared_ptr<ReplyTranslator::ReplySteppersPowerOff> _steppersPowerOffPtr;
+	std::shared_ptr<ReplyTranslator::ReplySteppersQueryPower> _steppersQueryPowerPtr;
 	std::shared_ptr<ReplyTranslator::ReplyStepperQueryResolution> _stepperQueryResolutionPtr;
 	std::shared_ptr<ReplyTranslator::ReplyStepperConfigStep> _stepperConfigStepPtr;
 	std::shared_ptr<ReplyTranslator::ReplyStepperAccelerationBuffer> _stepperAccelerationBufferPtr;

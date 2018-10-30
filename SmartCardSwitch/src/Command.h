@@ -139,6 +139,27 @@ private:
 	unsigned int _bdcIndex;
 };
 
+class CommandSteppersPowerOn: public DeviceCommand
+{
+public:
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+};
+
+class CommandSteppersPowerOff: public DeviceCommand
+{
+public:
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+};
+
+class CommandSteppersQueryPower: public DeviceCommand
+{
+public:
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+};
+
 class CommandStepperQueryResolution: public DeviceCommand
 {
 public:
@@ -299,6 +320,18 @@ private:
 	unsigned int _locatorIndex;
 	unsigned int _lineNumberStart;
 	unsigned int _lineNumberTerminal;
+};
+
+class CommandStepperQuery: public DeviceCommand
+{
+public:
+	CommandStepperQuery(unsigned int stepperIndex);
+
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+
+private:
+	unsigned int _stepperIndex;
 };
 
 class CommandStepperMove: public DeviceCommand

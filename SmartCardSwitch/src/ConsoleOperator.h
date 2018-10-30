@@ -43,6 +43,11 @@ private:
 
 private:
 	static const unsigned int BDC_AMOUNT = 6;
+	static const unsigned int STEPPER_AMOUNT = 5;
+	static const unsigned int LOCATOR_AMOUNT = 8;
+	static const unsigned int LOCATOR_LINE_NUMBER_INVALID = 0;
+	static const unsigned int LOCATOR_LINE_NUMBER_MIN = 1;
+	static const unsigned int LOCATOR_LINE_NUMBER_MAX = 8;
 
 	Poco::Mutex _mutex;
 

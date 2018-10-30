@@ -76,7 +76,7 @@ std::shared_ptr<DeviceCommand> CommandFactory::BdcQuery(unsigned int bdcIndex)
 	return ptr;
 }
 
-std::shared_ptr<DeviceCommand> CommandFactory::StepperQueryClkPeriod()
+std::shared_ptr<DeviceCommand> CommandFactory::StepperQueryResolution()
 {
 	std::shared_ptr<DeviceCommand> ptr(new CommandStepperQueryResolution());
 
@@ -120,6 +120,26 @@ std::shared_ptr<DeviceCommand> CommandFactory::StepperDecelerationBufferIncremen
 	return ptr;
 }
 
+std::shared_ptr<DeviceCommand> CommandFactory::SteppersPowerOn()
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandSteppersPowerOn);
+
+	return ptr;
+}
+
+std::shared_ptr<DeviceCommand> CommandFactory::SteppersPowerOff()
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandSteppersPowerOff);
+
+	return ptr;
+}
+
+std::shared_ptr<DeviceCommand> CommandFactory::SteppersQueryPower()
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandSteppersQueryPower);
+
+	return ptr;
+}
 
 std::shared_ptr<DeviceCommand> CommandFactory::StepperEnable(unsigned int stepperIndex, bool enable)
 {
@@ -152,6 +172,13 @@ std::shared_ptr<DeviceCommand> CommandFactory::StepperRun(unsigned int stepperIn
 std::shared_ptr<DeviceCommand> CommandFactory::StepperConfigHome(unsigned int stepperIndex, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal)
 {
 	std::shared_ptr<DeviceCommand> ptr(new CommandStepperConfigHome(stepperIndex, locatorIndex, lineNumberStart, lineNumberTerminal));
+
+	return ptr;
+}
+
+std::shared_ptr<DeviceCommand> CommandFactory::StepperQuery(unsigned int stepperIndex)
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandStepperQuery(stepperIndex));
 
 	return ptr;
 }
