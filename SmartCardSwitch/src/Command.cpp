@@ -362,6 +362,7 @@ std::string CommandBdcOperation::ToJsonCommandString()
 		cmd = "{";
 		cmd = cmd + "\"command\":\"bdc " + mode + "\",";
 		cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+		cmd = cmd + ",\"index\":" + std::to_string(_bdcIndex);
 		cmd += "}";
 	}
 
@@ -400,6 +401,7 @@ std::string CommandBdcOperation::ToJsonCommandUndoString()
 		cmd = "{";
 		cmd = cmd + "\"command\":\"bdc " + mode + "\",";
 		cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId());
+		cmd = cmd + ",\"index\":" + std::to_string(_bdcIndex);
 		cmd += "}";
 	}
 

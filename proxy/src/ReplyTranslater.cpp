@@ -57,7 +57,7 @@ unsigned long ReplyTranslater::getHexValue(const std::string& hexString)
 {
 	unsigned long value = 0;
 
-	for(int i=0; i<hexString.size(); i++)
+	for(unsigned int i=0; i<hexString.size(); i++)
 	{
 		char c = getDigitalValue(hexString[i]);
 

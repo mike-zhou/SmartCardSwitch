@@ -1781,30 +1781,138 @@ void ConsoleOperator::onFeedbackStepperQuery(std::shared_ptr<ReplyTranslator::Re
 					", decelerationBuffer: " + std::to_string(replyPtr->decelerationBuffer) +
 					", decelerationBufferIncrement: " + std::to_string(replyPtr->decelerationBufferIncrement));
 
+			//state
 			_userCommand.resultStepperStatus[replyPtr->index].state = replyPtr->state;
 
-			if(_userCommand.resultStepperStatus[replyPtr->index].enabled != replyPtr->bEnabled) {
-				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery enabled mismatch: index: " + std::to_string(replyPtr->index) +
-						", value queried: " + std::string((replyPtr->bEnabled)?"true":"false"));
-			}
-			_userCommand.resultStepperStatus[replyPtr->index].enabled = replyPtr->bEnabled;
+			//enabled
+			if(replyPtr->bEnabled)
+			{
+				if(_userCommand.resultStepperStatus[replyPtr->index].enabled != UserCommand::StepperEnableStatus::ENABLED) {
+					pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery enabled mismatch: index: " + std::to_string(replyPtr->index) +
+							", local value: " + std::string((_userCommand.resultStepperStatus[replyPtr->index].enabled == UserCommand::StepperEnableStatus::UNKOWN)?"UNKNOWN":"DISABLED"));
 
-			if(_userCommand.resultStepperStatus[replyPtr->index].forward != replyPtr->bForward) {
-				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery forward mismatch: index: " + std::to_string(replyPtr->index) +
-						", value queried: " + std::string((replyPtr->bForward)?"true":"false"));
+					_userCommand.resultStepperStatus[replyPtr->index].enabled = UserCommand::StepperEnableStatus::ENABLED;
+				}
 			}
-			_userCommand.resultStepperStatus[replyPtr->index].forward = replyPtr->bForward;
+			else
+			{
+				if(_userCommand.resultStepperStatus[replyPtr->index].enabled != UserCommand::StepperEnableStatus::DISABLED) {
+					pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery disabled mismatch: index: " + std::to_string(replyPtr->index) +
+							", local value: " + std::string((_userCommand.resultStepperStatus[replyPtr->index].enabled == UserCommand::StepperEnableStatus::UNKOWN)?"UNKNOWN":"ENABLED"));
 
+					_userCommand.resultStepperStatus[replyPtr->index].enabled = UserCommand::StepperEnableStatus::DISABLED;
+				}
+			}
+
+			//forward
+			if(replyPtr->bForward)
+			{
+				if(_userCommand.resultStepperStatus[replyPtr->index].forward != UserCommand::StepperDirectionStatus::FORWORD) {
+					pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery forward mismatch: index: " + std::to_string(replyPtr->index) +
+							", local value: " + std::string((_userCommand.resultStepperStatus[replyPtr->index].forward == UserCommand::StepperDirectionStatus::UNKNOWN)?"UNKNOWN":"REVERSE"));
+
+					_userCommand.resultStepperStatus[replyPtr->index].forward = UserCommand::StepperDirectionStatus::FORWORD;
+				}
+			}
+			else
+			{
+				if(_userCommand.resultStepperStatus[replyPtr->index].forward != UserCommand::StepperDirectionStatus::REVERSE) {
+					pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery reverse mismatch: index: " + std::to_string(replyPtr->index) +
+							", local value: " + std::string((_userCommand.resultStepperStatus[replyPtr->index].forward == UserCommand::StepperDirectionStatus::UNKNOWN)?"UNKNOWN":"FORWARD"));
+
+					_userCommand.resultStepperStatus[replyPtr->index].forward = UserCommand::StepperDirectionStatus::REVERSE;
+				}
+			}
+
+			//locator index
 			if(_userCommand.resultStepperStatus[replyPtr->index].locatorIndex != replyPtr->locatorIndex) {
 				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery locatorIndex mismatch: index: " + std::to_string(replyPtr->index) +
-						", value queried: " + std::to_string(replyPtr->locatorIndex));
+						", value queried: " + std::to_string(replyPtr->locatorIndex) +
+						", local value: " + std::to_string(_userCommand.resultStepperStatus[replyPtr->index].locatorIndex));
 			}
 			_userCommand.resultStepperStatus[replyPtr->index].locatorIndex = replyPtr->locatorIndex;
 
+			//line number start
+			if(_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberStart != replyPtr->locatorLineNumberStart) {
+				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery locatorLineNumberStart mismatch: index: " + std::to_string(replyPtr->index) +
+						", value queried: " + std::to_string(replyPtr->locatorLineNumberStart) +
+						", local value: " + std::to_string(_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberStart));
 
-			_userCommand.resultStepperStatus[replyPtr->index].locatorIndex = _userCommand.locatorIndex;
-			_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberStart = _userCommand.locatorLineNumberStart;
-			_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberTerminal = _userCommand.locatorLineNumberTerminal;
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberStart = replyPtr->locatorLineNumberStart;
+
+			//line number terminal
+			if(_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberTerminal != replyPtr->locatorLineNumberTerminal) {
+				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery locatorLineNumberTerminal mismatch: index: " + std::to_string(replyPtr->index) +
+						", value queried: " + std::to_string(replyPtr->locatorLineNumberTerminal) +
+						", local value: " + std::to_string(_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberTerminal));
+
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberTerminal = replyPtr->locatorLineNumberTerminal;
+
+			//home offset
+			if(_userCommand.resultStepperStatus[replyPtr->index].homeOffset != replyPtr->homeOffset) {
+				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery homeOffset mismatch: index: " + std::to_string(replyPtr->index) +
+						", value queried: " + std::to_string(replyPtr->homeOffset) +
+						", local value: " + std::to_string(_userCommand.resultStepperStatus[replyPtr->index].homeOffset));
+
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].homeOffset = replyPtr->homeOffset;
+
+			//low clocks
+			if(_userCommand.resultStepperStatus[replyPtr->index].lowClks != replyPtr->lowClks) {
+				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery lowClks mismatch: index: " + std::to_string(replyPtr->index) +
+						", value queried: " + std::to_string(replyPtr->lowClks) +
+						", local value: " + std::to_string(_userCommand.resultStepperStatus[replyPtr->index].lowClks));
+
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].lowClks = replyPtr->lowClks;
+
+			//high clocks
+			if(_userCommand.resultStepperStatus[replyPtr->index].highClks != replyPtr->highClks) {
+				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery highClks mismatch: index: " + std::to_string(replyPtr->index) +
+						", value queried: " + std::to_string(replyPtr->lowClks) +
+						", local value: " + std::to_string(_userCommand.resultStepperStatus[replyPtr->index].highClks));
+
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].highClks = replyPtr->highClks;
+
+			//acceleration buffer
+			if(_userCommand.resultStepperStatus[replyPtr->index].accelerationBuffer != replyPtr->accelerationBuffer) {
+				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery accelerationBuffer mismatch: index: " + std::to_string(replyPtr->index) +
+						", value queried: " + std::to_string(replyPtr->lowClks) +
+						", local value: " + std::to_string(_userCommand.resultStepperStatus[replyPtr->index].accelerationBuffer));
+
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].accelerationBuffer = replyPtr->accelerationBuffer;
+
+			//acceleration buffer decrement
+			if(_userCommand.resultStepperStatus[replyPtr->index].accelerationBufferDecrement != replyPtr->accelerationBufferDecrement) {
+				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery accelerationBufferDecrement mismatch: index: " + std::to_string(replyPtr->index) +
+						", value queried: " + std::to_string(replyPtr->accelerationBufferDecrement) +
+						", local value: " + std::to_string(_userCommand.resultStepperStatus[replyPtr->index].accelerationBufferDecrement));
+
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].accelerationBufferDecrement = replyPtr->accelerationBufferDecrement;
+
+			//deceleration buffer
+			if(_userCommand.resultStepperStatus[replyPtr->index].decelerationBuffer != replyPtr->decelerationBuffer) {
+				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery decelerationBuffer mismatch: index: " + std::to_string(replyPtr->index) +
+						", value queried: " + std::to_string(replyPtr->decelerationBuffer) +
+						", local value: " + std::to_string(_userCommand.resultStepperStatus[replyPtr->index].decelerationBuffer));
+
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].decelerationBuffer = replyPtr->decelerationBuffer;
+
+			//deceleration buffer increment
+			if(_userCommand.resultStepperStatus[replyPtr->index].decelerationBufferIncrement != replyPtr->decelerationBufferIncrement) {
+				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery decelerationBufferIncrement mismatch: index: " + std::to_string(replyPtr->index) +
+						", value queried: " + std::to_string(replyPtr->decelerationBufferIncrement) +
+						", local value: " + std::to_string(_userCommand.resultStepperStatus[replyPtr->index].decelerationBufferIncrement));
+
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].decelerationBufferIncrement = replyPtr->decelerationBufferIncrement;
+
 			success = true;
 		}
 	}
@@ -1826,6 +1934,40 @@ void ConsoleOperator::onFeedbackLocatorQuery(std::shared_ptr<ReplyTranslator::Re
 		return;
 	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= LOCATOR_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackLocatorQuery index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.locatorIndex) {
+			pLogger->LogError("ConsoleOperator::onFeedbackLocatorQuery wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.locatorIndex));
+		}
+		else
+		{
+			pLogger->LogInfo("ConsoleOperator::onFeedbackLocatorQuery succeed index: " + std::to_string(replyPtr->index) +
+					", locatorIndex: " + std::to_string(_userCommand.locatorIndex) +
+					", lowInput: " + std::to_string(replyPtr->lowInput));
+
+			if(replyPtr->lowInput != _userCommand.resultLocatorStatus[replyPtr->index]) {
+				pLogger->LogError("ConsoleOperator::onFeedbackLocatorQuery status doesn't match: status queried: " + std::to_string(replyPtr->lowInput) +
+						", local value: " + std::to_string(_userCommand.resultLocatorStatus[replyPtr->index]));
+			}
+			_userCommand.resultLocatorStatus[replyPtr->index] = replyPtr->lowInput;
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackLocatorQuery error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::processFeedbacks()

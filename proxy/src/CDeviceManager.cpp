@@ -323,7 +323,7 @@ void CDeviceManager::onDeviceInput(struct Device& device)
 					//illegal character
 					if(illegal == false) {
 						char tmpBuffer[512];
-						sprintf(tmpBuffer, "CDeviceManager::onDeviceInput illegal character 0x%02x from: %s", c, device.fileName);
+						sprintf(tmpBuffer, "CDeviceManager::onDeviceInput illegal character 0x%02x from: %s", c, device.fileName.c_str());
 						pLogger->LogError(tmpBuffer);
 						illegal = true;
 					}

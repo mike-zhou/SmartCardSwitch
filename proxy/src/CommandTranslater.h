@@ -263,7 +263,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 43 %d %d"), _bdcIndex, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 43 %d %d", _bdcIndex,  _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 
@@ -289,7 +291,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 44 %d %d"), _bdcIndex, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 44 %d %d", _bdcIndex,  _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 
@@ -315,7 +319,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 45 %d %d"), _bdcIndex, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 45 %d %d", _bdcIndex,  _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 
@@ -341,7 +347,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 46 %d %d"), _bdcIndex, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 46 %d %d", _bdcIndex,  _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 
@@ -367,7 +375,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 47 %d %d"), _bdcIndex, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 47 %d %d", _bdcIndex,  _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 
@@ -495,7 +505,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 51 %d %d %d %d"), _stepperIndex, _lowClks, _highClks, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 51 %d %d %d %d", _stepperIndex, _lowClks, _highClks, _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 };
@@ -524,7 +536,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 52 %d %d %d"), _stepperIndex, _buffer, _commandId);
+		char buf[256];
+		sprintf(buf, "C 52 %d %d %d", _stepperIndex, _buffer, _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 };
@@ -553,7 +567,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 53 %d %d %d"), _stepperIndex, _decrement, _commandId);
+		char buf[256];
+		sprintf(buf, "C 53 %d %d %d", _stepperIndex, _decrement, _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 };
@@ -582,7 +598,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 54 %d %d %d"), _stepperIndex, _buffer, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 54 %d %d %d", _stepperIndex, _buffer, _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 };
@@ -611,7 +629,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 55 %d %d %d"), _stepperIndex, _increment, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 55 %d %d %d", _stepperIndex, _increment, _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 };
@@ -640,7 +660,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 56 %d %d %d"), _stepperIndex, _enable ? 1 : 0, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 56 %d %d %d", _stepperIndex, _enable ? 1 : 0, _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 };
@@ -669,7 +691,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 57 %d %d %d"), _stepperIndex, _forward ? 1 : 0, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 57 %d %d %d", _stepperIndex, _forward ? 1 : 0, _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 };
@@ -698,7 +722,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 58 %d %d %d"), _stepperIndex, _steps, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 58 %d %d %d", _stepperIndex, _steps, _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 };
@@ -719,7 +745,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 59 %d %d"), _stepperIndex, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 59 %d %d", _stepperIndex, _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 
@@ -758,12 +786,14 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 60 %d %d %d %d %d"),
+		char buf[256];
+		sprintf(buf, "C 60 %d %d %d %d %d",
 				_stepperIndex,
 				_locatorIndex,
 				_lineNumberStart,
 				_lineNumberTerminal,
 				_commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 };
@@ -789,7 +819,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 61 %d %d"), _stepperIndex, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 61 %d %d", _stepperIndex, _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 };
@@ -815,7 +847,9 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = Poco::format(std::string("C 100 %d %d"), _locatorIndex, _commandId & 0xffff);
+		char buf[256];
+		sprintf(buf, "C 100 %d %d", _locatorIndex, _commandId & 0xffff);
+		std::string cmd(buf);
 		return cmd;
 	}
 };
