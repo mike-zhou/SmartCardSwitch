@@ -886,7 +886,7 @@ std::string ReplyTranslater:: stepperEnable(Poco::JSON::Object::Ptr& replyPtr)
 	reply = "{";
 	reply = reply + "\"command\":\"" + strCommandStepperEnable + "\",";
 	reply = reply + "\"index\":" + std::to_string(index) + ",";
-	reply = reply + "\"enable\":" + (enable ? "true" : "false") + ",";
+	reply = reply + "\"enabled\":" + (enable ? "true" : "false") + ",";
 	reply = reply + "\"commandId\":" + std::to_string(commandId);
 	if(!error.empty()) {
 		reply = reply + ",\"error\":\"" + error + "\"";

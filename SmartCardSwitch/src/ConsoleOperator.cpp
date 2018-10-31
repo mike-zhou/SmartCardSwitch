@@ -18,11 +18,38 @@ extern Logger * pLogger;
 ConsoleOperator::ConsoleOperator(): Task("ConsoleOperator")
 {
 	_userCommand.state = UserCommand::CommandState::IDLE;
+	//device power status
 	_userCommand.resultDevicePowerStatus = UserCommand::PowerStatus::UNKNOWN;
 	_userCommand.resultDeviceFuseStatus = UserCommand::FuseStatus::UNKNOWN;
+	//BDCs status
 	_userCommand.resultBdcsPowerStatus = UserCommand::PowerStatus::UNKNOWN;
-	for(int i=0; i<BDC_AMOUNT; i++) {
+	for(unsigned int i = 0; i < BDC_AMOUNT; i++) {
 		_userCommand.resultBdcStatus[i] = UserCommand::BdcStatus::UNKNOWN;
+	}
+	//steppers
+	_userCommand.resultSteppersPowerStatus = UserCommand::PowerStatus::UNKNOWN;
+	_userCommand.resultStepperClkResolution = -1;
+	for(unsigned int i = 0; i < STEPPER_AMOUNT; i++)
+	{
+		auto& status = _userCommand.resultStepperStatus[i];
+
+		status.state = std::string();//empty string by default
+		status.enabled = UserCommand::StepperEnableStatus::UNKOWN;
+		status.forward = UserCommand::StepperDirectionStatus::UNKNOWN;
+		status.locatorIndex = -1;
+		status.locatorLineNumberStart = -1;
+		status.locatorLineNumberTerminal = -1;
+		status.homeOffset = -1;
+		status.lowClks = -1;
+		status.highClks = -1;
+		status.accelerationBuffer = -1;
+		status.accelerationBufferDecrement = -1;
+		status.decelerationBuffer = -1;
+		status.decelerationBufferIncrement = -1;
+	}
+	//locators
+	for(unsigned int i = 0; i < LOCATOR_AMOUNT; i++) {
+		_userCommand.resultLocatorStatus[i] = -1;
 	}
 
 	_pDeviceAccessor = nullptr;
@@ -336,6 +363,9 @@ void ConsoleOperator::processInput()
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcOperation");
 					}
+					else {
+						_userCommand.bdcIndex = index;
+					}
 				}
 			}
 		}
@@ -358,6 +388,9 @@ void ConsoleOperator::processInput()
 					cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::REVERSE);
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcOperation");
+					}
+					else {
+						_userCommand.bdcIndex = index;
 					}
 				}
 			}
@@ -382,6 +415,9 @@ void ConsoleOperator::processInput()
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcOperation");
 					}
+					else {
+						_userCommand.bdcIndex = index;
+					}
 				}
 			}
 		}
@@ -405,6 +441,9 @@ void ConsoleOperator::processInput()
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcOperation");
 					}
+					else {
+						_userCommand.bdcIndex = index;
+					}
 				}
 			}
 		}
@@ -426,6 +465,9 @@ void ConsoleOperator::processInput()
 					cmdPtr = CommandFactory::BdcQuery(index);
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::BdcQuery");
+					}
+					else {
+						_userCommand.bdcIndex = index;
 					}
 				}
 			}
@@ -507,6 +549,11 @@ void ConsoleOperator::processInput()
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperConfigStep");
 					}
+					else {
+						_userCommand.stepperIndex = index;
+						_userCommand.lowClks = lowClks;
+						_userCommand.highClks = highClks;
+					}
 				}
 			}
 		}
@@ -529,6 +576,10 @@ void ConsoleOperator::processInput()
 					cmdPtr = CommandFactory::StepperAccelerationBuffer(index, value);
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperAccelerationBuffer");
+					}
+					else {
+						_userCommand.stepperIndex = index;
+						_userCommand.accelerationBuffer = value;
 					}
 				}
 			}
@@ -553,6 +604,10 @@ void ConsoleOperator::processInput()
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperAccelerationBufferDecrement");
 					}
+					else {
+						_userCommand.stepperIndex = index;
+						_userCommand.accelerationBufferDecrement = value;
+					}
 				}
 			}
 		}
@@ -576,6 +631,10 @@ void ConsoleOperator::processInput()
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperDecelerationBuffer");
 					}
+					else {
+						_userCommand.stepperIndex = index;
+						_userCommand.decelerationBuffer = value;
+					}
 				}
 			}
 		}
@@ -598,6 +657,10 @@ void ConsoleOperator::processInput()
 					cmdPtr = CommandFactory::StepperDecelerationBufferIncrement(index, value);
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperDecelerationBufferIncrement");
+					}
+					else {
+						_userCommand.stepperIndex = index;
+						_userCommand.decelerationBufferIncrement = value;
 					}
 				}
 			}
@@ -668,6 +731,10 @@ void ConsoleOperator::processInput()
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperSteps");
 					}
+					else {
+						_userCommand.stepperIndex = index;
+						_userCommand.steps = value;
+					}
 				}
 			}
 		}
@@ -691,6 +758,11 @@ void ConsoleOperator::processInput()
 					cmdPtr = CommandFactory::StepperRun(index, initialPos, finalPos);
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperRun");
+					}
+					else {
+						_userCommand.stepperIndex = index;
+						_userCommand.initialPosition = initialPos;
+						_userCommand.finalPosition = finalPos;
 					}
 				}
 			}
@@ -726,6 +798,12 @@ void ConsoleOperator::processInput()
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperConfigHome");
 					}
+					else {
+						_userCommand.stepperIndex = index;
+						_userCommand.locatorIndex = locatorIndex;
+						_userCommand.locatorLineNumberStart = lineNumberStart;
+						_userCommand.locatorLineNumberTerminal = lineNumberTerminal;
+					}
 				}
 			}
 		}
@@ -747,6 +825,9 @@ void ConsoleOperator::processInput()
 					cmdPtr = CommandFactory::StepperQuery(index);
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperQuery");
+					}
+					else {
+						_userCommand.locatorIndex = index;
 					}
 				}
 			}
@@ -925,10 +1006,13 @@ void ConsoleOperator::onFeedbackBdcsPowerOn(std::shared_ptr<ReplyTranslator::Rep
 		//no error
 		pLogger->LogInfo("ConsoleOperator::onFeedbackBdcsPowerOn bdcs is powered on");
 		_userCommand.resultBdcsPowerStatus = UserCommand::PowerStatus::POWERED_ON;
+
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
 	}
 	else {
 		pLogger->LogError("ConsoleOperator::onFeedbackBdcsPowerOn error: " + replyPtr->errorInfo);
 		//keep bdcs power status unchanged.
+		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
 }
 
@@ -942,10 +1026,13 @@ void ConsoleOperator::onFeedbackBdcsPowerOff(std::shared_ptr<ReplyTranslator::Re
 		//no error
 		pLogger->LogInfo("ConsoleOperator::onFeedbackBdcsPowerOff bdcs is powered off");
 		_userCommand.resultBdcsPowerStatus = UserCommand::PowerStatus::POWERED_OFF;
+
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
 	}
 	else {
 		pLogger->LogError("ConsoleOperator::onFeedbackBdcsPowerOff error: " + replyPtr->errorInfo);
 		//keep bdcs power status unchanged.
+		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
 }
 
@@ -957,18 +1044,29 @@ void ConsoleOperator::onFeedbackBdcsQueryPower(std::shared_ptr<ReplyTranslator::
 
 	if(replyPtr->errorInfo.empty()) {
 		//no error
-		if(replyPtr->bPoweredOn) {
-			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcsQueryPower bdcs is powered on");
+		if(replyPtr->bPoweredOn == true)
+		{
+			if(_userCommand.resultBdcsPowerStatus != UserCommand::PowerStatus::POWERED_ON) {
+				pLogger->LogError("ConsoleOperator::onFeedbackBdcsQueryPower status doesn't match: queried state: on; saved state: " +
+						std::string((_userCommand.resultSteppersPowerStatus == UserCommand::PowerStatus::UNKNOWN)?"UNKNOWN":"POWERED_OFF"));
+			}
 			_userCommand.resultBdcsPowerStatus = UserCommand::PowerStatus::POWERED_ON;
 		}
-		else {
-			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcsQueryPower bdcs is powered off");
+		else
+		{
+			if(_userCommand.resultSteppersPowerStatus != UserCommand::PowerStatus::POWERED_OFF) {
+				pLogger->LogError("ConsoleOperator::onFeedbackBdcsQueryPower status doesn't match: queried state: off; saved state: " +
+						std::string((_userCommand.resultSteppersPowerStatus == UserCommand::PowerStatus::UNKNOWN)?"UNKNOWN":"POWERED_ON"));
+			}
 			_userCommand.resultBdcsPowerStatus = UserCommand::PowerStatus::POWERED_OFF;
 		}
+
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
 	}
 	else {
 		pLogger->LogError("ConsoleOperator::onFeedbackBdcsQueryPower error: " + replyPtr->errorInfo);
 		//keep bdcs power status unchanged.
+		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
 }
 
@@ -978,6 +1076,8 @@ void ConsoleOperator::onFeedbackBdcCoast(std::shared_ptr<ReplyTranslator::ReplyB
 		return;
 	}
 
+	bool success = false;
+
 	if(replyPtr->errorInfo.empty()) {
 		//no error
 		if(replyPtr->index >= BDC_AMOUNT) {
@@ -986,10 +1086,19 @@ void ConsoleOperator::onFeedbackBdcCoast(std::shared_ptr<ReplyTranslator::ReplyB
 		else {
 			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcCoast index: " + std::to_string(replyPtr->index));
 			_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::COAST;
+			success = true;
 		}
 	}
 	else {
 		pLogger->LogError("ConsoleOperator::onFeedbackBdcCoast error: " + replyPtr->errorInfo + " index: " + std::to_string(replyPtr->index));
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
 }
 
@@ -999,6 +1108,8 @@ void ConsoleOperator::onFeedbackBdcReverse(std::shared_ptr<ReplyTranslator::Repl
 		return;
 	}
 
+	bool success = false;
+
 	if(replyPtr->errorInfo.empty()) {
 		//no error
 		if(replyPtr->index >= BDC_AMOUNT) {
@@ -1007,10 +1118,18 @@ void ConsoleOperator::onFeedbackBdcReverse(std::shared_ptr<ReplyTranslator::Repl
 		else {
 			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcReverse index: " + std::to_string(replyPtr->index));
 			_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::REVERSE;
+			success = true;
 		}
 	}
 	else {
 		pLogger->LogError("ConsoleOperator::onFeedbackBdcReverse error: " + replyPtr->errorInfo + " index: " + std::to_string(replyPtr->index));
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
 }
 
@@ -1020,6 +1139,8 @@ void ConsoleOperator::onFeedbackBdcForward(std::shared_ptr<ReplyTranslator::Repl
 		return;
 	}
 
+	bool success = false;
+
 	if(replyPtr->errorInfo.empty()) {
 		//no error
 		if(replyPtr->index >= BDC_AMOUNT) {
@@ -1028,10 +1149,18 @@ void ConsoleOperator::onFeedbackBdcForward(std::shared_ptr<ReplyTranslator::Repl
 		else {
 			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcForward index: " + std::to_string(replyPtr->index));
 			_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::FORWARD;
+			success = true;
 		}
 	}
 	else {
 		pLogger->LogError("ConsoleOperator::onFeedbackBdcForward error: " + replyPtr->errorInfo + " index: " + std::to_string(replyPtr->index));
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
 }
 
@@ -1041,6 +1170,8 @@ void ConsoleOperator::onFeedbackBdcBreak(std::shared_ptr<ReplyTranslator::ReplyB
 		return;
 	}
 
+	bool success = false;
+
 	if(replyPtr->errorInfo.empty()) {
 		//no error
 		if(replyPtr->index >= BDC_AMOUNT) {
@@ -1049,10 +1180,18 @@ void ConsoleOperator::onFeedbackBdcBreak(std::shared_ptr<ReplyTranslator::ReplyB
 		else {
 			pLogger->LogInfo("ConsoleOperator::onFeedbackBdcBreak index: " + std::to_string(replyPtr->index));
 			_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::BREAK;
+			success = true;
 		}
 	}
 	else {
 		pLogger->LogError("ConsoleOperator::onFeedbackBdcBreak error: " + replyPtr->errorInfo + " index: " + std::to_string(replyPtr->index));
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
 }
 
@@ -1061,6 +1200,8 @@ void ConsoleOperator::onFeedbackBdcQuery(std::shared_ptr<ReplyTranslator::ReplyB
 	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
 		return;
 	}
+
+	bool success = false;
 
 	if(replyPtr->errorInfo.empty()) {
 		//no error
@@ -1089,95 +1230,601 @@ void ConsoleOperator::onFeedbackBdcQuery(std::shared_ptr<ReplyTranslator::ReplyB
 					_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::UNKNOWN;
 					break;
 			}
+			success = true;
 		}
 	}
 	else {
 		pLogger->LogError("ConsoleOperator::onFeedbackBdcQuery error: " + replyPtr->errorInfo + " index: " + std::to_string(replyPtr->index));
 	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackSteppersPowerOn(std::shared_ptr<ReplyTranslator::ReplySteppersPowerOn> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty()) {
+		pLogger->LogInfo("ConsoleOperator::onFeedbackSteppersPowerOn steppers are powered on");
+		_userCommand.resultSteppersPowerStatus = UserCommand::PowerStatus::POWERED_ON;
+		success = true;
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackSteppersPowerOn error: " + replyPtr->errorInfo);
+		//keep stepper statatus unchanged.
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackSteppersPowerOff(std::shared_ptr<ReplyTranslator::ReplySteppersPowerOff> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty()) {
+		pLogger->LogInfo("ConsoleOperator::onFeedbackSteppersPowerOff steppers are powered off");
+		_userCommand.resultSteppersPowerStatus = UserCommand::PowerStatus::POWERED_OFF;
+		success = true;
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackSteppersPowerOff error: " + replyPtr->errorInfo);
+		//keep stepper statatus unchanged.
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackSteppersQueryPower(std::shared_ptr<ReplyTranslator::ReplySteppersQueryPower> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->bPowered == true)
+		{
+			if(_userCommand.resultSteppersPowerStatus != UserCommand::PowerStatus::POWERED_ON) {
+				pLogger->LogError("ConsoleOperator::onFeedbackSteppersQueryPower status doesn't match: queried state: on; saved state: " +
+						std::string((_userCommand.resultSteppersPowerStatus == UserCommand::PowerStatus::UNKNOWN)?"UNKNOWN":"POWERED_OFF"));
+			}
+			_userCommand.resultSteppersPowerStatus = UserCommand::PowerStatus::POWERED_ON;
+		}
+		else
+		{
+			if(_userCommand.resultSteppersPowerStatus != UserCommand::PowerStatus::POWERED_OFF) {
+				pLogger->LogError("ConsoleOperator::onFeedbackSteppersQueryPower status doesn't match: queried state: off; saved state: " +
+						std::string((_userCommand.resultSteppersPowerStatus == UserCommand::PowerStatus::UNKNOWN)?"UNKNOWN":"POWERED_ON"));
+			}
+			_userCommand.resultSteppersPowerStatus = UserCommand::PowerStatus::POWERED_OFF;
+		}
+		success = true;
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackSteppersQueryPower error: " + replyPtr->errorInfo);
+		//keep stepper statatus unchanged.
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackStepperQueryResolution(std::shared_ptr<ReplyTranslator::ReplyStepperQueryResolution> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		pLogger->LogInfo("ConsoleOperator::onFeedbackStepperQueryResolution stepper resolution: " + std::to_string(replyPtr->resolutionUs));
+		_userCommand.resultStepperClkResolution = replyPtr->resolutionUs;
+		success = true;
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackStepperQueryResolution error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackStepperConfigStep(std::shared_ptr<ReplyTranslator::ReplyStepperConfigStep> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperConfigStep index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperConfigStep wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackStepperConfigStep index: " + std::to_string(replyPtr->index) +
+					", lowClks: " + std::to_string(_userCommand.lowClks) +
+					", highClks: " + std::to_string(_userCommand.highClks));
+			_userCommand.resultStepperStatus[replyPtr->index].lowClks = _userCommand.lowClks;
+			_userCommand.resultStepperStatus[replyPtr->index].highClks = _userCommand.highClks;
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackStepperConfigStep error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackStepperAccelerationBuffer(std::shared_ptr<ReplyTranslator::ReplyStepperAccelerationBuffer> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperAccelerationBuffer index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperAccelerationBuffer wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackStepperAccelerationBuffer index: " + std::to_string(replyPtr->index) +
+					", value: " + std::to_string(_userCommand.accelerationBuffer));
+			_userCommand.resultStepperStatus[replyPtr->index].accelerationBuffer = _userCommand.accelerationBuffer;
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackStepperAccelerationBuffer error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackStepperAccelerationBufferDecrement(std::shared_ptr<ReplyTranslator::ReplyStepperAccelerationBufferDecrement> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperAccelerationBufferDecrement index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperAccelerationBufferDecrement wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackStepperAccelerationBufferDecrement index: " + std::to_string(replyPtr->index) +
+					", value: " + std::to_string(_userCommand.accelerationBufferDecrement));
+			_userCommand.resultStepperStatus[replyPtr->index].accelerationBufferDecrement = _userCommand.accelerationBufferDecrement;
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackStepperAccelerationBufferDecrement error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackStepperDecelerationBuffer(std::shared_ptr<ReplyTranslator::ReplyStepperDecelerationBuffer> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperDecelerationBuffer index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperDecelerationBuffer wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackStepperDecelerationBuffer index: " + std::to_string(replyPtr->index) +
+					", value: " + std::to_string(_userCommand.decelerationBuffer));
+			_userCommand.resultStepperStatus[replyPtr->index].decelerationBuffer = _userCommand.decelerationBuffer;
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackStepperDecelerationBuffer error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackStepperDecelerationBufferIncrement(std::shared_ptr<ReplyTranslator::ReplyStepperDecelerationBufferIncrement> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperDecelerationBufferIncrement index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperDecelerationBufferIncrement wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackStepperDecelerationBufferIncrement index: " + std::to_string(replyPtr->index) +
+					", value: " + std::to_string(_userCommand.decelerationBufferIncrement));
+			_userCommand.resultStepperStatus[replyPtr->index].decelerationBufferIncrement = _userCommand.decelerationBufferIncrement;
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackStepperDecelerationBufferIncrement error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackStepperEnable(std::shared_ptr<ReplyTranslator::ReplyStepperEnable> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperEnable index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperEnable wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else {
+			if(replyPtr->enabled) {
+				pLogger->LogInfo("ConsoleOperator::onFeedbackStepperEnable enabled index: " + std::to_string(replyPtr->index));
+				_userCommand.resultStepperStatus[replyPtr->index].enabled = UserCommand::StepperEnableStatus::ENABLED;
+			}
+			else {
+				pLogger->LogInfo("ConsoleOperator::onFeedbackStepperEnable disabled index: " + std::to_string(replyPtr->index));
+				_userCommand.resultStepperStatus[replyPtr->index].enabled = UserCommand::StepperEnableStatus::DISABLED;
+			}
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackStepperEnable error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackStepperForward(std::shared_ptr<ReplyTranslator::ReplyStepperForward> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperForward index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperForward wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else {
+			if(replyPtr->forward) {
+				pLogger->LogInfo("ConsoleOperator::onFeedbackStepperForward forward index: " + std::to_string(replyPtr->index));
+				_userCommand.resultStepperStatus[replyPtr->index].forward = UserCommand::StepperDirectionStatus::FORWORD;
+			}
+			else {
+				pLogger->LogInfo("ConsoleOperator::onFeedbackStepperForward reverse index: " + std::to_string(replyPtr->index));
+				_userCommand.resultStepperStatus[replyPtr->index].forward = UserCommand::StepperDirectionStatus::REVERSE;
+			}
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackStepperForward error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackStepperSteps(std::shared_ptr<ReplyTranslator::ReplyStepperSteps> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperSteps index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperSteps wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else {
+			pLogger->LogInfo("ConsoleOperator::onFeedbackStepperSteps index: " + std::to_string(replyPtr->index) + ", steps: " + std::to_string(_userCommand.steps));
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackStepperSteps error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackStepperRun(std::shared_ptr<ReplyTranslator::ReplyStepperRun> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperRun index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperRun wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else
+		{
+			if(replyPtr->position == _userCommand.finalPosition) {
+				pLogger->LogInfo("ConsoleOperator::onFeedbackStepperRun succeed, index: " + std::to_string(replyPtr->index) + ", position: " + std::to_string(replyPtr->position));
+				success = true;
+			}
+			else {
+				pLogger->LogInfo("ConsoleOperator::onFeedbackStepperRun failed, index: " + std::to_string(replyPtr->index) +
+						", position: " + std::to_string(replyPtr->position) +
+						", expected position: " + std::to_string(_userCommand.finalPosition));
+				success = false;
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].homeOffset = replyPtr->position;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackStepperRun error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackStepperConfigHome(std::shared_ptr<ReplyTranslator::ReplyStepperConfigHome> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperConfigHome index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperConfigHome wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else
+		{
+			pLogger->LogInfo("ConsoleOperator::onFeedbackStepperConfigHome succeed index: " + std::to_string(replyPtr->index) +
+					", locatorIndex: " + std::to_string(_userCommand.locatorIndex) +
+					", lineNumberStart: " + std::to_string(_userCommand.locatorLineNumberStart) +
+					", lineNumberTerminal: " + std::to_string(_userCommand.locatorLineNumberTerminal));
+
+			_userCommand.resultStepperStatus[replyPtr->index].locatorIndex = _userCommand.locatorIndex;
+			_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberStart = _userCommand.locatorLineNumberStart;
+			_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberTerminal = _userCommand.locatorLineNumberTerminal;
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackStepperConfigHome error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackStepperMove(std::shared_ptr<ReplyTranslator::ReplyStepperMove> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	pLogger->LogError("ConsoleOperator::onFeedbackStepperMove not implemented");
+	_userCommand.state = UserCommand::CommandState::FAILED;
 }
 
 void ConsoleOperator::onFeedbackStepperQuery(std::shared_ptr<ReplyTranslator::ReplyStepperQuery> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else
+		{
+			pLogger->LogInfo("ConsoleOperator::onFeedbackStepperQuery succeed index: " + std::to_string(replyPtr->index) +
+					", state: " + replyPtr->state +
+					", enabled: " + std::string((replyPtr->bEnabled)?"true":"false") +
+					", forward: " + std::string((replyPtr->bForward)?"true":"false") +
+					", locatorIndex: " + std::to_string(replyPtr->locatorIndex) +
+					", lineNumberStart: " + std::to_string(replyPtr->locatorLineNumberStart) +
+					", lineNumberTerminal: " + std::to_string(replyPtr->locatorLineNumberTerminal) +
+					", homeOffset: " + std::to_string(replyPtr->homeOffset) +
+					", lowClks: " + std::to_string(replyPtr->lowClks) +
+					", highClks: " + std::to_string(replyPtr->highClks) +
+					", accelerationBuffer: " + std::to_string(replyPtr->accelerationBuffer) +
+					", accelerationBufferDecrement: " + std::to_string(replyPtr->accelerationBufferDecrement) +
+					", decelerationBuffer: " + std::to_string(replyPtr->decelerationBuffer) +
+					", decelerationBufferIncrement: " + std::to_string(replyPtr->decelerationBufferIncrement));
+
+			_userCommand.resultStepperStatus[replyPtr->index].state = replyPtr->state;
+
+			if(_userCommand.resultStepperStatus[replyPtr->index].enabled != replyPtr->bEnabled) {
+				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery enabled mismatch: index: " + std::to_string(replyPtr->index) +
+						", value queried: " + std::string((replyPtr->bEnabled)?"true":"false"));
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].enabled = replyPtr->bEnabled;
+
+			if(_userCommand.resultStepperStatus[replyPtr->index].forward != replyPtr->bForward) {
+				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery forward mismatch: index: " + std::to_string(replyPtr->index) +
+						", value queried: " + std::string((replyPtr->bForward)?"true":"false"));
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].forward = replyPtr->bForward;
+
+			if(_userCommand.resultStepperStatus[replyPtr->index].locatorIndex != replyPtr->locatorIndex) {
+				pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery locatorIndex mismatch: index: " + std::to_string(replyPtr->index) +
+						", value queried: " + std::to_string(replyPtr->locatorIndex));
+			}
+			_userCommand.resultStepperStatus[replyPtr->index].locatorIndex = replyPtr->locatorIndex;
+
+
+			_userCommand.resultStepperStatus[replyPtr->index].locatorIndex = _userCommand.locatorIndex;
+			_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberStart = _userCommand.locatorLineNumberStart;
+			_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberTerminal = _userCommand.locatorLineNumberTerminal;
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("ConsoleOperator::onFeedbackStepperQuery error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
 }
 
 void ConsoleOperator::onFeedbackLocatorQuery(std::shared_ptr<ReplyTranslator::ReplyLocatorQuery> replyPtr)
 {
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
 
 }
 

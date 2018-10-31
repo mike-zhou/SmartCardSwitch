@@ -187,11 +187,13 @@ public:
 	struct ReplyStepperEnable: ReplyCommon
 	{
 		unsigned int index;
+		bool enabled;
 	};
 
 	struct ReplyStepperForward: ReplyCommon
 	{
 		unsigned int index;
+		bool forward;
 	};
 
 	struct ReplyStepperSteps: ReplyCommon

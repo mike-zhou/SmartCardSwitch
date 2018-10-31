@@ -120,7 +120,7 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 		std::vector<std::string> devices;
 		auto size = ds["devices"].size();
 
-		for(int i=0; i<size; i++) {
+		for(unsigned int i=0; i<size; i++) {
 			auto device = ds["devices"][i].toString();
 			devices.push_back(device);
 		}
@@ -610,6 +610,7 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 		//specific attributes
 		if(errorInfo.empty()) {
 			ptr->index = ds["index"];
+			ptr->enabled = ds["enabled"];
 		}
 
 		_stepperEnablePtr = ptr;
@@ -627,6 +628,7 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 		//specific attributes
 		if(errorInfo.empty()) {
 			ptr->index = ds["index"];
+			ptr->forward = ds["forward"];
 		}
 
 		_stepperForwardPtr = ptr;

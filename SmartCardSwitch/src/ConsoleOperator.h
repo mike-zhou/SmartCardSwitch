@@ -132,7 +132,7 @@ private:
 			StepperMove = 74,
 			StepperQuery = 75,
 			LocatorQuery = 90,
-		} type;
+		};
 
 		enum class CommandState
 		{
@@ -166,16 +166,58 @@ private:
 			BREAK
 		};
 
+		enum class StepperEnableStatus
+		{
+			UNKOWN,
+			ENABLED,
+			DISABLED
+		};
+		enum class StepperDirectionStatus
+		{
+			UNKNOWN,
+			FORWORD,
+			REVERSE
+		};
+		struct StepperStatus
+		{
+			std::string state;
+			StepperEnableStatus enabled;
+			StepperDirectionStatus forward;
+			long locatorIndex;
+			long locatorLineNumberStart;
+			long locatorLineNumberTerminal;
+			long homeOffset;
+			long lowClks;
+			long highClks;
+			long accelerationBuffer;
+			long accelerationBufferDecrement;
+			long decelerationBuffer;
+			long decelerationBufferIncrement;
+		};
+
+		//command type
+		Type type;
 		CommandState state;
 		std::string jsonCommandString;
 		std::string commandKey;
 		unsigned long commandId;
 		std::string expectedResult;
 
-		//command data
+		//command parameters
 		int bdcIndex;
 		int stepperIndex;
 		int locatorIndex;
+		int lowClks;
+		int highClks;
+		int accelerationBuffer;
+		int accelerationBufferDecrement;
+		int decelerationBuffer;
+		int decelerationBufferIncrement;
+		int steps;
+		int initialPosition;
+		int finalPosition;
+		int locatorLineNumberStart;
+		int locatorLineNumberTerminal;
 
 		//results
 		// DevicesGet
@@ -196,6 +238,12 @@ private:
 		//BDC break
 		//BDC query
 		BdcStatus resultBdcStatus[BDC_AMOUNT];
+		//steppers
+		PowerStatus resultSteppersPowerStatus;
+		long resultStepperClkResolution;
+		StepperStatus resultStepperStatus[STEPPER_AMOUNT];
+		//locator
+		char resultLocatorStatus[LOCATOR_AMOUNT];
 
 	} _userCommand;
 
