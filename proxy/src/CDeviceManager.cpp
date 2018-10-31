@@ -76,6 +76,15 @@ void CDeviceManager::SendCommand(const std::string& deviceName, const std::strin
 
 void CDeviceManager::checkDevices()
 {
+	//check devices every 1 second
+	static Poco::Timestamp timeStamp;
+	if(timeStamp.elapsed() <= 1000000) {
+		return;
+	}
+	else {
+		timeStamp.update();
+	}
+
 	std::vector<std::string> deviceUnpluged;
 	std::vector<std::string> currentFileList;
 
