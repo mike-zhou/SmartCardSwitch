@@ -53,7 +53,7 @@ void CDeviceManager::SendCommand(const std::string& deviceName, const std::strin
 {
 	for(auto it=command.begin(); it!=command.end(); it++) {
 		if((*it < ' ') || (*it > '~')) {
-			pLogger->LogError(std::string(__FUNCTION__) + " illegal character in command: " + deviceName + ":" + command);
+			pLogger->LogError("CDeviceManager::SendCommand illegal character in command: " + deviceName + ":" + command);
 			return;
 		}
 	}
@@ -147,11 +147,11 @@ void CDeviceManager::checkDevices()
 	}
 	catch (Poco::Exception& exc)
 	{
-		pLogger->Log(std::string(__FUNCTION__) + "exception: " + exc.displayText());
+		pLogger->LogError("CDeviceManager::checkDevices exception: " + exc.displayText());
 	}
 	catch(...)
 	{
-		pLogger->LogError(std::string(__FUNCTION__) + " unknown exception");
+		pLogger->LogError("CDeviceManager::checkDevices unknown exception");
 	}
 
 	//check if any device was unplugged.
@@ -264,7 +264,7 @@ void CDeviceManager::onReply(struct Device& device, const std::string& reply)
 }
 
 //read data from device
-void CDeviceManager::onDeviceInput(struct Device& device)
+void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 {
 	const int BUFFER_SIZE = 1024;
 	unsigned char buffer[BUFFER_SIZE];
@@ -381,7 +381,7 @@ void CDeviceManager::enqueueCommand(struct Device& device, const std::string com
 
 
 //write a command to device
-void CDeviceManager::onDeviceOutput(struct Device& device)
+void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 {
 	int amount;
 	char c;
@@ -451,7 +451,7 @@ void CDeviceManager::onDeviceOutput(struct Device& device)
 			amount = write(device.fd, &c, 1);
 			if(amount > 0) {
 				//byte is written
-				sprintf(buffer, " 02x" ,c);
+				sprintf(buffer, " %02x" ,c);
 				binaryLog = binaryLog + buffer;
 				charLog.push_back(c);
 
@@ -502,7 +502,7 @@ void CDeviceManager::pollDevices()
 
 				if(events & POLLOUT) {
 					//device can be written.
-					onDeviceOutput(_devices[i]);
+					onDeviceCanBeWritten(_devices[i]);
 				}
 				if(events & POLLERR) {
 					onDeviceError(_devices[i]);
@@ -531,7 +531,7 @@ void CDeviceManager::pollDevices()
 
 				if(events & POLLIN) {
 					//device can be read.
-					onDeviceInput(_devices[i]);
+					onDeviceCanBeRead(_devices[i]);
 				}
 				if(events & POLLERR) {
 					onDeviceError(_devices[i]);

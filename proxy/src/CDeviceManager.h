@@ -34,6 +34,7 @@ public:
 	void SetObserver(IDeviceObserver * pObserver);
 	void StartMonitoringDevices();
 
+private:
 	// Called by DeviceSocketMapping object to send a command to device.
 	virtual void SendCommand(const std::string& deviceName, const std::string& command) override;
 
@@ -81,8 +82,8 @@ private:
 	void checkDevices();
 
 	void onReply(struct Device& device, const std::string& reply);
-	void onDeviceInput(struct Device& device);
-	void onDeviceOutput(struct Device& device);
+	void onDeviceCanBeRead(struct Device& device);
+	void onDeviceCanBeWritten(struct Device& device);
 	void onDeviceError(struct Device& device);
 	void pollDevices();
 
