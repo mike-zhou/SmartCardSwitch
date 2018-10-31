@@ -269,19 +269,31 @@ void CDeviceManager::onDeviceInput(struct Device& device)
 	const int BUFFER_SIZE = 1024;
 	unsigned char buffer[BUFFER_SIZE];
 	ssize_t amount;
+	std::string binaryLog;
+	std::string charLog;
 
 	//read data from device
 	amount =  read(device.fd, buffer, BUFFER_SIZE);
 	pLogger->LogDebug("CDeviceManager::onDeviceInput " + std::to_string(amount) + " from " + device.fileName);
 
+	if(device.state < DeviceState::RECEIVING_NAME) {
+		pLogger->LogInfo("CDeviceManager::onDeviceInput clearing buffer, discard bytes: " + std::to_string(amount));
+		return;
+	}
+
+	//log data received
 	for(int i=0; i<amount; i++)
 	{
-		char tmpBuffer[256];
-		sprintf(tmpBuffer, "CDeviceManager::onDeviceInput 0x%02x:%c", buffer[i], buffer[i]);
-		pLogger->LogDebug(tmpBuffer);
+		char tmpBuffer[16];
+
+		sprintf(tmpBuffer, " %02x", buffer[i]);
+		binaryLog = binaryLog + tmpBuffer;
+		charLog.push_back(buffer[i]);
 
 		device.incoming.push_back(buffer[i]);
 	}
+	pLogger->LogInfo("CDeviceManager::onDeviceInput binary content:" + binaryLog);
+	pLogger->LogInfo("CDeviceManager::onDeviceInput char content: " + charLog);
 
 	//notify mapping of complete replies
 	for(;;)
@@ -380,10 +392,34 @@ void CDeviceManager::onDeviceOutput(struct Device& device)
 	{
 		case DeviceState::OPENED:
 		{
+			std::string command;
+
+			//make device to spit out rubbish in receiving buffer.
+			command.push_back(COMMAND_TERMINATER);
+			enqueueCommand(device, command);
+			pLogger->LogInfo("CDeviceManager::onDeviceOutput clearing device buffer: " + device.fileName);
+			device.state = DeviceState::CLEARING_BUFFER;
+			device.timeStamp.update();
+		}
+		break;
+
+		case DeviceState::CLEARING_BUFFER:
+		{
+			if(device.timeStamp.elapsed() > 1000000) {
+				//1 second is enough for device to spit out rubbish in receiving buffer.
+				device.state = DeviceState::BUFFER_CLEARED;
+				pLogger->LogInfo("CDeviceManager::onDeviceOutput cleared device buffer: " + device.fileName);
+			}
+		}
+		break;
+
+		case DeviceState::BUFFER_CLEARED:
+		{
 			//internal command to query device name
 			std::string command(COMMAND_QUERY_NAME);
 			enqueueCommand(device, command);
 			device.state = DeviceState::RECEIVING_NAME;
+			pLogger->LogInfo("CDeviceManager::onDeviceOutput querying device name: " + device.fileName);
 		}
 		break;
 
@@ -397,6 +433,9 @@ void CDeviceManager::onDeviceOutput(struct Device& device)
 	if(device.outgoing.size() > 0)
 	{
 		char buffer[512];
+		std::string binaryLog;
+		std::string charLog;
+
 		sprintf(buffer, "CDeviceManager::onDeviceOutput write %ld bytes to device file: %s", device.outgoing.size(), device.fileName.c_str());
 		pLogger->LogDebug(buffer);
 
@@ -412,8 +451,10 @@ void CDeviceManager::onDeviceOutput(struct Device& device)
 			amount = write(device.fd, &c, 1);
 			if(amount > 0) {
 				//byte is written
-				sprintf(buffer, "CDeviceManager::onDeviceOutput wrote: 0x%02x : %c", c ,c);
-				pLogger->LogDebug(buffer);
+				sprintf(buffer, " 02x" ,c);
+				binaryLog = binaryLog + buffer;
+				charLog.push_back(c);
+
 				device.outgoing.pop_front();
 			}
 			else {
@@ -421,6 +462,8 @@ void CDeviceManager::onDeviceOutput(struct Device& device)
 				break;
 			}
 		}
+		pLogger->LogInfo("CDeviceManager::onDeviceOutput binary content:" + binaryLog);
+		pLogger->LogInfo("CDeviceManager::onDeviceOutput char content: " + charLog);
 	}
 }
 

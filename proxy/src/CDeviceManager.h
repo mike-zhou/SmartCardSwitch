@@ -14,6 +14,7 @@
 #include <string>
 #include "Poco/Task.h"
 #include "Poco/Mutex.h"
+#include "Poco/Timestamp.h"
 #include "IDevice.h"
 #include "IDeviceObserver.h"
 
@@ -53,6 +54,8 @@ private:
 	{
 		CLOSED = 0,
 		OPENED,
+		CLEARING_BUFFER,
+		BUFFER_CLEARED,
 		RECEIVING_NAME,
 		ACTIVE,
 		ERROR
@@ -61,6 +64,7 @@ private:
 	struct Device
 	{
 		enum DeviceState state;
+		Poco::Timestamp timeStamp;
 
 		int fd;
 		std::string fileName; //device file name in Linux /dev
