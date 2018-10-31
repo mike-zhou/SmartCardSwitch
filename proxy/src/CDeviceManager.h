@@ -68,7 +68,7 @@ private:
 		Poco::Timestamp timeStamp;
 
 		int fd;
-		std::string fileName; //device file name in Linux /dev
+		std::string fileName; //name of device file in Linux /dev
 
 		//name queried from COMMAND_QUERY_NAME. Each device is supposed to have a unique name.
 		std::string deviceName;

@@ -470,6 +470,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 void CDeviceManager::onDeviceError(struct Device& device)
 {
 	pLogger->LogError("CDeviceManager device error: " + device.fileName);
+	device.state = DeviceState::ERROR;
 }
 
 
@@ -479,63 +480,84 @@ void CDeviceManager::pollDevices()
 	if(_devices.size() < 1) {
 		return;
 	}
-	else
-	{
-		std::vector<struct pollfd> fdVector;
 
-		//check if device can be written.
+	std::vector<struct pollfd> fdVector;
+
+	//check if device can be written.
+	for(size_t i=0; i<_devices.size(); i++)
+	{
+		pollfd fd;
+
+		fd.fd = _devices[i].fd;
+		fd.events = POLLOUT | POLLERR;
+		fd.revents = 0;
+		fdVector.push_back(fd);
+	}
+	auto rc = poll(fdVector.data(), fdVector.size(), 10);
+	if(rc > 0)
+	{
 		for(size_t i=0; i<_devices.size(); i++)
 		{
-			pollfd fd;
+			auto events = fdVector[i].revents;
 
-			fd.fd = _devices[i].fd;
-			fd.events = POLLOUT | POLLERR;
-			fd.revents = 0;
-			fdVector.push_back(fd);
-		}
-		auto rc = poll(fdVector.data(), fdVector.size(), 10);
-		if(rc > 0)
-		{
-			for(size_t i=0; i<_devices.size(); i++)
-			{
-				auto events = fdVector[i].revents;
-
-				if(events & POLLOUT) {
-					//device can be written.
-					onDeviceCanBeWritten(_devices[i]);
-				}
-				if(events & POLLERR) {
-					onDeviceError(_devices[i]);
-				}
+			if(events & POLLOUT) {
+				//device can be written.
+				onDeviceCanBeWritten(_devices[i]);
+			}
+			if(events & POLLERR) {
+				onDeviceError(_devices[i]);
 			}
 		}
+	}
 
-		//check if device can be read
-		fdVector.clear();
+	//check if device can be read
+	fdVector.clear();
+	for(size_t i=0; i<_devices.size(); i++)
+	{
+		pollfd fd;
+
+		fd.fd = _devices[i].fd;
+		fd.events = POLLIN | POLLERR;
+		fd.revents = 0;
+		fdVector.push_back(fd);
+	}
+
+	rc = poll(fdVector.data(), fdVector.size(), 10);
+	if(rc > 0)
+	{
 		for(size_t i=0; i<_devices.size(); i++)
 		{
-			pollfd fd;
+			auto events = fdVector[i].revents;
 
-			fd.fd = _devices[i].fd;
-			fd.events = POLLIN | POLLERR;
-			fd.revents = 0;
-			fdVector.push_back(fd);
+			if(events & POLLIN) {
+				//device can be read.
+				onDeviceCanBeRead(_devices[i]);
+			}
+			if(events & POLLERR) {
+				onDeviceError(_devices[i]);
+			}
 		}
+	}
 
-		rc = poll(fdVector.data(), fdVector.size(), 10);
-		if(rc > 0)
+	//remove the device having an error
+	{
+		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+		for(auto deviceIt = _devices.begin(); deviceIt != _devices.end(); )
 		{
-			for(size_t i=0; i<_devices.size(); i++)
+			if(deviceIt->state == DeviceState::ERROR)
 			{
-				auto events = fdVector[i].revents;
-
-				if(events & POLLIN) {
-					//device can be read.
-					onDeviceCanBeRead(_devices[i]);
+				close(deviceIt->fd);
+				//notify observers of device's unavailability
+				if(!deviceIt->deviceName.empty()) {
+					//this device has been fully enumerated.
+					_pObserver->OnDeviceUnplugged(deviceIt->deviceName);
 				}
-				if(events & POLLERR) {
-					onDeviceError(_devices[i]);
-				}
+				//erase this device
+				deviceIt = _devices.erase(deviceIt);
+			}
+			else
+			{
+				deviceIt++;
 			}
 		}
 	}
