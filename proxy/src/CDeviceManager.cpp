@@ -493,7 +493,7 @@ void CDeviceManager::pollDevices()
 		fd.revents = 0;
 		fdVector.push_back(fd);
 	}
-	auto rc = poll(fdVector.data(), fdVector.size(), 10);
+	auto rc = poll(fdVector.data(), fdVector.size(), 0);
 	if(rc > 0)
 	{
 		for(size_t i=0; i<_devices.size(); i++)
