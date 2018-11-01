@@ -20,6 +20,8 @@ ProxyLogger::ProxyLogger(const std::string& folder,
 {
 	_logFileInitialized = false;
 	_overflowed = false;
+	_copyToConsole = false;
+
 	try
 	{
 		Poco::File logFolder(folder);
@@ -68,6 +70,10 @@ void ProxyLogger::Log(const std::string& log)
 {
 	std::string logLine = currentTime() + " " + log;
 
+	if(_copyToConsole) {
+		printf("%s\r\n", logLine.c_str());
+	}
+
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	if(_overflowed) {
@@ -97,6 +103,11 @@ void ProxyLogger::LogDebug(const std::string& debug)
 void ProxyLogger::LogInfo(const std::string& info)
 {
 	Log(info);
+}
+
+void ProxyLogger::CopyToConsole(bool copyToConsole)
+{
+	_copyToConsole = copyToConsole;
 }
 
 void ProxyLogger::runTask()

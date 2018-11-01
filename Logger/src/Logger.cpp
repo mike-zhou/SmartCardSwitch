@@ -20,6 +20,8 @@ Logger::Logger(const std::string& folder,
 {
 	_logFileInitialized = false;
 	_overflowed = false;
+	_copyToConsole = false;
+
 	try
 	{
 		Poco::File logFolder(folder);
@@ -68,6 +70,10 @@ void Logger::Log(const std::string& log)
 {
 	std::string logLine = currentTime() + " " + log;
 
+	if(_copyToConsole) {
+		printf("%s\r\n", logLine.c_str());
+	}
+
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	if(_overflowed) {
@@ -97,6 +103,11 @@ void Logger::LogDebug(const std::string& debug)
 void Logger::LogInfo(const std::string& info)
 {
 	Log(info);
+}
+
+void Logger::CopyToConsole(bool copyToConsole)
+{
+	_copyToConsole = copyToConsole;
 }
 
 void Logger::runTask()

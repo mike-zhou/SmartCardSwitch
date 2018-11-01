@@ -131,6 +131,7 @@ protected:
 		}
 
 		pLogger = new Logger(logFolder, logFile, logFileSize, logFileAmount);
+		pLogger->CopyToConsole(true);
 		tmLogger.start(pLogger); //tmLogger takes the ownership of pLogger.
 		pLogger->LogInfo("**** SmartCardSwitch V1.0.0 ****");
 

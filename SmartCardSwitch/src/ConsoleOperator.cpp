@@ -68,7 +68,7 @@ void ConsoleOperator::OnFeedback(const std::string& feedback)
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 	//append to end
 	_feedbacks.push_back(feedback);
-	std::cout << "Feedback: " << feedback << '\n';
+	pLogger->LogDebug("ConsoleOperator::OnFeedback feedback: " + feedback);
 	_event.set();
 }
 
@@ -190,7 +190,6 @@ void ConsoleOperator::processInput()
 	}
 	if(bCmdValid == false) {
 		pLogger->LogError("ConsoleOperator::processInput invalid command: " + command);
-		std::cout << "ConsoleOperator::processInput invalid command: " << command << "\r\n";
 		showHelp();
 		return;
 	}
@@ -917,7 +916,6 @@ void ConsoleOperator::onFeedbackDevicesGet(std::shared_ptr<ReplyTranslator::Repl
 		for(auto it=replyPtr->devices.begin(); it!=replyPtr->devices.end(); it++, number++) {
 			_userCommand.resultDevices.push_back(*it);
 			pLogger->LogInfo("ConsoleOperator::onFeedbackDevicesGet device: " + std::to_string(number) + ". " + *it);
-			std::cout << "ConsoleOperator::onFeedbackDevicesGet device: " << number << ". " << *it << "\r\n";
 		}
 	}
 

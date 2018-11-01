@@ -28,12 +28,17 @@ public:
 	void LogDebug(const std::string& debug);
 	void LogInfo(const std::string& info);
 
+	void CopyToConsole(bool copyToConsole);
+
+private:
 	void runTask();
 
 private:
 	static const int MAX_LINES = 10240;
 	static const int OVERFLOW_DIFF = 1024;
+
 	bool _overflowed;
+	bool _copyToConsole;
 
 	Poco::Mutex _mutex;
 	std::deque<std::string> _logBuffer;

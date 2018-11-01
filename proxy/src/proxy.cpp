@@ -123,6 +123,7 @@ protected:
 			}
 
 			pLogger = new ProxyLogger(logFolder, logFile, logFileSize, logFileAmount);
+			pLogger->CopyToConsole(true);
 			tmLogger.start(pLogger);
 			pLogger->LogInfo("**** proxy verion 1.0.0 ****");
 
