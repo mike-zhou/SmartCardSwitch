@@ -66,6 +66,7 @@ void CDeviceManager::SendCommand(const std::string& deviceName, const std::strin
 			if(it->deviceName == deviceName) {
 				pLogger->LogDebug("CDeviceManager enqueue command: " + deviceName + ":" + command);
 				enqueueCommand(*it, command);
+				break;
 			}
 		}
 	}

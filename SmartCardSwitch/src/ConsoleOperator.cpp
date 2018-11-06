@@ -141,7 +141,7 @@ void ConsoleOperator::showHelp()
 	std::cout << "StepperEnable: -------------------- "<< "69 stepperIndex 1/0" << "\r\n";
 	std::cout << "StepperForward: ------------------- "<< "70 stepperIndex 1/0" << "\r\n";
 	std::cout << "StepperSteps: --------------------- "<< "71 stepperIndex stepAmount" << "\r\n";
-	std::cout << "StepperRun: ----------------------- "<< "72" << "\r\n";
+	std::cout << "StepperRun: ----------------------- "<< "72 stepperIndex intialPos finalPos" << "\r\n";
 	std::cout << "StepperConfigHome:----------------- "<< "73 stepperIndex locatorIndex lineNumberStart lineNumberTerminal" << "\r\n";
 	std::cout << "StepperMove:----------------------- "<< "74 stepperIndex forward stepAmount" << "\r\n";
 	std::cout << "StepperQuery: --------------------- "<< "75 stepperIndex" << "\r\n";
@@ -684,6 +684,9 @@ void ConsoleOperator::processInput()
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperEnable");
 					}
+					else {
+						_userCommand.stepperIndex = index;
+					}
 				}
 			}
 		}
@@ -706,6 +709,9 @@ void ConsoleOperator::processInput()
 					cmdPtr = CommandFactory::StepperForward(index, forward);
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperForward");
+					}
+					else {
+						_userCommand.stepperIndex = index;
 					}
 				}
 			}
@@ -826,7 +832,7 @@ void ConsoleOperator::processInput()
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::StepperQuery");
 					}
 					else {
-						_userCommand.locatorIndex = index;
+						_userCommand.stepperIndex = index;
 					}
 				}
 			}
@@ -849,6 +855,9 @@ void ConsoleOperator::processInput()
 					cmdPtr = CommandFactory::LocatorQuery(index);
 					if(cmdPtr == nullptr) {
 						pLogger->LogError("ConsoleOperator::processInput empty ptr returned from CommandFactory::LocatorQuery");
+					}
+					else {
+						_userCommand.locatorIndex = index;
 					}
 				}
 			}
@@ -2055,8 +2064,8 @@ void ConsoleOperator::processFeedbacks()
 
 			case ReplyTranslator::ReplyType::BdcForward:
 			{
-				auto replyPtr = translator.ToBdcCoast();
-				onFeedbackBdcCoast(replyPtr);
+				auto replyPtr = translator.ToBdcForward();
+				onFeedbackBdcForward(replyPtr);
 			}
 			break;
 

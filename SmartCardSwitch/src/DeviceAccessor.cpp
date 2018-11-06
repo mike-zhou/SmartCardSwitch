@@ -25,19 +25,19 @@ bool DeviceAccessor::Init(const Poco::Net::SocketAddress& deviceAddress)
 	{
 		_socketAddress = deviceAddress;
 
-		pLogger->LogInfo("DeviceAccessor::Init: connecting to " + _socketAddress.toString());
+		pLogger->LogInfo("DeviceAccessor::Init connecting to " + _socketAddress.toString());
 		_socket.connect(_socketAddress);
-		pLogger->LogInfo("DeviceAccessor::Init: connected to " + _socketAddress.toString());
+		pLogger->LogInfo("DeviceAccessor::Init connected to " + _socketAddress.toString());
 
 		_connected = true;
 	}
 	catch(Poco::Exception& e)
 	{
-		pLogger->LogError("DeviceAccessor::Init: exception " + e.displayText());
+		pLogger->LogError("DeviceAccessor::Init exception " + e.displayText());
 	}
 	catch(...)
 	{
-		pLogger->LogError("DeviceAccessor::Init: unknown exception");
+		pLogger->LogError("DeviceAccessor::Init unknown exception");
 	}
 
 	return _connected;
@@ -60,11 +60,11 @@ bool DeviceAccessor::ReConnect()
 	}
 	catch(Poco::Exception& e)
 	{
-		pLogger->LogError("DeviceAccessor::ReConnect: exception " + e.displayText());
+		pLogger->LogError("DeviceAccessor::ReConnect exception " + e.displayText());
 	}
 	catch(...)
 	{
-		pLogger->LogError("DeviceAccessor::ReConnect: unknown exception");
+		pLogger->LogError("DeviceAccessor::ReConnect unknown exception");
 	}
 
 	return _connected;
@@ -85,7 +85,7 @@ bool DeviceAccessor::SendCommand(const std::string& cmd)
 		_outgoing.push_back(*it);
 	}
 
-	pLogger->LogDebug("DeviceAccessor::SendCommand: send " + cmd);
+	pLogger->LogDebug("DeviceAccessor::SendCommand send " + cmd);
 	return true;
 }
 
@@ -164,14 +164,14 @@ void DeviceAccessor::runTask()
 						}
 						amount = _socket.sendBytes(buffer, amount, 0);
 						if(amount > 0) {
-							pLogger->LogInfo("DeviceAccessor::runTask: byte amount sent out: " + std::to_string(amount));
+							pLogger->LogInfo("DeviceAccessor::runTask byte amount sent out: " + std::to_string(amount));
 							//delete the data which was sent out.
 							for(; amount>0; amount--) {
 								_outgoing.pop_front();
 							}
 						}
 						else {
-							pLogger->LogError("DeviceAccessor::runTask: failed sending: " + std::to_string(amount));
+							pLogger->LogError("DeviceAccessor::runTask failed sending: " + std::to_string(amount));
 							_outgoing.clear();
 						}
 					}
@@ -205,7 +205,7 @@ void DeviceAccessor::runTask()
 				}
 				catch(Poco::Net::NetException& e) {
 					errorOccur = true;
-					pLogger->LogError("DeviceAccessor::runTask exception: " + e.displayText());
+					pLogger->LogError("DeviceAccessor::runTask exception " + e.displayText());
 				}
 				catch(...) {
 					errorOccur = true;

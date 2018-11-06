@@ -1091,7 +1091,7 @@ std::string CommandLocatorQuery::ToJsonCommandString()
 
 	cmd = "{";
 	cmd = cmd + "\"command\":\"locator query\",";
-	cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId()) + ",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
 	cmd = cmd + "\"index\":" + std::to_string(_locatorIndex);
 	cmd += "}";
 

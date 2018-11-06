@@ -65,7 +65,7 @@ unsigned long ReplyTranslater::getHexValue(const std::string& hexString)
 			throw Poco::JSON::JSONException("Invalid command value");
 		}
 		else {
-			value = (value << (i * 4)) + c;
+			value = (value << 4) + c;
 		}
 	}
 
@@ -1152,9 +1152,9 @@ std::string ReplyTranslater:: stepperQuery(Poco::JSON::Object::Ptr& replyPtr)
 		strLowClks = ds["lowClks"].toString();
 		strHighClks = ds["highClks"].toString();
 		strAccelerationBuffer = ds["accelerationBuffer"].toString();
-		strAccelerationBufferDecrement = ds["accelerationBufferDecrement"].toString();
-		strDecelerationBuffer = ds["deceleratonBuffer"].toString();
-		strDecelerationBufferIncrement = ds["decelerationBufferIncrement"].toString();
+		strAccelerationBufferDecrement = ds["accelerationDecrement"].toString();
+		strDecelerationBuffer = ds["decelerationBuffer"].toString();
+		strDecelerationBufferIncrement = ds["decelerationIncrement"].toString();
 
 		enabled = (strEnabled != "0") ? true : false;
 		forward = (strForward != "0") ? true : false;

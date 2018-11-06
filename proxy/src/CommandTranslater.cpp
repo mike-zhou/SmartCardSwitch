@@ -104,7 +104,7 @@ CommandType CommandTranslator::Type()
 			_type = CommandType::SteppersQueryPower;
 		}
 		else if(command == strCommandStepperQueryResolution) {
-			_type = CommandType::SteppersQueryPower;
+			_type = CommandType::StepperQueryResolution;
 		}
 		else if(command == strCommandStepperConfigStep) {
 			_type = CommandType::StepperConfigStep;
@@ -297,7 +297,7 @@ std::shared_ptr<CommandDeviceQueryFuse> CommandTranslator::GetCommandDeviceQuery
 			if(command.size() < 1) {
 				pLogger->LogError("CommandTranslator::GetCommandDeviceQueryFuse invalid command in " + _jsonCmd);
 			}
-			else if(command != strCommandDeviceConnect) {
+			else if(command != strCommandDeviceQueryFuse) {
 				pLogger->LogError("CommandTranslator::GetCommandDeviceQueryFuse wrong command in " + _jsonCmd);
 			}
 			else

@@ -218,7 +218,7 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = "C 41" + std::to_string(_commandId & 0xffff);
+		std::string cmd = "C 41 " + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
 
@@ -238,7 +238,7 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = "C 42" + std::to_string(_commandId & 0xffff);
+		std::string cmd = "C 42 " + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
 
@@ -401,7 +401,7 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = "C 13 " + std::to_string(_commandId & 0xffff);
+		std::string cmd = "C 20 " + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
 
@@ -424,7 +424,7 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = "C 14 " + std::to_string(_commandId & 0xffff);
+		std::string cmd = "C 21 " + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
 
@@ -447,7 +447,7 @@ public:
 
 	std::string ToString()
 	{
-		std::string cmd = "C 15 " + std::to_string(_commandId & 0xffff);
+		std::string cmd = "C 22 " + std::to_string(_commandId & 0xffff);
 		return cmd;
 	}
 

@@ -219,14 +219,14 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 		ptr->errorInfo = errorInfo;
 		//specific attributes
 		if(errorInfo.empty()) {
-			if(state == "main fuse on") {
+			if(state == "main fuse is on") {
 				ptr->bFuseOn = true;
 			}
-			else if(state == "main fuse off") {
+			else if(state == "main fuse is off") {
 				ptr->bFuseOn = false;
 			}
 			else {
-				pLogger->LogError("ReplyTranslator::parseReply unknown device power status: " + state);
+				pLogger->LogError("ReplyTranslator::parseReply unknown device fuse status: " + state);
 				ptr->errorInfo = "unknown device power status";
 			}
 		}
