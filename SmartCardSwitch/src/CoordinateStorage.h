@@ -79,6 +79,13 @@ public:
 
 private:
 	const int DEFAULT_OFFSET = 0;
+	//constraints
+	const int SMART_CARDS_AMOUNT = 64;
+	const int PED_KEYS_AMOUNT = 15;
+	const int SOFT_KEYS_AMOUNT = 8;
+	const int TOUCH_SCREEN_KEYS_AMOUNT = 8;
+	const int ASSIST_KEYS_AMOUNT = 9;
+
 	std::string _filePathName;
 
 	struct Coordinate
