@@ -94,13 +94,15 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			for(int i=0; i<smartCardsAmount; i++)
 			{
 				long x, y, z, w;
+				long index;
 
-				x = ds["smartCards"]["cards"][i]["x"];
-				y = ds["smartCards"]["cards"][i]["y"];
-				z = ds["smartCards"]["cards"][i]["z"];
-				w = ds["smartCards"]["cards"][i]["w"];
+				index = ds["smartCards"]["cards"][i]["index"];
+				x = ds["smartCards"]["cards"][i]["value"]["x"];
+				y = ds["smartCards"]["cards"][i]["value"]["y"];
+				z = ds["smartCards"]["cards"][i]["value"]["z"];
+				w = ds["smartCards"]["cards"][i]["value"]["w"];
 
-				SetCoordinate(Type::SmartCard, x, y, z, w, i);
+				SetCoordinate(Type::SmartCard, x, y, z, w, index);
 			}
 
 			//PED keys
@@ -117,13 +119,15 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			for(int i=0; i<pedKeysAmount; i++)
 			{
 				long x, y, z, w;
+				long index;
 
-				x = ds["pedKeys"]["keys"][i]["x"];
-				y = ds["pedKeys"]["keys"][i]["y"];
-				z = ds["pedKeys"]["keys"][i]["z"];
-				w = ds["pedKeys"]["keys"][i]["w"];
+				index = ds["pedKeys"]["cards"][i]["index"];
+				x = ds["pedKeys"]["keys"][i]["value"]["x"];
+				y = ds["pedKeys"]["keys"][i]["value"]["y"];
+				z = ds["pedKeys"]["keys"][i]["value"]["z"];
+				w = ds["pedKeys"]["keys"][i]["value"]["w"];
 
-				SetCoordinate(Type::PedKey, x, y, z, w, i);
+				SetCoordinate(Type::PedKey, x, y, z, w, index);
 			}
 
 			//soft keys
@@ -140,13 +144,15 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			for(int i=0; i<softKeysAmount; i++)
 			{
 				long x, y, z, w;
+				long index;
 
-				x = ds["softKeys"]["keys"][i]["x"];
-				y = ds["softKeys"]["keys"][i]["y"];
-				z = ds["softKeys"]["keys"][i]["z"];
-				w = ds["softKeys"]["keys"][i]["w"];
+				index = ds["softKeys"]["cards"][i]["index"];
+				x = ds["softKeys"]["keys"][i]["value"]["x"];
+				y = ds["softKeys"]["keys"][i]["value"]["y"];
+				z = ds["softKeys"]["keys"][i]["value"]["z"];
+				w = ds["softKeys"]["keys"][i]["value"]["w"];
 
-				SetCoordinate(Type::SoftKey, x, y, z, w, i);
+				SetCoordinate(Type::SoftKey, x, y, z, w, index);
 			}
 
 			//touch screen keys
@@ -163,13 +169,15 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			for(int i=0; i<touchScreenKeysAmount; i++)
 			{
 				long x, y, z, w;
+				long index;
 
-				x = ds["touchScreenKeys"]["keys"][i]["x"];
-				y = ds["touchScreenKeys"]["keys"][i]["y"];
-				z = ds["touchScreenKeys"]["keys"][i]["z"];
-				w = ds["touchScreenKeys"]["keys"][i]["w"];
+				index = ds["touchScreenKeys"]["cards"][i]["index"];
+				x = ds["touchScreenKeys"]["keys"][i]["value"]["x"];
+				y = ds["touchScreenKeys"]["keys"][i]["value"]["y"];
+				z = ds["touchScreenKeys"]["keys"][i]["value"]["z"];
+				w = ds["touchScreenKeys"]["keys"][i]["value"]["w"];
 
-				SetCoordinate(Type::TouchScreenKey, x, y, z, w, i);
+				SetCoordinate(Type::TouchScreenKey, x, y, z, w, index);
 			}
 
 			//assist keys
@@ -186,13 +194,15 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			for(int i=0; i<assistKeysAmount; i++)
 			{
 				long x, y, z, w;
+				long index;
 
-				x = ds["assistKeys"]["keys"][i]["x"];
-				y = ds["assistKeys"]["keys"][i]["y"];
-				z = ds["assistKeys"]["keys"][i]["z"];
-				w = ds["assistKeys"]["keys"][i]["w"];
+				index = ds["assistKeys"]["cards"][i]["index"];
+				x = ds["assistKeys"]["keys"][i]["value"]["x"];
+				y = ds["assistKeys"]["keys"][i]["value"]["y"];
+				z = ds["assistKeys"]["keys"][i]["value"]["z"];
+				w = ds["assistKeys"]["keys"][i]["value"]["w"];
 
-				SetCoordinate(Type::AssistKey, x, y, z, w, i);
+				SetCoordinate(Type::AssistKey, x, y, z, w, index);
 			}
 
 			//smart card slot
@@ -265,9 +275,9 @@ bool CoordinateStorage::PersistToFile()
 	json = json + "\"YOffset\":" + std::to_string(_smartCardFectchingYOffset) + ",";
 	json = json + "\"ZOffset\":" + std::to_string(_smartCardAccessingZOffset) + ",";
 	json = json + "\"cards\":["; //start of cards
-	for(auto smartCardIt = _smartCards.begin(); smartCardIt != _smartCards.end(); smartCardIt++)
+	for(int i=0; i<_smartCards.size(); i++)
 	{
-		json += smartCardIt->ToJsonObj() + ",";
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _smartCards[i].ToJsonObj() + "},";
 	}
 	if(!_smartCards.empty()) {
 		json.pop_back();//delete the extra ','
@@ -281,9 +291,9 @@ bool CoordinateStorage::PersistToFile()
 	json = json + "\"exit\":" + _pedKeysExit.ToJsonObj() + ",";
 	json = json + "\"ZOffset\":" + std::to_string(_pedKeyPressingZOffset) + ",";
 	json = json + "\"keys\":["; //start of keys
-	for(auto pedKeyIt = _pedKeys.begin(); pedKeyIt != _pedKeys.end(); pedKeyIt++)
+	for(int i=0; i<_pedKeys.size(); i++)
 	{
-		json += pedKeyIt->ToJsonObj() + ",";
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _pedKeys[i].ToJsonObj() + "},";
 	}
 	if(!_pedKeys.empty()) {
 		json.pop_back(); //delete the extra ','
@@ -297,9 +307,9 @@ bool CoordinateStorage::PersistToFile()
 	json = json + "\"exit\":" + _softKeysExit.ToJsonObj() + ",";
 	json = json + "\"ZOffset\":" + std::to_string(_softKeyPressingZOffset) + ",";
 	json = json + "\"keys\":["; //start of keys
-	for(auto softKeyIt = _softKeys.begin(); softKeyIt != _pedKeys.end(); softKeyIt++)
+	for(int i=0; i<_softKeys.size(); i++)
 	{
-		json += softKeyIt->ToJsonObj() + ",";
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _softKeys[i].ToJsonObj() + "},";
 	}
 	if(!_softKeys.empty()) {
 		json.pop_back(); //delete the extra ','
@@ -313,9 +323,9 @@ bool CoordinateStorage::PersistToFile()
 	json = json + "\"exit\":" + _touchScreenKeysExit.ToJsonObj() + ",";
 	json = json + "\"ZOffset\":" + std::to_string(_touchScreenKeyPressingZOffset) + ",";
 	json = json + "\"keys\":["; //start of keys
-	for(auto touchScreenKeyIt = _touchScreenKeys.begin(); touchScreenKeyIt != _pedKeys.end(); touchScreenKeyIt++)
+	for(int i=0; i<_touchScreenKeys.size(); i++)
 	{
-		json += touchScreenKeyIt->ToJsonObj() + ",";
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _touchScreenKeys[i].ToJsonObj() + "},";
 	}
 	if(!_touchScreenKeys.empty()) {
 		json.pop_back(); //delete the extra ','
@@ -329,9 +339,9 @@ bool CoordinateStorage::PersistToFile()
 	json = json + "\"exit\":" + _assistKeysExit.ToJsonObj() + ",";
 	json = json + "\"ZOffset\":" + std::to_string(_assistKeyPressingZOffset) + ",";
 	json = json + "\"keys\":["; //start of keys
-	for(auto assistKeyIt = _assistKeys.begin(); assistKeyIt != _pedKeys.end(); assistKeyIt++)
+	for(int i=0; i<_assistKeys.size(); i++)
 	{
-		json += assistKeyIt->ToJsonObj() + ",";
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _assistKeys[i].ToJsonObj() + "},";
 	}
 	if(!_assistKeys.empty()) {
 		json.pop_back(); //delete the extra ','
@@ -379,7 +389,7 @@ bool CoordinateStorage::PersistToFile()
 			pLogger->LogInfo("CoordinateStorage::PersistToFile write " + std::to_string(json.size()) + " bytes to file " + _filePathName);
 			auto amount = write(fd, json.c_str(), json.size());
 			if(amount != json.size()) {
-				pLogger->LogError("CoordinateStorage::PersistToFile failure in writing: " + std::string(amount) + "/" + std::string(json.size()));
+				pLogger->LogError("CoordinateStorage::PersistToFile failure in writing: " + std::to_string(amount) + "/" + std::to_string(json.size()));
 			}
 			else {
 				rc = true;
@@ -408,7 +418,7 @@ bool CoordinateStorage::SetCoordinate(Type type,
 				unsigned int y,
 				unsigned int z,
 				unsigned int w,
-				unsigned int index = 0)
+				unsigned int index)
 {
 	bool rc = false;
 
@@ -621,7 +631,7 @@ bool CoordinateStorage::GetCoordinate(Type type,
 				int& y,
 				int& z,
 				int& w,
-				int index = 0)
+				int index)
 {
 	bool rc = false;
 
