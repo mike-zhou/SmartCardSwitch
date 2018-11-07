@@ -17,7 +17,7 @@ public:
 	MovementConfiguration(const std::string& pathFileName);
 	bool PersistToFile();
 
-	enum class Stepper
+	enum StepperPosition
 	{
 		X = 0,
 		Y,
@@ -25,7 +25,7 @@ public:
 		W
 	};
 
-	bool SetStepperConfig(Stepper stepper,
+	bool SetStepperConfig(StepperPosition stepper,
 						long lowClks,
 						long highClks,
 						long accelerationBuffer,
@@ -36,7 +36,7 @@ public:
 						int locatorLineNumberStart,
 						int locatorLineNumberTerminal);
 
-	bool GetStepperConfig(Stepper stepper,
+	bool GetStepperConfig(StepperPosition stepper,
 						long & lowClks,
 						long & highClks,
 						long & accelerationBuffer,
@@ -47,12 +47,14 @@ public:
 						int & locatorLineNumberStart,
 						int & locatorLineNumberTerminal);
 
-	bool SetBdcDelay(long delay);
-	bool GetBdcDelay(long & delay);
+	void SetBdcDelay(unsigned long delay) { _bdcDelay = delay; }
+	unsigned long GetBdcDelay() { return _bdcDelay; }
 
 private:
+	const unsigned int STEPPERS_AMOUNT = 4;
+	const unsigned int BDC_DELAY_DEFAULT = 1000;
+
 	std::string _pathFileName;
-	bool _configRestored;
 
 	struct StepperMovementConfig
 	{
@@ -72,7 +74,7 @@ private:
 
 	std::vector<StepperMovementConfig> _steppers;
 
-	long bdcDelay;
+	unsigned long _bdcDelay;
 };
 
 

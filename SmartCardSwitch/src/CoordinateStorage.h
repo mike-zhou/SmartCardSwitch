@@ -75,16 +75,16 @@ public:
 					int& y,
 					int& z,
 					int& w,
-					int index = 0);
+					unsigned int index = 0);
 
 private:
 	const int DEFAULT_OFFSET = 0;
 	//constraints
-	const int SMART_CARDS_AMOUNT = 64;
-	const int PED_KEYS_AMOUNT = 15;
-	const int SOFT_KEYS_AMOUNT = 8;
-	const int TOUCH_SCREEN_KEYS_AMOUNT = 8;
-	const int ASSIST_KEYS_AMOUNT = 9;
+	const unsigned int SMART_CARDS_AMOUNT = 64;
+	const unsigned int PED_KEYS_AMOUNT = 15;
+	const unsigned int SOFT_KEYS_AMOUNT = 8;
+	const unsigned int TOUCH_SCREEN_KEYS_AMOUNT = 8;
+	const unsigned int ASSIST_KEYS_AMOUNT = 9;
 
 	std::string _filePathName;
 
