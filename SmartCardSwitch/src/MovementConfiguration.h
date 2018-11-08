@@ -17,15 +17,7 @@ public:
 	MovementConfiguration(const std::string& pathFileName);
 	bool PersistToFile();
 
-	enum StepperPosition
-	{
-		X = 0,
-		Y,
-		Z,
-		W
-	};
-
-	bool SetStepperConfig(StepperPosition stepper,
+	bool SetStepperConfig(unsigned int index,
 						long lowClks,
 						long highClks,
 						long accelerationBuffer,
@@ -36,7 +28,7 @@ public:
 						int locatorLineNumberStart,
 						int locatorLineNumberTerminal);
 
-	bool GetStepperConfig(StepperPosition stepper,
+	bool GetStepperConfig(unsigned int index,
 						long & lowClks,
 						long & highClks,
 						long & accelerationBuffer,

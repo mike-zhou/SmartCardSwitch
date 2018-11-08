@@ -76,7 +76,7 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 
 			//restore data for steppers
 			auto steppersAmount = ds["steppers"].size();
-			for(int i=0; i<steppersAmount; i++)
+			for(unsigned int i=0; i<steppersAmount; i++)
 			{
 				unsigned int index;
 
@@ -101,7 +101,7 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 				locatorLineNumberStart 		= ds["steppers"][i]["value"]["locatorLineNumberStart"];
 				locatorLineNumberTerminal 	= ds["steppers"][i]["value"]["locatorLineNumberTerminal"];
 
-				SetStepperConfig((StepperPosition)index,
+				SetStepperConfig(index,
 									lowClks,
 									highClks,
 									accelerationBuffer,
@@ -194,7 +194,7 @@ bool MovementConfiguration::PersistToFile()
 	return rc;
 }
 
-bool MovementConfiguration::SetStepperConfig(StepperPosition stepper,
+bool MovementConfiguration::SetStepperConfig(unsigned int index,
 					long lowClks,
 					long highClks,
 					long accelerationBuffer,
@@ -205,11 +205,37 @@ bool MovementConfiguration::SetStepperConfig(StepperPosition stepper,
 					int locatorLineNumberStart,
 					int locatorLineNumberTerminal)
 {
+	bool rc = false;
 
+	if(index < STEPPERS_AMOUNT)
+	{
+		if(index >= _steppers.size())
+		{
+			for(; _steppers.size() < STEPPERS_AMOUNT; ) {
+				StepperMovementConfig defaultCfg;
+				_steppers.push_back(defaultCfg);
+			}
+		}
+
+		auto& stepper = _steppers[index];
+		stepper.lowClks = lowClks;
+		stepper.highClks = highClks;
+		stepper.accelerationBuffer = accelerationBuffer;
+		stepper.accelerationBufferDecrement = accelerationBufferDecrement;
+		stepper.decelerationBuffer = decelerationBuffer;
+		stepper.decelerationBufferIncrement = decelerationBufferIncrement;
+		stepper.locatorIndex = locatorIndex;
+		stepper.locatorLineNumberStart = locatorLineNumberStart;
+		stepper.locatorLineNumberTerminal = locatorLineNumberTerminal;
+
+		rc = true;
+	}
+
+	return rc;
 }
 
 
-bool MovementConfiguration::GetStepperConfig(StepperPosition stepper,
+bool MovementConfiguration::GetStepperConfig(unsigned int index,
 					long & lowClks,
 					long & highClks,
 					long & accelerationBuffer,
@@ -220,7 +246,25 @@ bool MovementConfiguration::GetStepperConfig(StepperPosition stepper,
 					int & locatorLineNumberStart,
 					int & locatorLineNumberTerminal)
 {
+	if(index >= STEPPERS_AMOUNT) {
+		return false;
+	}
+	if(index >= _steppers.size()) {
+		return false;
+	}
 
+	auto& stepper = _steppers[index];
+	lowClks = stepper.lowClks;
+	highClks = stepper.highClks;
+	accelerationBuffer = stepper.accelerationBuffer;
+	accelerationBufferDecrement = stepper.accelerationBufferDecrement;
+	decelerationBuffer = stepper.decelerationBuffer;
+	decelerationBufferIncrement = stepper.decelerationBufferIncrement;
+	locatorIndex = stepper.locatorIndex;
+	locatorLineNumberStart = stepper.locatorLineNumberStart;
+	locatorLineNumberTerminal = stepper.locatorLineNumberTerminal;
+
+	return true;
 }
 
 
