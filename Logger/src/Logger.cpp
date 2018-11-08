@@ -114,9 +114,24 @@ void Logger::runTask()
 {
 	while(1)
 	{
-		if(isCancelled()) {
+		if(isCancelled())
+		{
+			for(; _logBuffer.size() > 0; )
+			{
+				std::string logLine = _logBuffer.front();
+				_logBuffer.pop_front();
+				if(_logFileInitialized) {
+					_pLogger->trace(logLine);
+				}
+				else {
+					printf("%s\r\n", logLine.c_str());
+				}
+			}
+
 			if(_logFileInitialized) {
+				_pLogger->trace(std::string("Logger::runTask exits"));
 				_pLogger->close();
+				_pLogger->shutdown();
 			}
 			break;
 		}

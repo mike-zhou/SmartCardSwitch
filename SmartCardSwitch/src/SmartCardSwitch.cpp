@@ -23,6 +23,8 @@
 #include "DeviceAccessor.h"
 #include "CommandRunner.h"
 #include "ConsoleOperator.h"
+#include "CoordinateStorage.h"
+#include "MovementConfiguration.h"
 
 using namespace std;
 
@@ -37,6 +39,8 @@ using Poco::TaskManager;
 using Poco::DateTimeFormatter;
 
 Logger * pLogger;
+CoordinateStorage * pCoordinateStorage;
+MovementConfiguration * pMovementConfiguration;
 
 class SmartCardsSwitch: public ServerApplication
 {
@@ -103,6 +107,8 @@ protected:
 		std::string logFile;
 		std::string logFileSize;
 		std::string logFileAmount;
+		std::string coordinatePathFile;
+		std::string movementConfigurationPathFile;
 
 		//launch Logger
 		try
@@ -112,14 +118,6 @@ protected:
 			logFile = config().getString("log_file_name", "SmartCardSwitchLog");
 			logFileSize = config().getString("log_file_size", "1M");
 			logFileAmount = config().getString("log_file_amount", "10");
-		}
-		catch(Poco::NotFoundException& e)
-		{
-			logger().error("Config NotFoundException: " + e.displayText());
-		}
-		catch(Poco::SyntaxException& e)
-		{
-			logger().error("Config SyntaxException: " + e.displayText());
 		}
 		catch(Poco::Exception& e)
 		{
@@ -134,6 +132,23 @@ protected:
 		pLogger->CopyToConsole(true);
 		tmLogger.start(pLogger); //tmLogger takes the ownership of pLogger.
 		pLogger->LogInfo("**** SmartCardSwitch V1.0.0 ****");
+
+		//static settings
+		try
+		{
+			coordinatePathFile = config().getString("coordinate_storage_file", "./coordinate_storage");
+			movementConfigurationPathFile = config().getString("movement_configuration_file", "./movement_configuration");
+		}
+		catch(Poco::Exception& e)
+		{
+			pLogger->LogError("main Config Exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("main Config unknown exception");
+		}
+		pCoordinateStorage = new CoordinateStorage(coordinatePathFile);
+		pMovementConfiguration = new MovementConfiguration(movementConfigurationPathFile);
 
 		// launch tasks
 		try
@@ -170,20 +185,21 @@ protected:
 		}
 		catch(Poco::Exception& e)
 		{
-			printf("Poco::Exception %s\r\n", e.displayText().c_str());
+			pLogger->LogError("main: exception in task starting :" + e.displayText());
 		}
 		catch(...)
 		{
-			printf("Unknown exception occurs\r\n");
+			pLogger->LogError("main: Unknown exception in task starting");
 		}
-
-
 
 		waitForTerminationRequest();
 
 		//stop tasks
 		tm.cancelAll();
 		tm.joinAll();
+
+		delete pCoordinateStorage;
+		delete pMovementConfiguration;
 
 		//stop logger task.
 		tmLogger.cancelAll();
