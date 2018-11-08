@@ -160,7 +160,6 @@ bool MovementConfiguration::PersistToFile()
 		Poco::File storageFile(_pathFileName);
 
 		if(!storageFile.exists()) {
-			storageFile.createDirectories();
 			storageFile.createFile();
 		}
 

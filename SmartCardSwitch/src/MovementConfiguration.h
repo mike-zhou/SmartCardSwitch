@@ -43,7 +43,7 @@ public:
 	unsigned long GetBdcDelay() { return _bdcDelay; }
 
 private:
-	const unsigned int STEPPERS_AMOUNT = 4;
+	const unsigned int STEPPERS_AMOUNT = 5;
 	const unsigned int BDC_DELAY_DEFAULT = 1000;
 
 	std::string _pathFileName;

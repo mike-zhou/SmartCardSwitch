@@ -59,6 +59,12 @@ private:
 	void showHelp();
 
 	void processInput();
+	void setBdcDelay(unsigned long delay);
+	void saveMovementConfig();
+	void loadMovementConfig();
+	void saveCoordinates();
+	void loadCoordinates();
+
 
 	void processFeedbacks();
 	bool isCorrespondingReply(const std::string& command, unsigned short commandId);
@@ -132,6 +138,11 @@ private:
 			StepperMove = 74,
 			StepperQuery = 75,
 			LocatorQuery = 90,
+			BdcDelay = 200,
+			SaveMovementConfig = 300,
+			LoadMovementConfig = 301,
+			SaveCoordinates = 350,
+			LoadCoordinates = 351
 		};
 
 		enum class CommandState
@@ -244,6 +255,8 @@ private:
 		StepperStatus resultStepperStatus[STEPPER_AMOUNT];
 		//locator
 		char resultLocatorStatus[LOCATOR_AMOUNT];
+		//bdc delay
+		unsigned long resultBdcDelay;
 
 	} _userCommand;
 

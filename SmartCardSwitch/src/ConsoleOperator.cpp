@@ -12,8 +12,12 @@
 #include "CommandFactory.h"
 #include "ReplyTranslator.h"
 #include "Command.h"
+#include "CoordinateStorage.h"
+#include "MovementConfiguration.h"
 
 extern Logger * pLogger;
+extern CoordinateStorage * pCoordinateStorage;
+extern MovementConfiguration * pMovementConfiguration;
 
 ConsoleOperator::ConsoleOperator(): Task("ConsoleOperator")
 {
@@ -146,6 +150,57 @@ void ConsoleOperator::showHelp()
 	std::cout << "StepperMove:----------------------- "<< "74 stepperIndex forward stepAmount" << "\r\n";
 	std::cout << "StepperQuery: --------------------- "<< "75 stepperIndex" << "\r\n";
 	std::cout << "LocatorQuery:---------------------- "<< "90 locatorIndex" << "\r\n";
+	std::cout << "BdcDelay:-------------------------- "<< "200 ms" << "\r\n";
+	std::cout << "SaveMovementConfig:---------------- "<< "300" << "\r\n";
+	std::cout << "SaveCoordinates:------------------- "<< "350" << "\r\n";
+}
+
+void ConsoleOperator::setBdcDelay(unsigned long delay)
+{
+	_userCommand.resultBdcDelay = delay;
+}
+
+void ConsoleOperator::saveMovementConfig()
+{
+	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
+	{
+		auto& stepper = _userCommand.resultStepperStatus[i];
+
+		pMovementConfiguration->SetStepperConfig(i,
+			stepper.lowClks,
+			stepper.highClks,
+			stepper.accelerationBuffer,
+			stepper.accelerationBufferDecrement,
+			stepper.decelerationBuffer,
+			stepper.decelerationBufferIncrement,
+			stepper.locatorIndex,
+			stepper.locatorLineNumberStart,
+			stepper.locatorLineNumberTerminal);
+	}
+
+	pMovementConfiguration->SetBdcDelay(_userCommand.resultBdcDelay);
+
+	if(pMovementConfiguration->PersistToFile()) {
+		pLogger->LogInfo("ConsoleOperator::saveMovementConfig succeeded");
+	}
+	else {
+		pLogger->LogInfo("ConsoleOperator::saveMovementConfig failed");
+	}
+}
+
+void ConsoleOperator::loadMovementConfig()
+{
+
+}
+
+void ConsoleOperator::saveCoordinates()
+{
+
+}
+
+void ConsoleOperator::loadCoordinates()
+{
+
 }
 
 void ConsoleOperator::processInput()
@@ -861,6 +916,24 @@ void ConsoleOperator::processInput()
 					}
 				}
 			}
+		}
+		break;
+
+		case UserCommand::Type::BdcDelay:
+		{
+			_userCommand.resultBdcDelay = d1;
+		}
+		break;
+
+		case UserCommand::Type::SaveMovementConfig:
+		{
+			saveMovementConfig();
+		}
+		break;
+
+		case UserCommand::Type::SaveCoordinates:
+		{
+			saveCoordinates();
 		}
 		break;
 
