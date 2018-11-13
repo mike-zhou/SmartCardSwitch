@@ -100,7 +100,7 @@ private:
 
 	struct UserCommand
 	{
-		enum class Type
+		enum Type
 		{
 			Invalid = -1,
 			DevicesGet = 0,

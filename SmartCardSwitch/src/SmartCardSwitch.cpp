@@ -154,7 +154,6 @@ protected:
 		try
 		{
 			DeviceAccessor * pDeviceAccessor;
-			CommandRunner * pCommandRunner;
 			ConsoleOperator * pConsoleOperator;
 
 			//device accessor
@@ -165,21 +164,15 @@ protected:
 			pDeviceAccessor = new DeviceAccessor;
 			pDeviceAccessor->Init(socketAddress);
 
-			//command runner
-			pCommandRunner = CommandRunner::GetInstance();
 			//console operator
 			pConsoleOperator = new ConsoleOperator;
 
-			//couple command runner and device accessor
-			pCommandRunner->SetDevice(pDeviceAccessor);
-			pDeviceAccessor->AddObserver(pCommandRunner);
 			//couple console operator and device accessor
 			pConsoleOperator->SetDevice(pDeviceAccessor);
 			pDeviceAccessor->AddObserver(pConsoleOperator);
 
 
 			//tm takes the ownership of tasks
-			tm.start(pCommandRunner);
 			tm.start(pConsoleOperator);
 			tm.start(pDeviceAccessor);
 		}
