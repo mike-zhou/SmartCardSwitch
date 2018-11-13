@@ -188,12 +188,12 @@ void ConsoleOperator::saveMovementConfig()
 	}
 }
 
-void ConsoleOperator::loadMovementConfig()
+void ConsoleOperator::loadMovementConfigStepper(unsigned int index)
 {
 
 }
 
-void ConsoleOperator::saveCoordinates()
+void ConsoleOperator::saveCoordinates(unsigned int type, unsigned int index)
 {
 
 }
@@ -931,24 +931,32 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
+		case UserCommand::Type::LoadMovementConfigStepper:
+		{
+			unsigned int index = d1;
+
+			loadMovementConfigStepper(index);
+		}
+		break;
+
 		case UserCommand::Type::SaveCoordinates:
 		{
-			saveCoordinates();
+			unsigned int type = d1;
+			unsigned int index = d2;
+
+			saveCoordinates(d1, d2);
 		}
 		break;
 
 		default:
 		{
-
 			pLogger->LogError("ConsoleOperator::processInput unknown command: " + command);
+			showHelp();
 		}
 		break;
 	}
 
-	if(cmdPtr == nullptr) {
-		showHelp();
-	}
-	else
+	if(cmdPtr != nullptr)
 	{
 		//set common userCommand attribute
 		_userCommand.jsonCommandString = cmdPtr->ToJsonCommandString();

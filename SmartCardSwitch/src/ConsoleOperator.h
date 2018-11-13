@@ -61,8 +61,8 @@ private:
 	void processInput();
 	void setBdcDelay(unsigned long delay);
 	void saveMovementConfig();
-	void loadMovementConfig();
-	void saveCoordinates();
+	void loadMovementConfigStepper(unsigned int index);
+	void saveCoordinates(unsigned int type, unsigned int index);
 	void loadCoordinates();
 
 
@@ -140,7 +140,7 @@ private:
 			LocatorQuery = 90,
 			BdcDelay = 200,
 			SaveMovementConfig = 300,
-			LoadMovementConfig = 301,
+			LoadMovementConfigStepper = 301,
 			SaveCoordinates = 350,
 			LoadCoordinates = 351
 		};

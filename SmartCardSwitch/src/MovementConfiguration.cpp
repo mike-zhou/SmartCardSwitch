@@ -159,8 +159,8 @@ bool MovementConfiguration::PersistToFile()
 		int fd;
 		Poco::File storageFile(_pathFileName);
 
-		if(!storageFile.exists()) {
-			storageFile.createFile();
+		if(storageFile.exists()) {
+			storageFile.remove(false);
 		}
 
 		fd = open(_pathFileName.c_str(), O_CREAT | O_WRONLY);

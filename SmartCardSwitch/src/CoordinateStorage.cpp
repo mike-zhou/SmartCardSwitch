@@ -378,9 +378,8 @@ bool CoordinateStorage::PersistToFile()
 		int fd;
 		Poco::File storageFile(_filePathName);
 
-		if(!storageFile.exists()) {
-			storageFile.createDirectories();
-			storageFile.createFile();
+		if(storageFile.exists()) {
+			storageFile.remove(false);
 		}
 
 		fd = open(_filePathName.c_str(), O_CREAT | O_WRONLY);
