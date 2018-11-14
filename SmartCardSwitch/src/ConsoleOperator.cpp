@@ -1,5 +1,5 @@
 /*
- * CommandRunner.cpp
+ * ConsoleOperator.cpp
  *
  *  Created on: Oct 18, 2018
  *      Author: user1
@@ -16,11 +16,12 @@ extern Logger * pLogger;
 ConsoleOperator::ConsoleOperator(ICommandReception * pCmdReceiver) : Task("ConsoleOperator")
 {
 	_pCommandReception = pCmdReceiver;
+	_cmdKey = InvalidCommandKey;
 }
 
 void ConsoleOperator::showHelp()
 {
-	std::cout << "Command format:\r\n";
+	std::cout << "\r\n=========== HELP: Command format=========\r\n";
 	std::cout << "DevicesGet:------------------------ "<< "0" << "\r\n";
 	std::cout << "DeviceConnect:--------------------- "<< "1 deviceNumber" << "\r\n";
 	std::cout << "DeviceQueryPower:------------------ "<< "2" << "\r\n";
@@ -59,6 +60,7 @@ void ConsoleOperator::showHelp()
 	std::cout << "BdcDelay:-------------------------- "<< "200 ms" << "\r\n";
 	std::cout << "SaveMovementConfig:---------------- "<< "300" << "\r\n";
 	std::cout << "SaveCoordinates:------------------- "<< "350" << "\r\n";
+	std::cout << "===============================================\r\n";
 }
 
 void ConsoleOperator::processInput()
@@ -102,7 +104,7 @@ void ConsoleOperator::processInput()
 		}
 	}
 	if(bCmdValid == false) {
-		pLogger->LogError("CommandRunner::processInput invalid command: " + command);
+		pLogger->LogError("ConsoleOperator::processInput invalid command: " + command);
 		showHelp();
 		return;
 	}
@@ -126,7 +128,7 @@ void ConsoleOperator::processInput()
 	}
 	catch(...)
 	{
-		std::string e = "CommandRunner::processInput exception in parsing input";
+		std::string e = "ConsoleOperator::processInput exception in parsing input";
 		pLogger->LogError(e);
 		std::cout << e << "\r\n";
 		showHelp();
@@ -142,7 +144,8 @@ void ConsoleOperator::processInput()
 	std::cout << d8 << " ";
 	std::cout << d9 << "\r\n";
 
-	//create command
+	//run command
+	bool bKnownCmd = true;
 	switch(d0)
 	{
 		case Type::DevicesGet:
@@ -153,10 +156,8 @@ void ConsoleOperator::processInput()
 
 		case Type::DeviceConnect:
 		{
-			auto& devices = _userCommand.resultDevices;
-
-			if(devices.empty()) {
-				pLogger->LogError("CommandRunner::processInput no device to connect");
+			if(_devices.empty()) {
+				pLogger->LogError("ConsoleOperator::processInput no device to connect");
 			}
 			else
 			{
@@ -198,391 +199,164 @@ void ConsoleOperator::processInput()
 
 		case Type::BdcCoast:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= BDC_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid BDC index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->BdcCoast(index);
-				}
-			}
+			unsigned int index = d1;
+			_cmdKey = _pCommandReception->BdcCoast(index);
 		}
 		break;
 
 		case Type::BdcReverse:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= BDC_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid BDC index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->BdcReverse(index);
-				}
-			}
+			unsigned int index = d1;
+			_cmdKey = _pCommandReception->BdcReverse(index);
 		}
 		break;
 
 		case Type::BdcForward:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= BDC_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid BDC index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->BdcForward(index);
-				}
-			}
+			unsigned int index = d1;
+			_cmdKey = _pCommandReception->BdcForward(index);
 		}
 		break;
 
 		case Type::BdcBreak:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= BDC_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid BDC index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->BdcBreak(index);
-				}
-			}
+			unsigned int index = d1;
+			_cmdKey = _pCommandReception->BdcBreak(index);
 		}
 		break;
 
 		case Type::BdcQuery:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= BDC_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid BDC index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->BdcQuery(index);
-				}
-			}
+			unsigned int index = d1;
+			_cmdKey = _pCommandReception->BdcQuery(index);
 		}
 		break;
 
 		case Type::SteppersPowerOn:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				_cmdKey = _pCommandReception->SteppersPowerOn();
-			}
+			_cmdKey = _pCommandReception->SteppersPowerOn();
 		}
 		break;
 
 		case Type::SteppersPowerOff:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				_cmdKey = _pCommandReception->SteppersPowerOff();
-			}
+			_cmdKey = _pCommandReception->SteppersPowerOff();
 		}
 		break;
 
 		case Type::SteppersQueryPower:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				_cmdKey = _pCommandReception->SteppersQueryPower();
-			}
+			_cmdKey = _pCommandReception->SteppersQueryPower();
 		}
 		break;
 
 		case Type::StepperQueryResolution:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				_cmdKey = _pCommandReception->StepperQueryResolution();
-			}
+			_cmdKey = _pCommandReception->StepperQueryResolution();
 		}
 		break;
 
 		case Type::StepperConfigStep:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int lowClks = d2;
-				unsigned int highClks = d3;
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->StepperConfigStep(index, lowClks, highClks);
-				}
-			}
+			unsigned int index = d1;
+			unsigned int lowClks = d2;
+			unsigned int highClks = d3;
+			_cmdKey = _pCommandReception->StepperConfigStep(index, lowClks, highClks);
 		}
 		break;
 
 		case Type::StepperAccelerationBuffer:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int value = d2;
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->StepperAccelerationBuffer(index, value);
-				}
-			}
+			unsigned int index = d1;
+			unsigned int value = d2;
+			_cmdKey = _pCommandReception->StepperAccelerationBuffer(index, value);
 		}
 		break;
 
 		case Type::StepperAccelerationBufferDecrement:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int value = d2;
+			unsigned int index = d1;
+			unsigned int value = d2;
 
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->StepperAccelerationBufferDecrement(index, value);
-				}
-			}
+			_cmdKey = _pCommandReception->StepperAccelerationBufferDecrement(index, value);
 		}
 		break;
 
 		case Type::StepperDecelerationBuffer:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int value = d2;
+			unsigned int index = d1;
+			unsigned int value = d2;
 
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->StepperDecelerationBuffer(index, value);
-				}
-			}
+			_cmdKey = _pCommandReception->StepperDecelerationBuffer(index, value);
 		}
 		break;
 
 		case Type::StepperDecelerationBufferIncrement:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int value = d2;
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->StepperDecelerationBufferIncrement(index, value);
-				}
-			}
+			unsigned int index = d1;
+			unsigned int value = d2;
+			_cmdKey = _pCommandReception->StepperDecelerationBufferIncrement(index, value);
 		}
 		break;
 
 		case Type::StepperEnable:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				bool enable = (d2 != 0);
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->StepperEnable(index, enable);
-				}
-			}
+			unsigned int index = d1;
+			bool enable = (d2 != 0);
+			_cmdKey = _pCommandReception->StepperEnable(index, enable);
 		}
 		break;
 
 		case Type::StepperForward:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				bool forward = (d2 != 0);
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->StepperForward(index, forward);
-				}
-			}
+			unsigned int index = d1;
+			bool forward = (d2 != 0);
+			_cmdKey = _pCommandReception->StepperForward(index, forward);
 		}
 		break;
 
 		case Type::StepperSteps:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int value = d2;
+			unsigned int index = d1;
+			unsigned int value = d2;
 
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->StepperSteps(index, value);
-				}
-			}
+			_cmdKey = _pCommandReception->StepperSteps(index, value);
 		}
 		break;
 
 		case Type::StepperRun:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int initialPos = d2;
-				unsigned int finalPos = d3;
+			unsigned int index = d1;
+			unsigned int initialPos = d2;
+			unsigned int finalPos = d3;
 
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->StepperRun(index, initialPos, finalPos);
-				}
-			}
+			_cmdKey = _pCommandReception->StepperRun(index, initialPos, finalPos);
 		}
 		break;
 
 		case Type::StepperConfigHome:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
 				unsigned int index = d1;
 				unsigned int locatorIndex = d2;
 				unsigned int lineNumberStart = d3;
 				unsigned int lineNumberTerminal = d4;
 
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else if((lineNumberStart < LOCATOR_LINE_NUMBER_MIN) || (lineNumberStart > LOCATOR_LINE_NUMBER_MAX)) {
-					pLogger->LogError("CommandRunner::processInput lineNumberStart is out of range: " + std::to_string(lineNumberStart));
-				}
-				else if((lineNumberTerminal < LOCATOR_LINE_NUMBER_MIN) || (lineNumberTerminal > LOCATOR_LINE_NUMBER_MAX)) {
-					pLogger->LogError("CommandRunner::processInput lineNumberStart is out of range: " + std::to_string(lineNumberTerminal));
-				}
-				else if(lineNumberTerminal == lineNumberStart) {
-					pLogger->LogError("CommandRunner::processInput lineNumberStart is same as lineNumberTerminal");
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->StepperConfigHome(index, locatorIndex, lineNumberStart, lineNumberTerminal);
-				}
-			}
+				_cmdKey = _pCommandReception->StepperConfigHome(index, locatorIndex, lineNumberStart, lineNumberTerminal);
 		}
 		break;
 
 		case Type::StepperQuery:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
+			unsigned int index = d1;
 
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->StepperQuery(index);
-				}
-			}
+			_cmdKey = _pCommandReception->StepperQuery(index);
 		}
 		break;
 
 		case Type::LocatorQuery:
 		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= LOCATOR_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					_cmdKey = _pCommandReception->LocatorQuery(index);
-				}
-			}
+			unsigned int index = d1;
+			_cmdKey = _pCommandReception->LocatorQuery(index);
 		}
 		break;
 
@@ -609,11 +383,39 @@ void ConsoleOperator::processInput()
 
 		default:
 		{
-			pLogger->LogError("CommandRunner::processInput unknown command: " + command);
+			bKnownCmd = false;
+			pLogger->LogError("ConsoleOperator::processInput unknown command: " + command);
 			showHelp();
 		}
 		break;
 	}
+
+	if((bKnownCmd) && (_cmdKey == InvalidCommandKey)) {
+		pLogger->LogInfo("ConsoleOperator::processInput no reply will be returned");
+	}
+}
+
+void ConsoleOperator::OnDevicesGet(CommandKey key, bool bSuccess, const std::vector<std::string>& devices)
+{
+	if(_cmdKey == InvalidCommandKey) {
+		return;
+	}
+	if(_cmdKey != key) {
+		pLogger->LogDebug("ConsoleOperator::OnDevicesGet unexpected cmdKey: " + std::to_string(key) + ", expected: " + std::to_string(_cmdKey));
+		return;
+	}
+	if(bSuccess != true) {
+		pLogger->LogError("ConsoleOperator::OnDevicesGet failed");
+		return;
+	}
+
+	pLogger->LogInfo("ConsoleOperator::OnDevicesGet devices amount: " + std::to_string(devices.size()));
+	for(unsigned int i = 0; i < devices.size(); i++) {
+		pLogger->LogInfo("ConsoleOperator::OnDevicesGet " + std::to_string(i) + ": " + devices[i]);
+	}
+
+	_devices = devices;
+	_cmdKey = InvalidCommandKey;
 }
 
 void ConsoleOperator::runTask()

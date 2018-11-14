@@ -155,6 +155,7 @@ protected:
 		{
 			DeviceAccessor * pDeviceAccessor;
 			CommandRunner * pCommandRunner;
+			ConsoleOperator * pConsoleOperator;
 
 			//device accessor
 			std::string proxyIp = config().getString("proxy_ip_address", "127.0.0.1");
@@ -164,17 +165,24 @@ protected:
 			pDeviceAccessor = new DeviceAccessor;
 			pDeviceAccessor->Init(socketAddress);
 
-			//console operator
+			//CommandRunner
 			pCommandRunner = new CommandRunner;
 
-			//couple console operator and device accessor
+			//ConsoleOperator
+			pConsoleOperator = new ConsoleOperator(pCommandRunner);
+
+			//couple tasks:
+			// command flow: ConsoleOperator >> CommandRunner >> DeviceAccessor
+			// reply flow:   DeviceAccessor >> CommandRunner >> ConsoleOperator
 			pCommandRunner->SetDevice(pDeviceAccessor);
 			pDeviceAccessor->AddObserver(pCommandRunner);
+			pCommandRunner->AddResponseReceiver(pConsoleOperator);
 
 
 			//tm takes the ownership of tasks
 			tm.start(pCommandRunner);
 			tm.start(pDeviceAccessor);
+			tm.start(pConsoleOperator);
 		}
 		catch(Poco::Exception& e)
 		{

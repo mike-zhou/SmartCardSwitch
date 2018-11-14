@@ -33,6 +33,7 @@ public:
 	CommandRunner();
 
 	void SetDevice(DeviceAccessor * pDeviceAccessor);
+	virtual void AddResponseReceiver(IResponseReceiver * p) override;
 
 private:
 	//IDeviceObserver
@@ -42,7 +43,6 @@ private:
 	void runTask();
 
 	//ICommandReception
-	virtual void AddResponseReceiver(IResponseReceiver * p) override;
 	virtual CommandKey DevicesGet() override;
 	virtual CommandKey DeviceConnect(unsigned int index) override;
 	virtual CommandKey DeviceQueryPower() override;

@@ -39,7 +39,7 @@ private:
 	//retrieve a command from deque and delete bytes of a complete command package
 	static DataState retrieveMsg(std::deque<unsigned char>& data, std::string& msg)
 	{
-		unsigned short contentLength;
+		long contentLength;
 		unsigned short version;
 
 		if(data.size() < minimumCommandPacketLength) {

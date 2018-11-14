@@ -8,7 +8,9 @@
 #ifndef CONSOLEOPERATOR_H_
 #define CONSOLEOPERATOR_H_
 
+#include <string>
 #include <deque>
+#include <vector>
 
 #include "Poco/Task.h"
 #include "Poco/Mutex.h"
@@ -26,7 +28,19 @@ public:
 	virtual ~ConsoleOperator() {}
 
 private:
+	//Poco::Task
 	virtual void runTask() override;
+
+	//IResponseReceiver
+	virtual void OnDevicesGet(CommandKey key, bool bSuccess, const std::vector<std::string>& devices) override;
+
+private:
+	const unsigned int BDC_AMOUNT = 6;
+	const unsigned int STEPPER_AMOUNT = 5;
+	const unsigned int LOCATOR_AMOUNT = 8;
+	const unsigned int LOCATOR_LINE_NUMBER_INVALID = 0;
+	const unsigned int LOCATOR_LINE_NUMBER_MIN = 1;
+	const unsigned int LOCATOR_LINE_NUMBER_MAX = 8;
 
 	enum Type
 	{
@@ -76,6 +90,7 @@ private:
 	ICommandReception * _pCommandReception;
 	ICommandReception::CommandKey _cmdKey;
 	std::deque<char> _input;
+	std::vector<std::string> _devices;
 
 	void processInput();
 	void showHelp();

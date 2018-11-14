@@ -20,7 +20,7 @@ public:
 	virtual ~IResponseReceiver() {}
 
 	typedef unsigned long CommandKey;
-
+	const CommandKey InvalidCommandKey = 0;
 
 	virtual void OnDevicesGet(CommandKey key, bool bSuccess, const std::vector<std::string>& devices) {}
 	virtual void OnDeviceConnect(CommandKey key, bool bSuccess)  {}
@@ -103,8 +103,7 @@ public:
 	virtual ~ICommandReception() {}
 
 	typedef unsigned long CommandKey;
-
-	virtual void AddResponseReceiver(IResponseReceiver * p) = 0;
+	const CommandKey InvalidCommandKey = 0;
 
 	virtual CommandKey DevicesGet() = 0;
 	virtual CommandKey DeviceConnect(unsigned int index) = 0;
@@ -144,6 +143,8 @@ public:
 	virtual CommandKey BdcDelay(unsigned int index, unsigned int value) = 0;
 	virtual CommandKey SaveMovementConfig() = 0;
 	virtual CommandKey SaveCoordinates(unsigned int type, unsigned int index) = 0;
+
+	virtual void AddResponseReceiver(IResponseReceiver * p) = 0;
 };
 
 

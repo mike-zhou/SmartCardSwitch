@@ -1712,7 +1712,7 @@ void CommandRunner::AddResponseReceiver(IResponseReceiver * p)
 
 unsigned long CommandRunner::sendCmdToDevice(std::shared_ptr<DeviceCommand>& cmdPtr)
 {
-	unsigned long cmdKey = 0;
+	unsigned long cmdKey = InvalidCommandKey;
 
 	if(cmdPtr != nullptr)
 	{
@@ -1746,7 +1746,7 @@ ICommandReception::CommandKey CommandRunner::DevicesGet()
 		_userCommand.resultDevices.clear();
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1781,7 +1781,7 @@ ICommandReception::CommandKey CommandRunner::DeviceConnect(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1801,7 +1801,7 @@ ICommandReception::CommandKey CommandRunner::DeviceQueryPower()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1821,7 +1821,7 @@ ICommandReception::CommandKey CommandRunner::DeviceQueryFuse()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1832,7 +1832,7 @@ ICommandReception::CommandKey CommandRunner::OptPowerOn()
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1843,7 +1843,7 @@ ICommandReception::CommandKey CommandRunner::OptPowerOff()
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1854,7 +1854,7 @@ ICommandReception::CommandKey CommandRunner::OptQueryPower()
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1865,7 +1865,7 @@ ICommandReception::CommandKey CommandRunner::DcmPowerOn()
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1876,7 +1876,7 @@ ICommandReception::CommandKey CommandRunner::DcmPowerOff()
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1887,7 +1887,7 @@ ICommandReception::CommandKey CommandRunner::DcmQueryPower()
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1907,7 +1907,7 @@ ICommandReception::CommandKey CommandRunner::BdcsPowerOn()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1927,7 +1927,7 @@ ICommandReception::CommandKey CommandRunner::BdcsPowerOff()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1947,7 +1947,7 @@ ICommandReception::CommandKey CommandRunner::BdcsQueryPower()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -1977,7 +1977,7 @@ ICommandReception::CommandKey CommandRunner::BdcCoast(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2007,7 +2007,7 @@ ICommandReception::CommandKey CommandRunner::BdcReverse(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2037,7 +2037,7 @@ ICommandReception::CommandKey CommandRunner::BdcForward(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2067,7 +2067,7 @@ ICommandReception::CommandKey CommandRunner::BdcBreak(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2096,7 +2096,7 @@ ICommandReception::CommandKey CommandRunner::BdcQuery(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2116,7 +2116,7 @@ ICommandReception::CommandKey CommandRunner::SteppersPowerOn()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2136,7 +2136,7 @@ ICommandReception::CommandKey CommandRunner::SteppersPowerOff()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2156,7 +2156,7 @@ ICommandReception::CommandKey CommandRunner::SteppersQueryPower()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2176,7 +2176,7 @@ ICommandReception::CommandKey CommandRunner::StepperQueryResolution()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2207,7 +2207,7 @@ ICommandReception::CommandKey CommandRunner::StepperConfigStep(unsigned int inde
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2237,7 +2237,7 @@ ICommandReception::CommandKey CommandRunner::StepperAccelerationBuffer(unsigned 
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2267,7 +2267,7 @@ ICommandReception::CommandKey CommandRunner::StepperAccelerationBufferDecrement(
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2297,7 +2297,7 @@ ICommandReception::CommandKey CommandRunner::StepperDecelerationBuffer(unsigned 
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2327,7 +2327,7 @@ ICommandReception::CommandKey CommandRunner::StepperDecelerationBufferIncrement(
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2356,7 +2356,7 @@ ICommandReception::CommandKey CommandRunner::StepperEnable(unsigned int index, b
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2385,7 +2385,7 @@ ICommandReception::CommandKey CommandRunner::StepperForward(unsigned int index, 
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2415,7 +2415,7 @@ ICommandReception::CommandKey CommandRunner::StepperSteps(unsigned int index, un
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2446,7 +2446,7 @@ ICommandReception::CommandKey CommandRunner::StepperRun(unsigned int index, unsi
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2487,7 +2487,7 @@ ICommandReception::CommandKey CommandRunner::StepperConfigHome(unsigned int inde
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2498,7 +2498,7 @@ ICommandReception::CommandKey CommandRunner::StepperMove(unsigned int index, uns
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2527,7 +2527,7 @@ ICommandReception::CommandKey CommandRunner::StepperQuery(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
@@ -2556,7 +2556,7 @@ ICommandReception::CommandKey CommandRunner::LocatorQuery(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey = 0;
+	ICommandReception::CommandKey cmdKey ;
 	cmdKey = sendCmdToDevice(cmdPtr);
 	return cmdKey;
 }
