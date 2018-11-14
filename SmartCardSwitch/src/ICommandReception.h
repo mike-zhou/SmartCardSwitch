@@ -22,44 +22,79 @@ public:
 	typedef unsigned long CommandKey;
 
 
-	virtual void OnDevicesGet(CommandKey key, bool bSuccess, const std::vector<std::string> devices) = 0;
-	virtual void OnDeviceConnect(CommandKey key, bool bSuccess) = 0;
-	virtual void OnDeviceQueryPower(CommandKey key, bool bSuccess) = 0;
-	virtual void OnDeviceQueryFuse(CommandKey key, bool bSuccess) = 0;
-	virtual void OnOptPowerOn(CommandKey key, bool bSuccess) = 0;
-	virtual void OnOptPowerOff(CommandKey key, bool bSuccess) = 0;
-	virtual void OnOptQueryPower(CommandKey key, bool bSuccess) = 0;
-	virtual void OnDcmPowerOn(CommandKey key, bool bSuccess) = 0;
-	virtual void OnDcmPowerOff(CommandKey key, bool bSuccess) = 0;
-	virtual void OnDcmQueryPower(CommandKey key, bool bSuccess) = 0;
-	virtual void OnBdcsPowerOn(CommandKey key, bool bSuccess) = 0;
-	virtual void OnBdcsPowerOff(CommandKey key, bool bSuccess) = 0;
-	virtual void OnBdcsQueryPower(CommandKey key, bool bSuccess) = 0;
-	virtual void OnBdcCoast(CommandKey key, bool bSuccess) = 0;
-	virtual void OnBdcReverse(CommandKey key, bool bSuccess) = 0;
-	virtual void OnBdcForward(CommandKey key, bool bSuccess) = 0;
-	virtual void OnBdcBreak(CommandKey key, bool bSuccess) = 0;
-	virtual void OnBdcQuery(CommandKey key, bool bSuccess) = 0;
-	virtual void OnSteppersPowerOn(CommandKey key, bool bSuccess) = 0;
-	virtual void OnSteppersPowerOff(CommandKey key, bool bSuccess) = 0;
-	virtual void OnSteppersQueryPower(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperQueryResolution(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperConfigStep(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperAccelerationBuffer(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperAccelerationBufferDecrement(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperDecelerationBuffer(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperDecelerationBufferIncrement(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperEnable(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperForward(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperSteps(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperRun(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperConfigHome(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperMove(CommandKey key, bool bSuccess) = 0;
-	virtual void OnStepperQuery(CommandKey key, bool bSuccess) = 0;
-	virtual void OnLocatorQuery(CommandKey key, bool bSuccess) = 0;
-	virtual void OnBdcDelay(CommandKey key, bool bSuccess) = 0;
-	virtual void OnSaveMovementConfig(CommandKey key, bool bSuccess) = 0;
-	virtual void OnSaveCoordinates(CommandKey key, bool bSuccess) = 0;
+	virtual void OnDevicesGet(CommandKey key, bool bSuccess, const std::vector<std::string>& devices) {}
+	virtual void OnDeviceConnect(CommandKey key, bool bSuccess)  {}
+	virtual void OnDeviceQueryPower(CommandKey key, bool bSuccess, bool bPowered)  {}
+	virtual void OnDeviceQueryFuse(CommandKey key, bool bSuccess, bool bFuseOn)  {}
+	virtual void OnOptPowerOn(CommandKey key, bool bSuccess)  {}
+	virtual void OnOptPowerOff(CommandKey key, bool bSuccess)  {}
+	virtual void OnOptQueryPower(CommandKey key, bool bSuccess)  {}
+	virtual void OnDcmPowerOn(CommandKey key, bool bSuccess)  {}
+	virtual void OnDcmPowerOff(CommandKey key, bool bSuccess)  {}
+	virtual void OnDcmQueryPower(CommandKey key, bool bSuccess)  {}
+	virtual void OnBdcsPowerOn(CommandKey key, bool bSuccess) {}
+	virtual void OnBdcsPowerOff(CommandKey key, bool bSuccess) {}
+	virtual void OnBdcsQueryPower(CommandKey key, bool bSuccess, bool bPowered) {}
+	virtual void OnBdcCoast(CommandKey key, bool bSuccess) {}
+	virtual void OnBdcReverse(CommandKey key, bool bSuccess) {}
+	virtual void OnBdcForward(CommandKey key, bool bSuccess) {}
+	virtual void OnBdcBreak(CommandKey key, bool bSuccess) {}
+
+	enum class BdcStatus
+	{
+		UNKNOWN,
+		COAST,
+		REVERSE,
+		FORWARD,
+		BREAK
+	};
+	virtual void OnBdcQuery(CommandKey key, bool bSuccess, BdcStatus status) {}
+	virtual void OnSteppersPowerOn(CommandKey key, bool bSuccess) {}
+	virtual void OnSteppersPowerOff(CommandKey key, bool bSuccess) {}
+	virtual void OnSteppersQueryPower(CommandKey key, bool bSuccess, bool bPowered) {}
+	virtual void OnStepperQueryResolution(CommandKey key, bool bSuccess, unsigned long resolutionUs) {}
+	virtual void OnStepperConfigStep(CommandKey key, bool bSuccess) {}
+	virtual void OnStepperAccelerationBuffer(CommandKey key, bool bSuccess) {}
+	virtual void OnStepperAccelerationBufferDecrement(CommandKey key, bool bSuccess) {}
+	virtual void OnStepperDecelerationBuffer(CommandKey key, bool bSuccess) {}
+	virtual void OnStepperDecelerationBufferIncrement(CommandKey key, bool bSuccess) {}
+	virtual void OnStepperEnable(CommandKey key, bool bSuccess) {}
+	virtual void OnStepperForward(CommandKey key, bool bSuccess) {}
+	virtual void OnStepperSteps(CommandKey key, bool bSuccess) {}
+	virtual void OnStepperRun(CommandKey key, bool bSuccess) {}
+	virtual void OnStepperConfigHome(CommandKey key, bool bSuccess) {}
+	virtual void OnStepperMove(CommandKey key, bool bSuccess) {}
+
+	enum class StepperState
+	{
+		Unknown = 0,
+		ApproachingHomeLocator,
+		LeavingHomeLocator,
+		GoingHome,
+		KnowPosition,
+		Accelerating,
+		Cruising,
+		Decelerating
+	};
+	virtual void OnStepperQuery(CommandKey key, bool bSuccess,
+								StepperState state,
+								bool bEnabled,
+								bool bForward,
+								unsigned int locatorIndex,
+								unsigned int locatorLineNumberStart,
+								unsigned int locatorLineNumberTerminal,
+								unsigned long homeOffset,
+								unsigned long lowClks,
+								unsigned long highClks,
+								unsigned long accelerationBuffer,
+								unsigned long accelerationBufferDecrement,
+								unsigned long decelerationBuffer,
+								unsigned long decelerationBufferIncrement) {}
+
+	virtual void OnLocatorQuery(CommandKey key, bool bSuccess, unsigned int lowInput) {}
+	virtual void OnBdcDelay(CommandKey key, bool bSuccess) {}
+	virtual void OnSaveMovementConfig(CommandKey key, bool bSuccess) {}
+	virtual void OnSaveCoordinates(CommandKey key, bool bSuccess) {}
 };
 
 class ICommandReception
@@ -69,10 +104,10 @@ public:
 
 	typedef unsigned long CommandKey;
 
-	virtual void RigisterResponseReceiver(IResponseReceiver * p) = 0;
+	virtual void AddResponseReceiver(IResponseReceiver * p) = 0;
 
 	virtual CommandKey DevicesGet() = 0;
-	virtual CommandKey DeviceConnect(const std::string& deviceName) = 0;
+	virtual CommandKey DeviceConnect(unsigned int index) = 0;
 	virtual CommandKey DeviceQueryPower() = 0;
 	virtual CommandKey DeviceQueryFuse() = 0;
 	virtual CommandKey OptPowerOn() = 0;
@@ -107,8 +142,8 @@ public:
 	virtual CommandKey StepperQuery(unsigned int index) = 0;
 	virtual CommandKey LocatorQuery(unsigned int index) = 0;
 	virtual CommandKey BdcDelay(unsigned int index, unsigned int value) = 0;
-	virtual CommandKey SaveMovementConfig(MovementConfiguration * p) = 0;
-	virtual CommandKey SaveCoordinates(CoordinateStorage * p) = 0;
+	virtual CommandKey SaveMovementConfig() = 0;
+	virtual CommandKey SaveCoordinates(unsigned int type, unsigned int index) = 0;
 };
 
 

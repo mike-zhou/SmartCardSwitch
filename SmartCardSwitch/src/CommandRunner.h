@@ -20,26 +20,67 @@
 #include "Command.h"
 #include "CommandFactory.h"
 #include "ReplyTranslator.h"
+#include "ICommandReception.h"
 
 /***************************************
  * This class receives user input from a console,
  * creates JSON command accordingly, sends it to DeviceAccessor object,
  * and handles replies.
  ***************************************/
-class CommandRunner: public Poco::Task, public IDeviceObserver
+class CommandRunner: public Poco::Task, public ICommandReception, public IDeviceObserver
 {
 public:
 	CommandRunner();
 
 	void SetDevice(DeviceAccessor * pDeviceAccessor);
 
-	void OnKeypressing(char key);
-
 private:
 	//IDeviceObserver
 	virtual void OnFeedback(const std::string& feedback) override;
+
 	//Poco::Task
 	void runTask();
+
+	//ICommandReception
+	virtual void AddResponseReceiver(IResponseReceiver * p) override;
+	virtual CommandKey DevicesGet() override;
+	virtual CommandKey DeviceConnect(unsigned int index) override;
+	virtual CommandKey DeviceQueryPower() override;
+	virtual CommandKey DeviceQueryFuse() override;
+	virtual CommandKey OptPowerOn() override;
+	virtual CommandKey OptPowerOff() override;
+	virtual CommandKey OptQueryPower() override;
+	virtual CommandKey DcmPowerOn() override;
+	virtual CommandKey DcmPowerOff() override;
+	virtual CommandKey DcmQueryPower() override;
+	virtual CommandKey BdcsPowerOn() override;
+	virtual CommandKey BdcsPowerOff() override;
+	virtual CommandKey BdcsQueryPower() override;
+	virtual CommandKey BdcCoast(unsigned int index) override;
+	virtual CommandKey BdcReverse(unsigned int index) override;
+	virtual CommandKey BdcForward(unsigned int index) override;
+	virtual CommandKey BdcBreak(unsigned int index) override;
+	virtual CommandKey BdcQuery(unsigned int index) override;
+	virtual CommandKey SteppersPowerOn() override;
+	virtual CommandKey SteppersPowerOff() override;
+	virtual CommandKey SteppersQueryPower() override;
+	virtual CommandKey StepperQueryResolution() override;
+	virtual CommandKey StepperConfigStep(unsigned int index, unsigned short lowClks, unsigned short highClks) override;
+	virtual CommandKey StepperAccelerationBuffer(unsigned int index, unsigned short value) override;
+	virtual CommandKey StepperAccelerationBufferDecrement(unsigned int index, unsigned short value) override;
+	virtual CommandKey StepperDecelerationBuffer(unsigned int index, unsigned short value) override;
+	virtual CommandKey StepperDecelerationBufferIncrement(unsigned int index, unsigned short value) override;
+	virtual CommandKey StepperEnable(unsigned int index, bool bEnable) override;
+	virtual CommandKey StepperForward(unsigned int index, bool forward) override;
+	virtual CommandKey StepperSteps(unsigned int index, unsigned short value) override;
+	virtual CommandKey StepperRun(unsigned int index, unsigned short intialPos, unsigned short finalPos) override;
+	virtual CommandKey StepperConfigHome(unsigned int index, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal) override;
+	virtual CommandKey StepperMove(unsigned int index, unsigned short steps) override;
+	virtual CommandKey StepperQuery(unsigned int index) override;
+	virtual CommandKey LocatorQuery(unsigned int index) override;
+	virtual CommandKey BdcDelay(unsigned int index, unsigned int value) override;
+	virtual CommandKey SaveMovementConfig() override;
+	virtual CommandKey SaveCoordinates(unsigned int type, unsigned int index) override;
 
 private:
 	static const unsigned int BDC_AMOUNT = 6;
@@ -49,19 +90,24 @@ private:
 	static const unsigned int LOCATOR_LINE_NUMBER_MIN = 1;
 	static const unsigned int LOCATOR_LINE_NUMBER_MAX = 8;
 
-	Poco::Mutex _mutex;
+	const std::string StepperStateApproachingHomeLocator = "approaching home locator";
+	const std::string StepperStateLeavingHomeLocator = "Leaving Home";
+	const std::string StepperStateGoingHome = "Going home";
+	const std::string StepperStateKnownPosition = "Known position";
+	const std::string StepperStateAccelerating = "Accelerating";
+	const std::string StepperStateCruising = "Cruising";
+	const std::string StepperStateDecelerating = "Decelerating";
 
+
+	Poco::Mutex _mutex;
 	Poco::Event _event;
-	std::deque<char> _input;
 	std::deque<std::string> _feedbacks;
 	DeviceAccessor * _pDeviceAccessor;
+	std::vector<IResponseReceiver *> _cmdResponseReceiverArray;
 
-	void showHelp();
-
-	void processInput();
+	unsigned long sendCmdToDevice(std::shared_ptr<DeviceCommand>& cmdPtr);
 	void setBdcDelay(unsigned long delay);
 	void saveMovementConfig();
-	void loadMovementConfigStepper(unsigned int index);
 	void saveCoordinates(unsigned int type, unsigned int index);
 	void loadCoordinates();
 
@@ -100,51 +146,6 @@ private:
 
 	struct UserCommand
 	{
-		enum Type
-		{
-			Invalid = -1,
-			DevicesGet = 0,
-			DeviceConnect = 1,
-			DeviceQueryPower = 2,
-			DeviceQueryFuse = 3,
-			OptPowerOn = 20,
-			OptPowerOff = 21,
-			OptQueryPower = 22,
-			DcmPowerOn = 30,
-			DcmPowerOff = 31,
-			DcmQueryPower =32,
-			BdcsPowerOn = 40,
-			BdcsPowerOff = 41,
-			BdcsQueryPower = 42,
-			BdcCoast = 43,
-			BdcReverse = 44,
-			BdcForward = 45,
-			BdcBreak = 46,
-			BdcQuery = 47,
-			SteppersPowerOn = 60,
-			SteppersPowerOff = 61,
-			SteppersQueryPower = 62,
-			StepperQueryResolution = 63,
-			StepperConfigStep = 64,
-			StepperAccelerationBuffer = 65,
-			StepperAccelerationBufferDecrement = 66,
-			StepperDecelerationBuffer = 67,
-			StepperDecelerationBufferIncrement = 68,
-			StepperEnable = 69,
-			StepperForward = 70,
-			StepperSteps = 71,
-			StepperRun = 72,
-			StepperConfigHome = 73,
-			StepperMove = 74,
-			StepperQuery = 75,
-			LocatorQuery = 90,
-			BdcDelay = 200,
-			SaveMovementConfig = 300,
-			LoadMovementConfigStepper = 301,
-			SaveCoordinates = 350,
-			LoadCoordinates = 351
-		};
-
 		enum class CommandState
 		{
 			IDLE = 0,
@@ -166,15 +167,6 @@ private:
 			UNKNOWN,
 			FUSE_ON,
 			FUSE_OFF
-		};
-
-		enum class BdcStatus
-		{
-			UNKNOWN,
-			COAST,
-			REVERSE,
-			FORWARD,
-			BREAK
 		};
 
 		enum class StepperEnableStatus
@@ -207,7 +199,6 @@ private:
 		};
 
 		//command type
-		Type type;
 		CommandState state;
 		std::string jsonCommandString;
 		std::string commandKey;
@@ -248,7 +239,7 @@ private:
 		//BDC forward
 		//BDC break
 		//BDC query
-		BdcStatus resultBdcStatus[BDC_AMOUNT];
+		IResponseReceiver::BdcStatus resultBdcStatus[BDC_AMOUNT];
 		//steppers
 		PowerStatus resultSteppersPowerStatus;
 		long resultStepperClkResolution;
@@ -260,23 +251,6 @@ private:
 
 	} _userCommand;
 
-	class Keyboard: public Poco::Runnable
-	{
-	public:
-		Keyboard(CommandRunner * pReceiver);
-		virtual ~Keyboard() {}
-
-		void Terminate();
-
-	private:
-		virtual void run() override;
-
-		bool _terminate;
-		CommandRunner * _pReceiver;
-	};
-
-	Keyboard * _pKeyboardObj;
-	Poco::Thread _keyboardThread;
 };
 
 #endif /* COMMANDRUNNER_H_ */

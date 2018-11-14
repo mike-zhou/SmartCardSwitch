@@ -28,7 +28,7 @@ CommandRunner::CommandRunner(): Task("CommandRunner")
 	//BDCs status
 	_userCommand.resultBdcsPowerStatus = UserCommand::PowerStatus::UNKNOWN;
 	for(unsigned int i = 0; i < BDC_AMOUNT; i++) {
-		_userCommand.resultBdcStatus[i] = UserCommand::BdcStatus::UNKNOWN;
+		_userCommand.resultBdcStatus[i] = IResponseReceiver::BdcStatus::UNKNOWN;
 	}
 	//steppers
 	_userCommand.resultSteppersPowerStatus = UserCommand::PowerStatus::UNKNOWN;
@@ -57,9 +57,6 @@ CommandRunner::CommandRunner(): Task("CommandRunner")
 	}
 
 	_pDeviceAccessor = nullptr;
-
-	_pKeyboardObj = new Keyboard(this);
-	_keyboardThread.start(*_pKeyboardObj);
 }
 
 void CommandRunner::SetDevice(DeviceAccessor * pDeviceAccessor)
@@ -82,17 +79,6 @@ void CommandRunner::runTask()
 	{
 		if(isCancelled())
 		{
-			//terminate the keyboard thread.
-			_pKeyboardObj->Terminate();
-			try
-			{
-				_keyboardThread.tryJoin(1000);
-			}
-			catch(...)
-			{
-				pLogger->LogError("CommandRunner::runTask KeyboardThread isn't terminated");
-			}
-
 			break;
 		}
 		else
@@ -103,7 +89,6 @@ void CommandRunner::runTask()
 			else
 			{
 				Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-				processInput();
 				processFeedbacks();
 			}
 		}
@@ -112,48 +97,7 @@ void CommandRunner::runTask()
 	pLogger->LogInfo("CommandRunner::runTask exited");
 }
 
-void CommandRunner::showHelp()
-{
-	std::cout << "Command format:\r\n";
-	std::cout << "DevicesGet:------------------------ "<< "0" << "\r\n";
-	std::cout << "DeviceConnect:--------------------- "<< "1 deviceNumber" << "\r\n";
-	std::cout << "DeviceQueryPower:------------------ "<< "2" << "\r\n";
-	std::cout << "DeviceQueryFuse:------------------- "<< "3" << "\r\n";
-	std::cout << "OptPowerOn:------------------------ "<< "20" << "\r\n";
-	std::cout << "OptPowerOff:----------------------- "<< "21" << "\r\n";
-	std::cout << "OptQueryPower:--------------------- "<< "22" << "\r\n";
-	std::cout << "DcmPowerOn:------------------------ "<< "30" << "\r\n";
-	std::cout << "DcmPowerOff:----------------------- "<< "31" << "\r\n";
-	std::cout << "DcmQueryPower:--------------------- "<< "32" << "\r\n";
-	std::cout << "BdcsPowerOn:----------------------- "<< "40" << "\r\n";
-	std::cout << "BdcsPowerOff:---------------------- "<< "41" << "\r\n";
-	std::cout << "BdcsQueryPower:-------------------- "<< "42" << "\r\n";
-	std::cout << "BdcCoast:-------------------------- "<< "43 bdcIndex" << "\r\n";
-	std::cout << "BdcReverse:------------------------ "<< "44 bdcIndex" << "\r\n";
-	std::cout << "BdcForward:------------------------ "<< "45 bdcIndex" << "\r\n";
-	std::cout << "BdcBreak:-------------------------- "<< "46 bdcIndex" << "\r\n";
-	std::cout << "BdcQuery:-------------------------- "<< "47 bdcIndex" << "\r\n";
-	std::cout << "SteppersPowerOn:------------------- "<< "60" << "\r\n";
-	std::cout << "SteppersPowerOff:------------------ "<< "61" << "\r\n";
-	std::cout << "SteppersQueryPower:---------------- "<< "62" << "\r\n";
-	std::cout << "StepperQueryResolution: ----------- "<< "63" << "\r\n";
-	std::cout << "StepperConfigStep:----------------- "<< "64 stepperIndex lowClks highClks" << "\r\n";
-	std::cout << "StepperAccelerationBuffer:--------- "<< "65 stepperIndex value" << "\r\n";
-	std::cout << "StepperAccelerationBufferDecrement: "<< "66 stepperIndex value" << "\r\n";
-	std::cout << "StepperDecelerationBuffer:          "<< "67 stepperIndex value" << "\r\n";
-	std::cout << "StepperDecelerationBufferIncrement: "<< "68 stepperIndex value" << "\r\n";
-	std::cout << "StepperEnable: -------------------- "<< "69 stepperIndex 1/0" << "\r\n";
-	std::cout << "StepperForward: ------------------- "<< "70 stepperIndex 1/0" << "\r\n";
-	std::cout << "StepperSteps: --------------------- "<< "71 stepperIndex stepAmount" << "\r\n";
-	std::cout << "StepperRun: ----------------------- "<< "72 stepperIndex intialPos finalPos" << "\r\n";
-	std::cout << "StepperConfigHome:----------------- "<< "73 stepperIndex locatorIndex lineNumberStart lineNumberTerminal" << "\r\n";
-	std::cout << "StepperMove:----------------------- "<< "74 stepperIndex forward stepAmount" << "\r\n";
-	std::cout << "StepperQuery: --------------------- "<< "75 stepperIndex" << "\r\n";
-	std::cout << "LocatorQuery:---------------------- "<< "90 locatorIndex" << "\r\n";
-	std::cout << "BdcDelay:-------------------------- "<< "200 ms" << "\r\n";
-	std::cout << "SaveMovementConfig:---------------- "<< "300" << "\r\n";
-	std::cout << "SaveCoordinates:------------------- "<< "350" << "\r\n";
-}
+
 
 void CommandRunner::setBdcDelay(unsigned long delay)
 {
@@ -188,11 +132,6 @@ void CommandRunner::saveMovementConfig()
 	}
 }
 
-void CommandRunner::loadMovementConfigStepper(unsigned int index)
-{
-
-}
-
 void CommandRunner::saveCoordinates(unsigned int type, unsigned int index)
 {
 
@@ -201,773 +140,6 @@ void CommandRunner::saveCoordinates(unsigned int type, unsigned int index)
 void CommandRunner::loadCoordinates()
 {
 
-}
-
-void CommandRunner::processInput()
-{
-	if(_input.size() < 1) {
-		return;
-	}
-
-	bool bCommandAvailable = false;
-	std::string command;
-
-	//find '\n' in the input
-	for(auto it=_input.begin(); it!=_input.end(); it++)
-	{
-		if(*it == '\n') {
-			bCommandAvailable = true;
-			break;
-		}
-	}
-	if(!bCommandAvailable) {
-		return;
-	}
-	//retrieve command from beginning of _input
-	for(;;)
-	{
-		auto c = _input.front();
-		_input.pop_front();
-		if(c == '\n') {
-			break;
-		}
-		command.push_back(c);
-	}
-
-	//validate command characters
-	bool bCmdValid = true;
-	for(auto it=command.begin(); it!=command.end(); it++)
-	{
-		if((*it != ' ') && ((*it < '0') || (*it > '9'))) {
-			bCmdValid = false;
-			break;
-		}
-	}
-	if(bCmdValid == false) {
-		pLogger->LogError("CommandRunner::processInput invalid command: " + command);
-		showHelp();
-		return;
-	}
-
-	//parse command
-	int d0, d1, d2, d3, d4, d5, d6, d7, d8, d9;
-	d0 = -1;
-	d1 = -1;
-	d2 = -1;
-	d3 = -1;
-	d4 = -1;
-	d5 = -1;
-	d6 = -1;
-	d7 = -1;
-	d8 = -1;
-	d9 = -1;
-	try
-	{
-		std::cout<<"Command: "<<command<<"\r\n";
-		sscanf(command.data(), "%d %d %d %d %d %d %d %d %d %d\n", &d0, &d1, &d2, &d3, &d4, &d5, &d6, &d7, &d8, &d9);
-	}
-	catch(...)
-	{
-		std::string e = "CommandRunner::processInput exception in parsing input";
-		pLogger->LogError(e);
-		std::cout << e << "\r\n";
-		showHelp();
-	}
-	std::cout << d0 << " ";
-	std::cout << d1 << " ";
-	std::cout << d2 << " ";
-	std::cout << d3 << " ";
-	std::cout << d4 << " ";
-	std::cout << d5 << " ";
-	std::cout << d6 << " ";
-	std::cout << d7 << " ";
-	std::cout << d8 << " ";
-	std::cout << d9 << "\r\n";
-
-	//create command
-	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
-	switch(d0)
-	{
-		case UserCommand::Type::DevicesGet:
-		{
-			cmdPtr = CommandFactory::DevicesGet();
-			if(cmdPtr == nullptr) {
-				pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::DevicesGet");
-			}
-			else {
-				_userCommand.resultDevices.clear();
-			}
-		}
-		break;
-
-		case UserCommand::Type::DeviceConnect:
-		{
-			auto& devices = _userCommand.resultDevices;
-
-			if(devices.empty()) {
-				pLogger->LogError("CommandRunner::processInput no device to connect");
-			}
-			else
-			{
-				int deviceNumber = d1;
-
-				if(deviceNumber >= devices.size()) {
-					pLogger->LogError("CommandRunner::processInput wrong device number in command: " + std::to_string(deviceNumber));
-				}
-				else
-				{
-					std::string deviceName = devices[deviceNumber];
-					cmdPtr = CommandFactory::DeviceConnect(deviceName);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::DeviceConnect");
-					}
-					else {
-						_userCommand.resultConnectedDeviceName.clear();
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::DeviceQueryPower:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				cmdPtr = CommandFactory::DeviceQueryPower();
-				if(cmdPtr == nullptr) {
-					pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::DeviceQueryPower");
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::DeviceQueryFuse:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				cmdPtr = CommandFactory::DeviceQueryFuse();
-				if(cmdPtr == nullptr) {
-					pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::DeviceQueryFuse");
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::BdcsPowerOn:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				cmdPtr = CommandFactory::BdcsPowerOn();
-				if(cmdPtr == nullptr) {
-					pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::BdcsPowerOn");
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::BdcsPowerOff:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				cmdPtr = CommandFactory::BdcsPowerOff();
-				if(cmdPtr == nullptr) {
-					pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::BdcsPowerOff");
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::BdcsQueryPower:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				cmdPtr = CommandFactory::BdcsQueryPower();
-				if(cmdPtr == nullptr) {
-					pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::BdcsQueryPower");
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::BdcCoast:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= BDC_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid BDC index: " + std::to_string(d1));
-				}
-				else
-				{
-					//set the intial state to BREAK.
-					cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::COAST);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::BdcOperation");
-					}
-					else {
-						_userCommand.bdcIndex = index;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::BdcReverse:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= BDC_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid BDC index: " + std::to_string(d1));
-				}
-				else
-				{
-					//set the intial state to BREAK.
-					cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::REVERSE);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::BdcOperation");
-					}
-					else {
-						_userCommand.bdcIndex = index;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::BdcForward:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= BDC_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid BDC index: " + std::to_string(d1));
-				}
-				else
-				{
-					//set the intial state to BREAK.
-					cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::FORWARD);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::BdcOperation");
-					}
-					else {
-						_userCommand.bdcIndex = index;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::BdcBreak:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= BDC_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid BDC index: " + std::to_string(d1));
-				}
-				else
-				{
-					//set the intial state to BREAK.
-					cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::BREAK);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::BdcOperation");
-					}
-					else {
-						_userCommand.bdcIndex = index;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::BdcQuery:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= BDC_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid BDC index: " + std::to_string(d1));
-				}
-				else
-				{
-					cmdPtr = CommandFactory::BdcQuery(index);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::BdcQuery");
-					}
-					else {
-						_userCommand.bdcIndex = index;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::SteppersPowerOn:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				cmdPtr = CommandFactory::SteppersPowerOn();
-				if(cmdPtr == nullptr) {
-					pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::SteppersPowerOn");
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::SteppersPowerOff:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				cmdPtr = CommandFactory::SteppersPowerOff();
-				if(cmdPtr == nullptr) {
-					pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::SteppersPowerOff");
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::SteppersQueryPower:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				cmdPtr = CommandFactory::SteppersQueryPower();
-				if(cmdPtr == nullptr) {
-					pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::SteppersQueryPower");
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::StepperQueryResolution:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				cmdPtr = CommandFactory::StepperQueryResolution();
-				if(cmdPtr == nullptr) {
-					pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::StepperQueryResolution");
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::StepperConfigStep:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int lowClks = d2;
-				unsigned int highClks = d3;
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					cmdPtr = CommandFactory::StepperConfigStep(index, lowClks, highClks);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::StepperConfigStep");
-					}
-					else {
-						_userCommand.stepperIndex = index;
-						_userCommand.lowClks = lowClks;
-						_userCommand.highClks = highClks;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::StepperAccelerationBuffer:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int value = d2;
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					cmdPtr = CommandFactory::StepperAccelerationBuffer(index, value);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::StepperAccelerationBuffer");
-					}
-					else {
-						_userCommand.stepperIndex = index;
-						_userCommand.accelerationBuffer = value;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::StepperAccelerationBufferDecrement:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int value = d2;
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					cmdPtr = CommandFactory::StepperAccelerationBufferDecrement(index, value);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::StepperAccelerationBufferDecrement");
-					}
-					else {
-						_userCommand.stepperIndex = index;
-						_userCommand.accelerationBufferDecrement = value;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::StepperDecelerationBuffer:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int value = d2;
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					cmdPtr = CommandFactory::StepperDecelerationBuffer(index, value);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::StepperDecelerationBuffer");
-					}
-					else {
-						_userCommand.stepperIndex = index;
-						_userCommand.decelerationBuffer = value;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::StepperDecelerationBufferIncrement:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int value = d2;
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					cmdPtr = CommandFactory::StepperDecelerationBufferIncrement(index, value);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::StepperDecelerationBufferIncrement");
-					}
-					else {
-						_userCommand.stepperIndex = index;
-						_userCommand.decelerationBufferIncrement = value;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::StepperEnable:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				bool enable = (d2 != 0);
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					cmdPtr = CommandFactory::StepperEnable(index, enable);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::StepperEnable");
-					}
-					else {
-						_userCommand.stepperIndex = index;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::StepperForward:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				bool forward = (d2 != 0);
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					cmdPtr = CommandFactory::StepperForward(index, forward);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::StepperForward");
-					}
-					else {
-						_userCommand.stepperIndex = index;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::StepperSteps:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int value = d2;
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					cmdPtr = CommandFactory::StepperSteps(index, value);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::StepperSteps");
-					}
-					else {
-						_userCommand.stepperIndex = index;
-						_userCommand.steps = value;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::StepperRun:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int initialPos = d2;
-				unsigned int finalPos = d3;
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					cmdPtr = CommandFactory::StepperRun(index, initialPos, finalPos);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::StepperRun");
-					}
-					else {
-						_userCommand.stepperIndex = index;
-						_userCommand.initialPosition = initialPos;
-						_userCommand.finalPosition = finalPos;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::StepperConfigHome:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-				unsigned int locatorIndex = d2;
-				unsigned int lineNumberStart = d3;
-				unsigned int lineNumberTerminal = d4;
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else if((lineNumberStart < LOCATOR_LINE_NUMBER_MIN) || (lineNumberStart > LOCATOR_LINE_NUMBER_MAX)) {
-					pLogger->LogError("CommandRunner::processInput lineNumberStart is out of range: " + std::to_string(lineNumberStart));
-				}
-				else if((lineNumberTerminal < LOCATOR_LINE_NUMBER_MIN) || (lineNumberTerminal > LOCATOR_LINE_NUMBER_MAX)) {
-					pLogger->LogError("CommandRunner::processInput lineNumberStart is out of range: " + std::to_string(lineNumberTerminal));
-				}
-				else if(lineNumberTerminal == lineNumberStart) {
-					pLogger->LogError("CommandRunner::processInput lineNumberStart is same as lineNumberTerminal");
-				}
-				else
-				{
-					cmdPtr = CommandFactory::StepperConfigHome(index, locatorIndex, lineNumberStart, lineNumberTerminal);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::StepperConfigHome");
-					}
-					else {
-						_userCommand.stepperIndex = index;
-						_userCommand.locatorIndex = locatorIndex;
-						_userCommand.locatorLineNumberStart = lineNumberStart;
-						_userCommand.locatorLineNumberTerminal = lineNumberTerminal;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::StepperQuery:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= STEPPER_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					cmdPtr = CommandFactory::StepperQuery(index);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::StepperQuery");
-					}
-					else {
-						_userCommand.stepperIndex = index;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::LocatorQuery:
-		{
-			if(_userCommand.resultConnectedDeviceName.empty()) {
-				pLogger->LogError("CommandRunner::processInput hasn't connected to any device");
-			}
-			else {
-				unsigned int index = d1;
-
-				if(index >= LOCATOR_AMOUNT) {
-					pLogger->LogError("CommandRunner::processInput invalid stepper index: " + std::to_string(d1));
-				}
-				else
-				{
-					cmdPtr = CommandFactory::LocatorQuery(index);
-					if(cmdPtr == nullptr) {
-						pLogger->LogError("CommandRunner::processInput empty ptr returned from CommandFactory::LocatorQuery");
-					}
-					else {
-						_userCommand.locatorIndex = index;
-					}
-				}
-			}
-		}
-		break;
-
-		case UserCommand::Type::BdcDelay:
-		{
-			_userCommand.resultBdcDelay = d1;
-		}
-		break;
-
-		case UserCommand::Type::SaveMovementConfig:
-		{
-			saveMovementConfig();
-		}
-		break;
-
-		case UserCommand::Type::LoadMovementConfigStepper:
-		{
-			unsigned int index = d1;
-
-			loadMovementConfigStepper(index);
-		}
-		break;
-
-		case UserCommand::Type::SaveCoordinates:
-		{
-			unsigned int type = d1;
-			unsigned int index = d2;
-
-			saveCoordinates(d1, d2);
-		}
-		break;
-
-		default:
-		{
-			pLogger->LogError("CommandRunner::processInput unknown command: " + command);
-			showHelp();
-		}
-		break;
-	}
-
-	if(cmdPtr != nullptr)
-	{
-		//set common userCommand attribute
-		_userCommand.jsonCommandString = cmdPtr->ToJsonCommandString();
-		_userCommand.commandKey = cmdPtr->CommandKey();
-		_userCommand.commandId = cmdPtr->CommandId();
-		_userCommand.expectedResult = cmdPtr->GetFinalState();
-
-		//send out command
-		_pDeviceAccessor->SendCommand(_userCommand.jsonCommandString);
-		_userCommand.state = UserCommand::CommandState::COMMAND_SENT;
-	}
 }
 
 bool CommandRunner::isCorrespondingReply(const std::string& commandKey, unsigned short commandId)
@@ -1010,6 +182,14 @@ void CommandRunner::onFeedbackDevicesGet(std::shared_ptr<ReplyTranslator::ReplyD
 	}
 
 	_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnDevicesGet(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED,
+				_userCommand.resultDevices);
+	}
 }
 
 void CommandRunner::onFeedbackDeviceConnect(std::shared_ptr<ReplyTranslator::ReplyDeviceConnect> replyPtr)
@@ -1027,6 +207,13 @@ void CommandRunner::onFeedbackDeviceConnect(std::shared_ptr<ReplyTranslator::Rep
 		pLogger->LogInfo("CommandRunner::onFeedbackDeviceConnect couldn't connect to device: " + replyPtr->deviceName + " reason: " + replyPtr->reason);
 		_userCommand.resultConnectedDeviceName.clear();
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnDeviceConnect(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
 	}
 }
 
@@ -1055,6 +242,14 @@ void CommandRunner::onFeedbackDeviceQueryPower(std::shared_ptr<ReplyTranslator::
 		_userCommand.resultDevicePowerStatus = UserCommand::PowerStatus::UNKNOWN;
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnDeviceQueryPower(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED,
+				_userCommand.resultDevicePowerStatus == UserCommand::PowerStatus::POWERED_ON);
+	}
 }
 
 void CommandRunner::onFeedbackDeviceQueryFuse(std::shared_ptr<ReplyTranslator::ReplyDeviceQueryFuse> replyPtr)
@@ -1082,6 +277,14 @@ void CommandRunner::onFeedbackDeviceQueryFuse(std::shared_ptr<ReplyTranslator::R
 		_userCommand.resultDeviceFuseStatus = UserCommand::FuseStatus::UNKNOWN;
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnDeviceQueryFuse(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED,
+				_userCommand.resultDeviceFuseStatus == UserCommand::FuseStatus::FUSE_ON);
+	}
 }
 
 void CommandRunner::onFeedbackBdcsPowerOn(std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOn> replyPtr)
@@ -1102,6 +305,13 @@ void CommandRunner::onFeedbackBdcsPowerOn(std::shared_ptr<ReplyTranslator::Reply
 		//keep bdcs power status unchanged.
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnBdcsPowerOn(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
+	}
 }
 
 void CommandRunner::onFeedbackBdcsPowerOff(std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOff> replyPtr)
@@ -1121,6 +331,13 @@ void CommandRunner::onFeedbackBdcsPowerOff(std::shared_ptr<ReplyTranslator::Repl
 		pLogger->LogError("CommandRunner::onFeedbackBdcsPowerOff error: " + replyPtr->errorInfo);
 		//keep bdcs power status unchanged.
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnBdcsPowerOff(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
 	}
 }
 
@@ -1156,6 +373,14 @@ void CommandRunner::onFeedbackBdcsQueryPower(std::shared_ptr<ReplyTranslator::Re
 		//keep bdcs power status unchanged.
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnBdcsQueryPower(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED,
+				_userCommand.resultBdcsPowerStatus == UserCommand::PowerStatus::POWERED_ON);
+	}
 }
 
 void CommandRunner::onFeedbackBdcCoast(std::shared_ptr<ReplyTranslator::ReplyBdcCoast> replyPtr)
@@ -1173,7 +398,7 @@ void CommandRunner::onFeedbackBdcCoast(std::shared_ptr<ReplyTranslator::ReplyBdc
 		}
 		else {
 			pLogger->LogInfo("CommandRunner::onFeedbackBdcCoast index: " + std::to_string(replyPtr->index));
-			_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::COAST;
+			_userCommand.resultBdcStatus[replyPtr->index] = IResponseReceiver::BdcStatus::COAST;
 			success = true;
 		}
 	}
@@ -1187,6 +412,13 @@ void CommandRunner::onFeedbackBdcCoast(std::shared_ptr<ReplyTranslator::ReplyBdc
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnBdcCoast(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
 	}
 }
 
@@ -1205,7 +437,7 @@ void CommandRunner::onFeedbackBdcReverse(std::shared_ptr<ReplyTranslator::ReplyB
 		}
 		else {
 			pLogger->LogInfo("CommandRunner::onFeedbackBdcReverse index: " + std::to_string(replyPtr->index));
-			_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::REVERSE;
+			_userCommand.resultBdcStatus[replyPtr->index] = IResponseReceiver::BdcStatus::REVERSE;
 			success = true;
 		}
 	}
@@ -1218,6 +450,13 @@ void CommandRunner::onFeedbackBdcReverse(std::shared_ptr<ReplyTranslator::ReplyB
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnBdcReverse(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
 	}
 }
 
@@ -1236,7 +475,7 @@ void CommandRunner::onFeedbackBdcForward(std::shared_ptr<ReplyTranslator::ReplyB
 		}
 		else {
 			pLogger->LogInfo("CommandRunner::onFeedbackBdcForward index: " + std::to_string(replyPtr->index));
-			_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::FORWARD;
+			_userCommand.resultBdcStatus[replyPtr->index] = IResponseReceiver::BdcStatus::FORWARD;
 			success = true;
 		}
 	}
@@ -1249,6 +488,13 @@ void CommandRunner::onFeedbackBdcForward(std::shared_ptr<ReplyTranslator::ReplyB
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnBdcForward(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
 	}
 }
 
@@ -1267,7 +513,7 @@ void CommandRunner::onFeedbackBdcBreak(std::shared_ptr<ReplyTranslator::ReplyBdc
 		}
 		else {
 			pLogger->LogInfo("CommandRunner::onFeedbackBdcBreak index: " + std::to_string(replyPtr->index));
-			_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::BREAK;
+			_userCommand.resultBdcStatus[replyPtr->index] = IResponseReceiver::BdcStatus::BREAK;
 			success = true;
 		}
 	}
@@ -1280,6 +526,13 @@ void CommandRunner::onFeedbackBdcBreak(std::shared_ptr<ReplyTranslator::ReplyBdc
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnBdcBreak(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
 	}
 }
 
@@ -1302,20 +555,20 @@ void CommandRunner::onFeedbackBdcQuery(std::shared_ptr<ReplyTranslator::ReplyBdc
 			switch(replyPtr->mode)
 			{
 				case ReplyTranslator::ReplyBdcQuery::BdcMode::COAST:
-					_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::COAST;
+					_userCommand.resultBdcStatus[replyPtr->index] = IResponseReceiver::BdcStatus::COAST;
 					break;
 				case ReplyTranslator::ReplyBdcQuery::BdcMode::REVERSE:
-					_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::REVERSE;
+					_userCommand.resultBdcStatus[replyPtr->index] = IResponseReceiver::BdcStatus::REVERSE;
 					break;
 				case ReplyTranslator::ReplyBdcQuery::BdcMode::FORWARD:
-					_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::FORWARD;
+					_userCommand.resultBdcStatus[replyPtr->index] = IResponseReceiver::BdcStatus::FORWARD;
 					break;
 				case ReplyTranslator::ReplyBdcQuery::BdcMode::BREAK:
-					_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::BREAK;
+					_userCommand.resultBdcStatus[replyPtr->index] = IResponseReceiver::BdcStatus::BREAK;
 					break;
 				default:
 					pLogger->LogError("CommandRunner::onFeedbackBdcQuery unknown bdc status");
-					_userCommand.resultBdcStatus[replyPtr->index] = UserCommand::BdcStatus::UNKNOWN;
+					_userCommand.resultBdcStatus[replyPtr->index] = IResponseReceiver::BdcStatus::UNKNOWN;
 					break;
 			}
 			success = true;
@@ -1330,6 +583,14 @@ void CommandRunner::onFeedbackBdcQuery(std::shared_ptr<ReplyTranslator::ReplyBdc
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnBdcQuery(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED,
+				_userCommand.resultBdcStatus[replyPtr->index]);
 	}
 }
 
@@ -1357,6 +618,13 @@ void CommandRunner::onFeedbackSteppersPowerOn(std::shared_ptr<ReplyTranslator::R
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnSteppersPowerOn(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
+	}
 }
 
 void CommandRunner::onFeedbackSteppersPowerOff(std::shared_ptr<ReplyTranslator::ReplySteppersPowerOff> replyPtr)
@@ -1382,6 +650,13 @@ void CommandRunner::onFeedbackSteppersPowerOff(std::shared_ptr<ReplyTranslator::
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnSteppersPowerOff(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
 	}
 }
 
@@ -1424,6 +699,14 @@ void CommandRunner::onFeedbackSteppersQueryPower(std::shared_ptr<ReplyTranslator
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnSteppersQueryPower(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED,
+				_userCommand.resultSteppersPowerStatus == UserCommand::PowerStatus::POWERED_ON);
+	}
 }
 
 void CommandRunner::onFeedbackStepperQueryResolution(std::shared_ptr<ReplyTranslator::ReplyStepperQueryResolution> replyPtr)
@@ -1449,6 +732,14 @@ void CommandRunner::onFeedbackStepperQueryResolution(std::shared_ptr<ReplyTransl
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperQueryResolution(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED,
+				_userCommand.resultStepperClkResolution);
 	}
 }
 
@@ -1487,6 +778,13 @@ void CommandRunner::onFeedbackStepperConfigStep(std::shared_ptr<ReplyTranslator:
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperConfigStep(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
+	}
 }
 
 void CommandRunner::onFeedbackStepperAccelerationBuffer(std::shared_ptr<ReplyTranslator::ReplyStepperAccelerationBuffer> replyPtr)
@@ -1521,6 +819,13 @@ void CommandRunner::onFeedbackStepperAccelerationBuffer(std::shared_ptr<ReplyTra
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperAccelerationBuffer(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
 	}
 }
 
@@ -1557,6 +862,13 @@ void CommandRunner::onFeedbackStepperAccelerationBufferDecrement(std::shared_ptr
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperAccelerationBufferDecrement(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
+	}
 }
 
 void CommandRunner::onFeedbackStepperDecelerationBuffer(std::shared_ptr<ReplyTranslator::ReplyStepperDecelerationBuffer> replyPtr)
@@ -1592,6 +904,13 @@ void CommandRunner::onFeedbackStepperDecelerationBuffer(std::shared_ptr<ReplyTra
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperDecelerationBuffer(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
+	}
 }
 
 void CommandRunner::onFeedbackStepperDecelerationBufferIncrement(std::shared_ptr<ReplyTranslator::ReplyStepperDecelerationBufferIncrement> replyPtr)
@@ -1626,6 +945,13 @@ void CommandRunner::onFeedbackStepperDecelerationBufferIncrement(std::shared_ptr
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperDecelerationBufferIncrement(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
 	}
 }
 
@@ -1667,6 +993,13 @@ void CommandRunner::onFeedbackStepperEnable(std::shared_ptr<ReplyTranslator::Rep
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperEnable(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
+	}
 }
 
 void CommandRunner::onFeedbackStepperForward(std::shared_ptr<ReplyTranslator::ReplyStepperForward> replyPtr)
@@ -1707,6 +1040,13 @@ void CommandRunner::onFeedbackStepperForward(std::shared_ptr<ReplyTranslator::Re
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperForward(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
+	}
 }
 
 void CommandRunner::onFeedbackStepperSteps(std::shared_ptr<ReplyTranslator::ReplyStepperSteps> replyPtr)
@@ -1739,6 +1079,13 @@ void CommandRunner::onFeedbackStepperSteps(std::shared_ptr<ReplyTranslator::Repl
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperSteps(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
 	}
 }
 
@@ -1783,6 +1130,13 @@ void CommandRunner::onFeedbackStepperRun(std::shared_ptr<ReplyTranslator::ReplyS
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
 	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperRun(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
+	}
 }
 
 void CommandRunner::onFeedbackStepperConfigHome(std::shared_ptr<ReplyTranslator::ReplyStepperConfigHome> replyPtr)
@@ -1823,6 +1177,13 @@ void CommandRunner::onFeedbackStepperConfigHome(std::shared_ptr<ReplyTranslator:
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperConfigHome(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
 	}
 }
 
@@ -2008,11 +1369,55 @@ void CommandRunner::onFeedbackStepperQuery(std::shared_ptr<ReplyTranslator::Repl
 		pLogger->LogError("CommandRunner::onFeedbackStepperQuery error: " + replyPtr->errorInfo);
 	}
 
+	IResponseReceiver::StepperState stepperState;
+
 	if(success) {
 		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+
+		if(_userCommand.resultStepperStatus[replyPtr->index].state == StepperStateApproachingHomeLocator) {
+			stepperState = IResponseReceiver::StepperState::ApproachingHomeLocator;
+		}
+		else if(_userCommand.resultStepperStatus[replyPtr->index].state == StepperStateLeavingHomeLocator) {
+			stepperState = IResponseReceiver::StepperState::LeavingHomeLocator;
+		}
+		else if(_userCommand.resultStepperStatus[replyPtr->index].state == StepperStateGoingHome) {
+			stepperState = IResponseReceiver::StepperState::GoingHome;
+		}
+		else if(_userCommand.resultStepperStatus[replyPtr->index].state == StepperStateAccelerating) {
+			stepperState = IResponseReceiver::StepperState::Accelerating;
+		}
+		else if(_userCommand.resultStepperStatus[replyPtr->index].state == StepperStateCruising) {
+			stepperState = IResponseReceiver::StepperState::Cruising;
+		}
+		else if(_userCommand.resultStepperStatus[replyPtr->index].state == StepperStateDecelerating) {
+			stepperState = IResponseReceiver::StepperState::Decelerating;
+		}
+		else {
+			stepperState = IResponseReceiver::StepperState::Unknown;
+		}
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperQuery(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED,
+				stepperState,
+				_userCommand.resultStepperStatus[replyPtr->index].enabled == UserCommand::StepperEnableStatus::ENABLED,
+				_userCommand.resultStepperStatus[replyPtr->index].forward == UserCommand::StepperDirectionStatus::FORWORD,
+				_userCommand.resultStepperStatus[replyPtr->index].locatorIndex,
+				_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberStart,
+				_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberTerminal,
+				_userCommand.resultStepperStatus[replyPtr->index].homeOffset,
+				_userCommand.resultStepperStatus[replyPtr->index].lowClks,
+				_userCommand.resultStepperStatus[replyPtr->index].highClks,
+				_userCommand.resultStepperStatus[replyPtr->index].accelerationBuffer,
+				_userCommand.resultStepperStatus[replyPtr->index].accelerationBufferDecrement,
+				_userCommand.resultStepperStatus[replyPtr->index].decelerationBuffer,
+				_userCommand.resultStepperStatus[replyPtr->index].decelerationBufferIncrement);
 	}
 }
 
@@ -2055,6 +1460,14 @@ void CommandRunner::onFeedbackLocatorQuery(std::shared_ptr<ReplyTranslator::Repl
 	}
 	else {
 		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnLocatorQuery(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED,
+				_userCommand.resultLocatorStatus[replyPtr->index]);
 	}
 }
 
@@ -2292,44 +1705,881 @@ void CommandRunner::processFeedbacks()
 	}
 }
 
-void CommandRunner::OnKeypressing(char key)
+void CommandRunner::AddResponseReceiver(IResponseReceiver * p)
+{
+	_cmdResponseReceiverArray.push_back(p);
+}
+
+unsigned long CommandRunner::sendCmdToDevice(std::shared_ptr<DeviceCommand>& cmdPtr)
+{
+	unsigned long cmdKey = 0;
+
+	if(cmdPtr != nullptr)
+	{
+		//set common userCommand attribute
+		_userCommand.jsonCommandString = cmdPtr->ToJsonCommandString();
+		_userCommand.commandKey = cmdPtr->CommandKey();
+		_userCommand.commandId = cmdPtr->CommandId();
+		_userCommand.expectedResult = cmdPtr->GetFinalState();
+
+		//send out command
+		_pDeviceAccessor->SendCommand(_userCommand.jsonCommandString);
+		_userCommand.state = UserCommand::CommandState::COMMAND_SENT;
+
+		cmdKey = _userCommand.commandId;
+	}
+
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::DevicesGet()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	_input.push_back(key);
-	_event.set();
-}
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-
-CommandRunner::Keyboard::Keyboard(CommandRunner * pReceiver)
-{
-	_terminate = false;
-	_pReceiver = pReceiver;
-}
-
-void CommandRunner::Keyboard::Terminate()
-{
-	_terminate = true;
-}
-
-void CommandRunner::Keyboard::run()
-{
-	while(!_terminate)
-	{
-		std::string str;
-		char buffer[64];
-
-		char c = getchar();
-
-		sprintf(buffer, "0x%02d", c);
-		str += buffer;
-		if((c >= ' ') && (c <= '~')) {
-			sprintf(buffer, " '%c'", c);
-			str += buffer;
-		}
-		pLogger->LogDebug("CommandRunner::Keyboard::run received: " + str);
-		_pReceiver->OnKeypressing(c);
+	cmdPtr = CommandFactory::DevicesGet();
+	if(cmdPtr == nullptr) {
+		pLogger->LogError("CommandRunner::DevicesGet empty ptr returned from CommandFactory::DevicesGet");
 	}
-	pLogger->LogInfo("CommandRunner::Keyboard::run exited");
+	else {
+		_userCommand.resultDevices.clear();
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
 }
+
+ICommandReception::CommandKey CommandRunner::DeviceConnect(unsigned int index)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+
+	auto& devices = _userCommand.resultDevices;
+	if(devices.empty()) {
+		pLogger->LogError("CommandRunner::DeviceConnect no device to connect");
+	}
+	else
+	{
+		int deviceNumber = index;
+
+		if(deviceNumber >= devices.size()) {
+			pLogger->LogError("CommandRunner::DeviceConnect wrong device number in command: " + std::to_string(deviceNumber));
+		}
+		else
+		{
+			std::string deviceName = devices[deviceNumber];
+			cmdPtr = CommandFactory::DeviceConnect(deviceName);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::DeviceConnect empty ptr returned from CommandFactory::DeviceConnect");
+			}
+			else {
+				_userCommand.resultConnectedDeviceName.clear();
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::DeviceQueryPower()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::DeviceQueryPower hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::DeviceQueryPower();
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::DeviceQueryPower empty ptr returned from CommandFactory::DeviceQueryPower");
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::DeviceQueryFuse()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::DeviceQueryFuse hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::DeviceQueryFuse();
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::DeviceQueryFuse empty ptr returned from CommandFactory::DeviceQueryFuse");
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::OptPowerOn()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::OptPowerOff()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::OptQueryPower()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::DcmPowerOn()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::DcmPowerOff()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::DcmQueryPower()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::BdcsPowerOn()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::BdcsPowerOn hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::BdcsPowerOn();
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::BdcsPowerOn empty ptr returned from CommandFactory::BdcsPowerOn");
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::BdcsPowerOff()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::BdcsPowerOff hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::BdcsPowerOff();
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::BdcsPowerOff empty ptr returned from CommandFactory::BdcsPowerOff");
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::BdcsQueryPower()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::BdcsQueryPower hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::BdcsQueryPower();
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::BdcsQueryPower empty ptr returned from CommandFactory::BdcsQueryPower");
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::BdcCoast(unsigned int index)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::BdcCoast hasn't connected to any device");
+	}
+	else {
+		if(index >= BDC_AMOUNT) {
+			pLogger->LogError("CommandRunner::BdcCoast invalid BDC index: " + std::to_string(index));
+		}
+		else
+		{
+			//set the intial state to BREAK.
+			cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::COAST);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::BdcCoast empty ptr returned from CommandFactory::BdcOperation");
+			}
+			else {
+				_userCommand.bdcIndex = index;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::BdcReverse(unsigned int index)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::BdcReverse hasn't connected to any device");
+	}
+	else {
+		if(index >= BDC_AMOUNT) {
+			pLogger->LogError("CommandRunner::BdcReverse invalid BDC index: " + std::to_string(index));
+		}
+		else
+		{
+			//set the intial state to BREAK.
+			cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::REVERSE);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::BdcReverse empty ptr returned from CommandFactory::BdcOperation");
+			}
+			else {
+				_userCommand.bdcIndex = index;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::BdcForward(unsigned int index)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::BdcForward hasn't connected to any device");
+	}
+	else {
+		if(index >= BDC_AMOUNT) {
+			pLogger->LogError("CommandRunner::BdcForward invalid BDC index: " + std::to_string(index));
+		}
+		else
+		{
+			//set the intial state to BREAK.
+			cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::FORWARD);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::BdcForward empty ptr returned from CommandFactory::BdcOperation");
+			}
+			else {
+				_userCommand.bdcIndex = index;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::BdcBreak(unsigned int index)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::BdcBreak hasn't connected to any device");
+	}
+	else {
+		if(index >= BDC_AMOUNT) {
+			pLogger->LogError("CommandRunner::BdcBreak invalid BDC index: " + std::to_string(index));
+		}
+		else
+		{
+			//set the intial state to BREAK.
+			cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::BREAK);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::BdcBreak empty ptr returned from CommandFactory::BdcOperation");
+			}
+			else {
+				_userCommand.bdcIndex = index;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::BdcQuery(unsigned int index)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::BdcQuery hasn't connected to any device");
+	}
+	else {
+		if(index >= BDC_AMOUNT) {
+			pLogger->LogError("CommandRunner::BdcQuery invalid BDC index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::BdcQuery(index);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::BdcQuery empty ptr returned from CommandFactory::BdcQuery");
+			}
+			else {
+				_userCommand.bdcIndex = index;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::SteppersPowerOn()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::SteppersPowerOn hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::SteppersPowerOn();
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::SteppersPowerOn empty ptr returned from CommandFactory::SteppersPowerOn");
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::SteppersPowerOff()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::SteppersPowerOff hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::SteppersPowerOff();
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::SteppersPowerOff empty ptr returned from CommandFactory::SteppersPowerOff");
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::SteppersQueryPower()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::SteppersQueryPower hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::SteppersQueryPower();
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::SteppersQueryPower empty ptr returned from CommandFactory::SteppersQueryPower");
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperQueryResolution()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperQueryResolution hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::StepperQueryResolution();
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::StepperQueryResolution empty ptr returned from CommandFactory::StepperQueryResolution");
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperConfigStep(unsigned int index, unsigned short lowClks, unsigned short highClks)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperConfigStep hasn't connected to any device");
+	}
+	else {
+		if(index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperConfigStep invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::StepperConfigStep(index, lowClks, highClks);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperConfigStep empty ptr returned from CommandFactory::StepperConfigStep");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+				_userCommand.lowClks = lowClks;
+				_userCommand.highClks = highClks;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperAccelerationBuffer(unsigned int index, unsigned short value)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperAccelerationBuffer hasn't connected to any device");
+	}
+	else {
+		if(index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperAccelerationBuffer invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::StepperAccelerationBuffer(index, value);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperAccelerationBuffer empty ptr returned from CommandFactory::StepperAccelerationBuffer");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+				_userCommand.accelerationBuffer = value;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperAccelerationBufferDecrement(unsigned int index, unsigned short value)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperAccelerationBufferDecrement hasn't connected to any device");
+	}
+	else {
+		if(index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperAccelerationBufferDecrement invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::StepperAccelerationBufferDecrement(index, value);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperAccelerationBufferDecrement empty ptr returned from CommandFactory::StepperAccelerationBufferDecrement");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+				_userCommand.accelerationBufferDecrement = value;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperDecelerationBuffer(unsigned int index, unsigned short value)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperDecelerationBuffer hasn't connected to any device");
+	}
+	else {
+		if(index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperDecelerationBuffer invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::StepperDecelerationBuffer(index, value);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperDecelerationBuffer empty ptr returned from CommandFactory::StepperDecelerationBuffer");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+				_userCommand.decelerationBuffer = value;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperDecelerationBufferIncrement(unsigned int index, unsigned short value)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperDecelerationBufferIncrement hasn't connected to any device");
+	}
+	else {
+		if(index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperDecelerationBufferIncrement invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::StepperDecelerationBufferIncrement(index, value);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperDecelerationBufferIncrement empty ptr returned from CommandFactory::StepperDecelerationBufferIncrement");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+				_userCommand.decelerationBufferIncrement = value;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperEnable(unsigned int index, bool bEnable)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperEnable hasn't connected to any device");
+	}
+	else {
+		if(index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperEnable invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::StepperEnable(index, bEnable);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperEnable empty ptr returned from CommandFactory::StepperEnable");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperForward(unsigned int index, bool forward)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperForward hasn't connected to any device");
+	}
+	else {
+		if(index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperForward invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::StepperForward(index, forward);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperForward empty ptr returned from CommandFactory::StepperForward");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperSteps(unsigned int index, unsigned short value)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperSteps hasn't connected to any device");
+	}
+	else {
+		if(index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperSteps invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::StepperSteps(index, value);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperSteps empty ptr returned from CommandFactory::StepperSteps");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+				_userCommand.steps = value;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperRun(unsigned int index, unsigned short initialPos, unsigned short finalPos)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperRun hasn't connected to any device");
+	}
+	else {
+		if(index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperRun invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::StepperRun(index, initialPos, finalPos);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperRun empty ptr returned from CommandFactory::StepperRun");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+				_userCommand.initialPosition = initialPos;
+				_userCommand.finalPosition = finalPos;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperConfigHome(unsigned int index, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperConfigHome hasn't connected to any device");
+	}
+	else {
+		if(index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperConfigHome invalid stepper index: " + std::to_string(index));
+		}
+		else if((lineNumberStart < LOCATOR_LINE_NUMBER_MIN) || (lineNumberStart > LOCATOR_LINE_NUMBER_MAX)) {
+			pLogger->LogError("CommandRunner::StepperConfigHome lineNumberStart is out of range: " + std::to_string(lineNumberStart));
+		}
+		else if((lineNumberTerminal < LOCATOR_LINE_NUMBER_MIN) || (lineNumberTerminal > LOCATOR_LINE_NUMBER_MAX)) {
+			pLogger->LogError("CommandRunner::StepperConfigHome lineNumberStart is out of range: " + std::to_string(lineNumberTerminal));
+		}
+		else if(lineNumberTerminal == lineNumberStart) {
+			pLogger->LogError("CommandRunner::StepperConfigHome lineNumberStart is same as lineNumberTerminal");
+		}
+		else
+		{
+			cmdPtr = CommandFactory::StepperConfigHome(index, locatorIndex, lineNumberStart, lineNumberTerminal);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperConfigHome empty ptr returned from CommandFactory::StepperConfigHome");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+				_userCommand.locatorIndex = locatorIndex;
+				_userCommand.locatorLineNumberStart = lineNumberStart;
+				_userCommand.locatorLineNumberTerminal = lineNumberTerminal;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperMove(unsigned int index, unsigned short steps)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::StepperQuery(unsigned int index)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperQuery hasn't connected to any device");
+	}
+	else {
+		if(index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperQuery invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::StepperQuery(index);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperQuery empty ptr returned from CommandFactory::StepperQuery");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::LocatorQuery(unsigned int index)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::LocatorQuery hasn't connected to any device");
+	}
+	else {
+		if(index >= LOCATOR_AMOUNT) {
+			pLogger->LogError("CommandRunner::LocatorQuery invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::LocatorQuery(index);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::LocatorQuery empty ptr returned from CommandFactory::LocatorQuery");
+			}
+			else {
+				_userCommand.locatorIndex = index;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey = 0;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
+ICommandReception::CommandKey CommandRunner::BdcDelay(unsigned int index, unsigned int value)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	_userCommand.resultBdcDelay = value;
+	return 0;
+}
+
+ICommandReception::CommandKey CommandRunner::SaveMovementConfig()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	saveMovementConfig();
+	return 0;
+}
+
+ICommandReception::CommandKey CommandRunner::SaveCoordinates(unsigned int type, unsigned int index)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	saveCoordinates(type, index);
+	return 0;
+}
+
 
