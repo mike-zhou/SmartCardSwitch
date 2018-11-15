@@ -132,7 +132,7 @@ void CommandRunner::saveMovementConfig()
 	}
 }
 
-void CommandRunner::saveCoordinates(unsigned int type, unsigned int index)
+void CommandRunner::saveCoordinates(CoordinateStorage::Type type, unsigned int index)
 {
 
 }
@@ -2532,6 +2532,35 @@ ICommandReception::CommandKey CommandRunner::StepperQuery(unsigned int index)
 	return cmdKey;
 }
 
+ICommandReception::CommandKey CommandRunner::StepperForceState(unsigned int index, StepperState state)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperForceState hasn't connected to any device");
+	}
+	else {
+		if(index >= LOCATOR_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperForceState invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperForceState empty ptr returned from CommandFactory::LocatorQuery");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+			}
+		}
+	}
+
+	ICommandReception::CommandKey cmdKey ;
+	cmdKey = sendCmdToDevice(cmdPtr);
+	return cmdKey;
+}
+
 ICommandReception::CommandKey CommandRunner::LocatorQuery(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
@@ -2575,7 +2604,7 @@ ICommandReception::CommandKey CommandRunner::SaveMovementConfig()
 	return 0;
 }
 
-ICommandReception::CommandKey CommandRunner::SaveCoordinates(unsigned int type, unsigned int index)
+ICommandReception::CommandKey CommandRunner::SaveCoordinates(CoordinateStorage::Type type, unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 	saveCoordinates(type, index);

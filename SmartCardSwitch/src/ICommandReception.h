@@ -13,14 +13,41 @@
 #include "CoordinateStorage.h"
 #include "MovementConfiguration.h"
 
+class ICommandDataTypes
+{
+public:
 
-class IResponseReceiver
+	typedef unsigned long CommandKey;
+
+	const CommandKey InvalidCommandKey = 0;
+
+	enum class BdcStatus
+	{
+		UNKNOWN,
+		COAST,
+		REVERSE,
+		FORWARD,
+		BREAK
+	};
+
+	enum class StepperState
+	{
+		Unknown = 0,
+		ApproachingHomeLocator,
+		LeavingHomeLocator,
+		GoingHome,
+		KnowPosition,
+		Accelerating,
+		Cruising,
+		Decelerating
+	};
+
+};
+
+class IResponseReceiver: ICommandDataTypes
 {
 public:
 	virtual ~IResponseReceiver() {}
-
-	typedef unsigned long CommandKey;
-	const CommandKey InvalidCommandKey = 0;
 
 	virtual void OnDevicesGet(CommandKey key, bool bSuccess, const std::vector<std::string>& devices) {}
 	virtual void OnDeviceConnect(CommandKey key, bool bSuccess)  {}
@@ -39,15 +66,6 @@ public:
 	virtual void OnBdcReverse(CommandKey key, bool bSuccess) {}
 	virtual void OnBdcForward(CommandKey key, bool bSuccess) {}
 	virtual void OnBdcBreak(CommandKey key, bool bSuccess) {}
-
-	enum class BdcStatus
-	{
-		UNKNOWN,
-		COAST,
-		REVERSE,
-		FORWARD,
-		BREAK
-	};
 	virtual void OnBdcQuery(CommandKey key, bool bSuccess, BdcStatus status) {}
 	virtual void OnSteppersPowerOn(CommandKey key, bool bSuccess) {}
 	virtual void OnSteppersPowerOff(CommandKey key, bool bSuccess) {}
@@ -64,18 +82,7 @@ public:
 	virtual void OnStepperRun(CommandKey key, bool bSuccess) {}
 	virtual void OnStepperConfigHome(CommandKey key, bool bSuccess) {}
 	virtual void OnStepperMove(CommandKey key, bool bSuccess) {}
-
-	enum class StepperState
-	{
-		Unknown = 0,
-		ApproachingHomeLocator,
-		LeavingHomeLocator,
-		GoingHome,
-		KnowPosition,
-		Accelerating,
-		Cruising,
-		Decelerating
-	};
+	virtual void OnStepperForceState(CommandKey key, bool bSuccess) {}
 	virtual void OnStepperQuery(CommandKey key, bool bSuccess,
 								StepperState state,
 								bool bEnabled,
@@ -97,13 +104,10 @@ public:
 	virtual void OnSaveCoordinates(CommandKey key, bool bSuccess) {}
 };
 
-class ICommandReception
+class ICommandReception: public ICommandDataTypes
 {
 public:
 	virtual ~ICommandReception() {}
-
-	typedef unsigned long CommandKey;
-	const CommandKey InvalidCommandKey = 0;
 
 	virtual CommandKey DevicesGet() = 0;
 	virtual CommandKey DeviceConnect(unsigned int index) = 0;
@@ -138,11 +142,12 @@ public:
 	virtual CommandKey StepperRun(unsigned int index, unsigned short intialPos, unsigned short finalPos) = 0;
 	virtual CommandKey StepperConfigHome(unsigned int index, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal) = 0;
 	virtual CommandKey StepperMove(unsigned int index, unsigned short steps) = 0;
+	virtual CommandKey StepperForceState(unsigned int index, StepperState state) = 0;
 	virtual CommandKey StepperQuery(unsigned int index) = 0;
 	virtual CommandKey LocatorQuery(unsigned int index) = 0;
 	virtual CommandKey BdcDelay(unsigned int index, unsigned int value) = 0;
 	virtual CommandKey SaveMovementConfig() = 0;
-	virtual CommandKey SaveCoordinates(unsigned int type, unsigned int index) = 0;
+	virtual CommandKey SaveCoordinates(CoordinateStorage::Type type, unsigned int index) = 0;
 
 	virtual void AddResponseReceiver(IResponseReceiver * p) = 0;
 };

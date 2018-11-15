@@ -33,6 +33,12 @@ private:
 
 	//IResponseReceiver
 	virtual void OnDevicesGet(CommandKey key, bool bSuccess, const std::vector<std::string>& devices) override;
+	virtual void OnStepperConfigStep(CommandKey key, bool bSuccess) override;
+	virtual void OnStepperAccelerationBuffer(CommandKey key, bool bSuccess) override;
+	virtual void OnStepperAccelerationBufferDecrement(CommandKey key, bool bSuccess) override;
+	virtual void OnStepperDecelerationBuffer(CommandKey key, bool bSuccess)  override;
+	virtual void OnStepperDecelerationBufferIncrement(CommandKey key, bool bSuccess) override;
+	virtual void OnStepperConfigHome(CommandKey key, bool bSuccess) override;
 
 private:
 	const unsigned int BDC_AMOUNT = 6;
@@ -79,6 +85,7 @@ private:
 		StepperConfigHome = 73,
 		StepperMove = 74,
 		StepperQuery = 75,
+		StepperForceState = 76,
 		LocatorQuery = 90,
 		BdcDelay = 200,
 		SaveMovementConfig = 300,
@@ -87,13 +94,26 @@ private:
 		LoadCoordinates = 351
 	};
 
+	std::deque<char> _input;
+
 	ICommandReception * _pCommandReception;
 	ICommandReception::CommandKey _cmdKey;
-	std::deque<char> _input;
+	bool _bCmdFinish;
+	bool _bCmdSucceed;
 	std::vector<std::string> _devices;
+	struct StepperData
+	{
+		unsigned int homeOffset = 0;
+		unsigned int steps = 0;
+		bool enabled = true;
+		bool forward = false;
+	};
+	std::vector<StepperData> _steppers;
 
 	void processInput();
 	void showHelp();
+	void loadMovementConfig();
+	void stepperMove(unsigned int index, bool forward, unsigned int steps);
 };
 
 

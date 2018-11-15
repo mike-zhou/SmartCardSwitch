@@ -77,10 +77,11 @@ private:
 	virtual CommandKey StepperConfigHome(unsigned int index, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal) override;
 	virtual CommandKey StepperMove(unsigned int index, unsigned short steps) override;
 	virtual CommandKey StepperQuery(unsigned int index) override;
+	virtual CommandKey StepperForceState(unsigned int index, StepperState state) override;
 	virtual CommandKey LocatorQuery(unsigned int index) override;
 	virtual CommandKey BdcDelay(unsigned int index, unsigned int value) override;
 	virtual CommandKey SaveMovementConfig() override;
-	virtual CommandKey SaveCoordinates(unsigned int type, unsigned int index) override;
+	virtual CommandKey SaveCoordinates(CoordinateStorage::Type type, unsigned int index) override;
 
 private:
 	static const unsigned int BDC_AMOUNT = 6;
@@ -108,7 +109,7 @@ private:
 	unsigned long sendCmdToDevice(std::shared_ptr<DeviceCommand>& cmdPtr);
 	void setBdcDelay(unsigned long delay);
 	void saveMovementConfig();
-	void saveCoordinates(unsigned int type, unsigned int index);
+	void saveCoordinates(CoordinateStorage::Type type, unsigned int index);
 	void loadCoordinates();
 
 
