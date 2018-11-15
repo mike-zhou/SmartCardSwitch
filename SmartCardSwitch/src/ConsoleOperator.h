@@ -32,13 +32,13 @@ private:
 	virtual void runTask() override;
 
 	//IResponseReceiver
-	virtual void OnDevicesGet(CommandKey key, bool bSuccess, const std::vector<std::string>& devices) override;
-	virtual void OnStepperConfigStep(CommandKey key, bool bSuccess) override;
-	virtual void OnStepperAccelerationBuffer(CommandKey key, bool bSuccess) override;
-	virtual void OnStepperAccelerationBufferDecrement(CommandKey key, bool bSuccess) override;
-	virtual void OnStepperDecelerationBuffer(CommandKey key, bool bSuccess)  override;
-	virtual void OnStepperDecelerationBufferIncrement(CommandKey key, bool bSuccess) override;
-	virtual void OnStepperConfigHome(CommandKey key, bool bSuccess) override;
+	virtual void OnDevicesGet(CommandId key, bool bSuccess, const std::vector<std::string>& devices) override;
+	virtual void OnStepperConfigStep(CommandId key, bool bSuccess) override;
+	virtual void OnStepperAccelerationBuffer(CommandId key, bool bSuccess) override;
+	virtual void OnStepperAccelerationBufferDecrement(CommandId key, bool bSuccess) override;
+	virtual void OnStepperDecelerationBuffer(CommandId key, bool bSuccess)  override;
+	virtual void OnStepperDecelerationBufferIncrement(CommandId key, bool bSuccess) override;
+	virtual void OnStepperConfigHome(CommandId key, bool bSuccess) override;
 
 private:
 	const unsigned int BDC_AMOUNT = 6;
@@ -97,7 +97,7 @@ private:
 	std::deque<char> _input;
 
 	ICommandReception * _pCommandReception;
-	ICommandReception::CommandKey _cmdKey;
+	ICommandReception::CommandId _cmdKey;
 	bool _bCmdFinish;
 	bool _bCmdSucceed;
 	std::vector<std::string> _devices;

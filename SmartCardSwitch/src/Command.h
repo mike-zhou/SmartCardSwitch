@@ -334,6 +334,19 @@ private:
 	unsigned int _stepperIndex;
 };
 
+class CommandStepperSetState: public DeviceCommand
+{
+public:
+	CommandStepperSetState(unsigned int stepperIndex, unsigned int state);
+
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+
+private:
+	unsigned int _stepperIndex;
+	unsigned int _state;
+};
+
 class CommandStepperMove: public DeviceCommand
 {
 public:

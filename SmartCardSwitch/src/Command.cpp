@@ -1006,6 +1006,34 @@ std::string CommandStepperQuery::ToJsonCommandString()
 	return cmd;
 }
 
+///////////////////////////////////////////////
+// CommandStepperForceState
+////////////////////////////////////////////////
+CommandStepperSetState::CommandStepperSetState(unsigned int stepperIndex, unsigned int state)
+{
+	_stepperIndex = stepperIndex;
+	_state = state;
+}
+
+std::string CommandStepperSetState::CommandKey()
+{
+	return std::string("stepper set state");
+}
+
+std::string CommandStepperSetState::ToJsonCommandString()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper set state\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
+	cmd = cmd + "\"state\":" + std::to_string(_state);
+	cmd += "}";
+
+	return cmd;
+}
+
 ///////////////////////////////////////////////////////////
 // CommandStepperMove
 ///////////////////////////////////////////////////////////

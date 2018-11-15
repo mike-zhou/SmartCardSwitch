@@ -55,6 +55,7 @@ enum CommandType
 	StepperRun,
 	StepperConfigHome,
 	StepperQuery,
+	StepperSetState,
 	LocatorQuery
 };
 
@@ -827,6 +828,37 @@ public:
 };
 
 //{
+//	"command":"stepper set state",
+//	"index":0,
+//  "state":4
+//}
+class CommandStepperSetState
+{
+private:
+	int _stepperIndex;
+	int _state;
+	unsigned long _commandId;
+
+public:
+	CommandStepperSetState(int stepperIndex, int state, unsigned long commandId)
+	{
+		_stepperIndex = stepperIndex;
+		_state = state;
+		_commandId = commandId;
+	}
+
+	CommandType Type() { return CommandType::StepperQuery; }
+
+	std::string ToString()
+	{
+		char buf[256];
+		sprintf(buf, "C 62 %d %d %d", _stepperIndex, _state, _commandId & 0xffff);
+		std::string cmd(buf);
+		return cmd;
+	}
+};
+
+//{
 //	"command":"locator query",
 //	"index":0
 //}
@@ -890,6 +922,7 @@ public:
 	std::shared_ptr<CommandStepperRun> GetCommandStepperRun();
 	std::shared_ptr<CommandStepperConfigHome> GetCommandStepperConfigHome();
 	std::shared_ptr<CommandStepperQuery> GetCommandStepperQuery();
+	std::shared_ptr<CommandStepperSetState> GetCommandStepperSetState();
 	std::shared_ptr<CommandLocatorQuery> GetCommandLocatorQuery();
 
 private:
@@ -923,6 +956,7 @@ private:
 	const std::string strCommandStepperRun = "stepper run";
 	const std::string strCommandStepperConfigHome = "stepper config home";
 	const std::string strCommandStepperQuery = "stepper query";
+	const std::string strCommandStepperSetState = "stepper set state";
 	const std::string strCommandLocatorQuery = "locator query";
 };
 

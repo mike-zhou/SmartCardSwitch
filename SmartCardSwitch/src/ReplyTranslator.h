@@ -54,6 +54,7 @@ public:
 		StepperConfigHome,
 		StepperMove,
 		StepperQuery,
+		StepperSetState,
 		LocatorQuery,
 		//events
 		DevicePower = 10000,
@@ -237,6 +238,11 @@ public:
 		unsigned int decelerationBufferIncrement;
 	};
 
+	struct ReplyStepperSetState: ReplyCommon
+	{
+		unsigned int index;
+	};
+
 	struct ReplyLocatorQuery: ReplyCommon
 	{
 		unsigned int index;
@@ -302,6 +308,7 @@ public:
 	std::shared_ptr<ReplyTranslator::ReplyStepperConfigHome> ToStepperConfigHome();
 	std::shared_ptr<ReplyTranslator::ReplyStepperMove> ToStepperMove();
 	std::shared_ptr<ReplyTranslator::ReplyStepperQuery> ToStepperQuery();
+	std::shared_ptr<ReplyTranslator::ReplyStepperSetState> ToStepperSetState();
 	std::shared_ptr<ReplyTranslator::ReplyLocatorQuery> ToLocatorQuery();
 	//std::shared_ptr<ReplyTranslator::Reply> To();
 	std::shared_ptr<ReplyTranslator::EventDevicePower> ToDevicePower();
@@ -345,6 +352,7 @@ private:
 	const std::string strCommandStepperConfigHome = "stepper config home";
 	const std::string strCommandStepperMove = "stepper move";
 	const std::string strCommandStepperQuery = "stepper query";
+	const std::string strCommandStepperSetState = "stepper set state";
 	const std::string strCommandLocatorQuery = "locator query";
 	//events
 	const std::string strEventDevicePower = "device power";
@@ -380,6 +388,7 @@ private:
 	std::shared_ptr<ReplyTranslator::ReplyStepperConfigHome> _stepperConfigHomePtr;
 	std::shared_ptr<ReplyTranslator::ReplyStepperMove> _stepperMovePtr;
 	std::shared_ptr<ReplyTranslator::ReplyStepperQuery> _stepperQueryPtr;
+	std::shared_ptr<ReplyTranslator::ReplyStepperSetState> _stepperSetStatePtr;
 	std::shared_ptr<ReplyTranslator::ReplyLocatorQuery> _locatorQueryPtr;
 	std::shared_ptr<ReplyTranslator::EventDevicePower> _devicePowerPtr;
 	std::shared_ptr<ReplyTranslator::EventDeviceConnection> _deviceConnectionPtr;

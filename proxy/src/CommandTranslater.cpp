@@ -142,6 +142,9 @@ CommandType CommandTranslator::Type()
 		else if(command == strCommandStepperQuery) {
 			_type = CommandType::StepperQuery;
 		}
+		else if(command == strCommandStepperSetState) {
+			_type = CommandType::StepperSetState;
+		}
 		else if(command == strCommandLocatorQuery) {
 			_type = CommandType::LocatorQuery;
 		}
@@ -1323,6 +1326,51 @@ std::shared_ptr<CommandStepperQuery> CommandTranslator::GetCommandStepperQuery()
 	catch(...)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandStepperQuery unknown exception in " + _jsonCmd);
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<CommandStepperSetState> CommandTranslator::GetCommandStepperSetState()
+{
+	try
+	{
+		Poco::JSON::Parser parser;
+		Poco::Dynamic::Var result = parser.parse(_jsonCmd);
+		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+
+		if(objectPtr->has(std::string("command")))
+		{
+			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
+
+			if(command.size() < 1) {
+				pLogger->LogError("CommandTranslator::GetCommandStepperSetState invalid command in " + _jsonCmd);
+			}
+			else if(command != strCommandStepperSetState) {
+				pLogger->LogError("CommandTranslator::GetCommandStepperSetState wrong command in " + _jsonCmd);
+			}
+			else
+			{
+				int stepperIndex = objectPtr->getValue<int>("index");
+				int state = objectPtr->getValue<int>("state");
+
+				std::shared_ptr<CommandStepperSetState> p(new CommandStepperSetState(stepperIndex, state, commandId));
+				return p;
+			}
+		}
+		else
+		{
+			pLogger->LogError("CommandTranslator::GetCommandStepperSetState no command in " + _jsonCmd);
+		}
+	}
+	catch(Poco::Exception& e)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandStepperSetState exception occurs: " + e.displayText() + " in " + _jsonCmd);
+	}
+	catch(...)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandStepperSetState unknown exception in " + _jsonCmd);
 	}
 
 	return nullptr;

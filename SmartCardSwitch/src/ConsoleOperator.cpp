@@ -20,7 +20,7 @@ extern MovementConfiguration * pMovementConfiguration;
 ConsoleOperator::ConsoleOperator(ICommandReception * pCmdReceiver) : Task("ConsoleOperator")
 {
 	_pCommandReception = pCmdReceiver;
-	_cmdKey = InvalidCommandKey;
+	_cmdKey = InvalidCommandId;
 	_bCmdFinish = true;
 	_bCmdSucceed = false;
 
@@ -496,9 +496,9 @@ void ConsoleOperator::processInput()
 		case Type::StepperForceState:
 		{
 			unsigned int index = d1;
-			ICommandReception::StepperState state = d2;
+			ICommandReception::StepperState state = (ICommandReception::StepperState)d2;
 
-			_cmdKey = _pCommandReception->StepperForceState(index, state);
+			_cmdKey = _pCommandReception->StepperSetState(index, state);
 		}
 		break;
 
@@ -532,13 +532,13 @@ void ConsoleOperator::processInput()
 		case Type::LoadMovementConfigStepper:
 		{
 			loadMovementConfig();
-			_cmdKey = InvalidCommandKey;
+			_cmdKey = InvalidCommandId;
 		}
 		break;
 
 		case Type::SaveCoordinates:
 		{
-			CoordinateStorage::Type type = d1;
+			CoordinateStorage::Type type = (CoordinateStorage::Type)d1;
 			unsigned int index = d2;
 
 			_cmdKey = _pCommandReception->SaveCoordinates(type, index);
@@ -554,14 +554,14 @@ void ConsoleOperator::processInput()
 		break;
 	}
 
-	if((bKnownCmd) && (_cmdKey == InvalidCommandKey)) {
+	if((bKnownCmd) && (_cmdKey == InvalidCommandId)) {
 		pLogger->LogInfo("ConsoleOperator::processInput no reply will be returned");
 	}
 }
 
-void ConsoleOperator::OnDevicesGet(CommandKey key, bool bSuccess, const std::vector<std::string>& devices)
+void ConsoleOperator::OnDevicesGet(CommandId key, bool bSuccess, const std::vector<std::string>& devices)
 {
-	if(_cmdKey == InvalidCommandKey) {
+	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
 	if(_cmdKey != key) {
@@ -583,13 +583,13 @@ void ConsoleOperator::OnDevicesGet(CommandKey key, bool bSuccess, const std::vec
 	}
 
 	_devices = devices;
-	_cmdKey = InvalidCommandKey;
+	_cmdKey = InvalidCommandId;
 	_bCmdSucceed = true;
 }
 
-void ConsoleOperator::OnStepperConfigStep(CommandKey key, bool bSuccess)
+void ConsoleOperator::OnStepperConfigStep(CommandId key, bool bSuccess)
 {
-	if(_cmdKey == InvalidCommandKey) {
+	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
 	if(_cmdKey != key) {
@@ -600,12 +600,12 @@ void ConsoleOperator::OnStepperConfigStep(CommandKey key, bool bSuccess)
 	pLogger->LogInfo("ConsoleOperator::OnStepperConfigStep succeed");
 	_bCmdSucceed = bSuccess;
 	_bCmdFinish = true;
-	_cmdKey = InvalidCommandKey;
+	_cmdKey = InvalidCommandId;
 }
 
-void ConsoleOperator::OnStepperAccelerationBuffer(CommandKey key, bool bSuccess)
+void ConsoleOperator::OnStepperAccelerationBuffer(CommandId key, bool bSuccess)
 {
-	if(_cmdKey == InvalidCommandKey) {
+	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
 	if(_cmdKey != key) {
@@ -616,12 +616,12 @@ void ConsoleOperator::OnStepperAccelerationBuffer(CommandKey key, bool bSuccess)
 	pLogger->LogInfo("ConsoleOperator::OnStepperAccelerationBuffer succeed");
 	_bCmdSucceed = bSuccess;
 	_bCmdFinish = true;
-	_cmdKey = InvalidCommandKey;
+	_cmdKey = InvalidCommandId;
 }
 
-void ConsoleOperator::OnStepperAccelerationBufferDecrement(CommandKey key, bool bSuccess)
+void ConsoleOperator::OnStepperAccelerationBufferDecrement(CommandId key, bool bSuccess)
 {
-	if(_cmdKey == InvalidCommandKey) {
+	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
 	if(_cmdKey != key) {
@@ -632,12 +632,12 @@ void ConsoleOperator::OnStepperAccelerationBufferDecrement(CommandKey key, bool 
 	pLogger->LogInfo("ConsoleOperator::OnStepperAccelerationBufferDecrement succeed");
 	_bCmdSucceed = bSuccess;
 	_bCmdFinish = true;
-	_cmdKey = InvalidCommandKey;
+	_cmdKey = InvalidCommandId;
 }
 
-void ConsoleOperator::OnStepperDecelerationBuffer(CommandKey key, bool bSuccess)
+void ConsoleOperator::OnStepperDecelerationBuffer(CommandId key, bool bSuccess)
 {
-	if(_cmdKey == InvalidCommandKey) {
+	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
 	if(_cmdKey != key) {
@@ -648,12 +648,12 @@ void ConsoleOperator::OnStepperDecelerationBuffer(CommandKey key, bool bSuccess)
 	pLogger->LogInfo("ConsoleOperator::OnStepperDecelerationBuffer succeed");
 	_bCmdSucceed = bSuccess;
 	_bCmdFinish = true;
-	_cmdKey = InvalidCommandKey;
+	_cmdKey = InvalidCommandId;
 }
 
-void ConsoleOperator::OnStepperDecelerationBufferIncrement(CommandKey key, bool bSuccess)
+void ConsoleOperator::OnStepperDecelerationBufferIncrement(CommandId key, bool bSuccess)
 {
-	if(_cmdKey == InvalidCommandKey) {
+	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
 	if(_cmdKey != key) {
@@ -664,12 +664,12 @@ void ConsoleOperator::OnStepperDecelerationBufferIncrement(CommandKey key, bool 
 	pLogger->LogInfo("ConsoleOperator::OnStepperDecelerationBufferIncrement succeed");
 	_bCmdSucceed = bSuccess;
 	_bCmdFinish = true;
-	_cmdKey = InvalidCommandKey;
+	_cmdKey = InvalidCommandId;
 }
 
-void ConsoleOperator::OnStepperConfigHome(CommandKey key, bool bSuccess)
+void ConsoleOperator::OnStepperConfigHome(CommandId key, bool bSuccess)
 {
-	if(_cmdKey == InvalidCommandKey) {
+	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
 	if(_cmdKey != key) {
@@ -680,7 +680,7 @@ void ConsoleOperator::OnStepperConfigHome(CommandKey key, bool bSuccess)
 	pLogger->LogInfo("ConsoleOperator::OnStepperConfigHome succeed");
 	_bCmdSucceed = bSuccess;
 	_bCmdFinish = true;
-	_cmdKey = InvalidCommandKey;
+	_cmdKey = InvalidCommandId;
 }
 
 void ConsoleOperator::runTask()

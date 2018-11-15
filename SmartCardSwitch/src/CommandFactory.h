@@ -42,6 +42,7 @@ public:
 	static std::shared_ptr<DeviceCommand> StepperRun(unsigned int stepperIndex, unsigned long initialPosition, unsigned long finalPosition);
 	static std::shared_ptr<DeviceCommand> StepperConfigHome(unsigned int stepperIndex, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal);
 	static std::shared_ptr<DeviceCommand> StepperQuery(unsigned int stepperIndex);
+	static std::shared_ptr<DeviceCommand> StepperSetState(unsigned int stepperIndex, unsigned int state);
 	static std::shared_ptr<DeviceCommand> StepperMove(unsigned int stepperIndex, unsigned long position, bool forward, unsigned long steps);
 	static std::shared_ptr<DeviceCommand> LocatorQuery(unsigned int locatorIndex);
 };

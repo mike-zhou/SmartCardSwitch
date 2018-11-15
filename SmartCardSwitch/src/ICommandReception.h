@@ -17,9 +17,9 @@ class ICommandDataTypes
 {
 public:
 
-	typedef unsigned long CommandKey;
+	typedef unsigned long CommandId;
 
-	const CommandKey InvalidCommandKey = 0;
+	const CommandId InvalidCommandId = 0;
 
 	enum class BdcStatus
 	{
@@ -44,46 +44,46 @@ public:
 
 };
 
-class IResponseReceiver: ICommandDataTypes
+class IResponseReceiver: public ICommandDataTypes
 {
 public:
 	virtual ~IResponseReceiver() {}
 
-	virtual void OnDevicesGet(CommandKey key, bool bSuccess, const std::vector<std::string>& devices) {}
-	virtual void OnDeviceConnect(CommandKey key, bool bSuccess)  {}
-	virtual void OnDeviceQueryPower(CommandKey key, bool bSuccess, bool bPowered)  {}
-	virtual void OnDeviceQueryFuse(CommandKey key, bool bSuccess, bool bFuseOn)  {}
-	virtual void OnOptPowerOn(CommandKey key, bool bSuccess)  {}
-	virtual void OnOptPowerOff(CommandKey key, bool bSuccess)  {}
-	virtual void OnOptQueryPower(CommandKey key, bool bSuccess)  {}
-	virtual void OnDcmPowerOn(CommandKey key, bool bSuccess)  {}
-	virtual void OnDcmPowerOff(CommandKey key, bool bSuccess)  {}
-	virtual void OnDcmQueryPower(CommandKey key, bool bSuccess)  {}
-	virtual void OnBdcsPowerOn(CommandKey key, bool bSuccess) {}
-	virtual void OnBdcsPowerOff(CommandKey key, bool bSuccess) {}
-	virtual void OnBdcsQueryPower(CommandKey key, bool bSuccess, bool bPowered) {}
-	virtual void OnBdcCoast(CommandKey key, bool bSuccess) {}
-	virtual void OnBdcReverse(CommandKey key, bool bSuccess) {}
-	virtual void OnBdcForward(CommandKey key, bool bSuccess) {}
-	virtual void OnBdcBreak(CommandKey key, bool bSuccess) {}
-	virtual void OnBdcQuery(CommandKey key, bool bSuccess, BdcStatus status) {}
-	virtual void OnSteppersPowerOn(CommandKey key, bool bSuccess) {}
-	virtual void OnSteppersPowerOff(CommandKey key, bool bSuccess) {}
-	virtual void OnSteppersQueryPower(CommandKey key, bool bSuccess, bool bPowered) {}
-	virtual void OnStepperQueryResolution(CommandKey key, bool bSuccess, unsigned long resolutionUs) {}
-	virtual void OnStepperConfigStep(CommandKey key, bool bSuccess) {}
-	virtual void OnStepperAccelerationBuffer(CommandKey key, bool bSuccess) {}
-	virtual void OnStepperAccelerationBufferDecrement(CommandKey key, bool bSuccess) {}
-	virtual void OnStepperDecelerationBuffer(CommandKey key, bool bSuccess) {}
-	virtual void OnStepperDecelerationBufferIncrement(CommandKey key, bool bSuccess) {}
-	virtual void OnStepperEnable(CommandKey key, bool bSuccess) {}
-	virtual void OnStepperForward(CommandKey key, bool bSuccess) {}
-	virtual void OnStepperSteps(CommandKey key, bool bSuccess) {}
-	virtual void OnStepperRun(CommandKey key, bool bSuccess) {}
-	virtual void OnStepperConfigHome(CommandKey key, bool bSuccess) {}
-	virtual void OnStepperMove(CommandKey key, bool bSuccess) {}
-	virtual void OnStepperForceState(CommandKey key, bool bSuccess) {}
-	virtual void OnStepperQuery(CommandKey key, bool bSuccess,
+	virtual void OnDevicesGet(CommandId key, bool bSuccess, const std::vector<std::string>& devices) {}
+	virtual void OnDeviceConnect(CommandId key, bool bSuccess)  {}
+	virtual void OnDeviceQueryPower(CommandId key, bool bSuccess, bool bPowered)  {}
+	virtual void OnDeviceQueryFuse(CommandId key, bool bSuccess, bool bFuseOn)  {}
+	virtual void OnOptPowerOn(CommandId key, bool bSuccess)  {}
+	virtual void OnOptPowerOff(CommandId key, bool bSuccess)  {}
+	virtual void OnOptQueryPower(CommandId key, bool bSuccess)  {}
+	virtual void OnDcmPowerOn(CommandId key, bool bSuccess)  {}
+	virtual void OnDcmPowerOff(CommandId key, bool bSuccess)  {}
+	virtual void OnDcmQueryPower(CommandId key, bool bSuccess)  {}
+	virtual void OnBdcsPowerOn(CommandId key, bool bSuccess) {}
+	virtual void OnBdcsPowerOff(CommandId key, bool bSuccess) {}
+	virtual void OnBdcsQueryPower(CommandId key, bool bSuccess, bool bPowered) {}
+	virtual void OnBdcCoast(CommandId key, bool bSuccess) {}
+	virtual void OnBdcReverse(CommandId key, bool bSuccess) {}
+	virtual void OnBdcForward(CommandId key, bool bSuccess) {}
+	virtual void OnBdcBreak(CommandId key, bool bSuccess) {}
+	virtual void OnBdcQuery(CommandId key, bool bSuccess, BdcStatus status) {}
+	virtual void OnSteppersPowerOn(CommandId key, bool bSuccess) {}
+	virtual void OnSteppersPowerOff(CommandId key, bool bSuccess) {}
+	virtual void OnSteppersQueryPower(CommandId key, bool bSuccess, bool bPowered) {}
+	virtual void OnStepperQueryResolution(CommandId key, bool bSuccess, unsigned long resolutionUs) {}
+	virtual void OnStepperConfigStep(CommandId key, bool bSuccess) {}
+	virtual void OnStepperAccelerationBuffer(CommandId key, bool bSuccess) {}
+	virtual void OnStepperAccelerationBufferDecrement(CommandId key, bool bSuccess) {}
+	virtual void OnStepperDecelerationBuffer(CommandId key, bool bSuccess) {}
+	virtual void OnStepperDecelerationBufferIncrement(CommandId key, bool bSuccess) {}
+	virtual void OnStepperEnable(CommandId key, bool bSuccess) {}
+	virtual void OnStepperForward(CommandId key, bool bSuccess) {}
+	virtual void OnStepperSteps(CommandId key, bool bSuccess) {}
+	virtual void OnStepperRun(CommandId key, bool bSuccess) {}
+	virtual void OnStepperConfigHome(CommandId key, bool bSuccess) {}
+	virtual void OnStepperMove(CommandId key, bool bSuccess) {}
+	virtual void OnStepperForceState(CommandId key, bool bSuccess) {}
+	virtual void OnStepperQuery(CommandId key, bool bSuccess,
 								StepperState state,
 								bool bEnabled,
 								bool bForward,
@@ -98,10 +98,11 @@ public:
 								unsigned long decelerationBuffer,
 								unsigned long decelerationBufferIncrement) {}
 
-	virtual void OnLocatorQuery(CommandKey key, bool bSuccess, unsigned int lowInput) {}
-	virtual void OnBdcDelay(CommandKey key, bool bSuccess) {}
-	virtual void OnSaveMovementConfig(CommandKey key, bool bSuccess) {}
-	virtual void OnSaveCoordinates(CommandKey key, bool bSuccess) {}
+	virtual void OnStepperSetState(CommandId key, bool bSuccess) {}
+	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) {}
+	virtual void OnBdcDelay(CommandId key, bool bSuccess) {}
+	virtual void OnSaveMovementConfig(CommandId key, bool bSuccess) {}
+	virtual void OnSaveCoordinates(CommandId key, bool bSuccess) {}
 };
 
 class ICommandReception: public ICommandDataTypes
@@ -109,45 +110,45 @@ class ICommandReception: public ICommandDataTypes
 public:
 	virtual ~ICommandReception() {}
 
-	virtual CommandKey DevicesGet() = 0;
-	virtual CommandKey DeviceConnect(unsigned int index) = 0;
-	virtual CommandKey DeviceQueryPower() = 0;
-	virtual CommandKey DeviceQueryFuse() = 0;
-	virtual CommandKey OptPowerOn() = 0;
-	virtual CommandKey OptPowerOff() = 0;
-	virtual CommandKey OptQueryPower() = 0;
-	virtual CommandKey DcmPowerOn() = 0;
-	virtual CommandKey DcmPowerOff() = 0;
-	virtual CommandKey DcmQueryPower() = 0;
-	virtual CommandKey BdcsPowerOn() = 0;
-	virtual CommandKey BdcsPowerOff() = 0;
-	virtual CommandKey BdcsQueryPower() = 0;
-	virtual CommandKey BdcCoast(unsigned int index) = 0;
-	virtual CommandKey BdcReverse(unsigned int index) = 0;
-	virtual CommandKey BdcForward(unsigned int index) = 0;
-	virtual CommandKey BdcBreak(unsigned int index) = 0;
-	virtual CommandKey BdcQuery(unsigned int index) = 0;
-	virtual CommandKey SteppersPowerOn() = 0;
-	virtual CommandKey SteppersPowerOff() = 0;
-	virtual CommandKey SteppersQueryPower() = 0;
-	virtual CommandKey StepperQueryResolution() = 0;
-	virtual CommandKey StepperConfigStep(unsigned int index, unsigned short lowClks, unsigned short highClks) = 0;
-	virtual CommandKey StepperAccelerationBuffer(unsigned int index, unsigned short value) = 0;
-	virtual CommandKey StepperAccelerationBufferDecrement(unsigned int index, unsigned short value) = 0;
-	virtual CommandKey StepperDecelerationBuffer(unsigned int index, unsigned short value) = 0;
-	virtual CommandKey StepperDecelerationBufferIncrement(unsigned int index, unsigned short value) = 0;
-	virtual CommandKey StepperEnable(unsigned int index, bool bEnable) = 0;
-	virtual CommandKey StepperForward(unsigned int index, bool forward) = 0;
-	virtual CommandKey StepperSteps(unsigned int index, unsigned short value) = 0;
-	virtual CommandKey StepperRun(unsigned int index, unsigned short intialPos, unsigned short finalPos) = 0;
-	virtual CommandKey StepperConfigHome(unsigned int index, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal) = 0;
-	virtual CommandKey StepperMove(unsigned int index, unsigned short steps) = 0;
-	virtual CommandKey StepperForceState(unsigned int index, StepperState state) = 0;
-	virtual CommandKey StepperQuery(unsigned int index) = 0;
-	virtual CommandKey LocatorQuery(unsigned int index) = 0;
-	virtual CommandKey BdcDelay(unsigned int index, unsigned int value) = 0;
-	virtual CommandKey SaveMovementConfig() = 0;
-	virtual CommandKey SaveCoordinates(CoordinateStorage::Type type, unsigned int index) = 0;
+	virtual CommandId DevicesGet() = 0;
+	virtual CommandId DeviceConnect(unsigned int index) = 0;
+	virtual CommandId DeviceQueryPower() = 0;
+	virtual CommandId DeviceQueryFuse() = 0;
+	virtual CommandId OptPowerOn() = 0;
+	virtual CommandId OptPowerOff() = 0;
+	virtual CommandId OptQueryPower() = 0;
+	virtual CommandId DcmPowerOn() = 0;
+	virtual CommandId DcmPowerOff() = 0;
+	virtual CommandId DcmQueryPower() = 0;
+	virtual CommandId BdcsPowerOn() = 0;
+	virtual CommandId BdcsPowerOff() = 0;
+	virtual CommandId BdcsQueryPower() = 0;
+	virtual CommandId BdcCoast(unsigned int index) = 0;
+	virtual CommandId BdcReverse(unsigned int index) = 0;
+	virtual CommandId BdcForward(unsigned int index) = 0;
+	virtual CommandId BdcBreak(unsigned int index) = 0;
+	virtual CommandId BdcQuery(unsigned int index) = 0;
+	virtual CommandId SteppersPowerOn() = 0;
+	virtual CommandId SteppersPowerOff() = 0;
+	virtual CommandId SteppersQueryPower() = 0;
+	virtual CommandId StepperQueryResolution() = 0;
+	virtual CommandId StepperConfigStep(unsigned int index, unsigned short lowClks, unsigned short highClks) = 0;
+	virtual CommandId StepperAccelerationBuffer(unsigned int index, unsigned short value) = 0;
+	virtual CommandId StepperAccelerationBufferDecrement(unsigned int index, unsigned short value) = 0;
+	virtual CommandId StepperDecelerationBuffer(unsigned int index, unsigned short value) = 0;
+	virtual CommandId StepperDecelerationBufferIncrement(unsigned int index, unsigned short value) = 0;
+	virtual CommandId StepperEnable(unsigned int index, bool bEnable) = 0;
+	virtual CommandId StepperForward(unsigned int index, bool forward) = 0;
+	virtual CommandId StepperSteps(unsigned int index, unsigned short value) = 0;
+	virtual CommandId StepperRun(unsigned int index, unsigned short intialPos, unsigned short finalPos) = 0;
+	virtual CommandId StepperConfigHome(unsigned int index, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal) = 0;
+	virtual CommandId StepperMove(unsigned int index, unsigned short steps) = 0;
+	virtual CommandId StepperSetState(unsigned int index, StepperState state) = 0;
+	virtual CommandId StepperQuery(unsigned int index) = 0;
+	virtual CommandId LocatorQuery(unsigned int index) = 0;
+	virtual CommandId BdcDelay(unsigned int index, unsigned int value) = 0;
+	virtual CommandId SaveMovementConfig() = 0;
+	virtual CommandId SaveCoordinates(CoordinateStorage::Type type, unsigned int index) = 0;
 
 	virtual void AddResponseReceiver(IResponseReceiver * p) = 0;
 };

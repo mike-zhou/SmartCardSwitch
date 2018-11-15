@@ -1421,6 +1421,46 @@ void CommandRunner::onFeedbackStepperQuery(std::shared_ptr<ReplyTranslator::Repl
 	}
 }
 
+void CommandRunner::onFeedbackStepperSetState(std::shared_ptr<ReplyTranslator::ReplyStepperSetState> replyPtr)
+{
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
+
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::onFeedbackStepperSetState index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("CommandRunner::onFeedbackStepperSetState wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else {
+			pLogger->LogInfo("CommandRunner::onFeedbackStepperSetState index: " + std::to_string(replyPtr->index) + ", steps: " + std::to_string(_userCommand.steps));
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("CommandRunner::onFeedbackStepperSetState error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperSetState(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
+	}
+}
+
 void CommandRunner::onFeedbackLocatorQuery(std::shared_ptr<ReplyTranslator::ReplyLocatorQuery> replyPtr)
 {
 	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
@@ -1689,6 +1729,13 @@ void CommandRunner::processFeedbacks()
 			}
 			break;
 
+			case ReplyTranslator::ReplyType::StepperSetState:
+			{
+				auto replyPtr = translator.ToStepperSetState();
+				onFeedbackStepperSetState(replyPtr);
+			}
+			break;
+
 			case ReplyTranslator::ReplyType::LocatorQuery:
 			{
 				auto replyPtr = translator.ToLocatorQuery();
@@ -1712,7 +1759,7 @@ void CommandRunner::AddResponseReceiver(IResponseReceiver * p)
 
 unsigned long CommandRunner::sendCmdToDevice(std::shared_ptr<DeviceCommand>& cmdPtr)
 {
-	unsigned long cmdKey = InvalidCommandKey;
+	unsigned long cmdId = InvalidCommandId;
 
 	if(cmdPtr != nullptr)
 	{
@@ -1726,13 +1773,13 @@ unsigned long CommandRunner::sendCmdToDevice(std::shared_ptr<DeviceCommand>& cmd
 		_pDeviceAccessor->SendCommand(_userCommand.jsonCommandString);
 		_userCommand.state = UserCommand::CommandState::COMMAND_SENT;
 
-		cmdKey = _userCommand.commandId;
+		cmdId = _userCommand.commandId;
 	}
 
-	return cmdKey;
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::DevicesGet()
+ICommandReception::CommandId CommandRunner::DevicesGet()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -1746,12 +1793,12 @@ ICommandReception::CommandKey CommandRunner::DevicesGet()
 		_userCommand.resultDevices.clear();
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::DeviceConnect(unsigned int index)
+ICommandReception::CommandId CommandRunner::DeviceConnect(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -1781,12 +1828,12 @@ ICommandReception::CommandKey CommandRunner::DeviceConnect(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::DeviceQueryPower()
+ICommandReception::CommandId CommandRunner::DeviceQueryPower()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -1801,12 +1848,12 @@ ICommandReception::CommandKey CommandRunner::DeviceQueryPower()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::DeviceQueryFuse()
+ICommandReception::CommandId CommandRunner::DeviceQueryFuse()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -1821,78 +1868,78 @@ ICommandReception::CommandKey CommandRunner::DeviceQueryFuse()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::OptPowerOn()
+ICommandReception::CommandId CommandRunner::OptPowerOn()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::OptPowerOff()
+ICommandReception::CommandId CommandRunner::OptPowerOff()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::OptQueryPower()
+ICommandReception::CommandId CommandRunner::OptQueryPower()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::DcmPowerOn()
+ICommandReception::CommandId CommandRunner::DcmPowerOn()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::DcmPowerOff()
+ICommandReception::CommandId CommandRunner::DcmPowerOff()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::DcmQueryPower()
+ICommandReception::CommandId CommandRunner::DcmQueryPower()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::BdcsPowerOn()
+ICommandReception::CommandId CommandRunner::BdcsPowerOn()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -1907,12 +1954,12 @@ ICommandReception::CommandKey CommandRunner::BdcsPowerOn()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::BdcsPowerOff()
+ICommandReception::CommandId CommandRunner::BdcsPowerOff()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -1927,12 +1974,12 @@ ICommandReception::CommandKey CommandRunner::BdcsPowerOff()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::BdcsQueryPower()
+ICommandReception::CommandId CommandRunner::BdcsQueryPower()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -1947,12 +1994,12 @@ ICommandReception::CommandKey CommandRunner::BdcsQueryPower()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::BdcCoast(unsigned int index)
+ICommandReception::CommandId CommandRunner::BdcCoast(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -1977,12 +2024,12 @@ ICommandReception::CommandKey CommandRunner::BdcCoast(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::BdcReverse(unsigned int index)
+ICommandReception::CommandId CommandRunner::BdcReverse(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2007,12 +2054,12 @@ ICommandReception::CommandKey CommandRunner::BdcReverse(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::BdcForward(unsigned int index)
+ICommandReception::CommandId CommandRunner::BdcForward(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2037,12 +2084,12 @@ ICommandReception::CommandKey CommandRunner::BdcForward(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::BdcBreak(unsigned int index)
+ICommandReception::CommandId CommandRunner::BdcBreak(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2067,12 +2114,12 @@ ICommandReception::CommandKey CommandRunner::BdcBreak(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::BdcQuery(unsigned int index)
+ICommandReception::CommandId CommandRunner::BdcQuery(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2096,12 +2143,12 @@ ICommandReception::CommandKey CommandRunner::BdcQuery(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::SteppersPowerOn()
+ICommandReception::CommandId CommandRunner::SteppersPowerOn()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2116,12 +2163,12 @@ ICommandReception::CommandKey CommandRunner::SteppersPowerOn()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::SteppersPowerOff()
+ICommandReception::CommandId CommandRunner::SteppersPowerOff()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2136,12 +2183,12 @@ ICommandReception::CommandKey CommandRunner::SteppersPowerOff()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::SteppersQueryPower()
+ICommandReception::CommandId CommandRunner::SteppersQueryPower()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2156,12 +2203,12 @@ ICommandReception::CommandKey CommandRunner::SteppersQueryPower()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperQueryResolution()
+ICommandReception::CommandId CommandRunner::StepperQueryResolution()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2176,12 +2223,12 @@ ICommandReception::CommandKey CommandRunner::StepperQueryResolution()
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperConfigStep(unsigned int index, unsigned short lowClks, unsigned short highClks)
+ICommandReception::CommandId CommandRunner::StepperConfigStep(unsigned int index, unsigned short lowClks, unsigned short highClks)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2207,12 +2254,12 @@ ICommandReception::CommandKey CommandRunner::StepperConfigStep(unsigned int inde
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperAccelerationBuffer(unsigned int index, unsigned short value)
+ICommandReception::CommandId CommandRunner::StepperAccelerationBuffer(unsigned int index, unsigned short value)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2237,12 +2284,12 @@ ICommandReception::CommandKey CommandRunner::StepperAccelerationBuffer(unsigned 
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperAccelerationBufferDecrement(unsigned int index, unsigned short value)
+ICommandReception::CommandId CommandRunner::StepperAccelerationBufferDecrement(unsigned int index, unsigned short value)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2267,12 +2314,12 @@ ICommandReception::CommandKey CommandRunner::StepperAccelerationBufferDecrement(
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperDecelerationBuffer(unsigned int index, unsigned short value)
+ICommandReception::CommandId CommandRunner::StepperDecelerationBuffer(unsigned int index, unsigned short value)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2297,12 +2344,12 @@ ICommandReception::CommandKey CommandRunner::StepperDecelerationBuffer(unsigned 
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperDecelerationBufferIncrement(unsigned int index, unsigned short value)
+ICommandReception::CommandId CommandRunner::StepperDecelerationBufferIncrement(unsigned int index, unsigned short value)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2327,12 +2374,12 @@ ICommandReception::CommandKey CommandRunner::StepperDecelerationBufferIncrement(
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperEnable(unsigned int index, bool bEnable)
+ICommandReception::CommandId CommandRunner::StepperEnable(unsigned int index, bool bEnable)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2356,12 +2403,12 @@ ICommandReception::CommandKey CommandRunner::StepperEnable(unsigned int index, b
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperForward(unsigned int index, bool forward)
+ICommandReception::CommandId CommandRunner::StepperForward(unsigned int index, bool forward)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2385,12 +2432,12 @@ ICommandReception::CommandKey CommandRunner::StepperForward(unsigned int index, 
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperSteps(unsigned int index, unsigned short value)
+ICommandReception::CommandId CommandRunner::StepperSteps(unsigned int index, unsigned short value)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2415,12 +2462,12 @@ ICommandReception::CommandKey CommandRunner::StepperSteps(unsigned int index, un
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperRun(unsigned int index, unsigned short initialPos, unsigned short finalPos)
+ICommandReception::CommandId CommandRunner::StepperRun(unsigned int index, unsigned short initialPos, unsigned short finalPos)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2446,12 +2493,12 @@ ICommandReception::CommandKey CommandRunner::StepperRun(unsigned int index, unsi
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperConfigHome(unsigned int index, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal)
+ICommandReception::CommandId CommandRunner::StepperConfigHome(unsigned int index, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2487,23 +2534,23 @@ ICommandReception::CommandKey CommandRunner::StepperConfigHome(unsigned int inde
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperMove(unsigned int index, unsigned short steps)
+ICommandReception::CommandId CommandRunner::StepperMove(unsigned int index, unsigned short steps)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperQuery(unsigned int index)
+ICommandReception::CommandId CommandRunner::StepperQuery(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2527,28 +2574,28 @@ ICommandReception::CommandKey CommandRunner::StepperQuery(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::StepperForceState(unsigned int index, StepperState state)
+ICommandReception::CommandId CommandRunner::StepperSetState(unsigned int index, StepperState state)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
 	if(_userCommand.resultConnectedDeviceName.empty()) {
-		pLogger->LogError("CommandRunner::StepperForceState hasn't connected to any device");
+		pLogger->LogError("CommandRunner::StepperSetState hasn't connected to any device");
 	}
 	else {
 		if(index >= LOCATOR_AMOUNT) {
-			pLogger->LogError("CommandRunner::StepperForceState invalid stepper index: " + std::to_string(index));
+			pLogger->LogError("CommandRunner::StepperSetState invalid stepper index: " + std::to_string(index));
 		}
 		else
 		{
-
+			cmdPtr = CommandFactory::StepperSetState(index, (unsigned int)state);
 			if(cmdPtr == nullptr) {
-				pLogger->LogError("CommandRunner::StepperForceState empty ptr returned from CommandFactory::LocatorQuery");
+				pLogger->LogError("CommandRunner::StepperSetState empty ptr returned from CommandFactory::StepperSetState");
 			}
 			else {
 				_userCommand.stepperIndex = index;
@@ -2556,12 +2603,12 @@ ICommandReception::CommandKey CommandRunner::StepperForceState(unsigned int inde
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::LocatorQuery(unsigned int index)
+ICommandReception::CommandId CommandRunner::LocatorQuery(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2585,26 +2632,26 @@ ICommandReception::CommandKey CommandRunner::LocatorQuery(unsigned int index)
 		}
 	}
 
-	ICommandReception::CommandKey cmdKey ;
-	cmdKey = sendCmdToDevice(cmdPtr);
-	return cmdKey;
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
 }
 
-ICommandReception::CommandKey CommandRunner::BdcDelay(unsigned int index, unsigned int value)
+ICommandReception::CommandId CommandRunner::BdcDelay(unsigned int index, unsigned int value)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 	_userCommand.resultBdcDelay = value;
 	return 0;
 }
 
-ICommandReception::CommandKey CommandRunner::SaveMovementConfig()
+ICommandReception::CommandId CommandRunner::SaveMovementConfig()
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 	saveMovementConfig();
 	return 0;
 }
 
-ICommandReception::CommandKey CommandRunner::SaveCoordinates(CoordinateStorage::Type type, unsigned int index)
+ICommandReception::CommandId CommandRunner::SaveCoordinates(CoordinateStorage::Type type, unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 	saveCoordinates(type, index);

@@ -52,6 +52,7 @@ private:
 	const std::string strCommandStepperRun = "stepper run";
 	const std::string strCommandStepperConfigHome = "stepper config home";
 	const std::string strCommandStepperQuery = "stepper query";
+	const std::string strCommandStepperSetState = "stepper set state";
 	const std::string strCommandLocatorQuery = "locator query";
 	//events
 	const std::string strEventMainPowerOn = "main power is on";
@@ -114,6 +115,7 @@ private:
 	std::string stepperRun(Poco::JSON::Object::Ptr& replyPtr);
 	std::string stepperConfigHome(Poco::JSON::Object::Ptr& replyPtr);
 	std::string stepperQuery(Poco::JSON::Object::Ptr& replyPtr);
+	std::string stepperSetState(Poco::JSON::Object::Ptr& replyPtr);
 	std::string locatorQuery(Poco::JSON::Object::Ptr& replyPtr);
 	//events
 	std::string formatEvent(Poco::JSON::Object::Ptr& replyPtr);

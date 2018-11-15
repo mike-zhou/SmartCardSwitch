@@ -183,6 +183,13 @@ std::shared_ptr<DeviceCommand> CommandFactory::StepperQuery(unsigned int stepper
 	return ptr;
 }
 
+std::shared_ptr<DeviceCommand> CommandFactory::StepperSetState(unsigned int stepperIndex, unsigned int state)
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandStepperSetState(stepperIndex, state));
+
+	return ptr;
+}
+
 std::shared_ptr<DeviceCommand> CommandFactory::StepperMove(unsigned int stepperIndex, unsigned long position, bool forward, unsigned long steps)
 {
 	std::shared_ptr<DeviceCommand> ptr(new CommandStepperMove(stepperIndex, position, forward, steps));

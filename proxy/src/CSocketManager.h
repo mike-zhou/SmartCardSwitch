@@ -121,6 +121,7 @@ private:
 	void onCommandStepperRun(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperRun> cmdPtr);
 	void onCommandStepperConfigHome(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperConfigHome> cmdPtr);
 	void onCommandStepperQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperQuery> cmdPtr);
+	void onCommandStepperSetState(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperSetState> cmdPtr);
 	void onCommandLocatorQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandLocatorQuery> cmdPtr);
 	void sendTranslatedCommandToDevice(long long socketId, const std::string& cmdString);
 

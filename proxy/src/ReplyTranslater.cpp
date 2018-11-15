@@ -276,7 +276,7 @@ std::string ReplyTranslater::bdcsQueryPower(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
-std::string ReplyTranslater:: bdcCoast(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::bdcCoast(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -317,7 +317,7 @@ std::string ReplyTranslater:: bdcCoast(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
-std::string ReplyTranslater:: bdcReverse(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::bdcReverse(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -358,7 +358,7 @@ std::string ReplyTranslater:: bdcReverse(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
-std::string ReplyTranslater:: bdcForward(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::bdcForward(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -399,7 +399,7 @@ std::string ReplyTranslater:: bdcForward(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
-std::string ReplyTranslater:: bdcBreak(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::bdcBreak(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -440,7 +440,7 @@ std::string ReplyTranslater:: bdcBreak(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
-std::string ReplyTranslater:: bdcQuery(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::bdcQuery(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -493,7 +493,7 @@ std::string ReplyTranslater:: bdcQuery(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
-std::string ReplyTranslater:: steppersPowerOn(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::steppersPowerOn(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -528,7 +528,7 @@ std::string ReplyTranslater:: steppersPowerOn(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
-std::string ReplyTranslater:: steppersPowerOff(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::steppersPowerOff(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -563,7 +563,7 @@ std::string ReplyTranslater:: steppersPowerOff(Poco::JSON::Object::Ptr& replyPtr
 	return reply;
 }
 
-std::string ReplyTranslater:: steppersQueryPower(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::steppersQueryPower(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -606,7 +606,7 @@ std::string ReplyTranslater:: steppersQueryPower(Poco::JSON::Object::Ptr& replyP
 	return reply;
 }
 
-std::string ReplyTranslater:: stepperQueryResolution(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperQueryResolution(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -650,7 +650,7 @@ std::string ReplyTranslater:: stepperQueryResolution(Poco::JSON::Object::Ptr& re
 	return reply;
 }
 
-std::string ReplyTranslater:: stepperConfigStep(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperConfigStep(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -691,7 +691,7 @@ std::string ReplyTranslater:: stepperConfigStep(Poco::JSON::Object::Ptr& replyPt
 	return reply;
 }
 
-std::string ReplyTranslater:: stepperAccelerationBuffer(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperAccelerationBuffer(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -732,7 +732,7 @@ std::string ReplyTranslater:: stepperAccelerationBuffer(Poco::JSON::Object::Ptr&
 	return reply;
 }
 
-std::string ReplyTranslater:: stepperAccelerationBufferDecrement(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperAccelerationBufferDecrement(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -773,7 +773,7 @@ std::string ReplyTranslater:: stepperAccelerationBufferDecrement(Poco::JSON::Obj
 	return reply;
 }
 
-std::string ReplyTranslater:: stepperDecelerationBuffer(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperDecelerationBuffer(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -814,7 +814,7 @@ std::string ReplyTranslater:: stepperDecelerationBuffer(Poco::JSON::Object::Ptr&
 	return reply;
 }
 
-std::string ReplyTranslater:: stepperDecelerationBufferIncrement(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperDecelerationBufferIncrement(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -855,7 +855,7 @@ std::string ReplyTranslater:: stepperDecelerationBufferIncrement(Poco::JSON::Obj
 	return reply;
 }
 
-std::string ReplyTranslater:: stepperEnable(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperEnable(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -901,7 +901,7 @@ std::string ReplyTranslater:: stepperEnable(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
-std::string ReplyTranslater:: stepperForward(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperForward(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -947,7 +947,7 @@ std::string ReplyTranslater:: stepperForward(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
-std::string ReplyTranslater:: stepperSteps(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperSteps(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -990,7 +990,7 @@ std::string ReplyTranslater:: stepperSteps(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
-std::string ReplyTranslater:: stepperRun(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperRun(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -1041,7 +1041,7 @@ std::string ReplyTranslater:: stepperRun(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
-std::string ReplyTranslater:: stepperConfigHome(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperConfigHome(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -1085,7 +1085,7 @@ std::string ReplyTranslater:: stepperConfigHome(Poco::JSON::Object::Ptr& replyPt
 	return reply;
 }
 
-std::string ReplyTranslater:: stepperQuery(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperQuery(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -1202,7 +1202,49 @@ std::string ReplyTranslater:: stepperQuery(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
-std::string ReplyTranslater:: locatorQuery(Poco::JSON::Object::Ptr& replyPtr)
+std::string ReplyTranslater::stepperSetState(Poco::JSON::Object::Ptr& replyPtr)
+{
+	std::string reply;
+	std::string strCmdId;
+	std::string error;
+	std::string strIndex;
+	Poco::DynamicStruct ds = *replyPtr;
+	long commandId;
+	long index;
+
+	//parameters
+	auto size = ds["params"].size();
+	if(size != 3) {
+		throw Poco::JSON::JSONException("ReplyTranslater::stepperSetState wrong parameter amount: " + std::to_string(size));
+	}
+	strIndex = ds["params"][0].toString();
+	index = getHexValue(strIndex);
+	strCmdId = ds["params"][size - 1].toString();
+	commandId = getHexValue(strCmdId);
+
+	if (replyPtr->has("error")) {
+		error = ds["error"].toString();
+	}
+
+	reply = "{";
+	reply = reply + "\"command\":\"" + strCommandStepperSetState + "\",";
+	reply = reply + "\"index\":" + std::to_string(index) + ",";
+	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	if(!error.empty()) {
+		reply = reply + ",\"error\":\"" + error + "\"";
+		//"\"error\":\"invalid command\""
+		//"\"error\":\"too many parameters\""
+		//"\"error\":\"unknown command\""
+		//"\"error\":\"wrong parameter amount\""
+		//"\"error\":\"stepper index is out of scope\""
+		//"\"error\":\"stepper has not been positioned\""
+		//"\"error\":\"invalid parameter\""
+	}
+	reply += "}";
+
+	return reply;}
+
+std::string ReplyTranslater::locatorQuery(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
 	std::string strCmdId;
@@ -1361,6 +1403,10 @@ std::string ReplyTranslater::formatCmdReply(Poco::JSON::Object::Ptr& replyPtr)
 
 	case 61:
 		reply = stepperQuery(replyPtr);
+		break;
+
+	case 62:
+		reply = stepperSetState(replyPtr);
 		break;
 
 	case 100:
