@@ -36,7 +36,7 @@ public:
 		ApproachingHomeLocator,
 		LeavingHomeLocator,
 		GoingHome,
-		KnowPosition,
+		KnownPosition,
 		Accelerating,
 		Cruising,
 		Decelerating

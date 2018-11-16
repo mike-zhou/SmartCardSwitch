@@ -69,7 +69,7 @@ void ConsoleOperator::showHelp()
 	std::cout << "StepperConfigHome:----------------- "<< "73 stepperIndex locatorIndex lineNumberStart lineNumberTerminal" << "\r\n";
 	std::cout << "StepperMove:----------------------- "<< "74 stepperIndex forward stepAmount" << "\r\n";
 	std::cout << "StepperQuery: --------------------- "<< "75 stepperIndex" << "\r\n";
-	std::cout << "StepperForceState: ---------------- "<< "76 stepperIndex state" << "\r\n";
+	std::cout << "StepperSetState: ------------------ "<< "76 stepperIndex state" << "\r\n";
 	std::cout << "LocatorQuery:---------------------- "<< "90 locatorIndex" << "\r\n";
 	std::cout << "BdcDelay:-------------------------- "<< "200 ms" << "\r\n";
 	std::cout << "SaveMovementConfig:---------------- "<< "300" << "\r\n";
@@ -189,6 +189,34 @@ void ConsoleOperator::loadMovementConfig()
 				pLogger->LogInfo("ConsoleOperator::loadMovementConfig failed in config locator for stepper: " + std::to_string(i));
 			}
 		}
+	}
+}
+
+void ConsoleOperator::stepperSetState(unsigned int index, int state)
+{
+	ICommandReception::StepperState stepperState;
+
+	switch(state)
+	{
+	case 4:
+		stepperState = ICommandReception::StepperState::KnownPosition;
+		break;
+
+	default:
+		pLogger->LogError("ConsoleOperator::stepperSetState unsupported stepper state: " + std::to_string(state));
+		return;
+	}
+
+	prepareRunning();
+	_pCommandReception->StepperSetState(index, stepperState);
+	waitCommandFinish();
+
+	if(_bCmdSucceed) {
+		pLogger->LogInfo("ConsoleOperator::stepperSetState succeeded in setting stepper state to " + std::to_string(state));
+		_steppers[index].homeOffset = 0;
+	}
+	else {
+		pLogger->LogInfo("ConsoleOperator::stepperSetState failed in setting stepper state to " + std::to_string(state));
 	}
 }
 
@@ -554,12 +582,13 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperForceState:
+		case Type::StepperSetState:
 		{
 			unsigned int index = d1;
-			ICommandReception::StepperState state = (ICommandReception::StepperState)d2;
+			int state = d2;
 
-			_cmdKey = _pCommandReception->StepperSetState(index, state);
+			stepperSetState(index, state);
+			_cmdKey = InvalidCommandId;
 		}
 		break;
 

@@ -101,7 +101,7 @@ private:
 		StepperConfigHome = 73,
 		StepperMove = 74,
 		StepperQuery = 75,
-		StepperForceState = 76,
+		StepperSetState = 76,
 		LocatorQuery = 90,
 		BdcDelay = 200,
 		SaveMovementConfig = 300,
@@ -132,6 +132,7 @@ private:
 	void prepareRunning();
 	void waitCommandFinish();
 	void loadMovementConfig();
+	void stepperSetState(unsigned int index, int state);
 	void stepperMove(unsigned int index, bool forward, unsigned int steps);
 };
 
