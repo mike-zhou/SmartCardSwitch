@@ -23,8 +23,9 @@ ConsoleOperator::ConsoleOperator(ICommandReception * pCmdReceiver) : Task("Conso
 	_cmdKey = InvalidCommandId;
 	_bCmdFinish = true;
 	_bCmdSucceed = false;
+	_queriedHomeOffset = -1;
 
-	for(int i=0; i<STEPPER_AMOUNT; i++)
+	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
 	{
 		StepperData s;
 		_steppers.push_back(s);
@@ -76,6 +77,22 @@ void ConsoleOperator::showHelp()
 	std::cout << "===============================================\r\n";
 }
 
+void ConsoleOperator::prepareRunning()
+{
+	_bCmdSucceed = false;
+	_bCmdFinish = false;
+}
+
+void ConsoleOperator::waitCommandFinish()
+{
+	for(;;) {
+		if(_bCmdFinish) {
+			break;
+		}
+		sleep(1);
+	}
+}
+
 void ConsoleOperator::loadMovementConfig()
 {
 	long lowClks ;
@@ -88,7 +105,7 @@ void ConsoleOperator::loadMovementConfig()
 	int locatorLineNumberStart ;
 	int locatorLineNumberTerminal;
 
-	for(int i=0; i<STEPPER_AMOUNT; i++)
+	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
 	{
 		auto rc = pMovementConfiguration->GetStepperConfig(i,
 															lowClks,
@@ -107,15 +124,9 @@ void ConsoleOperator::loadMovementConfig()
 		else
 		{
 			//load step
-			_bCmdFinish = false;
+			prepareRunning();
 			_cmdKey = _pCommandReception->StepperConfigStep(i, lowClks, highClks);
-			//wait for command finish
-			for(;;) {
-				if(_bCmdFinish) {
-					break;
-				}
-				sleep(10);
-			}
+			waitCommandFinish();
 			if(_bCmdSucceed) {
 				pLogger->LogInfo("ConsoleOperator::loadMovementConfig succeeded in config step for stepper: " + std::to_string(i));
 			}
@@ -124,15 +135,9 @@ void ConsoleOperator::loadMovementConfig()
 			}
 
 			//load acceleration buffer
-			_bCmdFinish = false;
+			prepareRunning();
 			_cmdKey = _pCommandReception->StepperAccelerationBuffer(i, accelerationBuffer);
-			//wait for command finish
-			for(;;) {
-				if(_bCmdFinish) {
-					break;
-				}
-				sleep(10);
-			}
+			waitCommandFinish();
 			if(_bCmdSucceed) {
 				pLogger->LogInfo("ConsoleOperator::loadMovementConfig succeeded in config accelerationBuffer for stepper: " + std::to_string(i));
 			}
@@ -141,15 +146,9 @@ void ConsoleOperator::loadMovementConfig()
 			}
 
 			//load acceleration buffer decrement
-			_bCmdFinish = false;
+			prepareRunning();
 			_cmdKey = _pCommandReception->StepperAccelerationBufferDecrement(i, accelerationBufferDecrement);
-			//wait for command finish
-			for(;;) {
-				if(_bCmdFinish) {
-					break;
-				}
-				sleep(10);
-			}
+			waitCommandFinish();
 			if(_bCmdSucceed) {
 				pLogger->LogInfo("ConsoleOperator::loadMovementConfig succeeded in config accelerationBufferDecrement for stepper: " + std::to_string(i));
 			}
@@ -158,15 +157,9 @@ void ConsoleOperator::loadMovementConfig()
 			}
 
 			//load deceleration buffer
-			_bCmdFinish = false;
+			prepareRunning();
 			_cmdKey = _pCommandReception->StepperDecelerationBuffer(i, decelerationBuffer);
-			//wait for command finish
-			for(;;) {
-				if(_bCmdFinish) {
-					break;
-				}
-				sleep(10);
-			}
+			waitCommandFinish();
 			if(_bCmdSucceed) {
 				pLogger->LogInfo("ConsoleOperator::loadMovementConfig succeeded in config decelerationBuffer for stepper: " + std::to_string(i));
 			}
@@ -175,15 +168,9 @@ void ConsoleOperator::loadMovementConfig()
 			}
 
 			//load deceleration buffer increment
-			_bCmdFinish = false;
+			prepareRunning();
 			_cmdKey = _pCommandReception->StepperDecelerationBufferIncrement(i, decelerationBufferIncrement);
-			//wait for command finish
-			for(;;) {
-				if(_bCmdFinish) {
-					break;
-				}
-				sleep(10);
-			}
+			waitCommandFinish();
 			if(_bCmdSucceed) {
 				pLogger->LogInfo("ConsoleOperator::loadMovementConfig succeeded in config decelerationBufferIncrement for stepper: " + std::to_string(i));
 			}
@@ -192,15 +179,9 @@ void ConsoleOperator::loadMovementConfig()
 			}
 
 			//load locator
-			_bCmdFinish = false;
+			prepareRunning();
 			_cmdKey = _pCommandReception->StepperConfigHome(i, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
-			//wait for command finish
-			for(;;) {
-				if(_bCmdFinish) {
-					break;
-				}
-				sleep(10);
-			}
+			waitCommandFinish();
 			if(_bCmdSucceed) {
 				pLogger->LogInfo("ConsoleOperator::loadMovementConfig succeeded in config locator for stepper: " + std::to_string(i));
 			}
@@ -209,6 +190,75 @@ void ConsoleOperator::loadMovementConfig()
 			}
 		}
 	}
+}
+
+void ConsoleOperator::stepperMove(unsigned int index, bool forward, unsigned int steps)
+{
+	long finalPos;
+	StepperData data;
+
+	if(index > STEPPER_AMOUNT) {
+		pLogger->LogError("ConsoleOperator::stepperMove wrong stepper index: " + std::to_string(index));
+		return;
+	}
+
+	data = _steppers[index];
+	if(forward) {
+		finalPos = data.homeOffset + steps;
+	}
+	else {
+		finalPos = data.homeOffset - steps;
+	}
+	if(finalPos < 0) {
+		pLogger->LogError("ConsoleOperator::stepperMove final position out of home, current position: " + std::to_string(data.homeOffset));
+		return;
+	}
+
+	pLogger->LogInfo("ConsoleOperator::stepperMove from " + std::to_string(data.homeOffset) + " to " + std::to_string(finalPos));
+
+	// set stepper direction
+	prepareRunning();
+	_pCommandReception->StepperForward(index, forward);
+	waitCommandFinish();
+	if(!_bCmdSucceed) {
+		pLogger->LogError("ConsoleOperator::stepperMove failed to set stepper direction: " + std::to_string(index));
+		return;
+	}
+	_steppers[index].forward = forward;
+
+	// set steps
+	prepareRunning();
+	_pCommandReception->StepperSteps(index, steps);
+	waitCommandFinish();
+	if(!_bCmdSucceed) {
+		pLogger->LogError("ConsoleOperator::stepperMove failed to set steps: " + std::to_string(index));
+		return;
+	}
+
+	//move stepper
+	prepareRunning();
+	_pCommandReception->StepperRun(index, data.homeOffset, finalPos);
+	waitCommandFinish();
+	if(!_bCmdSucceed) {
+		pLogger->LogError("ConsoleOperator::stepperMove failed to move stepper : " + std::to_string(index));
+	}
+
+	//query stepper
+	prepareRunning();
+	_pCommandReception->StepperQuery(index);
+	waitCommandFinish();
+	if(!_bCmdSucceed) {
+		pLogger->LogError("ConsoleOperator::stepperMove failed to query stepper : " + std::to_string(index));
+		return;
+	}
+	_steppers[index].homeOffset = _queriedHomeOffset; //update home offset
+
+	if(finalPos != _steppers[index].homeOffset)
+	{
+		pLogger->LogError("ConsoleOperator::stepperMove stepper actually moved to: " + std::to_string(_steppers[index].homeOffset) + " expected: " + std::to_string(finalPos));
+	}
+
+	pLogger->LogInfo("ConsoleOperator::stepperMove moved from " + std::to_string(data.homeOffset) + " to " + std::to_string(_steppers[index].homeOffset));
 }
 
 void ConsoleOperator::processInput()
@@ -493,6 +543,17 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
+		case Type::StepperMove:
+		{
+			unsigned int index = d1;
+			bool forward = (d2 != 0);
+			unsigned int steps = d3;
+
+			stepperMove(index, forward, steps);
+			_cmdKey = InvalidCommandId;
+		}
+		break;
+
 		case Type::StepperForceState:
 		{
 			unsigned int index = d1;
@@ -597,7 +658,7 @@ void ConsoleOperator::OnStepperConfigStep(CommandId key, bool bSuccess)
 		return;
 	}
 
-	pLogger->LogInfo("ConsoleOperator::OnStepperConfigStep succeed");
+	pLogger->LogInfo("ConsoleOperator::OnStepperConfigStep finished");
 	_bCmdSucceed = bSuccess;
 	_bCmdFinish = true;
 	_cmdKey = InvalidCommandId;
@@ -613,7 +674,7 @@ void ConsoleOperator::OnStepperAccelerationBuffer(CommandId key, bool bSuccess)
 		return;
 	}
 
-	pLogger->LogInfo("ConsoleOperator::OnStepperAccelerationBuffer succeed");
+	pLogger->LogInfo("ConsoleOperator::OnStepperAccelerationBuffer finished");
 	_bCmdSucceed = bSuccess;
 	_bCmdFinish = true;
 	_cmdKey = InvalidCommandId;
@@ -629,7 +690,7 @@ void ConsoleOperator::OnStepperAccelerationBufferDecrement(CommandId key, bool b
 		return;
 	}
 
-	pLogger->LogInfo("ConsoleOperator::OnStepperAccelerationBufferDecrement succeed");
+	pLogger->LogInfo("ConsoleOperator::OnStepperAccelerationBufferDecrement finished");
 	_bCmdSucceed = bSuccess;
 	_bCmdFinish = true;
 	_cmdKey = InvalidCommandId;
@@ -645,7 +706,7 @@ void ConsoleOperator::OnStepperDecelerationBuffer(CommandId key, bool bSuccess)
 		return;
 	}
 
-	pLogger->LogInfo("ConsoleOperator::OnStepperDecelerationBuffer succeed");
+	pLogger->LogInfo("ConsoleOperator::OnStepperDecelerationBuffer finished");
 	_bCmdSucceed = bSuccess;
 	_bCmdFinish = true;
 	_cmdKey = InvalidCommandId;
@@ -661,7 +722,23 @@ void ConsoleOperator::OnStepperDecelerationBufferIncrement(CommandId key, bool b
 		return;
 	}
 
-	pLogger->LogInfo("ConsoleOperator::OnStepperDecelerationBufferIncrement succeed");
+	pLogger->LogInfo("ConsoleOperator::OnStepperDecelerationBufferIncrement finished");
+	_bCmdSucceed = bSuccess;
+	_bCmdFinish = true;
+	_cmdKey = InvalidCommandId;
+}
+
+void ConsoleOperator::OnStepperRun(CommandId key, bool bSuccess)
+{
+	if(_cmdKey == InvalidCommandId) {
+		return;
+	}
+	if(_cmdKey != key) {
+		pLogger->LogDebug("ConsoleOperator::OnStepperRun unexpected cmdKey: " + std::to_string(key) + ", expected: " + std::to_string(_cmdKey));
+		return;
+	}
+
+	pLogger->LogInfo("ConsoleOperator::OnStepperRun finished");
 	_bCmdSucceed = bSuccess;
 	_bCmdFinish = true;
 	_cmdKey = InvalidCommandId;
@@ -677,10 +754,71 @@ void ConsoleOperator::OnStepperConfigHome(CommandId key, bool bSuccess)
 		return;
 	}
 
-	pLogger->LogInfo("ConsoleOperator::OnStepperConfigHome succeed");
+	pLogger->LogInfo("ConsoleOperator::OnStepperConfigHome finished");
 	_bCmdSucceed = bSuccess;
 	_bCmdFinish = true;
 	_cmdKey = InvalidCommandId;
+}
+
+void ConsoleOperator::OnStepperForward(CommandId key, bool bSuccess)
+{
+	if(_cmdKey == InvalidCommandId) {
+		return;
+	}
+	if(_cmdKey != key) {
+		pLogger->LogDebug("ConsoleOperator::OnStepperForward unexpected cmdKey: " + std::to_string(key) + ", expected: " + std::to_string(_cmdKey));
+		return;
+	}
+
+	pLogger->LogInfo("ConsoleOperator::OnStepperForward finished");
+	_bCmdSucceed = bSuccess;
+	_bCmdFinish = true;
+	_cmdKey = InvalidCommandId;
+}
+
+void ConsoleOperator::OnStepperSteps(CommandId key, bool bSuccess)
+{
+	if(_cmdKey == InvalidCommandId) {
+		return;
+	}
+	if(_cmdKey != key) {
+		pLogger->LogDebug("ConsoleOperator::OnStepperSteps unexpected cmdKey: " + std::to_string(key) + ", expected: " + std::to_string(_cmdKey));
+		return;
+	}
+
+	pLogger->LogInfo("ConsoleOperator::OnStepperSteps finished");
+	_bCmdSucceed = bSuccess;
+	_bCmdFinish = true;
+	_cmdKey = InvalidCommandId;
+}
+
+void ConsoleOperator::OnStepperQuery(CommandId key, bool bSuccess,
+									StepperState state,
+									bool bEnabled,
+									bool bForward,
+									unsigned int locatorIndex,
+									unsigned int locatorLineNumberStart,
+									unsigned int locatorLineNumberTerminal,
+									unsigned long homeOffset,
+									unsigned long lowClks,
+									unsigned long highClks,
+									unsigned long accelerationBuffer,
+									unsigned long accelerationBufferDecrement,
+									unsigned long decelerationBuffer,
+									unsigned long decelerationBufferIncrement)
+{
+	if(_cmdKey == InvalidCommandId) {
+		return;
+	}
+	if(_cmdKey != key) {
+		pLogger->LogDebug("ConsoleOperator::OnStepperQuery unexpected cmdKey: " + std::to_string(key) + ", expected: " + std::to_string(_cmdKey));
+		return;
+	}
+
+	pLogger->LogInfo("ConsoleOperator::OnStepperQuery finished");
+	_bCmdSucceed = bSuccess;
+	_queriedHomeOffset = homeOffset;
+	_bCmdFinish = true;
 }
 
 void ConsoleOperator::runTask()

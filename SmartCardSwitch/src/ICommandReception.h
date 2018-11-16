@@ -82,7 +82,6 @@ public:
 	virtual void OnStepperRun(CommandId key, bool bSuccess) {}
 	virtual void OnStepperConfigHome(CommandId key, bool bSuccess) {}
 	virtual void OnStepperMove(CommandId key, bool bSuccess) {}
-	virtual void OnStepperForceState(CommandId key, bool bSuccess) {}
 	virtual void OnStepperQuery(CommandId key, bool bSuccess,
 								StepperState state,
 								bool bEnabled,

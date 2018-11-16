@@ -38,8 +38,24 @@ private:
 	virtual void OnStepperAccelerationBufferDecrement(CommandId key, bool bSuccess) override;
 	virtual void OnStepperDecelerationBuffer(CommandId key, bool bSuccess)  override;
 	virtual void OnStepperDecelerationBufferIncrement(CommandId key, bool bSuccess) override;
+	virtual void OnStepperRun(CommandId key, bool bSuccess) override;
 	virtual void OnStepperConfigHome(CommandId key, bool bSuccess) override;
-
+	virtual void OnStepperForward(CommandId key, bool bSuccess) override;
+	virtual void OnStepperSteps(CommandId key, bool bSuccess) override;
+	virtual void OnStepperQuery(CommandId key, bool bSuccess,
+									StepperState state,
+									bool bEnabled,
+									bool bForward,
+									unsigned int locatorIndex,
+									unsigned int locatorLineNumberStart,
+									unsigned int locatorLineNumberTerminal,
+									unsigned long homeOffset,
+									unsigned long lowClks,
+									unsigned long highClks,
+									unsigned long accelerationBuffer,
+									unsigned long accelerationBufferDecrement,
+									unsigned long decelerationBuffer,
+									unsigned long decelerationBufferIncrement) override;
 private:
 	const unsigned int BDC_AMOUNT = 6;
 	const unsigned int STEPPER_AMOUNT = 5;
@@ -100,10 +116,11 @@ private:
 	ICommandReception::CommandId _cmdKey;
 	bool _bCmdFinish;
 	bool _bCmdSucceed;
+	int _queriedHomeOffset;
 	std::vector<std::string> _devices;
 	struct StepperData
 	{
-		unsigned int homeOffset = 0;
+		long homeOffset = -1;
 		unsigned int steps = 0;
 		bool enabled = true;
 		bool forward = false;
@@ -112,6 +129,8 @@ private:
 
 	void processInput();
 	void showHelp();
+	void prepareRunning();
+	void waitCommandFinish();
 	void loadMovementConfig();
 	void stepperMove(unsigned int index, bool forward, unsigned int steps);
 };
