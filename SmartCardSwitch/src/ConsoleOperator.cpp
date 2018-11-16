@@ -289,6 +289,36 @@ void ConsoleOperator::stepperMove(unsigned int index, bool forward, unsigned int
 	pLogger->LogInfo("ConsoleOperator::stepperMove moved from " + std::to_string(data.homeOffset) + " to " + std::to_string(_steppers[index].homeOffset));
 }
 
+void ConsoleOperator::saveCoordinates(int type, unsigned int index)
+{
+	CoordinateStorage::Type coType = (CoordinateStorage::Type)type;
+
+	auto success = pCoordinateStorage->SetCoordinate(coType,
+											_steppers[0].homeOffset,
+											_steppers[1].homeOffset,
+											_steppers[2].homeOffset,
+											_steppers[3].homeOffset,
+											index);
+
+	if(success) {
+		pLogger->LogInfo("ConsoleOperator::saveCoordinates succeeded in saving coordinate");
+	}
+	else{
+		pLogger->LogInfo("ConsoleOperator::saveCoordinates failed in saving coordinate");
+	}
+
+	if(success)
+	{
+		auto rc = pCoordinateStorage->PersistToFile();
+		if(rc) {
+			pLogger->LogError("ConsoleOperator::saveCoordinates succeeded in persisting file");
+		}
+		else {
+			pLogger->LogError("ConsoleOperator::saveCoordinates failed in persisting file");
+		}
+	}
+}
+
 void ConsoleOperator::processInput()
 {
 	if(_input.size() < 1) {
@@ -628,10 +658,11 @@ void ConsoleOperator::processInput()
 
 		case Type::SaveCoordinates:
 		{
-			CoordinateStorage::Type type = (CoordinateStorage::Type)d1;
+			int type = d1;
 			unsigned int index = d2;
 
-			_cmdKey = _pCommandReception->SaveCoordinates(type, index);
+			saveCoordinates(type, index);
+			_cmdKey = InvalidCommandId;
 		}
 		break;
 

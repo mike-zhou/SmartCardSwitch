@@ -147,7 +147,6 @@ public:
 	virtual CommandId LocatorQuery(unsigned int index) = 0;
 	virtual CommandId BdcDelay(unsigned int index, unsigned int value) = 0;
 	virtual CommandId SaveMovementConfig() = 0;
-	virtual CommandId SaveCoordinates(CoordinateStorage::Type type, unsigned int index) = 0;
 
 	virtual void AddResponseReceiver(IResponseReceiver * p) = 0;
 };

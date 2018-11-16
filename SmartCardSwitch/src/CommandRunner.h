@@ -81,7 +81,6 @@ private:
 	virtual CommandId LocatorQuery(unsigned int index) override;
 	virtual CommandId BdcDelay(unsigned int index, unsigned int value) override;
 	virtual CommandId SaveMovementConfig() override;
-	virtual CommandId SaveCoordinates(CoordinateStorage::Type type, unsigned int index) override;
 
 private:
 	static const unsigned int BDC_AMOUNT = 6;
@@ -109,9 +108,6 @@ private:
 	unsigned long sendCmdToDevice(std::shared_ptr<DeviceCommand>& cmdPtr);
 	void setBdcDelay(unsigned long delay);
 	void saveMovementConfig();
-	void saveCoordinates(CoordinateStorage::Type type, unsigned int index);
-	void loadCoordinates();
-
 
 	void processFeedbacks();
 	bool isCorrespondingReply(const std::string& command, unsigned short commandId);

@@ -132,16 +132,6 @@ void CommandRunner::saveMovementConfig()
 	}
 }
 
-void CommandRunner::saveCoordinates(CoordinateStorage::Type type, unsigned int index)
-{
-
-}
-
-void CommandRunner::loadCoordinates()
-{
-
-}
-
 bool CommandRunner::isCorrespondingReply(const std::string& commandKey, unsigned short commandId)
 {
 	bool bCorrespondingReply = false;
@@ -2650,12 +2640,4 @@ ICommandReception::CommandId CommandRunner::SaveMovementConfig()
 	saveMovementConfig();
 	return 0;
 }
-
-ICommandReception::CommandId CommandRunner::SaveCoordinates(CoordinateStorage::Type type, unsigned int index)
-{
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-	saveCoordinates(type, index);
-	return 0;
-}
-
 

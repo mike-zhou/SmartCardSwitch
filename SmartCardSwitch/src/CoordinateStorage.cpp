@@ -646,6 +646,13 @@ bool CoordinateStorage::SetCoordinate(Type type,
 	}
 	break;
 
+	case Type::Home:
+	{
+		_home = value;
+		rc = true;
+	}
+	break;
+
 	default:
 		pLogger->LogError("CoordinateStorage::SetCoordinate unknown type: " + std::to_string(type));
 		break;
@@ -849,6 +856,12 @@ bool CoordinateStorage::GetCoordinate(Type type,
 		rc = true;
 	}
 	break;
+
+	case Type::Home:
+	{
+		value = _home;
+		rc = true;
+	}
 
 	default:
 		pLogger->LogError("CoordinateStorage::GetCoordinate unknown type: " + std::to_string(type));

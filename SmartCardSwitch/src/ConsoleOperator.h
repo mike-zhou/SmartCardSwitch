@@ -20,7 +20,6 @@
 
 #include "ICommandReception.h"
 
-
 class ConsoleOperator: public Poco::Task, public IResponseReceiver
 {
 public:
@@ -134,6 +133,7 @@ private:
 	void loadMovementConfig();
 	void stepperSetState(unsigned int index, int state);
 	void stepperMove(unsigned int index, bool forward, unsigned int steps);
+	void saveCoordinates(int type, unsigned int index);
 };
 
 

@@ -38,7 +38,8 @@ public:
 		SmartCardSlotExit = 17,
 		BarCodeReaderEntry = 18,
 		BarCodeReader = 19,
-		BarCodeReaderExit = 20
+		BarCodeReaderExit = 20,
+		Home = 21
 	};
 
 	unsigned int SmartCardsAmount() { return _smartCards.size(); }
@@ -141,6 +142,9 @@ private:
 	Coordinate _barCodeReaderEntry;
 	Coordinate _barCodeReader;
 	Coordinate _barCodeReaderExit;
+
+	//home
+	Coordinate _home;
 };
 
 #endif /* COORDINATESTORAGE_H_ */
