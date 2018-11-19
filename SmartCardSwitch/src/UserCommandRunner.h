@@ -14,10 +14,26 @@
 #include "Poco/Task.h"
 
 #include "CoordinateStorage.h"
+#include "ICommandReception.h"
 
 
 /**
  * ==== Examples of user commands ====
+ *
+ * {
+ * 	"userCommand":"reset device"
+ * 	"commandId":"uniqueCommandId"
+ * }
+ *
+ * {
+ *	"userCommand":"power on opt",
+ *	"commandId":"unqueCommandId"
+ * }
+ *
+ * {
+ * 	"userCommand":"power off opt",
+ * 	"commandId":"uniqueCommandId"
+ * }
  *
  * {
  * 	"userCommand":"insert smart card",
@@ -165,7 +181,7 @@ public:
 	virtual void OnCommandStatus(const std::string& commandId, const State& state) = 0;
 };
 
-class UserCommandRunner: public Poco::Task
+class UserCommandRunner: public Poco::Task, public IResponseReceiver
 {
 public:
 	// error is empty if JSON command is accepted.
@@ -176,8 +192,14 @@ public:
 private:
 	//Poco::Task
 	void runTask();
+	//IResponseReceiver
+
 
 private:
+	////////////////////////////////////////
+	// user command related data and functions
+	////////////////////////////////////////
+
 	const std::string UserCmdInsertSmartCard = "insert smart card";
 	const std::string UserCmdRemoveSmartCard = "remove smart card";
 	const std::string UserCmdSwipeSmartCard = "swipe smart card";
@@ -188,14 +210,13 @@ private:
 	const std::string UserCmdAssistKey = "press assist key";
 	const std::string UserCmdTouchScreen = "touch screen";
 
-	Poco::Mutex _mutex;
+	Poco::Mutex _userCommandMutex;
 
 	CoordinateStorage::Type _currentPosition;
-
-	std::string _jsonCommand; //original JSON command
+	std::string _jsonUserCommand; //original JSON command
 	IUserCommandRunnerObserver::State _state;
 	//command details
-	struct ExpandedCommand
+	struct ExpandedUserCommand
 	{
 		std::string command;
 		std::string commandId;
@@ -212,7 +233,7 @@ private:
 		//low level commands to fullfill this user command
 		std::vector<std::string> lowLevelCommands;
 	};
-	std::vector<ExpandedCommand> _commands;
+	std::vector<ExpandedUserCommand> _commands;
 
 	enum class ClampState
 	{
@@ -229,59 +250,65 @@ private:
 	std::vector<std::string> openClamp();
 	std::vector<std::string> closeClamp();
 	std::vector<std::string> releaseCard();
-
 	//movement between smart card and gate
 	std::vector<std::string> gate_smartCard(unsigned int cardNumber);
 	std::vector<std::string> smartCard_gate(unsigned int cardNumber);
-
 	//movement between PED keys and gate
 	std::vector<std::string> pedKey_gate(unsigned int keyNumber);
 	std::vector<std::string> pedKey_pedKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
 	std::vector<std::string> gate_pedKey(unsigned int keyNumber);
-
 	//movement between softkey and gate
 	std::vector<std::string> softKey_gate(unsigned int keyNumber);
 	std::vector<std::string> softKey_softKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
 	std::vector<std::string> gate_softKey(unsigned int keyNumber);
-
 	//movement between assist key and gate
 	std::vector<std::string> assistKey_gate(unsigned int keyNumber);
 	std::vector<std::string> assistKey_assistKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
 	std::vector<std::string> gate_assistKey(unsigned int keyNumber);
-
 	//movement between touch screen area and gate
 	std::vector<std::string> touchScreenKey_gate(unsigned int keyNumber);
 	std::vector<std::string> touchScreenKey_touchScreenKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
 	std::vector<std::string> gate_touchScreenKey(unsigned int keyNumber);
-
 	//movement between smart card slot and gate
 	std::vector<std::string> smartCardSlot_gate();
 	std::vector<std::string> gate_smartCardSlot();
-
 	//movement between contactless reader and gate
 	std::vector<std::string> contactlessReader_gate();
 	std::vector<std::string> gate_contactlessReader();
-
 	//movement between barcode reader and gate
 	std::vector<std::string> barcodeReader_gate();
 	std::vector<std::string> gate_barcodeReader();
-
 	//movement between barcode cards and gate
 	std::vector<std::string> barcodeCard_gate(unsigned int cardNumber);
 	std::vector<std::string> gate_barcodeCard(unsigned int cardNumber);
-
 	//from Gate to Gate
-	std::vector<std::string> ToHome();
-	std::vector<std::string> ToPedKeyGate();
-	std::vector<std::string> ToSoftKeyGate();
-	std::vector<std::string> ToAssistKeyGate();
-	std::vector<std::string> ToTouchScreenGate();
-	std::vector<std::string> ToSmartCardSlotGate();
-	std::vector<std::string> ToContactlessReaderGate();
-	std::vector<std::string> ToBarcodeCardGate();
-	std::vector<std::string> ToBarcodeReaderGate();
+	std::vector<std::string> toHome();
+	std::vector<std::string> toPedKeyGate();
+	std::vector<std::string> toSoftKeyGate();
+	std::vector<std::string> toAssistKeyGate();
+	std::vector<std::string> toTouchScreenGate();
+	std::vector<std::string> toSmartCardSlotGate();
+	std::vector<std::string> toContactlessReaderGate();
+	std::vector<std::string> toBarcodeCardGate();
+	std::vector<std::string> toBarcodeReaderGate();
+
+	//////////////////////////////////////
+	// low level command data and functions
+	//////////////////////////////////////
+
+	Poco::Mutex _lowLevelCommandMutex;
+	struct LowLevelCommand
+	{
+		ICommandReception::CommandId cmdId;
+		enum class CommandState
+		{
+			Pending = 0,
+			Succeeded,
+			Failed
+		};
+		CommandState state;
+	};
+	LowLevelCommand _lowLevelCommand;
 };
-
-
 
 #endif /* USERCOMMANDRUNNER_H_ */
