@@ -18,51 +18,33 @@ public:
 
 	enum Type
 	{
-		SmartCardEntry = 0,
-		SmartCard = 1,
-		SmartCardExit = 2,
-		PedKeysEntry = 3,
+		Home = 0,
+		SmartCardGate = 1,
+		SmartCard = 2,
+		PedKeyGate = 3,
 		PedKey = 4,
-		PedKeysExit = 5,
-		SoftKeysEntry = 6,
-		SoftKey = 7,
-		SoftKeysExit = 8,
-		AssistKeysEntry = 9,
-		AssistKey = 10,
-		AssistKeysExit = 11,
-		TouchScreenKeysEntry = 12,
-		TouchScreenKey = 13,
-		TouchScreenKeysExit = 14,
-		SmartCardSlotEntry = 15,
-		SmartCardSlot = 16,
-		SmartCardSlotExit = 17,
-		BarCodeReaderEntry = 18,
-		BarCodeReader = 19,
-		BarCodeReaderExit = 20,
-		Home = 21
+		SoftKeyGate = 5,
+		SoftKey = 6,
+		AssistKeyGate = 7,
+		AssistKey = 8,
+		TouchScreenKeyGate = 9,
+		TouchScreenKey = 10,
+		SmartCardSlotGate = 11,
+		SmartCardSlot = 12,
+		BarCodeReaderGate = 13,
+		BarCodeReader = 14,
+		BarCodeCardGate = 15,
+		BarCodeCard = 16,
+		ContactlessReaderGate = 17,
+		contactlessReader = 18
 	};
 
 	unsigned int SmartCardsAmount() { return _smartCards.size(); }
-	void SetSmartCardYOffset(long offset) { _smartCardFectchingYOffset = offset; }
-	void SetSmartCardZoffset(long offset) { _smartCardAccessingZOffset = offset; }
-	long SmartCardYOffset() { return _smartCardFectchingYOffset; }
-	long SmartCardZOffset() { return _smartCardAccessingZOffset; }
-
+	unsigned int BarCodeCardsAmout() { return _barCodeCards.size(); }
 	unsigned int PedKeysAmount() { return _pedKeys.size(); }
-	void SetPedKeyPressingZOffset(long offset) { _pedKeyPressingZOffset = offset; }
-	long PedKeyPressingZOffset() { return _pedKeyPressingZOffset; }
-
 	unsigned int SoftKeysAmount() { return _softKeys.size(); }
-	void SetSoftKeyPressingZOffset(long offset) { _softKeyPressingZOffset = offset; }
-	long SoftKeyPressingZOffset() { return _softKeyPressingZOffset; }
-
 	unsigned int TouchScreenKeysAmount() { return _touchScreenKeys.size(); }
-	void SetTouchScreenKeyPressingZOffset(long offset) { _touchScreenKeyPressingZOffset = offset; }
-	long TouchScreenKeyPressingZOffset() { return _touchScreenKeyPressingZOffset; }
-
 	unsigned int AssistKeysAmount() { return _assistKeys.size(); }
-	void SetAssistKeyPressingZOffset(long offset) { _assistKeyPressingZOffset = offset; }
-	long AssistKeyPressingZOffset() { return _assistKeyPressingZOffset; }
 
 	bool SetCoordinate(Type type,
 					unsigned int x,
@@ -79,9 +61,9 @@ public:
 					unsigned int index = 0);
 
 private:
-	const int DEFAULT_OFFSET = 0;
 	//constraints
 	const unsigned int SMART_CARDS_AMOUNT = 64;
+	const unsigned int BAR_CODE_AMOUNT = 16;
 	const unsigned int PED_KEYS_AMOUNT = 15;
 	const unsigned int SOFT_KEYS_AMOUNT = 8;
 	const unsigned int TOUCH_SCREEN_KEYS_AMOUNT = 8;
@@ -97,54 +79,44 @@ private:
 		std::string ToJsonObj(); //return a json object standing for this struct.
 	};
 
-	//smart cards
-	Coordinate _smartCardsEntry;
-	std::vector<Coordinate> _smartCards;
-	Coordinate _smartCardsExit;
-	long _smartCardFectchingYOffset;
-	long _smartCardAccessingZOffset;
-
-	//PED keys
-	Coordinate _pedKeysEntry;
-	std::vector<Coordinate> _pedKeys;
-	Coordinate _pedKeysExit;
-	long _pedKeyPressingZOffset;
-
-	//soft keys
-	Coordinate _softKeysEntry;
-	std::vector<Coordinate> _softKeys;
-	Coordinate _softKeysExit;
-	long _softKeyPressingZOffset;
-
-	//touch screen keys
-	Coordinate _touchScreenKeysEntry;
-	std::vector<Coordinate> _touchScreenKeys;
-	Coordinate _touchScreenKeysExit;
-	long _touchScreenKeyPressingZOffset;
-
-	//assist keys
-	Coordinate _assistKeysEntry;
-	std::vector<Coordinate> _assistKeys;
-	Coordinate _assistKeysExit;
-	long _assistKeyPressingZOffset;
-
-	//smart card slot
-	Coordinate _smartCardSlotEntry;
-	Coordinate _smartCardSlot;
-	Coordinate _smartCardSlotExit;
-
-	//contactless reader
-	Coordinate _contactlessReaderEntry;
-	Coordinate _contactlessReader;
-	Coordinate _contactlessReaderExit;
-
-	//barcode reader
-	Coordinate _barCodeReaderEntry;
-	Coordinate _barCodeReader;
-	Coordinate _barCodeReaderExit;
-
 	//home
 	Coordinate _home;
+
+	//smart cards
+	Coordinate _smartCardGate;
+	std::vector<Coordinate> _smartCards;
+
+	//PED keys
+	Coordinate _pedKeyGate;
+	std::vector<Coordinate> _pedKeys;
+
+	//soft keys
+	Coordinate _softKeyGate;
+	std::vector<Coordinate> _softKeys;
+
+	//touch screen keys
+	Coordinate _touchScreenKeyGate;
+	std::vector<Coordinate> _touchScreenKeys;
+
+	//assist keys
+	Coordinate _assistKeyGate;
+	std::vector<Coordinate> _assistKeys;
+
+	//smart card slot
+	Coordinate _smartCardSlotGate;
+	Coordinate _smartCardSlot;
+
+	//contactless reader
+	Coordinate _contactlessReaderGate;
+	Coordinate _contactlessReader;
+
+	//barcode reader
+	Coordinate _barCodeReaderGate;
+	Coordinate _barCodeReader;
+
+	//barcode cards
+	Coordinate _barCodeCardGate;
+	std::vector<Coordinate> _barCodeCards;
 };
 
 #endif /* COORDINATESTORAGE_H_ */

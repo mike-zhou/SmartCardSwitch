@@ -25,13 +25,6 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 {
 	_filePathName = filePathName;
 
-	_smartCardFectchingYOffset = DEFAULT_OFFSET;
-	_smartCardAccessingZOffset = DEFAULT_OFFSET;
-	_pedKeyPressingZOffset = DEFAULT_OFFSET;
-	_softKeyPressingZOffset = DEFAULT_OFFSET;
-	_touchScreenKeyPressingZOffset = DEFAULT_OFFSET;
-	_assistKeyPressingZOffset = DEFAULT_OFFSET;
-
 	if(_filePathName.empty()) {
 		pLogger->LogError("CoordinateStorage::CoordinateStorage empty file path & name");
 		return;
@@ -80,16 +73,10 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			Poco::DynamicStruct ds = *objectPtr;
 
 			//smart cards
-			_smartCardsEntry.x = ds["smartCards"]["entry"]["x"];
-			_smartCardsEntry.y = ds["smartCards"]["entry"]["y"];
-			_smartCardsEntry.z = ds["smartCards"]["entry"]["z"];
-			_smartCardsEntry.w = ds["smartCards"]["entry"]["w"];
-			_smartCardsExit.x = ds["smartCards"]["exit"]["x"];
-			_smartCardsExit.y = ds["smartCards"]["exit"]["y"];
-			_smartCardsExit.z = ds["smartCards"]["exit"]["z"];
-			_smartCardsExit.w = ds["smartCards"]["exit"]["w"];
-			_smartCardFectchingYOffset = ds["smartCards"]["YOffset"];
-			_smartCardAccessingZOffset = ds["smartCards"]["ZOffset"];
+			_smartCardGate.x = ds["smartCards"]["gate"]["x"];
+			_smartCardGate.y = ds["smartCards"]["gate"]["y"];
+			_smartCardGate.z = ds["smartCards"]["gate"]["z"];
+			_smartCardGate.w = ds["smartCards"]["gate"]["w"];
 			auto smartCardsAmount = ds["smartCards"]["cards"].size();
 			for(unsigned int i=0; i<smartCardsAmount; i++)
 			{
@@ -106,15 +93,10 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			}
 
 			//PED keys
-			_pedKeysEntry.x = ds["pedKeys"]["entry"]["x"];
-			_pedKeysEntry.y = ds["pedKeys"]["entry"]["y"];
-			_pedKeysEntry.z = ds["pedKeys"]["entry"]["z"];
-			_pedKeysEntry.w = ds["pedKeys"]["entry"]["w"];
-			_pedKeysExit.x = ds["pedKeys"]["exit"]["x"];
-			_pedKeysExit.y = ds["pedKeys"]["exit"]["y"];
-			_pedKeysExit.z = ds["pedKeys"]["exit"]["z"];
-			_pedKeysExit.w = ds["pedKeys"]["exit"]["w"];
-			_pedKeyPressingZOffset = ds["pedKeys"]["ZOffset"];
+			_pedKeyGate.x = ds["pedKeys"]["gate"]["x"];
+			_pedKeyGate.y = ds["pedKeys"]["gate"]["y"];
+			_pedKeyGate.z = ds["pedKeys"]["gate"]["z"];
+			_pedKeyGate.w = ds["pedKeys"]["gate"]["w"];
 			auto pedKeysAmount = ds["pedKeys"]["keys"].size();
 			for(unsigned int i=0; i<pedKeysAmount; i++)
 			{
@@ -131,15 +113,10 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			}
 
 			//soft keys
-			_softKeysEntry.x = ds["softKeys"]["entry"]["x"];
-			_softKeysEntry.y = ds["softKeys"]["entry"]["y"];
-			_softKeysEntry.z = ds["softKeys"]["entry"]["z"];
-			_softKeysEntry.w = ds["softKeys"]["entry"]["w"];
-			_softKeysExit.x = ds["softKeys"]["exit"]["x"];
-			_softKeysExit.y = ds["softKeys"]["exit"]["y"];
-			_softKeysExit.z = ds["softKeys"]["exit"]["z"];
-			_softKeysExit.w = ds["softKeys"]["exit"]["w"];
-			_softKeyPressingZOffset = ds["softKeys"]["ZOffset"];
+			_softKeyGate.x = ds["softKeys"]["gate"]["x"];
+			_softKeyGate.y = ds["softKeys"]["gate"]["y"];
+			_softKeyGate.z = ds["softKeys"]["gate"]["z"];
+			_softKeyGate.w = ds["softKeys"]["gate"]["w"];
 			auto softKeysAmount = ds["softKeys"]["keys"].size();
 			for(unsigned int i=0; i<softKeysAmount; i++)
 			{
@@ -156,15 +133,10 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			}
 
 			//touch screen keys
-			_touchScreenKeysEntry.x = ds["touchScreenKeys"]["entry"]["x"];
-			_touchScreenKeysEntry.y = ds["touchScreenKeys"]["entry"]["y"];
-			_touchScreenKeysEntry.z = ds["touchScreenKeys"]["entry"]["z"];
-			_touchScreenKeysEntry.w = ds["touchScreenKeys"]["entry"]["w"];
-			_touchScreenKeysExit.x = ds["touchScreenKeys"]["exit"]["x"];
-			_touchScreenKeysExit.y = ds["touchScreenKeys"]["exit"]["y"];
-			_touchScreenKeysExit.z = ds["touchScreenKeys"]["exit"]["z"];
-			_touchScreenKeysExit.w = ds["touchScreenKeys"]["exit"]["w"];
-			_touchScreenKeyPressingZOffset = ds["touchScreenKeys"]["ZOffset"];
+			_touchScreenKeyGate.x = ds["touchScreenKeys"]["gate"]["x"];
+			_touchScreenKeyGate.y = ds["touchScreenKeys"]["gate"]["y"];
+			_touchScreenKeyGate.z = ds["touchScreenKeys"]["gate"]["z"];
+			_touchScreenKeyGate.w = ds["touchScreenKeys"]["gate"]["w"];
 			auto touchScreenKeysAmount = ds["touchScreenKeys"]["keys"].size();
 			for(unsigned int i=0; i<touchScreenKeysAmount; i++)
 			{
@@ -181,15 +153,10 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			}
 
 			//assist keys
-			_assistKeysEntry.x = ds["assistKeys"]["entry"]["x"];
-			_assistKeysEntry.y = ds["assistKeys"]["entry"]["y"];
-			_assistKeysEntry.z = ds["assistKeys"]["entry"]["z"];
-			_assistKeysEntry.w = ds["assistKeys"]["entry"]["w"];
-			_assistKeysExit.x = ds["assistKeys"]["exit"]["x"];
-			_assistKeysExit.y = ds["assistKeys"]["exit"]["y"];
-			_assistKeysExit.z = ds["assistKeys"]["exit"]["z"];
-			_assistKeysExit.w = ds["assistKeys"]["exit"]["w"];
-			_assistKeyPressingZOffset = ds["assistKeys"]["ZOffset"];
+			_assistKeyGate.x = ds["assistKeys"]["gate"]["x"];
+			_assistKeyGate.y = ds["assistKeys"]["gate"]["y"];
+			_assistKeyGate.z = ds["assistKeys"]["gate"]["z"];
+			_assistKeyGate.w = ds["assistKeys"]["gate"]["w"];
 			auto assistKeysAmount = ds["assistKeys"]["keys"].size();
 			for(unsigned int i=0; i<assistKeysAmount; i++)
 			{
@@ -206,46 +173,54 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			}
 
 			//smart card slot
-			_smartCardSlotEntry.x = ds["smartCardSlot"]["entry"]["x"];
-			_smartCardSlotEntry.y = ds["smartCardSlot"]["entry"]["y"];
-			_smartCardSlotEntry.z = ds["smartCardSlot"]["entry"]["z"];
-			_smartCardSlotEntry.w = ds["smartCardSlot"]["entry"]["w"];
-			_smartCardSlotExit.x = ds["smartCardSlot"]["exit"]["x"];
-			_smartCardSlotExit.y = ds["smartCardSlot"]["exit"]["y"];
-			_smartCardSlotExit.z = ds["smartCardSlot"]["exit"]["z"];
-			_smartCardSlotExit.w = ds["smartCardSlot"]["exit"]["w"];
+			_smartCardSlotGate.x = ds["smartCardSlot"]["gate"]["x"];
+			_smartCardSlotGate.y = ds["smartCardSlot"]["gate"]["y"];
+			_smartCardSlotGate.z = ds["smartCardSlot"]["gate"]["z"];
+			_smartCardSlotGate.w = ds["smartCardSlot"]["gate"]["w"];
 			_smartCardSlot.x = ds["smartCardSlot"]["slot"]["x"];
 			_smartCardSlot.y = ds["smartCardSlot"]["slot"]["y"];
 			_smartCardSlot.z = ds["smartCardSlot"]["slot"]["z"];
 			_smartCardSlot.w = ds["smartCardSlot"]["slot"]["w"];
 
 			//contactless reader
-			_contactlessReaderEntry.x = ds["contactlessReader"]["entry"]["x"];
-			_contactlessReaderEntry.y = ds["contactlessReader"]["entry"]["y"];
-			_contactlessReaderEntry.z = ds["contactlessReader"]["entry"]["z"];
-			_contactlessReaderEntry.w = ds["contactlessReader"]["entry"]["w"];
-			_contactlessReaderExit.x = ds["contactlessReader"]["exit"]["x"];
-			_contactlessReaderExit.y = ds["contactlessReader"]["exit"]["y"];
-			_contactlessReaderExit.z = ds["contactlessReader"]["exit"]["z"];
-			_contactlessReaderExit.w = ds["contactlessReader"]["exit"]["w"];
+			_contactlessReaderGate.x = ds["contactlessReader"]["gate"]["x"];
+			_contactlessReaderGate.y = ds["contactlessReader"]["gate"]["y"];
+			_contactlessReaderGate.z = ds["contactlessReader"]["gate"]["z"];
+			_contactlessReaderGate.w = ds["contactlessReader"]["gate"]["w"];
 			_contactlessReader.x = ds["contactlessReader"]["slot"]["x"];
 			_contactlessReader.y = ds["contactlessReader"]["slot"]["y"];
 			_contactlessReader.z = ds["contactlessReader"]["slot"]["z"];
 			_contactlessReader.w = ds["contactlessReader"]["slot"]["w"];
 
 			//bar code reader
-			_barCodeReaderEntry.x = ds["barCodeReader"]["entry"]["x"];
-			_barCodeReaderEntry.y = ds["barCodeReader"]["entry"]["y"];
-			_barCodeReaderEntry.z = ds["barCodeReader"]["entry"]["z"];
-			_barCodeReaderEntry.w = ds["barCodeReader"]["entry"]["w"];
-			_barCodeReaderExit.x = ds["barCodeReader"]["exit"]["x"];
-			_barCodeReaderExit.y = ds["barCodeReader"]["exit"]["y"];
-			_barCodeReaderExit.z = ds["barCodeReader"]["exit"]["z"];
-			_barCodeReaderExit.w = ds["barCodeReader"]["exit"]["w"];
+			_barCodeReaderGate.x = ds["barCodeReader"]["gate"]["x"];
+			_barCodeReaderGate.y = ds["barCodeReader"]["gate"]["y"];
+			_barCodeReaderGate.z = ds["barCodeReader"]["gate"]["z"];
+			_barCodeReaderGate.w = ds["barCodeReader"]["gate"]["w"];
 			_barCodeReader.x = ds["barCodeReader"]["slot"]["x"];
 			_barCodeReader.y = ds["barCodeReader"]["slot"]["y"];
 			_barCodeReader.z = ds["barCodeReader"]["slot"]["z"];
 			_barCodeReader.w = ds["barCodeReader"]["slot"]["w"];
+
+			//bar code cards
+			_barCodeCardGate.x = ds["barCodes"]["gate"]["x"];
+			_barCodeCardGate.y = ds["barCodes"]["gate"]["y"];
+			_barCodeCardGate.z = ds["barCodes"]["gate"]["z"];
+			_barCodeCardGate.w = ds["barCodes"]["gate"]["w"];
+			auto barCodesAmount = ds["barCodes"]["keys"].size();
+			for(unsigned int i=0; i<barCodesAmount; i++)
+			{
+				long x, y, z, w;
+				long index;
+
+				index = ds["barCodes"]["cards"][i]["index"];
+				x = ds["barCodes"]["keys"][i]["value"]["x"];
+				y = ds["barCodes"]["keys"][i]["value"]["y"];
+				z = ds["barCodes"]["keys"][i]["value"]["z"];
+				w = ds["barCodes"]["keys"][i]["value"]["w"];
+
+				SetCoordinate(Type::BarCodeCard, x, y, z, w, index);
+			}
 
 			pLogger->LogInfo("CoordinateStorage::CoordinateStorage storage file is parsed successfully");
 		}
@@ -270,10 +245,7 @@ bool CoordinateStorage::PersistToFile()
 
 	//smart cards
 	json = json + "\"smartCards\": {";
-	json = json + "\"entry\":" + _smartCardsEntry.ToJsonObj() + ",";
-	json = json + "\"exit\":" + _smartCardsExit.ToJsonObj() + ",";
-	json = json + "\"YOffset\":" + std::to_string(_smartCardFectchingYOffset) + ",";
-	json = json + "\"ZOffset\":" + std::to_string(_smartCardAccessingZOffset) + ",";
+	json = json + "\"gate\":" + _smartCardGate.ToJsonObj() + ",";
 	json = json + "\"cards\":["; //start of cards
 	for(unsigned int i=0; i<_smartCards.size(); i++)
 	{
@@ -287,9 +259,7 @@ bool CoordinateStorage::PersistToFile()
 
 	//PED keys
 	json = json + ",\"pedKeys\": {";
-	json = json + "\"entry\":" + _pedKeysEntry.ToJsonObj() + ",";
-	json = json + "\"exit\":" + _pedKeysExit.ToJsonObj() + ",";
-	json = json + "\"ZOffset\":" + std::to_string(_pedKeyPressingZOffset) + ",";
+	json = json + "\"gate\":" + _pedKeyGate.ToJsonObj() + ",";
 	json = json + "\"keys\":["; //start of keys
 	for(unsigned int i=0; i<_pedKeys.size(); i++)
 	{
@@ -303,9 +273,7 @@ bool CoordinateStorage::PersistToFile()
 
 	//soft keys
 	json = json + ",\"softKeys\": {";
-	json = json + "\"entry\":" + _softKeysEntry.ToJsonObj() + ",";
-	json = json + "\"exit\":" + _softKeysExit.ToJsonObj() + ",";
-	json = json + "\"ZOffset\":" + std::to_string(_softKeyPressingZOffset) + ",";
+	json = json + "\"gate\":" + _softKeyGate.ToJsonObj() + ",";
 	json = json + "\"keys\":["; //start of keys
 	for(unsigned int i=0; i<_softKeys.size(); i++)
 	{
@@ -319,9 +287,7 @@ bool CoordinateStorage::PersistToFile()
 
 	//touchScreen keys
 	json = json + ",\"touchScreenKeys\": {";
-	json = json + "\"entry\":" + _touchScreenKeysEntry.ToJsonObj() + ",";
-	json = json + "\"exit\":" + _touchScreenKeysExit.ToJsonObj() + ",";
-	json = json + "\"ZOffset\":" + std::to_string(_touchScreenKeyPressingZOffset) + ",";
+	json = json + "\"gate\":" + _touchScreenKeyGate.ToJsonObj() + ",";
 	json = json + "\"keys\":["; //start of keys
 	for(unsigned int i=0; i<_touchScreenKeys.size(); i++)
 	{
@@ -335,9 +301,7 @@ bool CoordinateStorage::PersistToFile()
 
 	//assist keys
 	json = json + ",\"assistKeys\": {";
-	json = json + "\"entry\":" + _assistKeysEntry.ToJsonObj() + ",";
-	json = json + "\"exit\":" + _assistKeysExit.ToJsonObj() + ",";
-	json = json + "\"ZOffset\":" + std::to_string(_assistKeyPressingZOffset) + ",";
+	json = json + "\"gate\":" + _assistKeyGate.ToJsonObj() + ",";
 	json = json + "\"keys\":["; //start of keys
 	for(unsigned int i=0; i<_assistKeys.size(); i++)
 	{
@@ -351,24 +315,36 @@ bool CoordinateStorage::PersistToFile()
 
 	//smart card slot
 	json = json + ",\"smartCardSlot\": {";
-	json = json + "\"entry\":" + _smartCardSlotEntry.ToJsonObj() + ",";
-	json = json + "\"exit\":" + _smartCardSlotExit.ToJsonObj() + ",";
+	json = json + "\"gate\":" + _smartCardSlotGate.ToJsonObj() + ",";
 	json = json + "\"slot\":" + _smartCardSlot.ToJsonObj();
 	json = json + "}";
 
 	//contactless reader
 	json = json + ",\"contactlessReader\": {";
-	json = json + "\"entry\":" + _contactlessReaderEntry.ToJsonObj() + ",";
-	json = json + "\"exit\":" + _contactlessReaderExit.ToJsonObj() + ",";
+	json = json + "\"gate\":" + _contactlessReaderGate.ToJsonObj() + ",";
 	json = json + "\"slot\":" + _contactlessReader.ToJsonObj();
 	json = json + "}";
 
 	//bar code reader
 	json = json + ",\"barCodeReader\": {";
-	json = json + "\"entry\":" + _barCodeReaderEntry.ToJsonObj() + ",";
-	json = json + "\"exit\":" + _barCodeReaderExit.ToJsonObj() + ",";
+	json = json + "\"gate\":" + _barCodeReaderGate.ToJsonObj() + ",";
 	json = json + "\"slot\":" + _barCodeReader.ToJsonObj();
 	json = json + "}";
+
+	//bar code cards
+	json = json + ",\"barCodes\": {";
+	json = json + "\"gate\":" + _barCodeCardGate.ToJsonObj() + ",";
+	json = json + "\"cards\":["; //start of keys
+	for(unsigned int i=0; i<_barCodeCards.size(); i++)
+	{
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _barCodeCards[i].ToJsonObj() + "},";
+	}
+	if(!_barCodeCards.empty()) {
+		json.pop_back(); //delete the extra ','
+	}
+	json = json + "]";//end of cards
+	json = json + "}";//end of barCodes.
+
 
 	json = json + "}";
 
@@ -429,9 +405,9 @@ bool CoordinateStorage::SetCoordinate(Type type,
 
 	switch(type)
 	{
-	case Type::SmartCardEntry:
+	case Type::SmartCardGate:
 	{
-		_smartCardsEntry = value;
+		_smartCardGate = value;
 		rc = true;
 	}
 	break;
@@ -457,16 +433,9 @@ bool CoordinateStorage::SetCoordinate(Type type,
 	}
 	break;
 
-	case Type::SmartCardExit:
+	case Type::PedKeyGate:
 	{
-		_smartCardsExit = value;
-		rc = true;
-	}
-	break;
-
-	case Type::PedKeysEntry:
-	{
-		_pedKeysEntry = value;
+		_pedKeyGate = value;
 		rc = true;
 	}
 	break;
@@ -492,16 +461,9 @@ bool CoordinateStorage::SetCoordinate(Type type,
 	}
 	break;
 
-	case Type::PedKeysExit:
+	case Type::SoftKeyGate:
 	{
-		_pedKeysExit = value;
-		rc = true;
-	}
-	break;
-
-	case Type::SoftKeysEntry:
-	{
-		_softKeysEntry = value;
+		_softKeyGate = value;
 		rc = true;
 	}
 	break;
@@ -527,16 +489,9 @@ bool CoordinateStorage::SetCoordinate(Type type,
 	}
 	break;
 
-	case Type::SoftKeysExit:
+	case Type::TouchScreenKeyGate:
 	{
-		_softKeysExit = value;
-		rc = true;
-	}
-	break;
-
-	case Type::TouchScreenKeysEntry:
-	{
-		_touchScreenKeysEntry = value;
+		_touchScreenKeyGate = value;
 		rc = true;
 	}
 	break;
@@ -562,16 +517,9 @@ bool CoordinateStorage::SetCoordinate(Type type,
 	}
 	break;
 
-	case Type::TouchScreenKeysExit:
+	case Type::AssistKeyGate:
 	{
-		_assistKeysExit = value;
-		rc = true;
-	}
-	break;
-
-	case Type::AssistKeysEntry:
-	{
-		_assistKeysEntry = value;
+		_assistKeyGate = value;
 		rc = true;
 	}
 	break;
@@ -597,16 +545,9 @@ bool CoordinateStorage::SetCoordinate(Type type,
 	}
 	break;
 
-	case Type::AssistKeysExit:
+	case Type::SmartCardSlotGate:
 	{
-		_assistKeysExit = value;
-		rc = true;
-	}
-	break;
-
-	case Type::SmartCardSlotEntry:
-	{
-		_smartCardSlotEntry = value;
+		_smartCardSlotGate = value;
 		rc = true;
 	}
 	break;
@@ -618,16 +559,9 @@ bool CoordinateStorage::SetCoordinate(Type type,
 	}
 	break;
 
-	case Type::SmartCardSlotExit:
+	case Type::BarCodeReaderGate:
 	{
-		_smartCardSlotExit = value;
-		rc = true;
-	}
-	break;
-
-	case Type::BarCodeReaderEntry:
-	{
-		_barCodeReaderEntry = value;
+		_barCodeReaderGate = value;
 		rc = true;
 	}
 	break;
@@ -639,10 +573,32 @@ bool CoordinateStorage::SetCoordinate(Type type,
 	}
 	break;
 
-	case Type::BarCodeReaderExit:
+
+	case Type::BarCodeCardGate:
 	{
-		_barCodeReaderExit = value;
+		_barCodeCardGate = value;
 		rc = true;
+	}
+	break;
+
+	case Type::BarCodeCard:
+	{
+		if(index < BAR_CODE_AMOUNT)
+		{
+			if(index >= _barCodeCards.size())
+			{
+				Coordinate tmp;
+				// fill _assistKeys
+				for(; index >= _barCodeCards.size(); ) {
+					_barCodeCards.push_back(tmp);
+				}
+			}
+			_assistKeys[index] = value;
+			rc = true;
+		}
+		else {
+			pLogger->LogError("CoordinateStorage::SetCoordinate assist key index out of range: " + std::to_string(index));
+		}
 	}
 	break;
 
@@ -675,9 +631,9 @@ bool CoordinateStorage::GetCoordinate(Type type,
 
 	switch(type)
 	{
-	case Type::SmartCardEntry:
+	case Type::SmartCardGate:
 	{
-		value = _smartCardsEntry;
+		value = _smartCardGate;
 		rc = true;
 	}
 	break;
@@ -696,16 +652,9 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	}
 	break;
 
-	case Type::SmartCardExit:
+	case Type::PedKeyGate:
 	{
-		value = _smartCardsExit;
-		rc = true;
-	}
-	break;
-
-	case Type::PedKeysEntry:
-	{
-		value = _pedKeysEntry;
+		value = _pedKeyGate;
 		rc = true;
 	}
 	break;
@@ -724,16 +673,9 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	}
 	break;
 
-	case Type::PedKeysExit:
+	case Type::SoftKeyGate:
 	{
-		value = _pedKeysExit;
-		rc = true;
-	}
-	break;
-
-	case Type::SoftKeysEntry:
-	{
-		value = _softKeysEntry;
+		value = _softKeyGate;
 		rc = true;
 	}
 	break;
@@ -752,16 +694,9 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	}
 	break;
 
-	case Type::SoftKeysExit:
+	case Type::TouchScreenKeyGate:
 	{
-		value = _softKeysExit;
-		rc = true;
-	}
-	break;
-
-	case Type::TouchScreenKeysEntry:
-	{
-		value = _touchScreenKeysEntry;
+		value = _touchScreenKeyGate;
 		rc = true;
 	}
 	break;
@@ -780,16 +715,9 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	}
 	break;
 
-	case Type::TouchScreenKeysExit:
+	case Type::AssistKeyGate:
 	{
-		value = _assistKeysExit;
-		rc = true;
-	}
-	break;
-
-	case Type::AssistKeysEntry:
-	{
-		value = _assistKeysEntry;
+		value = _assistKeyGate;
 		rc = true;
 	}
 	break;
@@ -808,16 +736,9 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	}
 	break;
 
-	case Type::AssistKeysExit:
+	case Type::SmartCardSlotGate:
 	{
-		value = _assistKeysExit;
-		rc = true;
-	}
-	break;
-
-	case Type::SmartCardSlotEntry:
-	{
-		value = _smartCardSlotEntry;
+		value = _smartCardSlotGate;
 		rc = true;
 	}
 	break;
@@ -829,16 +750,9 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	}
 	break;
 
-	case Type::SmartCardSlotExit:
+	case Type::BarCodeReaderGate:
 	{
-		value = _smartCardSlotExit;
-		rc = true;
-	}
-	break;
-
-	case Type::BarCodeReaderEntry:
-	{
-		value = _barCodeReaderEntry;
+		value = _barCodeReaderGate;
 		rc = true;
 	}
 	break;
@@ -850,10 +764,24 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	}
 	break;
 
-	case Type::BarCodeReaderExit:
+	case Type::BarCodeCardGate:
 	{
-		value = _barCodeReaderExit;
+		value = _barCodeCardGate;
 		rc = true;
+	}
+	break;
+
+	case Type::BarCodeCard:
+	{
+		if(index < _barCodeCards.size())
+		{
+			value = _barCodeCards[index];
+			rc = true;
+		}
+		else
+		{
+			pLogger->LogError("CoordinateStorage::GetCoordinate barcode card index out of range: " + std::to_string(index));
+		}
 	}
 	break;
 
@@ -862,6 +790,7 @@ bool CoordinateStorage::GetCoordinate(Type type,
 		value = _home;
 		rc = true;
 	}
+	break;
 
 	default:
 		pLogger->LogError("CoordinateStorage::GetCoordinate unknown type: " + std::to_string(type));
