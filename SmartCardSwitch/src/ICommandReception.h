@@ -53,6 +53,8 @@ public:
 	virtual void OnDeviceConnect(CommandId key, bool bSuccess)  {}
 	virtual void OnDeviceQueryPower(CommandId key, bool bSuccess, bool bPowered)  {}
 	virtual void OnDeviceQueryFuse(CommandId key, bool bSuccess, bool bFuseOn)  {}
+	virtual void OnDeviceQueryHomeState(CommandId key, bool homePositioned) {}
+	virtual void OnDeviceGoHome(CommandId key, bool bSuccess) {}
 	virtual void OnOptPowerOn(CommandId key, bool bSuccess)  {}
 	virtual void OnOptPowerOff(CommandId key, bool bSuccess)  {}
 	virtual void OnOptQueryPower(CommandId key, bool bSuccess)  {}
@@ -113,6 +115,8 @@ public:
 	virtual CommandId DeviceConnect(unsigned int index) = 0;
 	virtual CommandId DeviceQueryPower() = 0;
 	virtual CommandId DeviceQueryFuse() = 0;
+	virtual CommandId DeviceQueryHomeState() = 0;
+	virtual CommandId DeviceGoHome() = 0;
 	virtual CommandId OptPowerOn() = 0;
 	virtual CommandId OptPowerOff() = 0;
 	virtual CommandId OptQueryPower() = 0;
