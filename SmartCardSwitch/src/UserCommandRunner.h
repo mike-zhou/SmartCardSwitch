@@ -248,8 +248,8 @@ private:
 		unsigned int upPeriod;
 		std::vector<unsigned int> keyNumbers;
 
-		//low level commands to fullfill this user command
-		std::deque<std::string> lowLevelCommands;
+		//console commands to fulfill this user command
+		std::deque<std::string> consoleCommands;
 	};
 	ExpandedUserCommand _userCommand;
 
@@ -331,12 +331,12 @@ private:
 	std::vector<IUserCommandRunnerObserver *> _observerPtrArray;
 
 	//////////////////////////////////////
-	// low level command data and functions
+	// console command data and functions
 	//////////////////////////////////////
 
-	Poco::Mutex _lowLevelCommandMutex;
-	Poco::Event _lowLevelEvent;
-	struct LowLevelCommand
+	Poco::Mutex _consoleCommandMutex;
+	Poco::Event _consoleEvent;
+	struct ConsoleCommand
 	{
 		ICommandReception::CommandId cmdId;
 		enum class CommandState
@@ -347,7 +347,7 @@ private:
 		};
 		CommandState state;
 	};
-	LowLevelCommand _lowLevelCommand;
+	ConsoleCommand _consoleCommand;
 };
 
 #endif /* USERCOMMANDRUNNER_H_ */
