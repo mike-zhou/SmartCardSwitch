@@ -35,45 +35,7 @@ ConsoleOperator::ConsoleOperator(ICommandReception * pCmdReceiver) : Task("Conso
 void ConsoleOperator::showHelp()
 {
 	std::cout << "\r\n=========== HELP: Command format=========\r\n";
-	std::cout << "DevicesGet:------------------------ "<< "0" << "\r\n";
-	std::cout << "DeviceConnect:--------------------- "<< "1 deviceNumber" << "\r\n";
-	std::cout << "DeviceQueryPower:------------------ "<< "2" << "\r\n";
-	std::cout << "DeviceQueryFuse:------------------- "<< "3" << "\r\n";
-	std::cout << "OptPowerOn:------------------------ "<< "20" << "\r\n";
-	std::cout << "OptPowerOff:----------------------- "<< "21" << "\r\n";
-	std::cout << "OptQueryPower:--------------------- "<< "22" << "\r\n";
-	std::cout << "DcmPowerOn:------------------------ "<< "30" << "\r\n";
-	std::cout << "DcmPowerOff:----------------------- "<< "31" << "\r\n";
-	std::cout << "DcmQueryPower:--------------------- "<< "32" << "\r\n";
-	std::cout << "BdcsPowerOn:----------------------- "<< "40" << "\r\n";
-	std::cout << "BdcsPowerOff:---------------------- "<< "41" << "\r\n";
-	std::cout << "BdcsQueryPower:-------------------- "<< "42" << "\r\n";
-	std::cout << "BdcCoast:-------------------------- "<< "43 bdcIndex" << "\r\n";
-	std::cout << "BdcReverse:------------------------ "<< "44 bdcIndex" << "\r\n";
-	std::cout << "BdcForward:------------------------ "<< "45 bdcIndex" << "\r\n";
-	std::cout << "BdcBreak:-------------------------- "<< "46 bdcIndex" << "\r\n";
-	std::cout << "BdcQuery:-------------------------- "<< "47 bdcIndex" << "\r\n";
-	std::cout << "SteppersPowerOn:------------------- "<< "60" << "\r\n";
-	std::cout << "SteppersPowerOff:------------------ "<< "61" << "\r\n";
-	std::cout << "SteppersQueryPower:---------------- "<< "62" << "\r\n";
-	std::cout << "StepperQueryResolution: ----------- "<< "63" << "\r\n";
-	std::cout << "StepperConfigStep:----------------- "<< "64 stepperIndex lowClks highClks" << "\r\n";
-	std::cout << "StepperAccelerationBuffer:--------- "<< "65 stepperIndex value" << "\r\n";
-	std::cout << "StepperAccelerationBufferDecrement: "<< "66 stepperIndex value" << "\r\n";
-	std::cout << "StepperDecelerationBuffer:          "<< "67 stepperIndex value" << "\r\n";
-	std::cout << "StepperDecelerationBufferIncrement: "<< "68 stepperIndex value" << "\r\n";
-	std::cout << "StepperEnable: -------------------- "<< "69 stepperIndex 1/0" << "\r\n";
-	std::cout << "StepperForward: ------------------- "<< "70 stepperIndex 1/0" << "\r\n";
-	std::cout << "StepperSteps: --------------------- "<< "71 stepperIndex stepAmount" << "\r\n";
-	std::cout << "StepperRun: ----------------------- "<< "72 stepperIndex intialPos finalPos" << "\r\n";
-	std::cout << "StepperConfigHome:----------------- "<< "73 stepperIndex locatorIndex lineNumberStart lineNumberTerminal" << "\r\n";
-	std::cout << "StepperMove:----------------------- "<< "74 stepperIndex forward stepAmount" << "\r\n";
-	std::cout << "StepperQuery: --------------------- "<< "75 stepperIndex" << "\r\n";
-	std::cout << "StepperSetState: ------------------ "<< "76 stepperIndex state" << "\r\n";
-	std::cout << "LocatorQuery:---------------------- "<< "90 locatorIndex" << "\r\n";
-	std::cout << "BdcDelay:-------------------------- "<< "200 ms" << "\r\n";
-	std::cout << "SaveMovementConfig:---------------- "<< "300" << "\r\n";
-	std::cout << "SaveCoordinates:------------------- "<< "350" << "\r\n";
+	std::cout << ConsoleCommandFactory::GetHelp();
 	std::cout << "===============================================\r\n";
 }
 
@@ -404,13 +366,13 @@ void ConsoleOperator::processInput()
 	bool bKnownCmd = true;
 	switch(d0)
 	{
-		case Type::DevicesGet:
+		case ConsoleCommandFactory::Type::DevicesGet:
 		{
 			_cmdKey = _pCommandReception->DevicesGet();
 		}
 		break;
 
-		case Type::DeviceConnect:
+		case ConsoleCommandFactory::Type::DeviceConnect:
 		{
 			if(_devices.empty()) {
 				pLogger->LogError("ConsoleOperator::processInput no device to connect");
@@ -423,96 +385,96 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::DeviceQueryPower:
+		case ConsoleCommandFactory::Type::DeviceQueryPower:
 		{
 			_cmdKey = _pCommandReception->DeviceQueryPower();
 		}
 		break;
 
-		case Type::DeviceQueryFuse:
+		case ConsoleCommandFactory::Type::DeviceQueryFuse:
 		{
 			_cmdKey = _pCommandReception->DeviceQueryFuse();
 		}
 		break;
 
-		case Type::BdcsPowerOn:
+		case ConsoleCommandFactory::Type::BdcsPowerOn:
 		{
 			_cmdKey = _pCommandReception->BdcsPowerOn();
 		}
 		break;
 
-		case Type::BdcsPowerOff:
+		case ConsoleCommandFactory::Type::BdcsPowerOff:
 		{
 			_cmdKey = _pCommandReception->BdcsPowerOff();
 		}
 		break;
 
-		case Type::BdcsQueryPower:
+		case ConsoleCommandFactory::Type::BdcsQueryPower:
 		{
 			_cmdKey = _pCommandReception->BdcsQueryPower();
 		}
 		break;
 
-		case Type::BdcCoast:
+		case ConsoleCommandFactory::Type::BdcCoast:
 		{
 			unsigned int index = d1;
 			_cmdKey = _pCommandReception->BdcCoast(index);
 		}
 		break;
 
-		case Type::BdcReverse:
+		case ConsoleCommandFactory::Type::BdcReverse:
 		{
 			unsigned int index = d1;
 			_cmdKey = _pCommandReception->BdcReverse(index);
 		}
 		break;
 
-		case Type::BdcForward:
+		case ConsoleCommandFactory::Type::BdcForward:
 		{
 			unsigned int index = d1;
 			_cmdKey = _pCommandReception->BdcForward(index);
 		}
 		break;
 
-		case Type::BdcBreak:
+		case ConsoleCommandFactory::Type::BdcBreak:
 		{
 			unsigned int index = d1;
 			_cmdKey = _pCommandReception->BdcBreak(index);
 		}
 		break;
 
-		case Type::BdcQuery:
+		case ConsoleCommandFactory::Type::BdcQuery:
 		{
 			unsigned int index = d1;
 			_cmdKey = _pCommandReception->BdcQuery(index);
 		}
 		break;
 
-		case Type::SteppersPowerOn:
+		case ConsoleCommandFactory::Type::SteppersPowerOn:
 		{
 			_cmdKey = _pCommandReception->SteppersPowerOn();
 		}
 		break;
 
-		case Type::SteppersPowerOff:
+		case ConsoleCommandFactory::Type::SteppersPowerOff:
 		{
 			_cmdKey = _pCommandReception->SteppersPowerOff();
 		}
 		break;
 
-		case Type::SteppersQueryPower:
+		case ConsoleCommandFactory::Type::SteppersQueryPower:
 		{
 			_cmdKey = _pCommandReception->SteppersQueryPower();
 		}
 		break;
 
-		case Type::StepperQueryResolution:
+		case ConsoleCommandFactory::Type::StepperQueryResolution:
 		{
 			_cmdKey = _pCommandReception->StepperQueryResolution();
 		}
 		break;
 
-		case Type::StepperConfigStep:
+		case ConsoleCommandFactory::Type::StepperConfigStep:
 		{
 			unsigned int index = d1;
 			unsigned int lowClks = d2;
@@ -521,7 +483,7 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperAccelerationBuffer:
+		case ConsoleCommandFactory::Type::StepperAccelerationBuffer:
 		{
 			unsigned int index = d1;
 			unsigned int value = d2;
@@ -529,7 +491,7 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperAccelerationBufferDecrement:
+		case ConsoleCommandFactory::Type::StepperAccelerationBufferDecrement:
 		{
 			unsigned int index = d1;
 			unsigned int value = d2;
@@ -538,7 +500,7 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperDecelerationBuffer:
+		case ConsoleCommandFactory::Type::StepperDecelerationBuffer:
 		{
 			unsigned int index = d1;
 			unsigned int value = d2;
@@ -547,7 +509,7 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperDecelerationBufferIncrement:
+		case ConsoleCommandFactory::Type::StepperDecelerationBufferIncrement:
 		{
 			unsigned int index = d1;
 			unsigned int value = d2;
@@ -555,7 +517,7 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperEnable:
+		case ConsoleCommandFactory::Type::StepperEnable:
 		{
 			unsigned int index = d1;
 			bool enable = (d2 != 0);
@@ -563,7 +525,7 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperForward:
+		case ConsoleCommandFactory::Type::StepperForward:
 		{
 			unsigned int index = d1;
 			bool forward = (d2 != 0);
@@ -571,7 +533,7 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperSteps:
+		case ConsoleCommandFactory::Type::StepperSteps:
 		{
 			unsigned int index = d1;
 			unsigned int value = d2;
@@ -580,7 +542,7 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperRun:
+		case ConsoleCommandFactory::Type::StepperRun:
 		{
 			unsigned int index = d1;
 			unsigned int initialPos = d2;
@@ -590,7 +552,7 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperConfigHome:
+		case ConsoleCommandFactory::Type::StepperConfigHome:
 		{
 			unsigned int index = d1;
 			unsigned int locatorIndex = d2;
@@ -601,7 +563,7 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperMove:
+		case ConsoleCommandFactory::Type::StepperMove:
 		{
 			unsigned int index = d1;
 			bool forward = (d2 != 0);
@@ -612,7 +574,7 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperSetState:
+		case ConsoleCommandFactory::Type::StepperSetState:
 		{
 			unsigned int index = d1;
 			int state = d2;
@@ -622,7 +584,7 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::StepperQuery:
+		case ConsoleCommandFactory::Type::StepperQuery:
 		{
 			unsigned int index = d1;
 
@@ -630,33 +592,33 @@ void ConsoleOperator::processInput()
 		}
 		break;
 
-		case Type::LocatorQuery:
+		case ConsoleCommandFactory::Type::LocatorQuery:
 		{
 			unsigned int index = d1;
 			_cmdKey = _pCommandReception->LocatorQuery(index);
 		}
 		break;
 
-		case Type::BdcDelay:
+		case ConsoleCommandFactory::Type::BdcDelay:
 		{
 			_cmdKey = _pCommandReception->BdcDelay(0, d1);
 		}
 		break;
 
-		case Type::SaveMovementConfig:
+		case ConsoleCommandFactory::Type::SaveMovementConfig:
 		{
 			_cmdKey = _pCommandReception->SaveMovementConfig();
 		}
 		break;
 
-		case Type::LoadMovementConfigStepper:
+		case ConsoleCommandFactory::Type::LoadMovementConfigStepper:
 		{
 			loadMovementConfig();
 			_cmdKey = InvalidCommandId;
 		}
 		break;
 
-		case Type::SaveCoordinates:
+		case ConsoleCommandFactory::Type::SaveCoordinates:
 		{
 			int type = d1;
 			unsigned int index = d2;

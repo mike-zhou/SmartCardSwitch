@@ -17,6 +17,7 @@
 #include "Poco/Dynamic/Var.h"
 
 #include "CoordinateStorage.h"
+#include "ConsoleCommandFactory.h"
 #include "ICommandReception.h"
 
 
@@ -184,7 +185,7 @@ public:
 	virtual void OnCommandStatus(const std::string& commandId, const State& state, const std::string& errorInfo) = 0;
 };
 
-class UserCommandRunner: public Poco::Task
+class UserCommandRunner: public Poco::Task, public IResponseReceiver
 {
 public:
 	UserCommandRunner();
