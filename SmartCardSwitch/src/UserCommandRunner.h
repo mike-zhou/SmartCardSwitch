@@ -10,8 +10,11 @@
 
 #include <string>
 #include <vector>
+#include <deque>
 
 #include "Poco/Task.h"
+#include "Poco/Event.h"
+#include "Poco/Dynamic/Var.h"
 
 #include "CoordinateStorage.h"
 #include "ICommandReception.h"
@@ -178,22 +181,23 @@ public:
 		Failed,
 		Succeeded
 	};
-	virtual void OnCommandStatus(const std::string& commandId, const State& state) = 0;
+	virtual void OnCommandStatus(const std::string& commandId, const State& state, const std::string& errorInfo) = 0;
 };
 
-class UserCommandRunner: public Poco::Task, public IResponseReceiver
+class UserCommandRunner: public Poco::Task
 {
 public:
+	UserCommandRunner();
+
 	// error is empty if JSON command is accepted.
 	void RunCommand(const std::string& jsonCmd, std::string& error);
+	void AddObserver(IUserCommandRunnerObserver * pObserver);
 
-	void GetCommandState(std::string& commandId, IUserCommandRunnerObserver::State& state);
+	void GetState(std::string& commandId, IUserCommandRunnerObserver::State& state, std::string& errorInfo);
 
 private:
 	//Poco::Task
 	void runTask();
-	//IResponseReceiver
-
 
 private:
 	////////////////////////////////////////
@@ -207,8 +211,22 @@ private:
 	const std::string UserCmdShowBarCode = "show bar code";
 	const std::string UserCmdPressPedKey = "press PED key";
 	const std::string UserCmdPressSoftKey = "press soft key";
-	const std::string UserCmdAssistKey = "press assist key";
+	const std::string UserCmdPressAssistKey = "press assist key";
 	const std::string UserCmdTouchScreen = "touch screen";
+
+	const std::string ErrorDeviceNotHomePositioned = "device hasn't been home positioned";
+	const std::string ErrorUserCommandOnGoing = "a user command is running";
+	const std::string ErrorInvalidJsonUserCommand = "user command cannot be parsed";
+	const std::string ErrorUnSupportedCommand = "command is not supported";
+	const std::string ErrorFailedExpandingInsertSmartCard = "failed in expanding insert smart card";
+	const std::string ErrorFailedExpandingRemoveSmartCard = "failed in expanding remove smart card";
+	const std::string ErrorFailedExpandingSwipeSmartCard = "failed in expanding swipe smart card";
+	const std::string ErrorFailedExpandingTapSmartCard = "failed in expanding tap smart card";
+	const std::string ErrorFailedExpandingShowBarCode = "failed in expanding show bar code";
+	const std::string ErrorFailedExpandingPressPedKey = "failed in expanding press PED key";
+	const std::string ErrorFailedExpandingPressSoftKey = "failed in expanding press soft key";
+	const std::string ErrorFailedExpandingPressAssistKey = "failed in expanding press assist key";
+	const std::string ErrorFailedExpandingTouchScreen = "failed in expanding touch screen";
 
 	Poco::Mutex _userCommandMutex;
 
@@ -222,18 +240,18 @@ private:
 		std::string commandId;
 
 		//specific data for smart card related command
-		unsigned int smartCardIndex;
-		//specific data for bar code releated command
-		unsigned int barCodeIndex;
+		unsigned int smartCardNumber;
+		//specific data for bar code related command
+		unsigned int barCodeNumber;
 		//specific data for keys
 		unsigned int downPeriod;
 		unsigned int upPeriod;
 		std::vector<unsigned int> keyNumbers;
 
 		//low level commands to fullfill this user command
-		std::vector<std::string> lowLevelCommands;
+		std::deque<std::string> lowLevelCommands;
 	};
-	std::vector<ExpandedUserCommand> _commands;
+	ExpandedUserCommand _userCommand;
 
 	enum class ClampState
 	{
@@ -245,6 +263,24 @@ private:
 
 	bool _smartCardSlotWithCard;
 	bool _deviceHomePositioned;
+
+	void notifyObservers(const std::string& cmdId, IUserCommandRunnerObserver::State state, const std::string& errorInfo);
+
+	//fill _userCommand with information in user command JSON
+	void parseUserCmdSmartCard(Poco::DynamicStruct& ds);
+	void parseUserCmdBarCode(Poco::DynamicStruct& ds);
+	void parseUserCmdKeys(Poco::DynamicStruct& ds);
+
+	//return true if user command can be fulfilled with low level commands
+	bool expandUserCmdInsertSmartCard();
+	bool expandUserCmdRemoveSmartCard();
+	bool expandUserCmdSwipeSmartCard();
+	bool expandUserCmdTapSmartCard();
+	bool expandUserCmdShowBarCode();
+	bool expandUserCmdPressPedKey();
+	bool expandUserCmdPressSoftKey();
+	bool expandUserCmdPressAssistKey();
+	bool expandUserCmdTouchScreen();
 
 	//clamp operation
 	std::vector<std::string> openClamp();
@@ -292,11 +328,14 @@ private:
 	std::vector<std::string> toBarcodeCardGate();
 	std::vector<std::string> toBarcodeReaderGate();
 
+	std::vector<IUserCommandRunnerObserver *> _observerPtrArray;
+
 	//////////////////////////////////////
 	// low level command data and functions
 	//////////////////////////////////////
 
 	Poco::Mutex _lowLevelCommandMutex;
+	Poco::Event _lowLevelEvent;
 	struct LowLevelCommand
 	{
 		ICommandReception::CommandId cmdId;
