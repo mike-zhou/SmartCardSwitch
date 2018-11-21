@@ -19,186 +19,22 @@
 #include "CoordinateStorage.h"
 #include "ConsoleCommandFactory.h"
 #include "ICommandReception.h"
+#include "IUserCommandRunner.h"
 
-
-/**
- * ==== Examples of user commands ====
- *
- * {
- * 	"userCommand":"reset device"
- * 	"commandId":"uniqueCommandId"
- * }
- *
- * {
- *	"userCommand":"power on opt",
- *	"commandId":"unqueCommandId"
- * }
- *
- * {
- * 	"userCommand":"power off opt",
- * 	"commandId":"uniqueCommandId"
- * }
- *
- * {
- * 	"userCommand":"insert smart card",
- * 	"commandId":"uniqueCommandId",
- * 	"smartCardNumber":0
- * }
- *
- * {
- * 	"userCommand":"remove smart card",
- * 	"commandId":"uniqueCommandId",
- * 	"smartCardNumber":0
- * }
- *
- * {
- * 	"userCommand":"swipe smart card",
- * 	"commandId":"uniqueCommandId",
- * 	"smartCardNumber":0
- * }
- *
- * {
- * 	"userCommand":"tap smart card",
- * 	"commandId":"uniqueCommandId",
- * 	"smartCardNumber":0
- * }
- *
- * {
- * 	"userCommand":"show bar code",
- * 	"commandId":"uniqueCommandId",
- * 	"barCodeNumber":0
- * }
- *
- * {
- * 	"userCommand":"press PED key",
- * 	"keys":[
- * 		{"index":0, "keyNumber":9},
- * 		{"index":1, "keyNumber":7}
- * 	],
- * 	"downPeriod":1000,
- * 	"commandId":"uniqueCommandId",
- * 	"upPeriod":1000
- * }
- *
- * {
- * 	"userCommand":"press soft key",
- * 	"keys":[
- * 		{"index":0, "keyNumber":6},
- * 		{"index":1, "keyNumber":3}
- * 	],
- * 	"downPeriod":1000,
- * 	"commandId":"uniqueCommandId",
- * 	"upPeriod":1000
- * }
- *
- * {
- * 	"userCommand":"press assist key",
- * 	"commandId":"uniqueCommandId",
- * 	"keys":[
- * 		{"index":0, "keyNumber":2},
- * 		{"index":1, "keyNumber":9}
- * 	],
- * 	"downPeriod":1000,
- * 	"upPeriod":1000
- * }
- *
- * {
- * 	"userCommand":"touch screen",
- * 	"commandId":"uniqueCommandId",
- * 	"areas":[
- * 		{"index":0, "keyNumber":1},
- * 		{"index":1, "keyNumber":5}
- * 	],
- * 	"downPeriod":1000,
- * 	"upPeriod":1000
- * }
- *
- * {
- * 	"userCommand":"cancel command",
- * 	"commandId":"uniqueCommandId"
- * }
- *
- * ======== Compound command ====
- * [
- * 	{
- * 		"index"=0,
- * 		"command"={
- * 			"userCommand":"insert smart card",
- * 			"commandId":"uniqueCommandId",
- * 			"smartCardNumber":0
- * 		}
- * 	},
- * 	{
- * 		"index"=1,
- * 		"command"={
- * 			"userCommand":"press PED key",
- * 			"keys":[
- * 				{"index":0, "keyNumber":9},
- * 				{"index":1, "keyNumber":7}
- * 			],
- * 			"downPeriod":1000,
- * 			"commandId":"uniqueCommandId",
- * 			"upPeriod":1000
- * 		}
- * 	},
- * 	{
- * 		"index"=2,
- * 		"command"={
- * 			"userCommand":"remove smart card",
- * 			"commandId":"uniqueCommandId",
- * 			"smartCardNumber":0
- * 		}
- * 	}
- * ]
- *
- * ==== Example of command reply ====
- *
- * {
- * 	"commandId":"uniqueCommandId",
- * 	"result":"ongoing"
- * }
- *
- * {
- * 	"commandId":"uniqueCommandId",
- * 	"result":"failed"
- * }
- * {
- * 	"commandId":"uniqueCommandId",
- * 	"result":"succeeded"
- * }
- *
- */
-
-
-class IUserCommandRunnerObserver
-{
-public:
-	virtual ~IUserCommandRunnerObserver() {}
-
-	enum class State
-	{
-		Idle = 0,
-		OnGoing,
-		Failed,
-		Succeeded
-	};
-	virtual void OnCommandStatus(const std::string& commandId, const State& state, const std::string& errorInfo) = 0;
-};
-
-class UserCommandRunner: public Poco::Task, public IResponseReceiver
+class UserCommandRunner: public Poco::Task, public IUserCommandRunner, public IResponseReceiver
 {
 public:
 	UserCommandRunner();
 
-	// error is empty if JSON command is accepted.
-	void RunCommand(const std::string& jsonCmd, std::string& error);
 	void AddObserver(IUserCommandRunnerObserver * pObserver);
-
-	void GetState(std::string& commandId, IUserCommandRunnerObserver::State& state, std::string& errorInfo);
 
 private:
 	//Poco::Task
 	void runTask();
+
+	//IUserCommandRunner
+	virtual void RunCommand(const std::string& jsonCmd, std::string& error) override;
+
 
 private:
 	////////////////////////////////////////
@@ -233,7 +69,16 @@ private:
 
 	CoordinateStorage::Type _currentPosition;
 	std::string _jsonUserCommand; //original JSON command
-	IUserCommandRunnerObserver::State _state;
+
+	enum class State
+	{
+		Idle = 0,
+		OnGoing,
+		Failed,
+		Succeeded
+	};
+	State _state;
+
 	//command details
 	struct ExpandedUserCommand
 	{
@@ -265,7 +110,7 @@ private:
 	bool _smartCardSlotWithCard;
 	bool _deviceHomePositioned;
 
-	void notifyObservers(const std::string& cmdId, IUserCommandRunnerObserver::State state, const std::string& errorInfo);
+	void notifyObservers(const std::string& cmdId, State state, const std::string& errorInfo);
 
 	//fill _userCommand with information in user command JSON
 	void parseUserCmdSmartCard(Poco::DynamicStruct& ds);

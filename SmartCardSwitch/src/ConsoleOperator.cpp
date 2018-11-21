@@ -281,14 +281,15 @@ void ConsoleOperator::saveCoordinates(int type, unsigned int index)
 	}
 }
 
-void ConsoleOperator::processInput()
+std::string ConsoleOperator::getConsoleCommand()
 {
+	std::string command;
+
 	if(_input.size() < 1) {
-		return;
+		return command;
 	}
 
 	bool bCommandAvailable = false;
-	std::string command;
 
 	//find '\n' in the input
 	for(auto it=_input.begin(); it!=_input.end(); it++)
@@ -299,7 +300,7 @@ void ConsoleOperator::processInput()
 		}
 	}
 	if(!bCommandAvailable) {
-		return;
+		return command;
 	}
 	//retrieve command from beginning of _input
 	for(;;)
@@ -324,11 +325,17 @@ void ConsoleOperator::processInput()
 	if(bCmdValid == false) {
 		pLogger->LogError("ConsoleOperator::processInput invalid command: " + command);
 		showHelp();
-		return;
+		command.clear();
 	}
 
+	return command;
+}
+
+bool ConsoleOperator::RunConsoleCommand(const std::string& command)
+{
 	//parse command
 	int d0, d1, d2, d3, d4, d5, d6, d7, d8, d9;
+
 	d0 = -1;
 	d1 = -1;
 	d2 = -1;
@@ -339,28 +346,20 @@ void ConsoleOperator::processInput()
 	d7 = -1;
 	d8 = -1;
 	d9 = -1;
+
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
 	try
 	{
-		pLogger->LogInfo("ConsoleOperator::processInput command: " + command);
+		pLogger->LogInfo("ConsoleOperator::RunConsoleCommand command: " + command);
 		sscanf(command.data(), "%d %d %d %d %d %d %d %d %d %d\n", &d0, &d1, &d2, &d3, &d4, &d5, &d6, &d7, &d8, &d9);
 	}
 	catch(...)
 	{
-		std::string e = "ConsoleOperator::processInput exception in parsing input";
+		std::string e = "ConsoleOperator::RunConsoleCommand exception in parsing input";
 		pLogger->LogError(e);
-		std::cout << e << "\r\n";
-		showHelp();
+		return false;
 	}
-	std::cout << d0 << " ";
-	std::cout << d1 << " ";
-	std::cout << d2 << " ";
-	std::cout << d3 << " ";
-	std::cout << d4 << " ";
-	std::cout << d5 << " ";
-	std::cout << d6 << " ";
-	std::cout << d7 << " ";
-	std::cout << d8 << " ";
-	std::cout << d9 << "\r\n";
 
 	//run command
 	bool bKnownCmd = true;
@@ -375,7 +374,7 @@ void ConsoleOperator::processInput()
 		case ConsoleCommandFactory::Type::DeviceConnect:
 		{
 			if(_devices.empty()) {
-				pLogger->LogError("ConsoleOperator::processInput no device to connect");
+				pLogger->LogError("ConsoleOperator::RunConsoleCommand no device to connect");
 			}
 			else
 			{
@@ -631,14 +630,18 @@ void ConsoleOperator::processInput()
 		default:
 		{
 			bKnownCmd = false;
-			pLogger->LogError("ConsoleOperator::processInput unknown command: " + command);
+			pLogger->LogError("ConsoleOperator::RunConsoleCommand unknown command: " + command);
 			showHelp();
 		}
 		break;
 	}
 
 	if((bKnownCmd) && (_cmdKey == InvalidCommandId)) {
-		pLogger->LogInfo("ConsoleOperator::processInput no reply will be returned");
+		pLogger->LogInfo("ConsoleOperator::RunConsoleCommand no reply will be returned");
+		return true;
+	}
+	else {
+		return false;
 	}
 }
 
@@ -843,6 +846,14 @@ void ConsoleOperator::OnStepperQuery(CommandId key, bool bSuccess,
 	_bCmdFinish = true;
 }
 
+void ConsoleOperator::AddObserver(IResponseReceiver * pObserver)
+{
+	if(pObserver != nullptr) {
+		_observerPtrArray.push_back(pObserver);
+	}
+}
+
+
 void ConsoleOperator::runTask()
 {
 	while(1)
@@ -853,10 +864,19 @@ void ConsoleOperator::runTask()
 		}
 		else
 		{
-			char c = getchar();
+			std::string cmd;
 
+			char c = getchar();
 			_input.push_back(c);
-			processInput();
+
+			cmd = getConsoleCommand();
+
+			if(!cmd.empty()) {
+				auto success = RunConsoleCommand(cmd);
+				if(!success) {
+					showHelp();
+				}
+			}
 		}
 	}
 

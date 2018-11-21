@@ -27,6 +27,9 @@ public:
 	ConsoleOperator(ICommandReception * pCmdReceiver);
 	virtual ~ConsoleOperator() {}
 
+	void AddObserver(IResponseReceiver * pObserver);
+	bool RunConsoleCommand(const std::string& command);
+
 private:
 	//Poco::Task
 	virtual void runTask() override;
@@ -67,6 +70,10 @@ private:
 
 	std::deque<char> _input;
 
+	Poco::Mutex _mutex;
+
+	std::vector<IResponseReceiver *> _observerPtrArray;
+
 	ICommandReception * _pCommandReception;
 	ICommandReception::CommandId _cmdKey;
 	bool _bCmdFinish;
@@ -82,10 +89,11 @@ private:
 	};
 	std::vector<StepperData> _steppers;
 
-	void processInput();
+	std::string getConsoleCommand();
 	void showHelp();
 	void prepareRunning();
 	void waitCommandFinish();
+
 	void loadMovementConfig();
 	void stepperSetState(unsigned int index, int state);
 	void stepperMove(unsigned int index, bool forward, unsigned int steps);

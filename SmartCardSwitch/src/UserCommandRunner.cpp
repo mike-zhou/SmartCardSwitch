@@ -25,13 +25,55 @@ UserCommandRunner::UserCommandRunner() : Task("UserCommandRunner")
 	_deviceHomePositioned = false;
 	_clampState = ClampState::Released;
 	_currentPosition = CoordinateStorage::Type::Home;
-	_state = IUserCommandRunnerObserver::State::Idle;
+	_state = State::Idle;
 }
 
-void UserCommandRunner::notifyObservers(const std::string& cmdId, IUserCommandRunnerObserver::State state, const std::string& errorInfo)
+void UserCommandRunner::notifyObservers(const std::string& cmdId, State state, const std::string& errorInfo)
 {
+	std::string reply;
+	std::string strState;
+
+	reply = "{";
+	reply = reply + "\"commandId\":\"" + cmdId + "\",";
+
+	switch(state)
+	{
+		case State::OnGoing:
+		{
+			strState = "ongoing";
+		}
+		break;
+
+		case State::Failed:
+		{
+			strState = "failed";
+		}
+		break;
+
+		case State::Succeeded:
+		{
+			strState = "succeed";
+		}
+		break;
+
+		default:
+		{
+			strState = "internal error";
+		}
+		break;
+	}
+	reply = reply + "\"result\":\"" + strState + "\"";
+
+	if(state == State::Failed) {
+		reply = reply + ",\"errorInfo\":\"" + errorInfo + "\"";
+	}
+
+	reply = reply + "}";
+
+	pLogger->LogInfo("UserCommandRunner::notifyObservers reply: " + reply);
+
 	for(auto it=_observerPtrArray.begin(); it!=_observerPtrArray.end(); it++) {
-		(*it)->OnCommandStatus(cmdId, state, errorInfo);
+		(*it)->OnCommandStatus(reply);
 	}
 }
 
@@ -153,7 +195,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		return;
 	}
 
-	if(_state == IUserCommandRunnerObserver::State::OnGoing) {
+	if(_state == State::OnGoing) {
 		errorInfo = ErrorUserCommandOnGoing;
 		pLogger->LogError("UserCommandRunner::RunCommand command ongoing, denied: " + jsonCmd);
 		return;
@@ -221,7 +263,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 
 	if(_userCommand.command == UserCmdInsertSmartCard) {
 		if(expandUserCmdInsertSmartCard()) {
-			_state = IUserCommandRunnerObserver::State::OnGoing;
+			_state = State::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -230,7 +272,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	}
 	else if(_userCommand.command == UserCmdRemoveSmartCard) {
 		if(expandUserCmdRemoveSmartCard()) {
-			_state = IUserCommandRunnerObserver::State::OnGoing;
+			_state = State::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -239,7 +281,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	}
 	else if(_userCommand.command == UserCmdSwipeSmartCard) {
 		if(expandUserCmdSwipeSmartCard()) {
-			_state = IUserCommandRunnerObserver::State::OnGoing;
+			_state = State::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -248,7 +290,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	}
 	else if(_userCommand.command == UserCmdTapSmartCard) {
 		if(expandUserCmdTapSmartCard()) {
-			_state = IUserCommandRunnerObserver::State::OnGoing;
+			_state = State::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -257,7 +299,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	}
 	else if(_userCommand.command == UserCmdShowBarCode) {
 		if(expandUserCmdShowBarCode()) {
-			_state = IUserCommandRunnerObserver::State::OnGoing;
+			_state = State::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -266,7 +308,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	}
 	else if(_userCommand.command == UserCmdPressPedKey) {
 		if(expandUserCmdPressPedKey()) {
-			_state = IUserCommandRunnerObserver::State::OnGoing;
+			_state = State::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -275,7 +317,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	}
 	else if(_userCommand.command == UserCmdPressSoftKey) {
 		if(expandUserCmdPressSoftKey()) {
-			_state = IUserCommandRunnerObserver::State::OnGoing;
+			_state = State::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -284,7 +326,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	}
 	else if(_userCommand.command == UserCmdPressAssistKey) {
 		if(expandUserCmdPressAssistKey()) {
-			_state = IUserCommandRunnerObserver::State::OnGoing;
+			_state = State::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -293,7 +335,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	}
 	else if(_userCommand.command == UserCmdTouchScreen) {
 		if(expandUserCmdTouchScreen()) {
-			_state = IUserCommandRunnerObserver::State::OnGoing;
+			_state = State::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -309,11 +351,6 @@ void UserCommandRunner::AddObserver(IUserCommandRunnerObserver * pObserver)
 	if(pObserver != nullptr) {
 		_observerPtrArray.push_back(pObserver);
 	}
-}
-
-void UserCommandRunner::GetState(std::string& commandId, IUserCommandRunnerObserver::State& state, std::string& errorInfo)
-{
-
 }
 
 void UserCommandRunner::runTask()
