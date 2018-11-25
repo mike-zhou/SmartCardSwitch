@@ -363,7 +363,7 @@ bool ConsoleOperator::RunConsoleCommand(const std::string& command)
 
 	//run command
 	bool bKnownCmd = true;
-	switch(d0)
+	switch((ConsoleCommandFactory::Type)d0)
 	{
 		case ConsoleCommandFactory::Type::DevicesGet:
 		{

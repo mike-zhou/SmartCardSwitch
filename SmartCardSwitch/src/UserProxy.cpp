@@ -59,7 +59,7 @@ void UserProxy::AddSocket(StreamSocket& socket)
 	{
 		std::string errorInfo;
 		std::vector<unsigned char> pkg;
-		auto& ipaddress = _sockets[0].address();
+		auto ipaddress = _sockets[0].address();
 
 		pLogger->LogInfo("UserProxy::AddSocket refused socket connection: " + socket.address().toString());
 
@@ -135,7 +135,7 @@ void UserProxy::runTask()
 							{
 								std::string errorInfo;
 
-								_pCmdRunner->Runcommand(*it, errorInfo);
+								_pCmdRunner->RunCommand(*it, errorInfo);
 								if(!errorInfo.empty())
 								{
 									std::vector<unsigned char> pkg;

@@ -115,8 +115,6 @@ public:
 	virtual CommandId DeviceConnect(unsigned int index) = 0;
 	virtual CommandId DeviceQueryPower() = 0;
 	virtual CommandId DeviceQueryFuse() = 0;
-	virtual CommandId DeviceQueryHomeState() = 0;
-	virtual CommandId DeviceGoHome() = 0;
 	virtual CommandId OptPowerOn() = 0;
 	virtual CommandId OptPowerOff() = 0;
 	virtual CommandId OptQueryPower() = 0;

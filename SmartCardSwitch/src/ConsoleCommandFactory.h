@@ -14,7 +14,7 @@ class ConsoleCommandFactory
 {
 public:
 
-	enum Type
+	enum class Type
 	{
 		Invalid = -1,
 		DevicesGet = 0,
@@ -107,7 +107,7 @@ public:
 		return help;
 	}
 
-	static std::string DeviceGet() 							{ return std::string("0\r\n"); }
+	static std::string DevicesGet() 						{ return std::string("0\r\n"); }
 	static std::string DeviceConnect(unsigned int index) 	{ return "1 " + std::to_string(index) + "\r\n"; }
 	static std::string DeviceQueryPower() 					{ return std::string("2 \r\n"); }
 	static std::string DeviceQueryFuse() 					{ return std::string("3 \r\n"); }

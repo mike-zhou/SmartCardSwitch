@@ -175,7 +175,7 @@ public:
 	virtual ~IUserCommandRunner() { }
 
 	// error is empty if JSON command is accepted.
-	virtual void Runcommand(const std::string& jsonCmd, std::string& error) = 0;
+	virtual void RunCommand(const std::string& jsonCmd, std::string& error) = 0;
 };
 
 

@@ -47,8 +47,6 @@ private:
 	virtual CommandId DeviceConnect(unsigned int index) override;
 	virtual CommandId DeviceQueryPower() override;
 	virtual CommandId DeviceQueryFuse() override;
-	virtual CommandId DeviceQueryHomeState() override;
-	virtual CommandId DeviceGoHome() override;
 	virtual CommandId OptPowerOn() override;
 	virtual CommandId OptPowerOff() override;
 	virtual CommandId OptQueryPower() override;

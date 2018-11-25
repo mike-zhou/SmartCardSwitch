@@ -74,7 +74,7 @@ private:
 
 	std::vector<IResponseReceiver *> _observerPtrArray;
 
-	ICommandReception * _pCommandReception;
+	ICommandReception * _pCommandReception; //the instance where commands can be sent to.
 	ICommandReception::CommandId _cmdKey;
 	bool _bCmdFinish;
 	bool _bCmdSucceed;

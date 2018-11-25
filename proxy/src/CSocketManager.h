@@ -34,6 +34,7 @@ public:
 	CSocketManager();
 	virtual ~CSocketManager();
 
+	//couple the socket manager to device instance.
 	void SetDevice(IDevice * pDevice);
 
 private:
