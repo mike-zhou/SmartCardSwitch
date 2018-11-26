@@ -25,10 +25,9 @@ public:
 };
 
 /**********************
- * Functionalities of this class object:
- * 1. maintain socket connection between SmartCardSwitch and proxy
- * 2. send JSON command to proxy through socket
- * 3. receive JSON reply from proxy through socket
+ * This class maintains socket connection between SmartCardSwitch and the proxy,
+ * packs and sends JSON command to proxy through socket
+ * receives and unpacks JSON reply from proxy through socket
  *********************/
 class DeviceAccessor: public Poco::Task
 {

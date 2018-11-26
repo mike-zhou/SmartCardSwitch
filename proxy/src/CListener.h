@@ -17,6 +17,10 @@
 
 using Poco::Net::SocketAddress;
 
+/**
+ * This class listens for external socket connection request,
+ * adds sockets to ISocketDeposit instance.
+ */
 class CListener : public Poco::Task
 {
 public:

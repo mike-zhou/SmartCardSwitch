@@ -23,6 +23,11 @@ public:
 	virtual void AddSocket(StreamSocket& socket) = 0;
 };
 
+/**
+ * This class listens for external socket connection request,
+ * accepts connection requests,
+ * and adds socket object to IUserPool instance.
+ */
 class UserListener: public Poco::Task
 {
 public:

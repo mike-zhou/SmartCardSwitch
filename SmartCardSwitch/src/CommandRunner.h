@@ -23,9 +23,10 @@
 #include "ICommandReception.h"
 
 /***************************************
- * This class receives user input from a console,
- * creates JSON command accordingly, sends it to DeviceAccessor object,
- * and handles replies.
+ * This class implements functionalities in ICommandReception interface,
+ * creates corresponding JSON command string,
+ * passes it to DeviceAccessor object,
+ * processes JSON reply from DeviceAccessor object
  ***************************************/
 class CommandRunner: public Poco::Task, public ICommandReception, public IDeviceObserver
 {

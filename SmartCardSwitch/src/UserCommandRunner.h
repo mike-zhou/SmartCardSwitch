@@ -21,6 +21,13 @@
 #include "ICommandReception.h"
 #include "IUserCommandRunner.h"
 
+
+/**
+ * This class accepts user command with IUserCommandRunner interface,
+ * maps user command to consoles commands,
+ * passes those console command to ConsoleOperator instance one by one,
+ * and sends result of user command to IUserCommandRunnerObserver
+ */
 class UserCommandRunner: public Poco::Task, public IUserCommandRunner, public IResponseReceiver
 {
 public:

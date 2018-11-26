@@ -23,13 +23,16 @@
 
 using Poco::Net::StreamSocket;
 
-/******************
- * Functionalities of this class object
- * 1. maintain connections between sockets and devices
- * 2. translate JSON command to device command
- * 3. translate device reply to JSON reply
- ******************/
-class CSocketManager : public Poco::Task, public IDeviceObserver, public ISocketDeposit {
+/**
+ * This class receives JSON commands from sockets,
+ * converts JSON command to device command,
+ * sends device command to device,
+ * processes replies from device,
+ * converts device reply to JSON reply,
+ * sends JSON reply to the other side of socket;
+ * maintains mapping between sockets and devices.
+*/
+class CSocketManager : public Poco::Task, public ISocketDeposit, public IDeviceObserver {
 public:
 	CSocketManager();
 	virtual ~CSocketManager();

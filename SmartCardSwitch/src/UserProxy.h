@@ -18,7 +18,13 @@
 #include "UserListener.h"
 
 
-class UserProxy: public Poco::Task, public IUserCommandRunnerObserver, public IUserPool
+/**
+ * This class accepts socket objects created by UserListener,
+ * receives user commands from the socket,
+ * passes those commands to UserCommandRunner instance,
+ * and sends results to the other side of socket.
+ */
+class UserProxy: public Poco::Task, public IUserPool, public IUserCommandRunnerObserver
 {
 public:
 	UserProxy();

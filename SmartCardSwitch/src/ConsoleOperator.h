@@ -22,7 +22,10 @@
 #include "ConsoleCommandFactory.h"
 
 /**
- * ConsoleOperator can read command from console and from other source.
+ * This class is used to operator the device manually.
+ * It reads command from console or other source,
+ * calls corresponding functions of ICommandReception instance,
+ * process results from ICommandReception instance.
  */
 class ConsoleOperator: public Poco::Task, public IResponseReceiver
 {
