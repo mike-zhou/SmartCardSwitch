@@ -7,6 +7,7 @@
 
 #include "Poco/ScopedLock.h"
 #include "Poco/Timespan.h"
+#include "Poco/Timestamp.h"
 
 #include "UserProxy.h"
 #include "MsgPackager.h"
@@ -17,6 +18,7 @@ extern Logger * pLogger;
 UserProxy::UserProxy(): Task("UserProxy")
 {
 	_pCmdRunner = nullptr;
+	_state = State::ConnectDevice;
 }
 
 void UserProxy::SetUserCommandRunner(IUserCommandRunner * pRunner)
@@ -50,6 +52,25 @@ void UserProxy::AddSocket(StreamSocket& socket)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
+	if(_state != State::Normal)
+	{
+		std::string errorInfo;
+		std::vector<unsigned char> pkg;
+
+		pLogger->LogInfo("UserProxy::AddSocket user proxy state: " + std::to_string((int)_state));
+		pLogger->LogInfo("UserProxy::AddSocket device hasn't connected, refuse socket connection: " + socket.address().toString());
+
+		errorInfo = createErrorInfo("no device is connected");
+
+		MsgPackager::PackageMsg(errorInfo, pkg);
+
+		socket.sendBytes(pkg.data(), pkg.size());
+		socket.shutdownSend();
+		socket.close();
+
+		return;
+	}
+
 	if(_sockets.empty())
 	{
 		_sockets.push_back(socket);
@@ -73,11 +94,49 @@ void UserProxy::AddSocket(StreamSocket& socket)
 	}
 }
 
+bool UserProxy::sendDeviceConnectCommand()
+{
+	std::string error;
+	std::string cmd = "{\"userCommand\":\"connect device\",\"deviceName\":\"" + _deviceName + "\",\"commandId\":\"connect device\"}";
+
+	_commandId = "connect device";
+	_commandState = "ongoing";
+
+	_pCmdRunner->RunCommand(cmd, error);
+
+	if(!error.empty())
+	{
+		pLogger->LogError("UserProxy::sendDeviceConnectCommand error: " + error);
+		return false;
+	}
+	return true;
+}
+
+bool UserProxy::sendDeviceResetCommand()
+{
+	std::string error;
+	std::string cmd = "{\"userCommand\":\"reset device\",\"commandId\":\"reset device\"}";
+
+	_commandId = "reset device";
+	_commandState = "ongoing";
+
+	_pCmdRunner->RunCommand(cmd, error);
+
+	if(!error.empty())
+	{
+		pLogger->LogError("UserProxy::sendDeviceConnectCommand error: " + error);
+		return false;
+	}
+	return true;
+}
+
 void UserProxy::runTask()
 {
 	const unsigned int BufferSize = 1024;
 	unsigned char buffer[BufferSize];
 	Poco::Timespan timeSpan(10000); //10 ms
+	Poco::Timestamp currentTime;
+	Poco::Timestamp::TimeDiff deviceConnectInterval(DeviceConnectInterval);
 
 
 	while(1)
@@ -89,6 +148,18 @@ void UserProxy::runTask()
 			//close socket
 			if(!_sockets.empty())
 			{
+				std::string errorInfo;
+				std::vector<unsigned char> pkg;
+				auto ipaddress = _sockets[0].address();
+
+				pLogger->LogInfo("UserProxy::runTask close socket connection: " + ipaddress.toString());
+
+				errorInfo = createErrorInfo("SmartCardSwitch exists");
+
+				MsgPackager::PackageMsg(errorInfo, pkg);
+
+				_sockets[0].sendBytes(pkg.data(), pkg.size());
+				_sockets[0].shutdownSend();
 				_sockets[0].close();
 				_sockets.clear();
 			}
@@ -97,6 +168,107 @@ void UserProxy::runTask()
 		}
 		else
 		{
+			if(_state != State::Normal)
+			{
+				if(!currentTime.isElapsed(deviceConnectInterval)) {
+					sleep(10);
+					return;
+				}
+
+				switch(_state)
+				{
+					case State::ConnectDevice:
+					{
+						_state = State::WaitForDeviceAvailability;
+
+						if(!sendDeviceConnectCommand()) {
+							_state = State::ConnectDevice;
+							currentTime.update();
+						}
+					}
+					break;
+
+					case State::WaitForDeviceAvailability:
+					{
+						if(_commandState == "ongoing")
+						{
+							sleep(100);
+						}
+						if(_commandState == "ongoing")
+						{
+							currentTime.update();
+						}
+						else if(_commandState == "succeeded")
+						{
+							_state = State::ResetDevice;
+						}
+						else if(_commandState == "failed")
+						{
+							_state = State::ConnectDevice;
+							currentTime.update();
+							pLogger->LogError("UserProxy::runTask failed to connect to device, error: " + _errorInfo);
+						}
+						else
+						{
+							_state = State::ConnectDevice;
+							currentTime.update();
+							pLogger->LogError("UserProxy::runTask wrong command result: " + _commandState);
+						}
+					}
+					break;
+
+					case State::ResetDevice:
+					{
+						_state = State::WaitForDeviceReady;
+
+						if(!sendDeviceResetCommand()) {
+							_state = State::ResetDevice;
+							currentTime.update();
+						}
+					}
+					break;
+
+					case State::WaitForDeviceReady:
+					{
+						if(_commandState == "ongoing")
+						{
+							sleep(100);
+						}
+						if(_commandState == "ongoing")
+						{
+							currentTime.update();
+						}
+						else if(_commandState == "succeeded")
+						{
+							_state = State::Normal;
+						}
+						else if(_commandState == "failed")
+						{
+							_state = State::ResetDevice;
+							currentTime.update();
+							pLogger->LogError("UserProxy::runTask failed to reset device, error: " + _errorInfo);
+						}
+						else
+						{
+							_state = State::ConnectDevice;
+							currentTime.update();
+							pLogger->LogError("UserProxy::runTask wrong command result: " + _commandState);
+						}
+					}
+					break;
+
+					default:
+					{
+						pLogger->LogError("UserProxy::runTask wrong state: " + std::to_string((int)_state));
+						_state = State::ConnectDevice;
+						currentTime.update();
+					}
+					break;
+				}
+
+				return;
+			}
+
 			if(_sockets.empty()) {
 				sleep(10);
 				continue;

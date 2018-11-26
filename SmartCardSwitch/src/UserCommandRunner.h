@@ -20,6 +20,7 @@
 #include "ConsoleCommandFactory.h"
 #include "ICommandReception.h"
 #include "IUserCommandRunner.h"
+#include "ConsoleOperator.h"
 
 
 /**
@@ -34,6 +35,7 @@ public:
 	UserCommandRunner();
 
 	void AddObserver(IUserCommandRunnerObserver * pObserver);
+	void SetConsoleOperator(ConsoleOperator * pCO);
 
 private:
 	//Poco::Task
@@ -212,6 +214,8 @@ private:
 		CommandState state;
 	};
 	ConsoleCommand _consoleCommand;
+
+	ConsoleOperator * _pConsoleOperator;
 };
 
 #endif /* USERCOMMANDRUNNER_H_ */

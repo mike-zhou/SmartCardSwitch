@@ -30,6 +30,7 @@ public:
 	UserProxy();
 
 	void SetUserCommandRunner(IUserCommandRunner * pRunner);
+	void SetDeviceName(const std::string& deviceName);
 
 private:
 	//Poco::Task
@@ -42,11 +43,30 @@ private:
 	virtual void AddSocket(StreamSocket& socket) override;
 
 private:
+	const unsigned long DeviceConnectInterval = 10000000; //10 seconds
+
 	Poco::Mutex _mutex;
+
+	enum class State
+	{
+		ConnectDevice = 0,
+		WaitForDeviceAvailability,
+		ResetDevice,
+		WaitForDeviceReady,
+		Normal
+	};
+	State _state;
 
 	std::vector<StreamSocket> _sockets;
 
 	IUserCommandRunner * _pCmdRunner;
+
+	std::string _deviceName;
+	std::string _commandId;
+	std::string _commandState;
+	std::string _errorInfo;
+	bool sendDeviceConnectCommand();
+	bool sendDeviceResetCommand();
 
 	std::deque<unsigned char> _input;
 	std::deque<unsigned char> _output;

@@ -26,6 +26,7 @@ UserCommandRunner::UserCommandRunner() : Task("UserCommandRunner")
 	_clampState = ClampState::Released;
 	_currentPosition = CoordinateStorage::Type::Home;
 	_state = State::Idle;
+	_pConsoleOperator = nullptr;
 }
 
 void UserCommandRunner::notifyObservers(const std::string& cmdId, State state, const std::string& errorInfo)
@@ -429,12 +430,33 @@ void UserCommandRunner::runTask()
 		}
 		else
 		{
-			if(_userCommand.consoleCommands.empty()) {
+			bool noConsoleCommand;
+			{
+				Poco::ScopedLock<Poco::Mutex> lock(_userCommandMutex);
+				noConsoleCommand = _userCommand.consoleCommands.empty();
+			}
+			if(noConsoleCommand) {
 				sleep(10);
 				continue;
 			}
 
+			Poco::ScopedLock<Poco::Mutex> lock(_userCommandMutex);
+			for(auto it=_userCommand.consoleCommands.begin(); it!=_userCommand.consoleCommands.end(); it++)
+			{
+				{
+					std::string consoleCmd;
+					Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex);
 
+					_consoleCommand.state = ConsoleCommand::CommandState::Pending;
+					consoleCmd = *it;
+					_consoleCommand.cmdId = _pConsoleOperator->RunConsoleCommand(consoleCmd);
+				}
+
+				if(_consoleCommand.cmdId == ICommandReception::ICommandDataTypes::InvalidCommandId) {
+
+				}
+
+			}
 		}
 	}
 
