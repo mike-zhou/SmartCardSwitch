@@ -25,11 +25,12 @@ UserCommandRunner::UserCommandRunner() : Task("UserCommandRunner")
 	_deviceHomePositioned = false;
 	_clampState = ClampState::Released;
 	_currentPosition = CoordinateStorage::Type::Home;
-	_state = State::Idle;
+	_userCommand.state = CommandState::Idle;
+	_consoleCommand.state = CommandState::Idle;
 	_pConsoleOperator = nullptr;
 }
 
-void UserCommandRunner::notifyObservers(const std::string& cmdId, State state, const std::string& errorInfo)
+void UserCommandRunner::notifyObservers(const std::string& cmdId, CommandState state, const std::string& errorInfo)
 {
 	std::string reply;
 	std::string strState;
@@ -39,19 +40,19 @@ void UserCommandRunner::notifyObservers(const std::string& cmdId, State state, c
 
 	switch(state)
 	{
-		case State::OnGoing:
+		case CommandState::OnGoing:
 		{
 			strState = "ongoing";
 		}
 		break;
 
-		case State::Failed:
+		case CommandState::Failed:
 		{
 			strState = "failed";
 		}
 		break;
 
-		case State::Succeeded:
+		case CommandState::Succeeded:
 		{
 			strState = "succeed";
 		}
@@ -65,7 +66,7 @@ void UserCommandRunner::notifyObservers(const std::string& cmdId, State state, c
 	}
 	reply = reply + "\"result\":\"" + strState + "\"";
 
-	if(state == State::Failed) {
+	if(state == CommandState::Failed) {
 		reply = reply + ",\"errorInfo\":\"" + errorInfo + "\"";
 	}
 
@@ -232,7 +233,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		return;
 	}
 
-	if(_state == State::OnGoing) {
+	if(_userCommand.state != CommandState::Idle) {
 		errorInfo = ErrorUserCommandOnGoing;
 		pLogger->LogError("UserCommandRunner::RunCommand command ongoing, denied: " + jsonCmd);
 		return;
@@ -303,7 +304,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	if(_userCommand.command == UserCmdConnectDevice)
 	{
 		if(expandUserCmdConnectDevice()) {
-			_state = State::OnGoing;
+			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -313,7 +314,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	else if(_userCommand.command == UserCmdResetDevice)
 	{
 		if(expandUserCmdResetDevice()) {
-			_state = State::OnGoing;
+			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -323,7 +324,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	else if(_userCommand.command == UserCmdInsertSmartCard)
 	{
 		if(expandUserCmdInsertSmartCard()) {
-			_state = State::OnGoing;
+			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -333,7 +334,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	else if(_userCommand.command == UserCmdRemoveSmartCard)
 	{
 		if(expandUserCmdRemoveSmartCard()) {
-			_state = State::OnGoing;
+			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -343,7 +344,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	else if(_userCommand.command == UserCmdSwipeSmartCard)
 	{
 		if(expandUserCmdSwipeSmartCard()) {
-			_state = State::OnGoing;
+			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -353,7 +354,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	else if(_userCommand.command == UserCmdTapSmartCard)
 	{
 		if(expandUserCmdTapSmartCard()) {
-			_state = State::OnGoing;
+			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -363,7 +364,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	else if(_userCommand.command == UserCmdShowBarCode)
 	{
 		if(expandUserCmdShowBarCode()) {
-			_state = State::OnGoing;
+			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -373,7 +374,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	else if(_userCommand.command == UserCmdPressPedKey)
 	{
 		if(expandUserCmdPressPedKey()) {
-			_state = State::OnGoing;
+			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -383,7 +384,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	else if(_userCommand.command == UserCmdPressSoftKey)
 	{
 		if(expandUserCmdPressSoftKey()) {
-			_state = State::OnGoing;
+			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -393,7 +394,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	else if(_userCommand.command == UserCmdPressAssistKey)
 	{
 		if(expandUserCmdPressAssistKey()) {
-			_state = State::OnGoing;
+			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -403,7 +404,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	else if(_userCommand.command == UserCmdTouchScreen)
 	{
 		if(expandUserCmdTouchScreen()) {
-			_state = State::OnGoing;
+			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}
 		else {
@@ -430,32 +431,103 @@ void UserCommandRunner::runTask()
 		}
 		else
 		{
-			bool noConsoleCommand;
+			CommandState userCmdState;
+			CommandState consoleCmdState;
+
 			{
-				Poco::ScopedLock<Poco::Mutex> lock(_userCommandMutex);
-				noConsoleCommand = _userCommand.consoleCommands.empty();
+				Poco::ScopedLock<Poco::Mutex> lock(_userCommandMutex); //lock user cmd mutex
+				userCmdState = _userCommand.state;
 			}
-			if(noConsoleCommand) {
+			if(userCmdState == CommandState::Idle)
+			{
 				sleep(10);
 				continue;
 			}
 
-			Poco::ScopedLock<Poco::Mutex> lock(_userCommandMutex);
-			for(auto it=_userCommand.consoleCommands.begin(); it!=_userCommand.consoleCommands.end(); it++)
 			{
+				Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+				consoleCmdState = _consoleCommand.state;
+			}
+			switch(consoleCmdState)
+			{
+				case CommandState::Idle:
 				{
+					//run a console command
 					std::string consoleCmd;
-					Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex);
+					Poco::ScopedLock<Poco::Mutex> lock(_userCommandMutex); //lock user cmd mutex
 
-					_consoleCommand.state = ConsoleCommand::CommandState::Pending;
-					consoleCmd = *it;
+					_consoleCommand.state = CommandState::OnGoing; //change state here to give a correct state if callback comes instantly.
+					consoleCmd = _userCommand.consoleCommands.front();
+					pLogger->LogInfo("UserCommandRunner::runTask run console cmd: " + consoleCmd);
 					_consoleCommand.cmdId = _pConsoleOperator->RunConsoleCommand(consoleCmd);
+
+					if(_consoleCommand.cmdId == ICommandReception::ICommandDataTypes::InvalidCommandId)
+					{
+						//failed to run the console command
+						pLogger->LogError("UserCommandRunner::runTask failed to run console cmd: " + consoleCmd);
+						notifyObservers(_userCommand.commandId, CommandState::Failed, ErrorFailedToRunConsoleCommand);
+
+						_userCommand.consoleCommands.clear();
+						_userCommand.state = CommandState::Idle;
+
+						Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+						_consoleCommand.state = CommandState::Idle;
+					}
 				}
+				break;
 
-				if(_consoleCommand.cmdId == ICommandReception::ICommandDataTypes::InvalidCommandId) {
-
+				case CommandState::OnGoing:
+				{
+					sleep(10);
 				}
+				break;
 
+				case CommandState::Succeeded:
+				{
+					//pop up the console command
+					std::string cmd = _userCommand.consoleCommands.front();
+					pLogger->LogInfo("UserCommandRunner::runTask succeeded in console command: " + cmd);
+					_userCommand.consoleCommands.pop_front();
+
+					Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+					_consoleCommand.state = CommandState::Idle;
+
+					if(_userCommand.consoleCommands.empty())
+					{
+						//run out of console commands
+						std::string empty;
+
+						pLogger->LogInfo("UserCommandRunner::runTask succeeded in user command id: " + _userCommand.commandId);
+						notifyObservers(_userCommand.commandId, CommandState::Succeeded, empty);
+
+						Poco::ScopedLock<Poco::Mutex> lock(_userCommandMutex); //lock user cmd mutex
+						_userCommand.state = CommandState::Idle;
+					}
+				}
+				break;
+
+				case CommandState::Failed:
+				{
+					Poco::ScopedLock<Poco::Mutex> consoleLock(_consoleCommandMutex); //lock console cmd mutex
+					_consoleCommand.state = CommandState::Idle;
+
+					std::string cmd = _userCommand.consoleCommands.front();
+					pLogger->LogError("UserCommandRunner::runTask failed in console command: " + cmd);
+
+					pLogger->LogError("UserCommandRunner::runTask failed in user command id: " + _userCommand.commandId);
+					notifyObservers(_userCommand.commandId, CommandState::Failed, ErrorFailedToRunUserCommand);
+
+					Poco::ScopedLock<Poco::Mutex> userLock(_userCommandMutex); //lock user cmd mutex
+					_userCommand.consoleCommands.clear();
+					_userCommand.state = CommandState::Idle;
+				}
+				break;
+
+				default:
+				{
+					pLogger->LogError("UserCommandRunner::runTask wrong console command state: " + std::to_string((int)consoleCmdState));
+				}
+				break;
 			}
 		}
 	}

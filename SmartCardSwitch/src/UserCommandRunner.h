@@ -78,24 +78,26 @@ private:
 	const std::string ErrorFailedExpandingPressSoftKey = "failed in expanding press soft key";
 	const std::string ErrorFailedExpandingPressAssistKey = "failed in expanding press assist key";
 	const std::string ErrorFailedExpandingTouchScreen = "failed in expanding touch screen";
+	const std::string ErrorFailedToRunConsoleCommand = "failed to run console command";
+	const std::string ErrorFailedToRunUserCommand = "failed to run user command";
 
 	Poco::Mutex _userCommandMutex;
 
 	CoordinateStorage::Type _currentPosition;
 	std::string _jsonUserCommand; //original JSON command
 
-	enum class State
+	enum class CommandState
 	{
 		Idle = 0,
 		OnGoing,
 		Failed,
 		Succeeded
 	};
-	State _state;
 
 	//command details
 	struct ExpandedUserCommand
 	{
+		CommandState state;
 		std::string command;
 		std::string commandId;
 
@@ -126,7 +128,7 @@ private:
 	bool _smartCardSlotWithCard;
 	bool _deviceHomePositioned;
 
-	void notifyObservers(const std::string& cmdId, State state, const std::string& errorInfo);
+	void notifyObservers(const std::string& cmdId, CommandState state, const std::string& errorInfo);
 
 	//fill _userCommand with information in user command JSON
 	void parseUserCmdConnectDevice(Poco::DynamicStruct& ds);
@@ -205,12 +207,6 @@ private:
 	struct ConsoleCommand
 	{
 		ICommandReception::CommandId cmdId;
-		enum class CommandState
-		{
-			Pending = 0,
-			Succeeded,
-			Failed
-		};
 		CommandState state;
 	};
 	ConsoleCommand _consoleCommand;
