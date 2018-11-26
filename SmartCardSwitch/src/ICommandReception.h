@@ -57,10 +57,10 @@ public:
 	virtual void OnDeviceGoHome(CommandId key, bool bSuccess) {}
 	virtual void OnOptPowerOn(CommandId key, bool bSuccess)  {}
 	virtual void OnOptPowerOff(CommandId key, bool bSuccess)  {}
-	virtual void OnOptQueryPower(CommandId key, bool bSuccess)  {}
+	virtual void OnOptQueryPower(CommandId key, bool bSuccess, bool bPowered)  {}
 	virtual void OnDcmPowerOn(CommandId key, bool bSuccess)  {}
 	virtual void OnDcmPowerOff(CommandId key, bool bSuccess)  {}
-	virtual void OnDcmQueryPower(CommandId key, bool bSuccess)  {}
+	virtual void OnDcmQueryPower(CommandId key, bool bSuccess, bool bPowered)  {}
 	virtual void OnBdcsPowerOn(CommandId key, bool bSuccess) {}
 	virtual void OnBdcsPowerOff(CommandId key, bool bSuccess) {}
 	virtual void OnBdcsQueryPower(CommandId key, bool bSuccess, bool bPowered) {}
