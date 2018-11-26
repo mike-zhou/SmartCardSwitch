@@ -14,6 +14,12 @@
  * ==== Examples of user commands ====
  *
  * {
+ * 	"userCommand":"connect device",
+ * 	"deviceName":"name of device",
+ * 	"commandId":"uniqueCommandId"
+ * }
+ *
+ * {
  * 	"userCommand":"reset device"
  * 	"commandId":"uniqueCommandId"
  * }

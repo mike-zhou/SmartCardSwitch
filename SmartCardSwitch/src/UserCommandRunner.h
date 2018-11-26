@@ -24,7 +24,7 @@
 
 /**
  * This class accepts user command with IUserCommandRunner interface,
- * maps user command to consoles commands,
+ * expands user command to consoles commands,
  * passes those console command to ConsoleOperator instance one by one,
  * and sends result of user command to IUserCommandRunnerObserver
  */
@@ -48,6 +48,8 @@ private:
 	// user command related data and functions
 	////////////////////////////////////////
 
+	const std::string UserCmdConnectDevice = "connect device";
+	const std::string UserCmdResetDevice = "reset device";
 	const std::string UserCmdInsertSmartCard = "insert smart card";
 	const std::string UserCmdRemoveSmartCard = "remove smart card";
 	const std::string UserCmdSwipeSmartCard = "swipe smart card";
@@ -58,10 +60,13 @@ private:
 	const std::string UserCmdPressAssistKey = "press assist key";
 	const std::string UserCmdTouchScreen = "touch screen";
 
+	const std::string ErrorDeviceNotAvailable = "device hans't been connected";
 	const std::string ErrorDeviceNotHomePositioned = "device hasn't been home positioned";
 	const std::string ErrorUserCommandOnGoing = "a user command is running";
 	const std::string ErrorInvalidJsonUserCommand = "user command cannot be parsed";
 	const std::string ErrorUnSupportedCommand = "command is not supported";
+	const std::string ErrorFailedExpandingConnectDevice = "failed in expanding connect device";
+	const std::string ErrorFailedExpandingResetDevice = "failed in expanding reset device";
 	const std::string ErrorFailedExpandingInsertSmartCard = "failed in expanding insert smart card";
 	const std::string ErrorFailedExpandingRemoveSmartCard = "failed in expanding remove smart card";
 	const std::string ErrorFailedExpandingSwipeSmartCard = "failed in expanding swipe smart card";
@@ -92,6 +97,8 @@ private:
 		std::string command;
 		std::string commandId;
 
+		//specific data for connect device
+		std::string deviceName;
 		//specific data for smart card related command
 		unsigned int smartCardNumber;
 		//specific data for bar code related command
@@ -120,11 +127,15 @@ private:
 	void notifyObservers(const std::string& cmdId, State state, const std::string& errorInfo);
 
 	//fill _userCommand with information in user command JSON
+	void parseUserCmdConnectDevice(Poco::DynamicStruct& ds);
+	void parseUserCmdResetDevice(Poco::DynamicStruct& ds);
 	void parseUserCmdSmartCard(Poco::DynamicStruct& ds);
 	void parseUserCmdBarCode(Poco::DynamicStruct& ds);
 	void parseUserCmdKeys(Poco::DynamicStruct& ds);
 
 	//return true if user command can be fulfilled with low level commands
+	bool expandUserCmdConnectDevice();
+	bool expandUserCmdResetDevice();
 	bool expandUserCmdInsertSmartCard();
 	bool expandUserCmdRemoveSmartCard();
 	bool expandUserCmdSwipeSmartCard();

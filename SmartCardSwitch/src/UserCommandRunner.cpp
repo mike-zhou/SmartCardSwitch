@@ -77,6 +77,37 @@ void UserCommandRunner::notifyObservers(const std::string& cmdId, State state, c
 	}
 }
 
+void UserCommandRunner::parseUserCmdConnectDevice(Poco::DynamicStruct& ds)
+{
+	std::string deviceName = ds["deviceName"].toString();
+
+	if(deviceName.empty()) {
+		std::string err = "UserCommandRunner::parseUserCmdConnectDevice empty device name";
+		pLogger->LogError(err);
+		throw Poco::Exception(err);
+	}
+
+	_userCommand.deviceName = deviceName;
+}
+
+bool UserCommandRunner::expandUserCmdConnectDevice()
+{
+	std::string cmd;
+
+	cmd = ConsoleCommandFactory::CmdDevicesGet();
+	_userCommand.consoleCommands.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdDeviceConnect(0);
+	_userCommand.consoleCommands.push_back(cmd);
+
+	return true;
+}
+
+void UserCommandRunner::parseUserCmdResetDevice(Poco::DynamicStruct& ds)
+{
+	//nothing further to be done
+}
+
+
 void UserCommandRunner::parseUserCmdSmartCard(Poco::DynamicStruct& ds)
 {
 	unsigned int number = ds["smartCardNumber"];
@@ -140,6 +171,11 @@ void UserCommandRunner::parseUserCmdKeys(Poco::DynamicStruct& ds)
 	}
 }
 
+bool UserCommandRunner::expandUserCmdResetDevice()
+{
+
+}
+
 bool UserCommandRunner::expandUserCmdInsertSmartCard()
 {
 
@@ -201,6 +237,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		return;
 	}
 
+	//parse user command
 	bool cmdParseError = true;
 	try
 	{
@@ -261,7 +298,29 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		return;
 	}
 
-	if(_userCommand.command == UserCmdInsertSmartCard) {
+	//expand user command to console commands
+	if(_userCommand.command == UserCmdConnectDevice)
+	{
+		if(expandUserCmdConnectDevice()) {
+			_state = State::OnGoing;
+			errorInfo.clear();
+		}
+		else {
+			errorInfo = ErrorFailedExpandingConnectDevice;
+		}
+	}
+	else if(_userCommand.command == UserCmdResetDevice)
+	{
+		if(expandUserCmdResetDevice()) {
+			_state = State::OnGoing;
+			errorInfo.clear();
+		}
+		else {
+			errorInfo = ErrorFailedExpandingResetDevice;
+		}
+	}
+	else if(_userCommand.command == UserCmdInsertSmartCard)
+	{
 		if(expandUserCmdInsertSmartCard()) {
 			_state = State::OnGoing;
 			errorInfo.clear();
@@ -270,7 +329,8 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			errorInfo = ErrorFailedExpandingInsertSmartCard;
 		}
 	}
-	else if(_userCommand.command == UserCmdRemoveSmartCard) {
+	else if(_userCommand.command == UserCmdRemoveSmartCard)
+	{
 		if(expandUserCmdRemoveSmartCard()) {
 			_state = State::OnGoing;
 			errorInfo.clear();
@@ -279,7 +339,8 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			errorInfo = ErrorFailedExpandingRemoveSmartCard;
 		}
 	}
-	else if(_userCommand.command == UserCmdSwipeSmartCard) {
+	else if(_userCommand.command == UserCmdSwipeSmartCard)
+	{
 		if(expandUserCmdSwipeSmartCard()) {
 			_state = State::OnGoing;
 			errorInfo.clear();
@@ -288,7 +349,8 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			errorInfo = ErrorFailedExpandingSwipeSmartCard;
 		}
 	}
-	else if(_userCommand.command == UserCmdTapSmartCard) {
+	else if(_userCommand.command == UserCmdTapSmartCard)
+	{
 		if(expandUserCmdTapSmartCard()) {
 			_state = State::OnGoing;
 			errorInfo.clear();
@@ -297,7 +359,8 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			errorInfo = ErrorFailedExpandingTapSmartCard;
 		}
 	}
-	else if(_userCommand.command == UserCmdShowBarCode) {
+	else if(_userCommand.command == UserCmdShowBarCode)
+	{
 		if(expandUserCmdShowBarCode()) {
 			_state = State::OnGoing;
 			errorInfo.clear();
@@ -306,7 +369,8 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			errorInfo = ErrorFailedExpandingShowBarCode;
 		}
 	}
-	else if(_userCommand.command == UserCmdPressPedKey) {
+	else if(_userCommand.command == UserCmdPressPedKey)
+	{
 		if(expandUserCmdPressPedKey()) {
 			_state = State::OnGoing;
 			errorInfo.clear();
@@ -315,7 +379,8 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			errorInfo = ErrorFailedExpandingPressPedKey;
 		}
 	}
-	else if(_userCommand.command == UserCmdPressSoftKey) {
+	else if(_userCommand.command == UserCmdPressSoftKey)
+	{
 		if(expandUserCmdPressSoftKey()) {
 			_state = State::OnGoing;
 			errorInfo.clear();
@@ -324,7 +389,8 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			errorInfo = ErrorFailedExpandingPressSoftKey;
 		}
 	}
-	else if(_userCommand.command == UserCmdPressAssistKey) {
+	else if(_userCommand.command == UserCmdPressAssistKey)
+	{
 		if(expandUserCmdPressAssistKey()) {
 			_state = State::OnGoing;
 			errorInfo.clear();
@@ -333,7 +399,8 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			errorInfo = ErrorFailedExpandingPressAssistKey;
 		}
 	}
-	else if(_userCommand.command == UserCmdTouchScreen) {
+	else if(_userCommand.command == UserCmdTouchScreen)
+	{
 		if(expandUserCmdTouchScreen()) {
 			_state = State::OnGoing;
 			errorInfo.clear();
@@ -355,5 +422,21 @@ void UserCommandRunner::AddObserver(IUserCommandRunnerObserver * pObserver)
 
 void UserCommandRunner::runTask()
 {
+	while(1)
+	{
+		if(isCancelled()) {
+			break;
+		}
+		else
+		{
+			if(_userCommand.consoleCommands.empty()) {
+				sleep(10);
+				continue;
+			}
 
+
+		}
+	}
+
+	pLogger->LogInfo("UserCommandRunner::runTask exited");
 }

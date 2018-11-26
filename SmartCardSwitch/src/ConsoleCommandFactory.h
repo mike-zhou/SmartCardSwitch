@@ -107,30 +107,30 @@ public:
 		return help;
 	}
 
-	static std::string DevicesGet() 						{ return std::string("0\r\n"); }
-	static std::string DeviceConnect(unsigned int index) 	{ return "1 " + std::to_string(index) + "\r\n"; }
-	static std::string DeviceQueryPower() 					{ return std::string("2 \r\n"); }
-	static std::string DeviceQueryFuse() 					{ return std::string("3 \r\n"); }
-	static std::string OptPowerOn() 						{ return std::string("20 \r\n"); }
-	static std::string OptPowerOff() 						{ return std::string("21 \r\n"); }
-	static std::string OptQueryPower() 						{ return std::string("22 \r\n"); }
-	static std::string DcmPowerOn() 						{ return std::string("30 \r\n"); } //todo: dcm index might be needed
-	static std::string DcmPowerOff() 						{ return std::string("31 \r\n"); } //todo: dcm index might be needed
-	static std::string DcmQueryPower() 						{ return std::string("32 \r\n"); }
-	static std::string BdcsPowerOn() 						{ return std::string("40 \r\n"); }
-	static std::string BdcsPowerOff() 						{ return std::string("41 \r\n"); }
-	static std::string BdcsQueryPower() 					{ return std::string("42 \r\n"); }
-	static std::string BdcCoast(unsigned int index) 		{ return "43 " + std::to_string(index) + "\r\n"; }
-	static std::string BdcReverse(unsigned int index) 		{ return "44 " + std::to_string(index) + "\r\n"; }
-	static std::string BdcForward(unsigned int index) 		{ return "45 " + std::to_string(index) + "\r\n"; }
-	static std::string BdcBreak(unsigned int index) 		{ return "46 " + std::to_string(index) + "\r\n"; }
-	static std::string BdcQuery(unsigned int index) 		{ return "47 " + std::to_string(index) + "\r\n"; }
-	static std::string SteppersPowerOn() 					{ return std::string("60 \r\n"); }
-	static std::string SteppersPowerOff() 					{ return std::string("61 \r\n"); }
-	static std::string SteppersQueryPower() 				{ return std::string("62 \r\n"); }
-	static std::string StepperQueryresolution() 			{ return std::string("63 \r\n"); }
+	static std::string CmdDevicesGet() 						{ return std::string("0\r\n"); }
+	static std::string CmdDeviceConnect(unsigned int index) { return "1 " + std::to_string(index) + "\r\n"; }
+	static std::string CmdDeviceQueryPower() 				{ return std::string("2 \r\n"); }
+	static std::string CmdDeviceQueryFuse() 				{ return std::string("3 \r\n"); }
+	static std::string CmdOptPowerOn() 						{ return std::string("20 \r\n"); }
+	static std::string CmdOptPowerOff() 					{ return std::string("21 \r\n"); }
+	static std::string CmdOptQueryPower() 					{ return std::string("22 \r\n"); }
+	static std::string CmdDcmPowerOn() 						{ return std::string("30 \r\n"); } //todo: dcm index might be needed
+	static std::string CmdDcmPowerOff() 					{ return std::string("31 \r\n"); } //todo: dcm index might be needed
+	static std::string CmdDcmQueryPower() 					{ return std::string("32 \r\n"); }
+	static std::string CmdBdcsPowerOn() 					{ return std::string("40 \r\n"); }
+	static std::string CmdBdcsPowerOff() 					{ return std::string("41 \r\n"); }
+	static std::string CmdBdcsQueryPower() 					{ return std::string("42 \r\n"); }
+	static std::string CmdBdcCoast(unsigned int index) 		{ return "43 " + std::to_string(index) + "\r\n"; }
+	static std::string CmdBdcReverse(unsigned int index) 	{ return "44 " + std::to_string(index) + "\r\n"; }
+	static std::string CmdBdcForward(unsigned int index) 	{ return "45 " + std::to_string(index) + "\r\n"; }
+	static std::string CmdBdcBreak(unsigned int index) 		{ return "46 " + std::to_string(index) + "\r\n"; }
+	static std::string CmdBdcQuery(unsigned int index) 		{ return "47 " + std::to_string(index) + "\r\n"; }
+	static std::string CmdSteppersPowerOn() 				{ return std::string("60 \r\n"); }
+	static std::string CmdSteppersPowerOff() 				{ return std::string("61 \r\n"); }
+	static std::string CmdSteppersQueryPower() 				{ return std::string("62 \r\n"); }
+	static std::string CmdStepperQueryresolution() 			{ return std::string("63 \r\n"); }
 
-	static std::string StepperConfigStep(
+	static std::string CmdStepperConfigStep(
 						unsigned int index,
 						unsigned int lowClks,
 						unsigned int highClks)
@@ -138,27 +138,27 @@ public:
 		return "64 " + std::to_string(index) + " " + std::to_string(lowClks) + " " + std::to_string(highClks) + "\r\n";
 	}
 
-	static std::string StepperAccelerationBuffer(unsigned int index, unsigned long value)
+	static std::string CmdStepperAccelerationBuffer(unsigned int index, unsigned long value)
 	{
 		return "65 " + std::to_string(index) + " " + std::to_string(value) + "\r\n";
 	}
 
-	static std::string StepperAccelerationBufferDecrement(unsigned int index, unsigned long value)
+	static std::string CmdStepperAccelerationBufferDecrement(unsigned int index, unsigned long value)
 	{
 		return "66 " + std::to_string(index) + " " + std::to_string(value) + "\r\n";
 	}
 
-	static std::string StepperDecelerationBuffer(unsigned int index, unsigned long value)
+	static std::string CmdStepperDecelerationBuffer(unsigned int index, unsigned long value)
 	{
 		return "67 " + std::to_string(index) + " " + std::to_string(value) + "\r\n";
 	}
 
-	static std::string StepperDecelerationBufferIncrement(unsigned int index, unsigned long value)
+	static std::string CmdStepperDecelerationBufferIncrement(unsigned int index, unsigned long value)
 	{
 		return "68 " + std::to_string(index) + " " + std::to_string(value) + "\r\n";
 	}
 
-	static std::string StepperEnable(unsigned int index, bool enable)
+	static std::string CmdStepperEnable(unsigned int index, bool enable)
 	{
 		if(enable)
 			return "69 " + std::to_string(index) + " 1 \r\n";
@@ -166,7 +166,7 @@ public:
 			return "69 " + std::to_string(index) + " 0 \r\n";
 	}
 
-	static std::string StepperForward(unsigned int index, bool forward)
+	static std::string CmdStepperForward(unsigned int index, bool forward)
 	{
 		if(forward)
 			return "70 " + std::to_string(index) + " 1 \r\n";
@@ -174,17 +174,17 @@ public:
 			return "70 " + std::to_string(index) + " 0 \r\n";
 	}
 
-	static std::string StepperSteps(unsigned int index, unsigned long value)
+	static std::string CmdStepperSteps(unsigned int index, unsigned long value)
 	{
 		return "71 " + std::to_string(index) + " " + std::to_string(value) + "\r\n";
 	}
 
-	static std::string StepperRun(unsigned int index, unsigned long initialPos, unsigned long finalPos)
+	static std::string CmdStepperRun(unsigned int index, unsigned long initialPos, unsigned long finalPos)
 	{
 		return "72 " + std::to_string(index) + " " + std::to_string(initialPos) + " " + std::to_string(finalPos) + "\r\n";
 	}
 
-	static std::string StepperConfigHome(unsigned int index,
+	static std::string CmdStepperConfigHome(unsigned int index,
 										unsigned int locatorIndex,
 										unsigned int locatorLineNumberStart,
 										unsigned int locatorLineNumberTerminal)
@@ -192,8 +192,8 @@ public:
 		return "73 " + std::to_string(index) + " " + std::to_string(locatorIndex) + " " + std::to_string(locatorLineNumberStart) + " " + std::to_string(locatorLineNumberTerminal) + "\r\n";
 	}
 
-	static std::string StepperQuery(unsigned int index) 		{ return "75 " + std::to_string(index) + "\r\n"; }
-	static std::string LocatorQuery(unsigned int index) 		{ return "90 " + std::to_string(index) + "\r\n"; }
+	static std::string CmdStepperQuery(unsigned int index) 	{ return "75 " + std::to_string(index) + "\r\n"; }
+	static std::string CmdLocatorQuery(unsigned int index) 	{ return "90 " + std::to_string(index) + "\r\n"; }
 };
 
 
