@@ -98,7 +98,7 @@ bool UserCommandRunner::expandUserCmdConnectDevice()
 
 	cmd = ConsoleCommandFactory::CmdDevicesGet();
 	_userCommand.consoleCommands.push_back(cmd);
-	cmd = ConsoleCommandFactory::CmdDeviceConnect(0);
+	cmd = ConsoleCommandFactory::CmdDeviceConnect(0);//only one device at the moment.
 	_userCommand.consoleCommands.push_back(cmd);
 
 	return true;
@@ -422,6 +422,759 @@ void UserCommandRunner::AddObserver(IUserCommandRunnerObserver * pObserver)
 	}
 }
 
+void UserCommandRunner::OnDevicesGet(CommandId key, bool bSuccess, const std::vector<std::string>& devices)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnDevicesGet successful command Id: " + std::to_string(_consoleCommand.cmdId));
+
+		_consoleCommand.resultDevices.clear();
+		for(auto it=devices.begin(); it!=devices.end(); it++) {
+			_consoleCommand.resultDevices.push_back(*it);
+		}
+
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnDevicesGet failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnDeviceConnect(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnDeviceConnect successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnDeviceConnect failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnDeviceQueryPower(CommandId key, bool bSuccess, bool bPowered)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnDeviceConnect successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultDevicePowered = bPowered;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnDeviceConnect failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultDevicePowered = false;
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnDeviceQueryFuse(CommandId key, bool bSuccess, bool bFuseOn)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnDeviceQueryFuse successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultDeviceFuseOk = bFuseOn;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnDeviceQueryFuse failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultDeviceFuseOk = false;
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnOptPowerOn(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnOptPowerOn successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultOptPowered = true;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnOptPowerOn failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnOptPowerOff(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnOptPowerOff successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Succeeded;
+		_consoleCommand.resultOptPowered = false;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnOptPowerOff failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnOptQueryPower(CommandId key, bool bSuccess, bool bPowered)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnOptQueryPower successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultOptPowered = bPowered;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnOptQueryPower failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		//_consoleCommand.resultOptIsPowered = false;
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnBdcsPowerOn(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnBdcsPowerOn successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultBdcsPowered = true;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnBdcsPowerOn failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnBdcsPowerOff(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnBdcsPowerOff successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultBdcsPowered = false;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnBdcsPowerOff failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnBdcsQueryPower(CommandId key, bool bSuccess, bool bPowered)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnBdcsQueryPower successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultBdcsPowered = bPowered;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnBdcsQueryPower failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnBdcCoast(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnBdcCoast successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultBdcMode = BdcStatus::COAST;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnBdcCoast failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnBdcReverse(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnBdcReverse successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultBdcMode = BdcStatus::REVERSE;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnBdcReverse failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnBdcForward(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnBdcForward successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultBdcMode = BdcStatus::FORWARD;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnBdcForward failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnBdcBreak(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnBdcBreak successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultBdcMode = BdcStatus::BREAK;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnBdcBreak failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnBdcQuery(CommandId key, bool bSuccess, BdcStatus status)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnBdcQuery successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultBdcMode = status;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnBdcQuery failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnSteppersPowerOn(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnSteppersPowerOn successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultSteppersPowered = true;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnSteppersPowerOn failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnSteppersPowerOff(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnSteppersPowerOff successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultSteppersPowered = false;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnSteppersPowerOff failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnSteppersQueryPower(CommandId key, bool bSuccess, bool bPowered)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnSteppersQueryPower successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultSteppersPowered = bPowered;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnSteppersQueryPower failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperConfigStep(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperConfigStep successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperConfigStep failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperAccelerationBuffer(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperAccelerationBuffer successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperAccelerationBuffer failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperAccelerationBufferDecrement(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperAccelerationBufferDecrement successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperAccelerationBufferDecrement failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperDecelerationBuffer(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperDecelerationBuffer successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperDecelerationBuffer failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperDecelerationBufferIncrement(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperDecelerationBufferIncrement successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperDecelerationBufferIncrement failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperEnable(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperEnable successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].enabled = true;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperEnable failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperForward(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperForward successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].forward = true;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperForward failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperSteps(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperSteps successful command Id: " + std::to_string(_consoleCommand.cmdId));
+
+		if(_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].forward) {
+			_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].targetPosition = _consoleCommand.resultSteppers[_consoleCommand.stepperIndex].homeOffset + _consoleCommand.steps;
+		}
+		else {
+			_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].targetPosition = _consoleCommand.resultSteppers[_consoleCommand.stepperIndex].homeOffset - _consoleCommand.steps;
+		}
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperSteps failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperRun(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperRun successful command Id: " + std::to_string(_consoleCommand.cmdId));
+
+		auto& stepperData = _consoleCommand.resultSteppers[_consoleCommand.stepperIndex];
+		switch(stepperData.state)
+		{
+			case StepperState::ApproachingHomeLocator:
+			case StepperState::LeavingHomeLocator:
+			case StepperState::GoingHome:
+			{
+				stepperData.state = StepperState::KnownPosition;
+				stepperData.homeOffset = 0;
+				pLogger->LogInfo("UserCommandRunner::OnStepperRun arrived at home position");
+			}
+			break;
+
+			case StepperState::Accelerating:
+			case StepperState::Cruising:
+			case StepperState::Decelerating:
+			case StepperState::KnownPosition:
+			{
+				stepperData.state = StepperState::KnownPosition;
+				stepperData.homeOffset = stepperData.targetPosition;
+				stepperData.targetPosition = 0;
+				pLogger->LogInfo("UserCommandRunner::OnStepperRun arrived at: " + std::to_string(stepperData.homeOffset));
+			}
+			break;
+
+			default:
+			{
+				pLogger->LogError("UserCommandRunner::OnStepperRun wrong stepper state: " + std::to_string((int)stepperData.state));
+			}
+			break;
+		}
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperRun failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperConfigHome(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperConfigHome successful command Id: " + std::to_string(_consoleCommand.cmdId));
+
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].state = StepperState::ApproachingHomeLocator;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperConfigHome failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperQuery(CommandId key, bool bSuccess,
+							StepperState state,
+							bool bEnabled,
+							bool bForward,
+							unsigned int locatorIndex,
+							unsigned int locatorLineNumberStart,
+							unsigned int locatorLineNumberTerminal,
+							unsigned long homeOffset,
+							unsigned long lowClks,
+							unsigned long highClks,
+							unsigned long accelerationBuffer,
+							unsigned long accelerationBufferDecrement,
+							unsigned long decelerationBuffer,
+							unsigned long decelerationBufferIncrement)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperQuery successful command Id: " + std::to_string(_consoleCommand.cmdId));
+
+		auto& stepperData = _consoleCommand.resultSteppers[_consoleCommand.stepperIndex];
+
+		stepperData.enabled = bEnabled;
+		stepperData.forward = bForward;
+		stepperData.locatorIndex = locatorIndex;
+		stepperData.locatorLineNumberStart = locatorLineNumberStart;
+		stepperData.locatorLineNumberTerminal = locatorLineNumberTerminal;
+		stepperData.homeOffset = homeOffset;
+
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperQuery failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnLocatorQuery successful command Id: " + std::to_string(_consoleCommand.cmdId));
+
+		_consoleCommand.resultLocators[_consoleCommand.locatorIndex] = lowInput;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnLocatorQuery failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
 void UserCommandRunner::runTask()
 {
 	while(1)
@@ -460,6 +1213,7 @@ void UserCommandRunner::runTask()
 					consoleCmd = _userCommand.consoleCommands.front();
 					pLogger->LogInfo("UserCommandRunner::runTask run console cmd: " + consoleCmd);
 					_consoleCommand.cmdId = _pConsoleOperator->RunConsoleCommand(consoleCmd);
+					pLogger->LogInfo("UserCommandRunner::runTask command Id: " + std::to_string(_consoleCommand.cmdId));
 
 					if(_consoleCommand.cmdId == ICommandReception::ICommandDataTypes::InvalidCommandId)
 					{

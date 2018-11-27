@@ -44,8 +44,63 @@ private:
 	//IUserCommandRunner
 	virtual void RunCommand(const std::string& jsonCmd, std::string& error) override;
 
+	//IResponseReceiver
+	virtual void OnDevicesGet(CommandId key, bool bSuccess, const std::vector<std::string>& devices) override;
+	virtual void OnDeviceConnect(CommandId key, bool bSuccess) override;
+	virtual void OnDeviceQueryPower(CommandId key, bool bSuccess, bool bPowered)  override;
+	virtual void OnDeviceQueryFuse(CommandId key, bool bSuccess, bool bFuseOn) override;
+ 	virtual void OnOptPowerOn(CommandId key, bool bSuccess)  override;
+	virtual void OnOptPowerOff(CommandId key, bool bSuccess)   override;
+	virtual void OnOptQueryPower(CommandId key, bool bSuccess, bool bPowered) override;
+	virtual void OnDcmPowerOn(CommandId key, bool bSuccess) override {}
+	virtual void OnDcmPowerOff(CommandId key, bool bSuccess) override {}
+	virtual void OnDcmQueryPower(CommandId key, bool bSuccess, bool bPowered) override {}
+	virtual void OnBdcsPowerOn(CommandId key, bool bSuccess) override;
+	virtual void OnBdcsPowerOff(CommandId key, bool bSuccess) override;
+	virtual void OnBdcsQueryPower(CommandId key, bool bSuccess, bool bPowered) override;
+	virtual void OnBdcCoast(CommandId key, bool bSuccess) override;
+	virtual void OnBdcReverse(CommandId key, bool bSuccess) override;
+	virtual void OnBdcForward(CommandId key, bool bSuccess) override;
+	virtual void OnBdcBreak(CommandId key, bool bSuccess) override;
+	virtual void OnBdcQuery(CommandId key, bool bSuccess, BdcStatus status) override;
+	virtual void OnSteppersPowerOn(CommandId key, bool bSuccess) override;
+	virtual void OnSteppersPowerOff(CommandId key, bool bSuccess) override;
+	virtual void OnSteppersQueryPower(CommandId key, bool bSuccess, bool bPowered) override;
+	virtual void OnStepperQueryResolution(CommandId key, bool bSuccess, unsigned long resolutionUs) override {}
+	virtual void OnStepperConfigStep(CommandId key, bool bSuccess) override;
+	virtual void OnStepperAccelerationBuffer(CommandId key, bool bSuccess) override;
+	virtual void OnStepperAccelerationBufferDecrement(CommandId key, bool bSuccess) override;
+	virtual void OnStepperDecelerationBuffer(CommandId key, bool bSuccess) override;
+	virtual void OnStepperDecelerationBufferIncrement(CommandId key, bool bSuccess) override;
+	virtual void OnStepperEnable(CommandId key, bool bSuccess) override;
+	virtual void OnStepperForward(CommandId key, bool bSuccess) override;
+	virtual void OnStepperSteps(CommandId key, bool bSuccess) override;
+	virtual void OnStepperRun(CommandId key, bool bSuccess) override;
+	virtual void OnStepperConfigHome(CommandId key, bool bSuccess) override;
+	virtual void OnStepperMove(CommandId key, bool bSuccess) override {}
+	virtual void OnStepperQuery(CommandId key, bool bSuccess,
+								StepperState state,
+								bool bEnabled,
+								bool bForward,
+								unsigned int locatorIndex,
+								unsigned int locatorLineNumberStart,
+								unsigned int locatorLineNumberTerminal,
+								unsigned long homeOffset,
+								unsigned long lowClks,
+								unsigned long highClks,
+								unsigned long accelerationBuffer,
+								unsigned long accelerationBufferDecrement,
+								unsigned long decelerationBuffer,
+								unsigned long decelerationBufferIncrement) override;
+
+	virtual void OnStepperSetState(CommandId key, bool bSuccess) override {}
+	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) override;
+	virtual void OnBdcDelay(CommandId key, bool bSuccess) override {}
 
 private:
+	static const int STEPPER_AMOUNT = 5;
+	static const int LOCATOR_AMOUNT = 8;
+
 	////////////////////////////////////////
 	// user command related data and functions
 	////////////////////////////////////////
@@ -208,6 +263,35 @@ private:
 	{
 		ICommandReception::CommandId cmdId;
 		CommandState state;
+
+		//params
+		unsigned int stepperIndex;
+		unsigned int steps;
+		unsigned int locatorIndex;
+
+		struct StepperStatus
+		{
+			StepperState state;
+			bool enabled;
+			bool forward;
+			unsigned int homeOffset;
+			unsigned int targetPosition;
+			unsigned int locatorIndex;
+			unsigned int locatorLineNumberStart;
+			unsigned int locatorLineNumberTerminal;
+		};
+
+		//command results
+		std::vector<std::string> resultDevices;
+		bool resultDeviceConnected;
+		bool resultDevicePowered;
+		bool resultDeviceFuseOk;
+		bool resultOptPowered;
+		bool resultBdcsPowered;
+		BdcStatus resultBdcMode;
+		bool resultSteppersPowered;
+		StepperStatus resultSteppers[STEPPER_AMOUNT];
+		unsigned char resultLocators[LOCATOR_AMOUNT];
 	};
 	ConsoleCommand _consoleCommand;
 
