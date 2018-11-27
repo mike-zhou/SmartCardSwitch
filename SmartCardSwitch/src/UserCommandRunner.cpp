@@ -100,6 +100,27 @@ bool UserCommandRunner::expandUserCmdConnectDevice()
 	_userCommand.consoleCommands.push_back(cmd);
 	cmd = ConsoleCommandFactory::CmdDeviceConnect(0);//only one device at the moment.
 	_userCommand.consoleCommands.push_back(cmd);
+	//queries
+	cmd = ConsoleCommandFactory::CmdDeviceQueryPower();//device power
+	_userCommand.consoleCommands.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdDeviceQueryFuse();//device fuse
+	_userCommand.consoleCommands.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdOptQueryPower();//OPT power
+	_userCommand.consoleCommands.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdSteppersQueryPower();//stepper power
+	_userCommand.consoleCommands.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdBdcsQueryPower();//bdc power
+	_userCommand.consoleCommands.push_back(cmd);
+	for(int i=0; i<STEPPER_AMOUNT; i++)
+	{
+		cmd = ConsoleCommandFactory::CmdStepperQuery(i);//stepper query
+		_userCommand.consoleCommands.push_back(cmd);
+	}
+	for(int i=0; i<LOCATOR_AMOUNT; i++)
+	{
+		cmd = ConsoleCommandFactory::CmdLocatorQuery(i);//locator query
+		_userCommand.consoleCommands.push_back(cmd);
+	}
 
 	return true;
 }

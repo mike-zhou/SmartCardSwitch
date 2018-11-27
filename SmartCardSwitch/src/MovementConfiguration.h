@@ -39,12 +39,11 @@ public:
 						int & locatorLineNumberStart,
 						int & locatorLineNumberTerminal);
 
-	void SetBdcDelay(unsigned long delay) { _bdcDelay = delay; }
-	unsigned long GetBdcDelay() { return _bdcDelay; }
+	void SetBdcConfig(unsigned long lowClks, unsigned long highClks, unsigned long cycles);
+	void GetBdcConfig(unsigned long& lowClks, unsigned long& highClks, unsigned long& cycles);
 
 private:
 	const unsigned int STEPPERS_AMOUNT = 5;
-	const unsigned int BDC_DELAY_DEFAULT = 1000;
 
 	std::string _pathFileName;
 
@@ -63,10 +62,18 @@ private:
 		StepperMovementConfig();
 		std::string ToJsonObj();
 	};
-
 	std::vector<StepperMovementConfig> _steppers;
 
-	unsigned long _bdcDelay;
+	struct BdcMovementConfig
+	{
+		long lowClks;
+		long highClks;
+		long cycles;
+
+		BdcMovementConfig();
+		std::string ToJsonObj();
+	};
+	BdcMovementConfig _bdc;
 };
 
 

@@ -25,7 +25,6 @@ extern Logger * pLogger;
 MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 {
 	_pathFileName = pathFileName;
-	_bdcDelay = BDC_DELAY_DEFAULT;
 
 	if(_pathFileName.empty()) {
 		pLogger->LogError("MovementConfiguration::MovementConfiguration empty file path & name");
@@ -114,7 +113,9 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 			}
 
 			//restore data for BDC
-			_bdcDelay = ds["bdcDelay"];
+			_bdc.lowClks = ds["bdc"]["lowClks"];
+			_bdc.highClks = ds["bdc"]["highClks"];
+			_bdc.cycles = ds["bdc"]["cycles"];
 
 			pLogger->LogInfo("MovementConfiguration::PersistToFile storage file is parsed successfully");
 		}
@@ -149,7 +150,7 @@ bool MovementConfiguration::PersistToFile()
 	json = json + "]";//end of steppers
 
 	//BDC delay
-	json = json + ",\"bdcDelay\":" + std::to_string(_bdcDelay);
+	json = json + ",\"bdc\":" + _bdc.ToJsonObj();
 
 	json = json + "}";
 
@@ -266,6 +267,20 @@ bool MovementConfiguration::GetStepperConfig(unsigned int index,
 	return true;
 }
 
+void MovementConfiguration::SetBdcConfig(unsigned long lowClks, unsigned long highClks, unsigned long cycles)
+{
+	_bdc.lowClks = lowClks;
+	_bdc.highClks = highClks;
+	_bdc.cycles = cycles;
+}
+
+void MovementConfiguration::GetBdcConfig(unsigned long& lowClks, unsigned long& highClks, unsigned long& cycles)
+{
+	lowClks = _bdc.lowClks;
+	highClks = _bdc.highClks;
+	cycles = _bdc.cycles;
+}
+
 
 MovementConfiguration::StepperMovementConfig::StepperMovementConfig()
 {
@@ -299,4 +314,23 @@ std::string MovementConfiguration::StepperMovementConfig::ToJsonObj()
 	return json;
 }
 
+MovementConfiguration::BdcMovementConfig::BdcMovementConfig()
+{
+	lowClks = 1;
+	highClks = 1;
+	cycles = 1;
+}
+
+std::string MovementConfiguration::BdcMovementConfig::ToJsonObj()
+{
+	std::string json;
+
+	json = "{";
+	json = json + "\"lowClks\":" + std::to_string(lowClks);
+	json = json + ",\"highClks\":" + std::to_string(highClks);
+	json = json + ",\"cycles\":" + std::to_string(cycles);
+	json += "}";
+
+	return json;
+}
 
