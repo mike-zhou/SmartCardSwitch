@@ -96,7 +96,6 @@ private:
 
 	virtual void OnStepperSetState(CommandId key, bool bSuccess) override {}
 	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) override;
-	virtual void OnBdcDelay(CommandId key, bool bSuccess) override {}
 
 private:
 	static const int STEPPER_AMOUNT = 5;

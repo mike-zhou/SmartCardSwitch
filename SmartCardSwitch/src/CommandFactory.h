@@ -24,8 +24,12 @@ public:
 	static std::shared_ptr<DeviceCommand> BdcsPowerOff();
 	static std::shared_ptr<DeviceCommand> BdcsQueryPower();
 	static std::shared_ptr<DeviceCommand> BdcOperation(unsigned int bdcIndex,
-												CommandBdcOperation::BdcMode initialMode,
-												CommandBdcOperation::BdcMode finalMode);
+														CommandBdcOperation::BdcMode initialMode,
+														CommandBdcOperation::BdcMode finalMode,
+														unsigned int lowClks,
+														unsigned int highClks,
+														unsigned int cycles);
+
 	static std::shared_ptr<DeviceCommand> BdcQuery(unsigned int bdcIndex);
 	static std::shared_ptr<DeviceCommand> StepperQueryResolution();
 	static std::shared_ptr<DeviceCommand> StepperConfigStep(unsigned int stepperIndex, unsigned long lowClks, unsigned long highClks);

@@ -424,14 +424,20 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 		case ConsoleCommandFactory::Type::BdcReverse:
 		{
 			unsigned int index = d1;
-			_cmdKey = _pCommandReception->BdcReverse(index);
+			unsigned int lowClks = d2;
+			unsigned int highClks = d3;
+			unsigned int cycles = d4;
+			_cmdKey = _pCommandReception->BdcReverse(index, lowClks, highClks, cycles);
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::BdcForward:
 		{
 			unsigned int index = d1;
-			_cmdKey = _pCommandReception->BdcForward(index);
+			unsigned int lowClks = d2;
+			unsigned int highClks = d3;
+			unsigned int cycles = d4;
+			_cmdKey = _pCommandReception->BdcForward(index, lowClks, highClks, cycles);
 		}
 		break;
 
@@ -598,9 +604,10 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 		}
 		break;
 
-		case ConsoleCommandFactory::Type::BdcDelay:
+		case ConsoleCommandFactory::Type::BdcConfig:
 		{
-			_cmdKey = _pCommandReception->BdcDelay(0, d1);
+			pMovementConfiguration->SetBdcConfig(d1, d2, d3);
+			_cmdKey = InvalidCommandId;
 		}
 		break;
 

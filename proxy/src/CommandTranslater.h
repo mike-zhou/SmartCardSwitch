@@ -282,10 +282,13 @@ private:
 class CommandBdcReverse
 {
 public:
-	CommandBdcReverse(unsigned int bdcIndex, unsigned long commandId)
+	CommandBdcReverse(unsigned int bdcIndex, unsigned int lowClks, unsigned int highClks, unsigned int cycles, unsigned long commandId)
 	{
 		_bdcIndex = bdcIndex;
 		_commandId = commandId;
+		_lowClks = lowClks;
+		_highClks = highClks;
+		_cycles = cycles;
 	}
 
 	CommandType Type() { return CommandType::BdcReverse; }
@@ -293,7 +296,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 44 %d %d", _bdcIndex,  _commandId & 0xffff);
+		sprintf(buf, "C 44 %d %d %d %d %d", _bdcIndex, _lowClks, _highClks, _cycles, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -301,6 +304,9 @@ public:
 private:
 	unsigned int _bdcIndex;
 	unsigned long _commandId;
+	unsigned int _lowClks;
+	unsigned int _highClks;
+	unsigned int _cycles;
 };
 
 //{
@@ -310,10 +316,13 @@ private:
 class CommandBdcForward
 {
 public:
-	CommandBdcForward(unsigned int bdcIndex, unsigned long commandId)
+	CommandBdcForward(unsigned int bdcIndex, unsigned int lowClks, unsigned int highClks, unsigned int cycles, unsigned long commandId)
 	{
 		_bdcIndex = bdcIndex;
 		_commandId = commandId;
+		_lowClks = lowClks;
+		_highClks = highClks;
+		_cycles = cycles;
 	}
 
 	CommandType Type() { return CommandType::BdcForward; }
@@ -321,7 +330,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 45 %d %d", _bdcIndex,  _commandId & 0xffff);
+		sprintf(buf, "C 45 %d %d %d %d %d", _bdcIndex, _lowClks, _highClks, _cycles,  _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -329,6 +338,9 @@ public:
 private:
 	int _bdcIndex;
 	unsigned long _commandId;
+	unsigned int _lowClks;
+	unsigned int _highClks;
+	unsigned int _cycles;
 };
 
 //{

@@ -113,7 +113,7 @@ public:
 		BREAK
 	};
 
-	CommandBdcOperation(unsigned int bdcIndex, BdcMode undoMode, BdcMode finalMode);
+	CommandBdcOperation(unsigned int bdcIndex, BdcMode undoMode, BdcMode finalMode, unsigned int lowClks, unsigned int highClks, unsigned int cycles);
 
 	virtual std::string CommandKey() override;
 	virtual std::string GetUndoState() override;
@@ -125,6 +125,9 @@ private:
 	unsigned int _bdcIndex;
 	enum BdcMode _undoMode;
 	enum BdcMode _finalMode;
+	unsigned int _lowClks;
+	unsigned int _highClks;
+	unsigned int _cycles;
 };
 
 class CommandBdcQuery: public DeviceCommand

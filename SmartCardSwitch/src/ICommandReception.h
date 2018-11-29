@@ -101,7 +101,6 @@ public:
 
 	virtual void OnStepperSetState(CommandId key, bool bSuccess) {}
 	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) {}
-	virtual void OnBdcDelay(CommandId key, bool bSuccess) {}
 	virtual void OnSaveMovementConfig(CommandId key, bool bSuccess) {}
 	virtual void OnSaveCoordinates(CommandId key, bool bSuccess) {}
 };
@@ -125,8 +124,8 @@ public:
 	virtual CommandId BdcsPowerOff() = 0;
 	virtual CommandId BdcsQueryPower() = 0;
 	virtual CommandId BdcCoast(unsigned int index) = 0;
-	virtual CommandId BdcReverse(unsigned int index) = 0;
-	virtual CommandId BdcForward(unsigned int index) = 0;
+	virtual CommandId BdcReverse(unsigned int index, unsigned int lowClks, unsigned int highClks, unsigned int cycles) = 0;
+	virtual CommandId BdcForward(unsigned int index, unsigned int lowClks, unsigned int highClks, unsigned int cycles) = 0;
 	virtual CommandId BdcBreak(unsigned int index) = 0;
 	virtual CommandId BdcQuery(unsigned int index) = 0;
 	virtual CommandId SteppersPowerOn() = 0;
@@ -147,7 +146,6 @@ public:
 	virtual CommandId StepperSetState(unsigned int index, StepperState state) = 0;
 	virtual CommandId StepperQuery(unsigned int index) = 0;
 	virtual CommandId LocatorQuery(unsigned int index) = 0;
-	virtual CommandId BdcDelay(unsigned int index, unsigned int value) = 0;
 	virtual CommandId SaveMovementConfig() = 0;
 
 	virtual void AddResponseReceiver(IResponseReceiver * p) = 0;

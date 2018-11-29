@@ -235,11 +235,14 @@ std::string CommandBdcsQueryPower::ToJsonCommandString()
 ///////////////////////////////////////////////////////
 // CommandBdcOperation
 ///////////////////////////////////////////////////////
-CommandBdcOperation::CommandBdcOperation(unsigned int bdcIndex, BdcMode undoMode, BdcMode finalMode)
+CommandBdcOperation::CommandBdcOperation(unsigned int bdcIndex, BdcMode undoMode, BdcMode finalMode, unsigned int lowClks, unsigned int highClks, unsigned int cycles)
 {
 	_bdcIndex = bdcIndex;
 	_undoMode = undoMode;
 	_finalMode = finalMode;
+	_lowClks = lowClks;
+	_highClks = highClks;
+	_cycles = cycles;
 }
 
 std::string CommandBdcOperation::CommandKey()
@@ -333,24 +336,45 @@ std::string CommandBdcOperation::GetFinalState()
 std::string CommandBdcOperation::ToJsonCommandString()
 {
 	std::string cmd;
-	std::string mode;
 
 	switch(_finalMode)
 	{
 	case BdcMode::COAST:
-		mode = "coast";
+		cmd = "{";
+		cmd = cmd + "\"command\":\"bdc coast\",";
+		cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+		cmd = cmd + ",\"index\":" + std::to_string(_bdcIndex);
+		cmd += "}";
 		break;
 
 	case BdcMode::REVERSE:
-		mode = "reverse";
+		cmd = "{";
+		cmd = cmd + "\"command\":\"bdc reverse\",";
+		cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+		cmd = cmd + ",\"index\":" + std::to_string(_bdcIndex);
+		cmd = cmd + ",\"lowClks\":" + std::to_string(_lowClks);
+		cmd = cmd + ",\"highClks\":" + std::to_string(_highClks);
+		cmd = cmd + ",\"cycles\":" + std::to_string(_cycles);
+		cmd += "}";
 		break;
 
 	case BdcMode::FORWARD:
-		mode = "forward";
+		cmd = "{";
+		cmd = cmd + "\"command\":\"bdc forward\",";
+		cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+		cmd = cmd + ",\"index\":" + std::to_string(_bdcIndex);
+		cmd = cmd + ",\"lowClks\":" + std::to_string(_lowClks);
+		cmd = cmd + ",\"highClks\":" + std::to_string(_highClks);
+		cmd = cmd + ",\"cycles\":" + std::to_string(_cycles);
+		cmd += "}";
 		break;
 
 	case BdcMode::BREAK:
-		mode = "break";
+		cmd = "{";
+		cmd = cmd + "\"command\":\"bdc break\",";
+		cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+		cmd = cmd + ",\"index\":" + std::to_string(_bdcIndex);
+		cmd += "}";
 		break;
 
 	default:
@@ -358,14 +382,6 @@ std::string CommandBdcOperation::ToJsonCommandString()
 	}
 
 	//cmd is empty if mode is wrong.
-	if(mode.size() > 0) {
-		cmd = "{";
-		cmd = cmd + "\"command\":\"bdc " + mode + "\",";
-		cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
-		cmd = cmd + ",\"index\":" + std::to_string(_bdcIndex);
-		cmd += "}";
-	}
-
 	return cmd;
 }
 

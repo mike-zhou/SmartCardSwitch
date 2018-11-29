@@ -97,13 +97,6 @@ void CommandRunner::runTask()
 	pLogger->LogInfo("CommandRunner::runTask exited");
 }
 
-
-
-void CommandRunner::setBdcDelay(unsigned long delay)
-{
-	_userCommand.resultBdcDelay = delay;
-}
-
 void CommandRunner::saveMovementConfig()
 {
 	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
@@ -121,8 +114,6 @@ void CommandRunner::saveMovementConfig()
 			stepper.locatorLineNumberStart,
 			stepper.locatorLineNumberTerminal);
 	}
-
-	pMovementConfiguration->SetBdcDelay(_userCommand.resultBdcDelay);
 
 	if(pMovementConfiguration->PersistToFile()) {
 		pLogger->LogInfo("CommandRunner::saveMovementConfig succeeded");
@@ -2004,7 +1995,7 @@ ICommandReception::CommandId CommandRunner::BdcCoast(unsigned int index)
 		else
 		{
 			//set the intial state to BREAK.
-			cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::COAST);
+			cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::COAST, 0, 0 ,0);
 			if(cmdPtr == nullptr) {
 				pLogger->LogError("CommandRunner::BdcCoast empty ptr returned from CommandFactory::BdcOperation");
 			}
@@ -2019,7 +2010,7 @@ ICommandReception::CommandId CommandRunner::BdcCoast(unsigned int index)
 	return cmdId;
 }
 
-ICommandReception::CommandId CommandRunner::BdcReverse(unsigned int index)
+ICommandReception::CommandId CommandRunner::BdcReverse(unsigned int index, unsigned int lowClks, unsigned int highClks, unsigned int cycles)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2034,7 +2025,8 @@ ICommandReception::CommandId CommandRunner::BdcReverse(unsigned int index)
 		else
 		{
 			//set the intial state to BREAK.
-			cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::REVERSE);
+			cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::REVERSE,
+												lowClks, highClks, cycles);
 			if(cmdPtr == nullptr) {
 				pLogger->LogError("CommandRunner::BdcReverse empty ptr returned from CommandFactory::BdcOperation");
 			}
@@ -2049,7 +2041,7 @@ ICommandReception::CommandId CommandRunner::BdcReverse(unsigned int index)
 	return cmdId;
 }
 
-ICommandReception::CommandId CommandRunner::BdcForward(unsigned int index)
+ICommandReception::CommandId CommandRunner::BdcForward(unsigned int index, unsigned int lowClks, unsigned int highClks, unsigned int cycles)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -2064,7 +2056,8 @@ ICommandReception::CommandId CommandRunner::BdcForward(unsigned int index)
 		else
 		{
 			//set the intial state to BREAK.
-			cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::FORWARD);
+			cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::FORWARD,
+													lowClks, highClks, cycles);
 			if(cmdPtr == nullptr) {
 				pLogger->LogError("CommandRunner::BdcForward empty ptr returned from CommandFactory::BdcOperation");
 			}
@@ -2094,7 +2087,7 @@ ICommandReception::CommandId CommandRunner::BdcBreak(unsigned int index)
 		else
 		{
 			//set the intial state to BREAK.
-			cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::BREAK);
+			cmdPtr = CommandFactory::BdcOperation(index, CommandBdcOperation::BdcMode::BREAK, CommandBdcOperation::BdcMode::BREAK, 0, 0, 0);
 			if(cmdPtr == nullptr) {
 				pLogger->LogError("CommandRunner::BdcBreak empty ptr returned from CommandFactory::BdcOperation");
 			}
@@ -2625,13 +2618,6 @@ ICommandReception::CommandId CommandRunner::LocatorQuery(unsigned int index)
 	ICommandReception::CommandId cmdId ;
 	cmdId = sendCmdToDevice(cmdPtr);
 	return cmdId;
-}
-
-ICommandReception::CommandId CommandRunner::BdcDelay(unsigned int index, unsigned int value)
-{
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-	_userCommand.resultBdcDelay = value;
-	return 0;
 }
 
 ICommandReception::CommandId CommandRunner::SaveMovementConfig()

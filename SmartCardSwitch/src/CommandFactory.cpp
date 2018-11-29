@@ -62,9 +62,12 @@ std::shared_ptr<DeviceCommand> CommandFactory::BdcsQueryPower()
 
 std::shared_ptr<DeviceCommand> CommandFactory::BdcOperation(unsigned int bdcIndex,
 											CommandBdcOperation::BdcMode initialMode,
-											CommandBdcOperation::BdcMode finalMode)
+											CommandBdcOperation::BdcMode finalMode,
+											unsigned int lowClks,
+											unsigned int highClks,
+											unsigned int cycles)
 {
-	std::shared_ptr<DeviceCommand> ptr(new CommandBdcOperation(bdcIndex, initialMode, finalMode));
+	std::shared_ptr<DeviceCommand> ptr(new CommandBdcOperation(bdcIndex, initialMode, finalMode, lowClks, highClks, cycles));
 
 	return ptr;
 }

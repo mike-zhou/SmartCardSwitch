@@ -53,7 +53,7 @@ public:
 		StepperQuery = 75,
 		StepperSetState = 76,
 		LocatorQuery = 90,
-		BdcDelay = 200,
+		BdcConfig = 200,
 		SaveMovementConfig = 300,
 		LoadMovementConfigStepper = 301,
 		SaveCoordinates = 350,
@@ -78,8 +78,8 @@ public:
 		help = help + "BdcsPowerOff:---------------------- " + "41" + "\r\n";
 		help = help + "BdcsQueryPower:-------------------- " + "42" + "\r\n";
 		help = help + "BdcCoast:-------------------------- " + "43 bdcIndex" + "\r\n";
-		help = help + "BdcReverse:------------------------ " + "44 bdcIndex" + "\r\n";
-		help = help + "BdcForward:------------------------ " + "45 bdcIndex" + "\r\n";
+		help = help + "BdcReverse:------------------------ " + "44 bdcIndex lowClks highClks cycles" + "\r\n";
+		help = help + "BdcForward:------------------------ " + "45 bdcIndex lowClks highClks cycles" + "\r\n";
 		help = help + "BdcBreak:-------------------------- " + "46 bdcIndex" + "\r\n";
 		help = help + "BdcQuery:-------------------------- " + "47 bdcIndex" + "\r\n";
 		help = help + "SteppersPowerOn:------------------- " + "60" + "\r\n";
@@ -100,7 +100,7 @@ public:
 		help = help + "StepperQuery: --------------------- " + "75 stepperIndex" + "\r\n";
 		help = help + "StepperSetState: ------------------ " + "76 stepperIndex state" + "\r\n";
 		help = help + "LocatorQuery:---------------------- " + "90 locatorIndex" + "\r\n";
-		help = help + "BdcDelay:-------------------------- " + "200 ms" + "\r\n";
+		help = help + "BdcConfig:------------------------- " + "200 lowClks highClks cycles" + "\r\n";
 		help = help + "SaveMovementConfig:---------------- " + "300" + "\r\n";
 		help = help + "SaveCoordinates:------------------- " + "350" + "\r\n";
 

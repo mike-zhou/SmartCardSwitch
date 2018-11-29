@@ -58,8 +58,8 @@ private:
 	virtual CommandId BdcsPowerOff() override;
 	virtual CommandId BdcsQueryPower() override;
 	virtual CommandId BdcCoast(unsigned int index) override;
-	virtual CommandId BdcReverse(unsigned int index) override;
-	virtual CommandId BdcForward(unsigned int index) override;
+	virtual CommandId BdcReverse(unsigned int index, unsigned int lowClks, unsigned int highClks, unsigned int cycles) override;
+	virtual CommandId BdcForward(unsigned int index, unsigned int lowClks, unsigned int highClks, unsigned int cycles) override;
 	virtual CommandId BdcBreak(unsigned int index) override;
 	virtual CommandId BdcQuery(unsigned int index) override;
 	virtual CommandId SteppersPowerOn() override;
@@ -80,7 +80,6 @@ private:
 	virtual CommandId StepperQuery(unsigned int index) override;
 	virtual CommandId StepperSetState(unsigned int index, StepperState state) override;
 	virtual CommandId LocatorQuery(unsigned int index) override;
-	virtual CommandId BdcDelay(unsigned int index, unsigned int value) override;
 	virtual CommandId SaveMovementConfig() override;
 
 private:
@@ -107,7 +106,6 @@ private:
 	std::vector<IResponseReceiver *> _cmdResponseReceiverArray;
 
 	unsigned long sendCmdToDevice(std::shared_ptr<DeviceCommand>& cmdPtr);
-	void setBdcDelay(unsigned long delay);
 	void saveMovementConfig();
 
 	void processFeedbacks();
@@ -245,8 +243,6 @@ private:
 		StepperStatus resultStepperStatus[STEPPER_AMOUNT];
 		//locator
 		char resultLocatorStatus[LOCATOR_AMOUNT];
-		//bdc delay
-		unsigned long resultBdcDelay;
 
 	} _userCommand;
 

@@ -517,7 +517,10 @@ std::shared_ptr<CommandBdcReverse> CommandTranslator::GetCommandBdcReverse()
 			else
 			{
 				int index = objectPtr->getValue<int>("index");
-				std::shared_ptr<CommandBdcReverse> p(new CommandBdcReverse(index, commandId));
+				int lowClks = objectPtr->getValue<int>("lowClks");
+				int highClks = objectPtr->getValue<int>("highClks");
+				int cycles = objectPtr->getValue<int>("cycles");
+				std::shared_ptr<CommandBdcReverse> p(new CommandBdcReverse(index, commandId, lowClks, highClks, cycles));
 				return p;
 			}
 		}
@@ -560,7 +563,10 @@ std::shared_ptr<CommandBdcForward> CommandTranslator::GetCommandBdcForward()
 			else
 			{
 				int index = objectPtr->getValue<int>("index");
-				std::shared_ptr<CommandBdcForward> p(new CommandBdcForward(index, commandId));
+				int lowClks = objectPtr->getValue<int>("lowClks");
+				int highClks = objectPtr->getValue<int>("highClks");
+				int cycles = objectPtr->getValue<int>("cycles");
+				std::shared_ptr<CommandBdcForward> p(new CommandBdcForward(index, lowClks, highClks, cycles, commandId));
 				return p;
 			}
 		}

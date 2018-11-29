@@ -1226,8 +1226,8 @@ void UserCommandRunner::runTask()
 			{
 				case CommandState::Idle:
 				{
-					Poco::ScopedLock<Poco::Mutex> lock(_userCommandMutex); //lock user cmd mutex
-					Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+					Poco::ScopedLock<Poco::Mutex> userLock(_userCommandMutex); //lock user cmd mutex
+					Poco::ScopedLock<Poco::Mutex> consoleLock(_consoleCommandMutex); //lock console cmd mutex
 
 					//run a console command
 					std::string consoleCmd;
