@@ -79,6 +79,34 @@ void UserCommandRunner::notifyObservers(const std::string& cmdId, CommandState s
 	}
 }
 
+void UserCommandRunner::finishUserCommand(CommandState consoleCmdState, const std::string& errorInfo)
+{
+	CommandState userCmdState;
+
+	if(consoleCmdState != CommandState::Succeeded)
+	{
+		userCmdState = CommandState::Failed;
+	}
+	else
+	{
+		if(_userCommand.command == UserCmdConfirmReset)
+		{
+			if(_consoleCommand.resultLocators[_userCommand.locatorIndexReset] == _userCommand.locatorIndexReset) {
+				userCmdState = CommandState::Succeeded;
+			}
+			else {
+				userCmdState = CommandState::Failed;
+			}
+		}
+		else
+		{
+			userCmdState = CommandState::Succeeded;
+		}
+	}
+
+	notifyObservers(_userCommand.commandId, userCmdState, errorInfo);
+}
+
 void UserCommandRunner::parseUserCmdConnectDevice(Poco::DynamicStruct& ds)
 {
 	std::string deviceName = ds["deviceName"].toString();
@@ -121,6 +149,25 @@ bool UserCommandRunner::expandUserCmdConnectDevice()
 		cmd = ConsoleCommandFactory::CmdLocatorQuery(i);//locator query
 		_userCommand.consoleCommands.push_back(cmd);
 	}
+
+	return true;
+}
+
+void UserCommandRunner::parseUserCmdConfirmReset(Poco::DynamicStruct& ds)
+{
+	unsigned int locatorIndex = ds["locatorIndex"];
+	unsigned int lineNumber = ds["lineNumber"];
+
+	_userCommand.locatorIndexReset = locatorIndex;
+	_userCommand.lineNumberReset = lineNumber;
+}
+
+bool UserCommandRunner::expandUserCmdConfirmReset()
+{
+	std::string cmd;
+
+	cmd = ConsoleCommandFactory::CmdLocatorQuery(_userCommand.locatorIndexReset);
+	_userCommand.consoleCommands.push_back(cmd);
 
 	return true;
 }
@@ -272,7 +319,16 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		_userCommand.command = ds["userCommand"].toString();
 		_userCommand.commandId = ds["userCommandId"].toString();
 
-		if(_userCommand.command == UserCmdInsertSmartCard) {
+		if(_userCommand.command == UserCmdConnectDevice) {
+			parseUserCmdConnectDevice(ds);
+		}
+		else if(_userCommand.command == UserCmdConfirmReset) {
+			parseUserCmdConfirmReset(ds);
+		}
+		else if(_userCommand.command == UserCmdResetDevice) {
+			parseUserCmdResetDevice(ds);
+		}
+		else if(_userCommand.command == UserCmdInsertSmartCard) {
 			parseUserCmdSmartCard(ds);
 		}
 		else if(_userCommand.command == UserCmdRemoveSmartCard) {
@@ -330,6 +386,16 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		}
 		else {
 			errorInfo = ErrorFailedExpandingConnectDevice;
+		}
+	}
+	else if(_userCommand.command == UserCmdConfirmReset)
+	{
+		if(expandUserCmdConfirmReset()) {
+			_userCommand.state = CommandState::OnGoing;
+			errorInfo.clear();
+		}
+		else {
+			errorInfo = ErrorFailedExpandingConfirmReset;
 		}
 	}
 	else if(_userCommand.command == UserCmdResetDevice)
@@ -1242,7 +1308,7 @@ void UserCommandRunner::runTask()
 					{
 						//failed to run the console command
 						pLogger->LogError("UserCommandRunner::runTask failed to run console cmd: " + consoleCmd);
-						notifyObservers(_userCommand.commandId, CommandState::Failed, ErrorFailedToRunConsoleCommand);
+						finishUserCommand(CommandState::Failed, ErrorFailedToRunConsoleCommand);
 
 						_userCommand.consoleCommands.clear();
 						_userCommand.state = CommandState::Idle;
@@ -1275,7 +1341,7 @@ void UserCommandRunner::runTask()
 						std::string empty;
 
 						pLogger->LogInfo("UserCommandRunner::runTask succeeded in user command id: " + _userCommand.commandId);
-						notifyObservers(_userCommand.commandId, CommandState::Succeeded, empty);
+						finishUserCommand(CommandState::Succeeded, empty);
 
 						Poco::ScopedLock<Poco::Mutex> lock(_userCommandMutex); //lock user cmd mutex
 						_userCommand.state = CommandState::Idle;
@@ -1292,7 +1358,7 @@ void UserCommandRunner::runTask()
 					pLogger->LogError("UserCommandRunner::runTask failed in console command: " + cmd);
 
 					pLogger->LogError("UserCommandRunner::runTask failed in user command id: " + _userCommand.commandId);
-					notifyObservers(_userCommand.commandId, CommandState::Failed, ErrorFailedToRunUserCommand);
+					finishUserCommand(CommandState::Failed, ErrorFailedToRunUserCommand);
 
 					Poco::ScopedLock<Poco::Mutex> userLock(_userCommandMutex); //lock user cmd mutex
 					_userCommand.consoleCommands.clear();

@@ -106,6 +106,7 @@ private:
 	////////////////////////////////////////
 
 	const std::string UserCmdConnectDevice = "connect device";
+	const std::string UserCmdConfirmReset = "confirm reset";
 	const std::string UserCmdResetDevice = "reset device";
 	const std::string UserCmdInsertSmartCard = "insert smart card";
 	const std::string UserCmdRemoveSmartCard = "remove smart card";
@@ -123,6 +124,7 @@ private:
 	const std::string ErrorInvalidJsonUserCommand = "user command cannot be parsed";
 	const std::string ErrorUnSupportedCommand = "command is not supported";
 	const std::string ErrorFailedExpandingConnectDevice = "failed in expanding connect device";
+	const std::string ErrorFailedExpandingConfirmReset = "failed in expanding confirm reset";
 	const std::string ErrorFailedExpandingResetDevice = "failed in expanding reset device";
 	const std::string ErrorFailedExpandingInsertSmartCard = "failed in expanding insert smart card";
 	const std::string ErrorFailedExpandingRemoveSmartCard = "failed in expanding remove smart card";
@@ -158,6 +160,9 @@ private:
 
 		//specific data for connect device
 		std::string deviceName;
+		//specific data for confirm reset
+		unsigned int locatorIndexReset;
+		unsigned int lineNumberReset;
 		//specific data for smart card related command
 		unsigned int smartCardNumber;
 		//specific data for bar code related command
@@ -184,9 +189,11 @@ private:
 	bool _deviceHomePositioned;
 
 	void notifyObservers(const std::string& cmdId, CommandState state, const std::string& errorInfo);
+	void finishUserCommand(CommandState consoleCmdState, const std::string& errorInfo);
 
 	//fill _userCommand with information in user command JSON
 	void parseUserCmdConnectDevice(Poco::DynamicStruct& ds);
+	void parseUserCmdConfirmReset(Poco::DynamicStruct& ds);
 	void parseUserCmdResetDevice(Poco::DynamicStruct& ds);
 	void parseUserCmdSmartCard(Poco::DynamicStruct& ds);
 	void parseUserCmdBarCode(Poco::DynamicStruct& ds);
@@ -194,6 +201,7 @@ private:
 
 	//return true if user command can be fulfilled with low level commands
 	bool expandUserCmdConnectDevice();
+	bool expandUserCmdConfirmReset();
 	bool expandUserCmdResetDevice();
 	bool expandUserCmdInsertSmartCard();
 	bool expandUserCmdRemoveSmartCard();

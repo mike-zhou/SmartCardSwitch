@@ -20,6 +20,13 @@
  * }
  *
  * {
+ * 	"userCommand":"confirm reset",
+ * 	"commandId":"uniqueCommandId",
+ * 	"locatorIndex":0,
+ * 	"lineNumber":0
+ * }
+ *
+ * {
  * 	"userCommand":"reset device"
  * 	"commandId":"uniqueCommandId"
  * }

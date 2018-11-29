@@ -8,6 +8,10 @@
 #include "Poco/ScopedLock.h"
 #include "Poco/Timespan.h"
 #include "Poco/Timestamp.h"
+#include "Poco/Exception.h"
+#include "Poco/JSON/Parser.h"
+#include "Poco/JSON/Object.h"
+#include "Poco/JSON/JSONException.h"
 
 #include "UserProxy.h"
 #include "MsgPackager.h"
@@ -17,29 +21,94 @@ extern Logger * pLogger;
 
 UserProxy::UserProxy(): Task("UserProxy")
 {
-	_pCmdRunner = nullptr;
+	_pUserCmdRunner = nullptr;
 	_state = State::ConnectDevice;
 }
 
 void UserProxy::SetUserCommandRunner(IUserCommandRunner * pRunner)
 {
 	if(pRunner != nullptr) {
-		_pCmdRunner = pRunner;
+		_pUserCmdRunner = pRunner;
+	}
+}
+
+void UserProxy::parseReply(const std::string& reply)
+{
+	try
+	{
+		Poco::JSON::Parser parser;
+		Poco::Dynamic::Var result = parser.parse(reply);
+		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+		Poco::DynamicStruct ds = *objectPtr;
+
+		std::string commandId;
+		std::string state;
+		std::string errorInfo;
+
+		commandId = ds["commandId"].toString();
+		state = ds["result"].toString();
+		if(state == "failed") {
+			errorInfo = ds["errorInfo"].toString();
+		}
+
+		{
+			//update user command result.
+			Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+			if(commandId == _commandId) {
+				_commandState = state;
+				_errorInfo = errorInfo;
+			}
+		}
+	}
+	catch(Poco::Exception &e)
+	{
+		pLogger->LogError("UserProxy::parseRely exception: " + e.displayText());
+	}
+	catch(...)
+	{
+		pLogger->LogError("UserProxy::parseRely unknown exception");
 	}
 }
 
 void UserProxy::OnCommandStatus(const std::string& jsonStatus)
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-	std::vector<unsigned char> pkg;
-
 	pLogger->LogInfo("UserProxy::OnCommandStatus json reply: " + jsonStatus);
 
-	MsgPackager::PackageMsg(jsonStatus, pkg);
-	pLogger->LogInfo("UserProxy::OnCommandStatus pkg size: " + std::to_string(pkg.size()));
+	switch(_state)
+	{
+		case State::ConnectDevice:
+		case State::WaitForDeviceAvailability:
+		case State::AskForResetConfirm:
+		case State::WaitForResetConfirm:
+		case State::ResetDevice:
+		case State::WaitForDeviceReady:
+		{
+			//replies for commands in initialization stage
+			parseReply(jsonStatus);
+		}
+		break;
 
-	for(auto it=pkg.begin(); it!=pkg.end(); it++) {
-		_output.push_back(*it);
+		case State::Normal:
+		{
+			//replies go to the other side of socket
+			Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+			std::vector<unsigned char> pkg;
+
+			MsgPackager::PackageMsg(jsonStatus, pkg);
+			pLogger->LogInfo("UserProxy::OnCommandStatus pkg size: " + std::to_string(pkg.size()));
+
+			for(auto it=pkg.begin(); it!=pkg.end(); it++) {
+				_output.push_back(*it);
+			}
+		}
+		break;
+
+		default:
+		{
+			pLogger->LogError("UserProxy::OnCommandStatus wrong state: " + std::to_string((int)_state));
+		}
+		break;
 	}
 }
 
@@ -64,6 +133,27 @@ void UserProxy::AddSocket(StreamSocket& socket)
 			pLogger->LogInfo("UserProxy::AddSocket device hasn't connected, refuse socket connection: " + socket.address().toString());
 
 			errorInfo = createErrorInfo("no device is connected");
+
+			MsgPackager::PackageMsg(errorInfo, pkg);
+
+			socket.sendBytes(pkg.data(), pkg.size());
+			socket.shutdownSend();
+			socket.close();
+
+			return;
+		}
+		break;
+
+		case State::AskForResetConfirm:
+		case State::WaitForResetConfirm:
+		{
+			std::string errorInfo;
+			std::vector<unsigned char> pkg;
+
+			pLogger->LogInfo("UserProxy::AddSocket user proxy state: " + std::to_string((int)_state));
+			pLogger->LogInfo("UserProxy::AddSocket waiting for reset confirm, refuse socket connection: " + socket.address().toString());
+
+			errorInfo = createErrorInfo("reset confirm is needed");
 
 			MsgPackager::PackageMsg(errorInfo, pkg);
 
@@ -155,11 +245,29 @@ bool UserProxy::sendDeviceConnectCommand()
 	_commandId = "connect device";
 	_commandState = "ongoing";
 
-	_pCmdRunner->RunCommand(cmd, error);
+	_pUserCmdRunner->RunCommand(cmd, error);
 
 	if(!error.empty())
 	{
 		pLogger->LogError("UserProxy::sendDeviceConnectCommand error: " + error);
+		return false;
+	}
+	return true;
+}
+
+bool UserProxy::sendConfirmResetCommand()
+{
+	std::string error;
+	std::string cmd = "{\"userCommand\":\"confirm reset\",\"commandId\":\"confirm reset\",\"locatorIndex\":0,\"lineNumber\":1}";
+
+	_commandId = "confirm reset";
+	_commandState = "ongoing";
+
+	_pUserCmdRunner->RunCommand(cmd, error);
+
+	if(!error.empty())
+	{
+		pLogger->LogError("UserProxy::sendConfirmResetCommand error: " + error);
 		return false;
 	}
 	return true;
@@ -173,7 +281,7 @@ bool UserProxy::sendDeviceResetCommand()
 	_commandId = "reset device";
 	_commandState = "ongoing";
 
-	_pCmdRunner->RunCommand(cmd, error);
+	_pUserCmdRunner->RunCommand(cmd, error);
 
 	if(!error.empty())
 	{
@@ -225,8 +333,10 @@ void UserProxy::runTask()
 			{
 				if(!currentTime.isElapsed(deviceConnectInterval)) {
 					sleep(10);
-					return;
+					continue;
 				}
+
+				Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 				switch(_state)
 				{
@@ -245,15 +355,15 @@ void UserProxy::runTask()
 					{
 						if(_commandState == "ongoing")
 						{
-							sleep(100);
+							sleep(100); //wait for a short time for the reply.
 						}
 						if(_commandState == "ongoing")
 						{
-							currentTime.update();
+							currentTime.update(); //no reply has arrived yet.
 						}
 						else if(_commandState == "succeeded")
 						{
-							_state = State::ResetDevice;
+							_state = State::AskForResetConfirm;
 						}
 						else if(_commandState == "failed")
 						{
@@ -264,6 +374,46 @@ void UserProxy::runTask()
 						else
 						{
 							_state = State::ConnectDevice;
+							currentTime.update();
+							pLogger->LogError("UserProxy::runTask wrong command result: " + _commandState);
+						}
+					}
+					break;
+
+					case State::AskForResetConfirm:
+					{
+						_state = State::WaitForResetConfirm;
+
+						if(!sendConfirmResetCommand()) {
+							_state = State::AskForResetConfirm;
+							currentTime.update();
+						}
+					}
+					break;
+
+					case State::WaitForResetConfirm:
+					{
+						if(_commandState == "ongoing")
+						{
+							sleep(100); //wait for a short time for the reply.
+						}
+						if(_commandState == "ongoing")
+						{
+							currentTime.update(); //no reply has arrived yet.
+						}
+						else if(_commandState == "succeeded")
+						{
+							_state = State::ResetDevice;
+						}
+						else if(_commandState == "failed")
+						{
+							_state = State::WaitForResetConfirm;
+							currentTime.update();
+							pLogger->LogError("UserProxy::runTask failed to confirm reset, error: " + _errorInfo);
+						}
+						else
+						{
+							_state = State::WaitForResetConfirm;
 							currentTime.update();
 							pLogger->LogError("UserProxy::runTask wrong command result: " + _commandState);
 						}
@@ -319,7 +469,7 @@ void UserProxy::runTask()
 					break;
 				}
 
-				return;
+				continue;
 			}
 
 			if(_sockets.empty()) {
@@ -356,17 +506,19 @@ void UserProxy::runTask()
 						//send user command to user command runner
 						for(auto it=cmds.begin(); it!=cmds.end(); it++)
 						{
-							if(_pCmdRunner != nullptr)
+							if(_pUserCmdRunner != nullptr)
 							{
 								std::string errorInfo;
 
-								_pCmdRunner->RunCommand(*it, errorInfo);
+								_pUserCmdRunner->RunCommand(*it, errorInfo);
 								if(!errorInfo.empty())
 								{
 									std::vector<unsigned char> pkg;
 
 									pLogger->LogError("UserProxy::runTask RunCommand error: " + errorInfo);
 									errorInfo = createErrorInfo(errorInfo);
+
+									Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 									MsgPackager::PackageMsg(errorInfo, pkg);
 									pLogger->LogError("UserProxy::runTask error package size: " + std::to_string(pkg.size()));
@@ -381,6 +533,8 @@ void UserProxy::runTask()
 
 				if(!peerClosed)
 				{
+					Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
 					//send reply
 					if(!_output.empty())
 					{
@@ -432,5 +586,4 @@ void UserProxy::runTask()
 	}
 
 	pLogger->LogInfo("UserProxy::runTask exited");
-
 }

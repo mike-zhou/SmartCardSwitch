@@ -51,6 +51,8 @@ private:
 	{
 		ConnectDevice = 0,
 		WaitForDeviceAvailability,
+		AskForResetConfirm,
+		WaitForResetConfirm,
 		ResetDevice,
 		WaitForDeviceReady,
 		Normal
@@ -59,13 +61,16 @@ private:
 
 	std::vector<StreamSocket> _sockets;
 
-	IUserCommandRunner * _pCmdRunner;
+	IUserCommandRunner * _pUserCmdRunner;
 
 	std::string _deviceName;
 	std::string _commandId;
 	std::string _commandState;
 	std::string _errorInfo;
+
+	void parseReply(const std::string& reply);
 	bool sendDeviceConnectCommand();
+	bool sendConfirmResetCommand();
 	bool sendDeviceResetCommand();
 
 	std::deque<unsigned char> _input;
