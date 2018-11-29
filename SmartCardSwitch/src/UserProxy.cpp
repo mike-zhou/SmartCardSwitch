@@ -52,23 +52,76 @@ void UserProxy::AddSocket(StreamSocket& socket)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	if(_state != State::Normal)
+	switch(_state)
 	{
-		std::string errorInfo;
-		std::vector<unsigned char> pkg;
+		case State::ConnectDevice:
+		case State::WaitForDeviceAvailability:
+		{
+			std::string errorInfo;
+			std::vector<unsigned char> pkg;
 
-		pLogger->LogInfo("UserProxy::AddSocket user proxy state: " + std::to_string((int)_state));
-		pLogger->LogInfo("UserProxy::AddSocket device hasn't connected, refuse socket connection: " + socket.address().toString());
+			pLogger->LogInfo("UserProxy::AddSocket user proxy state: " + std::to_string((int)_state));
+			pLogger->LogInfo("UserProxy::AddSocket device hasn't connected, refuse socket connection: " + socket.address().toString());
 
-		errorInfo = createErrorInfo("no device is connected");
+			errorInfo = createErrorInfo("no device is connected");
 
-		MsgPackager::PackageMsg(errorInfo, pkg);
+			MsgPackager::PackageMsg(errorInfo, pkg);
 
-		socket.sendBytes(pkg.data(), pkg.size());
-		socket.shutdownSend();
-		socket.close();
+			socket.sendBytes(pkg.data(), pkg.size());
+			socket.shutdownSend();
+			socket.close();
 
-		return;
+			return;
+		}
+		break;
+
+		case State::ResetDevice:
+		case State::WaitForDeviceReady:
+		{
+			std::string errorInfo;
+			std::vector<unsigned char> pkg;
+
+			pLogger->LogInfo("UserProxy::AddSocket user proxy state: " + std::to_string((int)_state));
+			pLogger->LogInfo("UserProxy::AddSocket device hasn't been initialized, refuse socket connection: " + socket.address().toString());
+
+			errorInfo = createErrorInfo("device hasn't been initialized");
+
+			MsgPackager::PackageMsg(errorInfo, pkg);
+
+			socket.sendBytes(pkg.data(), pkg.size());
+			socket.shutdownSend();
+			socket.close();
+
+			return;
+		}
+		break;
+
+		case State::Normal:
+		{
+			//device is ready to accept user command.
+			//continue.
+		}
+		break;
+
+		default:
+		{
+			std::string errorInfo;
+			std::vector<unsigned char> pkg;
+
+			pLogger->LogError("UserProxy::AddSocket user proxy state: " + std::to_string((int)_state));
+			pLogger->LogError("UserProxy::AddSocket wrong device state, refuse socket connection: " + socket.address().toString());
+
+			errorInfo = createErrorInfo("wrong device state");
+
+			MsgPackager::PackageMsg(errorInfo, pkg);
+
+			socket.sendBytes(pkg.data(), pkg.size());
+			socket.shutdownSend();
+			socket.close();
+
+			return;
+		}
+		break;
 	}
 
 	if(_sockets.empty())

@@ -1226,9 +1226,11 @@ void UserCommandRunner::runTask()
 			{
 				case CommandState::Idle:
 				{
+					Poco::ScopedLock<Poco::Mutex> lock(_userCommandMutex); //lock user cmd mutex
+					Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
 					//run a console command
 					std::string consoleCmd;
-					Poco::ScopedLock<Poco::Mutex> lock(_userCommandMutex); //lock user cmd mutex
 
 					_consoleCommand.state = CommandState::OnGoing; //change state here to give a correct state if callback comes instantly.
 					consoleCmd = _userCommand.consoleCommands.front();

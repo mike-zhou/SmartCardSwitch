@@ -35,6 +35,7 @@ public:
 	UserCommandRunner();
 
 	void AddObserver(IUserCommandRunnerObserver * pObserver);
+
 	void SetConsoleOperator(ConsoleOperator * pCO);
 
 private:
