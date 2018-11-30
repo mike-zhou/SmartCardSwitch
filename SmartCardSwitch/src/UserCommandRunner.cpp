@@ -82,6 +82,7 @@ void UserCommandRunner::notifyObservers(const std::string& cmdId, CommandState s
 void UserCommandRunner::finishUserCommand(CommandState consoleCmdState, const std::string& errorInfo)
 {
 	CommandState userCmdState;
+	std::string error = errorInfo;
 
 	if(consoleCmdState != CommandState::Succeeded)
 	{
@@ -89,7 +90,17 @@ void UserCommandRunner::finishUserCommand(CommandState consoleCmdState, const st
 	}
 	else
 	{
-		if(_userCommand.command == UserCmdConfirmReset)
+		if(_userCommand.command == UserCmdConnectDevice)
+		{
+			if(_consoleCommand.resultDevicePowered == false) {
+				userCmdState = CommandState::Failed;
+				error = ErrorDeviceNotPowered;
+			}
+			else {
+				userCmdState = CommandState::Succeeded;
+			}
+		}
+		else if(_userCommand.command == UserCmdConfirmReset)
 		{
 			if(_consoleCommand.resultLocators[_userCommand.locatorIndexReset] == _userCommand.locatorIndexReset) {
 				userCmdState = CommandState::Succeeded;
@@ -104,7 +115,7 @@ void UserCommandRunner::finishUserCommand(CommandState consoleCmdState, const st
 		}
 	}
 
-	notifyObservers(_userCommand.commandId, userCmdState, errorInfo);
+	notifyObservers(_userCommand.commandId, userCmdState, error);
 }
 
 void UserCommandRunner::parseUserCmdConnectDevice(Poco::DynamicStruct& ds)

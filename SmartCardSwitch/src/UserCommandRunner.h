@@ -119,6 +119,7 @@ private:
 	const std::string UserCmdTouchScreen = "touch screen";
 
 	const std::string ErrorDeviceNotAvailable = "device hans't been connected";
+	const std::string ErrorDeviceNotPowered = "device is not powered";
 	const std::string ErrorDeviceNotHomePositioned = "device hasn't been home positioned";
 	const std::string ErrorUserCommandOnGoing = "a user command is running";
 	const std::string ErrorInvalidJsonUserCommand = "user command cannot be parsed";
