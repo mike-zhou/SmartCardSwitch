@@ -96,6 +96,14 @@ void UserCommandRunner::finishUserCommand(CommandState consoleCmdState, const st
 				userCmdState = CommandState::Failed;
 				error = ErrorDeviceNotPowered;
 			}
+			else if(_consoleCommand.resultDevices.empty()) {
+				userCmdState = CommandState::Failed;
+				error = ErrorDeviceNotAvailable;
+			}
+			else if(_userCommand.deviceName != _consoleCommand.resultDevices[0]) {
+				userCmdState = CommandState::Failed;
+				error = ErrorDeviceNotAvailable;
+			}
 			else {
 				userCmdState = CommandState::Succeeded;
 			}
@@ -142,24 +150,6 @@ bool UserCommandRunner::expandUserCmdConnectDevice()
 	//queries
 	cmd = ConsoleCommandFactory::CmdDeviceQueryPower();//device power
 	_userCommand.consoleCommands.push_back(cmd);
-	cmd = ConsoleCommandFactory::CmdDeviceQueryFuse();//device fuse
-	_userCommand.consoleCommands.push_back(cmd);
-	cmd = ConsoleCommandFactory::CmdOptQueryPower();//OPT power
-	_userCommand.consoleCommands.push_back(cmd);
-	cmd = ConsoleCommandFactory::CmdSteppersQueryPower();//stepper power
-	_userCommand.consoleCommands.push_back(cmd);
-	cmd = ConsoleCommandFactory::CmdBdcsQueryPower();//bdc power
-	_userCommand.consoleCommands.push_back(cmd);
-	for(int i=0; i<STEPPER_AMOUNT; i++)
-	{
-		cmd = ConsoleCommandFactory::CmdStepperQuery(i);//stepper query
-		_userCommand.consoleCommands.push_back(cmd);
-	}
-	for(int i=0; i<LOCATOR_AMOUNT; i++)
-	{
-		cmd = ConsoleCommandFactory::CmdLocatorQuery(i);//locator query
-		_userCommand.consoleCommands.push_back(cmd);
-	}
 
 	return true;
 }
