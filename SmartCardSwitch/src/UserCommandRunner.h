@@ -126,6 +126,8 @@ private:
 	const std::string ErrorUnSupportedCommand = "command is not supported";
 	const std::string ErrorFailedExpandingConnectDevice = "failed in expanding connect device";
 	const std::string ErrorFailedExpandingConfirmReset = "failed in expanding confirm reset";
+	const std::string ErrorSteppersNotPoweredAfterReset = "steppers are not powered after reset";
+	const std::string ErrorBdcsNotPoweredAfterReset = "BDCs are not powered after reset";
 	const std::string ErrorFailedExpandingResetDevice = "failed in expanding reset device";
 	const std::string ErrorFailedExpandingInsertSmartCard = "failed in expanding insert smart card";
 	const std::string ErrorFailedExpandingRemoveSmartCard = "failed in expanding remove smart card";

@@ -117,6 +117,44 @@ void UserCommandRunner::finishUserCommand(CommandState consoleCmdState, const st
 				userCmdState = CommandState::Failed;
 			}
 		}
+		else if(_userCommand.command == UserCmdResetDevice)
+		{
+			userCmdState = CommandState::Failed;
+
+			if(!_consoleCommand.resultSteppersPowered) {
+				pLogger->LogError("UserCommandRunner::finishUserCommand steppers are not powered");
+				error = ErrorSteppersNotPoweredAfterReset;
+			}
+			else if(!_consoleCommand.resultBdcsPowered) {
+				pLogger->LogError("UserCommandRunner::finishUserCommand steppers are not powered");
+				error = ErrorBdcsNotPoweredAfterReset;
+			}
+			else if(_consoleCommand.resultSteppers[0].homeOffset != 0) {
+				pLogger->LogError("UserCommandRunner::finishUserCommand stepper 0 not home positioned: " + std::to_string(_consoleCommand.resultSteppers[0].homeOffset));
+				error = ErrorDeviceNotHomePositioned;
+			}
+			else if(_consoleCommand.resultSteppers[1].homeOffset != 0) {
+				pLogger->LogError("UserCommandRunner::finishUserCommand stepper 1 not home positioned: " + std::to_string(_consoleCommand.resultSteppers[1].homeOffset));
+				error = ErrorDeviceNotHomePositioned;
+			}
+			else if(_consoleCommand.resultSteppers[2].homeOffset != 0) {
+				pLogger->LogError("UserCommandRunner::finishUserCommand stepper 2 not home positioned: " + std::to_string(_consoleCommand.resultSteppers[2].homeOffset));
+				error = ErrorDeviceNotHomePositioned;
+			}
+			else if(_consoleCommand.resultSteppers[3].homeOffset != 0) {
+				pLogger->LogError("UserCommandRunner::finishUserCommand stepper 3 not home positioned: " + std::to_string(_consoleCommand.resultSteppers[3].homeOffset));
+				error = ErrorDeviceNotHomePositioned;
+			}
+			else {
+				pLogger->LogInfo("UserCommandRunner::finishUserCommand home offset: "
+						+ std::to_string(_consoleCommand.resultSteppers[0].homeOffset)
+						+ ", " + std::to_string(_consoleCommand.resultSteppers[1].homeOffset)
+						+ ", " + std::to_string(_consoleCommand.resultSteppers[2].homeOffset)
+						+ ", " + std::to_string(_consoleCommand.resultSteppers[3].homeOffset));
+
+				userCmdState = CommandState::Succeeded;
+			}
+		}
 		else
 		{
 			userCmdState = CommandState::Succeeded;
@@ -143,6 +181,8 @@ bool UserCommandRunner::expandUserCmdConnectDevice()
 {
 	std::string cmd;
 
+	_userCommand.consoleCommands.clear();
+
 	cmd = ConsoleCommandFactory::CmdDevicesGet();
 	_userCommand.consoleCommands.push_back(cmd);
 	cmd = ConsoleCommandFactory::CmdDeviceConnect(0);//only one device at the moment.
@@ -167,6 +207,8 @@ bool UserCommandRunner::expandUserCmdConfirmReset()
 {
 	std::string cmd;
 
+	_userCommand.consoleCommands.clear();
+
 	cmd = ConsoleCommandFactory::CmdLocatorQuery(_userCommand.locatorIndexReset);
 	_userCommand.consoleCommands.push_back(cmd);
 
@@ -178,6 +220,94 @@ void UserCommandRunner::parseUserCmdResetDevice(Poco::DynamicStruct& ds)
 	//nothing further to be done
 }
 
+bool UserCommandRunner::expandUserCmdResetDevice()
+{
+	const unsigned int STEPPERS_AMOUNT = 4;
+
+	std::string cmd;
+	long lowClks;
+	long highClks;
+	long accelerationBuffer;
+	long accelerationBufferDecrement;
+	long decelerationBuffer;
+	long decelerationBufferIncrement;
+	int locatorIndex;
+	int locatorLineNumberStart;
+	int locatorLineNumberTerminal;
+
+	const unsigned int x = 0;
+	const unsigned int y = 1;
+	const unsigned int z = 2;
+	const unsigned int w = 3;
+
+
+	_userCommand.consoleCommands.clear();
+
+	//power on steppers
+	cmd = ConsoleCommandFactory::CmdSteppersPowerOn();
+	_userCommand.consoleCommands.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdSteppersQueryPower();
+	_userCommand.consoleCommands.push_back(cmd);
+	//power on BDCs
+	cmd = ConsoleCommandFactory::CmdBdcsPowerOn();
+	_userCommand.consoleCommands.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdBdcsQueryPower();
+	_userCommand.consoleCommands.push_back(cmd);
+
+	//configure steppers
+	for(unsigned int i=0; i<STEPPERS_AMOUNT; i++)
+	{
+		auto rc = pMovementConfiguration->GetStepperConfig(i,
+															lowClks,
+															highClks,
+															accelerationBuffer,
+															accelerationBufferDecrement,
+															decelerationBuffer,
+															decelerationBufferIncrement,
+															locatorIndex,
+															locatorLineNumberStart,
+															locatorLineNumberTerminal);
+		if(rc)
+		{
+			cmd = ConsoleCommandFactory::CmdStepperConfigStep(i, lowClks, highClks);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperAccelerationBuffer(i, accelerationBuffer);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperAccelerationBufferDecrement(i, accelerationBufferDecrement);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperDecelerationBuffer(i, decelerationBuffer);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperDecelerationBufferIncrement(i, decelerationBufferIncrement);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperConfigHome(i, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
+			_userCommand.consoleCommands.push_back(cmd);
+		}
+		else
+		{
+			pLogger->LogError("UserCommandRunner::expandUserCmdResetDevice failed to retrieve configuration for stepper: " + std::to_string(i));
+			return false;
+		}
+	}
+
+	//go home
+	cmd = ConsoleCommandFactory::CmdStepperRun(z, 0, 0);
+	_userCommand.consoleCommands.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdStepperRun(y, 0, 0);
+	_userCommand.consoleCommands.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdStepperRun(x, 0, 0);
+	_userCommand.consoleCommands.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdStepperRun(w, 0, 0);
+	_userCommand.consoleCommands.push_back(cmd);
+
+	//query steppers
+	for(unsigned int i=0; i<STEPPERS_AMOUNT; i++)
+	{
+		cmd = ConsoleCommandFactory::CmdStepperQuery(i);
+		_userCommand.consoleCommands.push_back(cmd);
+	}
+
+	return true;
+}
 
 void UserCommandRunner::parseUserCmdSmartCard(Poco::DynamicStruct& ds)
 {
@@ -240,11 +370,6 @@ void UserCommandRunner::parseUserCmdKeys(Poco::DynamicStruct& ds)
 			throw Poco::Exception(err);
 		}
 	}
-}
-
-bool UserCommandRunner::expandUserCmdResetDevice()
-{
-
 }
 
 bool UserCommandRunner::expandUserCmdInsertSmartCard()
