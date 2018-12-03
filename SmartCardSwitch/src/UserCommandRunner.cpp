@@ -255,8 +255,8 @@ bool UserCommandRunner::expandUserCmdResetDevice()
 	_userCommand.consoleCommands.push_back(cmd);
 
 	//configure steppers
-	for(unsigned int i=0; i<STEPPERS_AMOUNT; i++)
 	{
+		unsigned int i = z;
 		auto rc = pMovementConfiguration->GetStepperConfig(i,
 															lowClks,
 															highClks,
@@ -281,6 +281,8 @@ bool UserCommandRunner::expandUserCmdResetDevice()
 			_userCommand.consoleCommands.push_back(cmd);
 			cmd = ConsoleCommandFactory::CmdStepperConfigHome(i, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
 			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperRun(i, 0, 0);
+			_userCommand.consoleCommands.push_back(cmd);
 		}
 		else
 		{
@@ -288,16 +290,111 @@ bool UserCommandRunner::expandUserCmdResetDevice()
 			return false;
 		}
 	}
-
-	//go home
-	cmd = ConsoleCommandFactory::CmdStepperRun(z, 0, 0);
-	_userCommand.consoleCommands.push_back(cmd);
-	cmd = ConsoleCommandFactory::CmdStepperRun(y, 0, 0);
-	_userCommand.consoleCommands.push_back(cmd);
-	cmd = ConsoleCommandFactory::CmdStepperRun(x, 0, 0);
-	_userCommand.consoleCommands.push_back(cmd);
-	cmd = ConsoleCommandFactory::CmdStepperRun(w, 0, 0);
-	_userCommand.consoleCommands.push_back(cmd);
+	{
+		unsigned int i = w;
+		auto rc = pMovementConfiguration->GetStepperConfig(i,
+															lowClks,
+															highClks,
+															accelerationBuffer,
+															accelerationBufferDecrement,
+															decelerationBuffer,
+															decelerationBufferIncrement,
+															locatorIndex,
+															locatorLineNumberStart,
+															locatorLineNumberTerminal);
+		if(rc)
+		{
+			cmd = ConsoleCommandFactory::CmdStepperConfigStep(i, lowClks, highClks);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperAccelerationBuffer(i, accelerationBuffer);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperAccelerationBufferDecrement(i, accelerationBufferDecrement);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperDecelerationBuffer(i, decelerationBuffer);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperDecelerationBufferIncrement(i, decelerationBufferIncrement);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperConfigHome(i, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperRun(i, 0, 0);
+			_userCommand.consoleCommands.push_back(cmd);
+		}
+		else
+		{
+			pLogger->LogError("UserCommandRunner::expandUserCmdResetDevice failed to retrieve configuration for stepper: " + std::to_string(i));
+			return false;
+		}
+	}
+	{
+		unsigned int i = y;
+		auto rc = pMovementConfiguration->GetStepperConfig(i,
+															lowClks,
+															highClks,
+															accelerationBuffer,
+															accelerationBufferDecrement,
+															decelerationBuffer,
+															decelerationBufferIncrement,
+															locatorIndex,
+															locatorLineNumberStart,
+															locatorLineNumberTerminal);
+		if(rc)
+		{
+			cmd = ConsoleCommandFactory::CmdStepperConfigStep(i, lowClks, highClks);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperAccelerationBuffer(i, accelerationBuffer);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperAccelerationBufferDecrement(i, accelerationBufferDecrement);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperDecelerationBuffer(i, decelerationBuffer);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperDecelerationBufferIncrement(i, decelerationBufferIncrement);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperConfigHome(i, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperRun(i, 0, 0);
+			_userCommand.consoleCommands.push_back(cmd);
+		}
+		else
+		{
+			pLogger->LogError("UserCommandRunner::expandUserCmdResetDevice failed to retrieve configuration for stepper: " + std::to_string(i));
+			return false;
+		}
+	}
+	{
+		unsigned int i = x;
+		auto rc = pMovementConfiguration->GetStepperConfig(i,
+															lowClks,
+															highClks,
+															accelerationBuffer,
+															accelerationBufferDecrement,
+															decelerationBuffer,
+															decelerationBufferIncrement,
+															locatorIndex,
+															locatorLineNumberStart,
+															locatorLineNumberTerminal);
+		if(rc)
+		{
+			cmd = ConsoleCommandFactory::CmdStepperConfigStep(i, lowClks, highClks);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperAccelerationBuffer(i, accelerationBuffer);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperAccelerationBufferDecrement(i, accelerationBufferDecrement);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperDecelerationBuffer(i, decelerationBuffer);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperDecelerationBufferIncrement(i, decelerationBufferIncrement);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperConfigHome(i, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
+			_userCommand.consoleCommands.push_back(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperRun(i, 0, 0);
+			_userCommand.consoleCommands.push_back(cmd);
+		}
+		else
+		{
+			pLogger->LogError("UserCommandRunner::expandUserCmdResetDevice failed to retrieve configuration for stepper: " + std::to_string(i));
+			return false;
+		}
+	}
 
 	//query steppers
 	for(unsigned int i=0; i<STEPPERS_AMOUNT; i++)
@@ -321,6 +418,26 @@ void UserCommandRunner::parseUserCmdSmartCard(Poco::DynamicStruct& ds)
 	}
 
 	_userCommand.smartCardNumber = number;
+}
+
+bool UserCommandRunner::expandUserCmdInsertSmartCard()
+{
+
+}
+
+bool UserCommandRunner::expandUserCmdRemoveSmartCard()
+{
+
+}
+
+bool UserCommandRunner::expandUserCmdSwipeSmartCard()
+{
+
+}
+
+bool UserCommandRunner::expandUserCmdTapSmartCard()
+{
+
 }
 
 void UserCommandRunner::parseUserCmdBarCode(Poco::DynamicStruct& ds)
@@ -370,26 +487,6 @@ void UserCommandRunner::parseUserCmdKeys(Poco::DynamicStruct& ds)
 			throw Poco::Exception(err);
 		}
 	}
-}
-
-bool UserCommandRunner::expandUserCmdInsertSmartCard()
-{
-
-}
-
-bool UserCommandRunner::expandUserCmdRemoveSmartCard()
-{
-
-}
-
-bool UserCommandRunner::expandUserCmdSwipeSmartCard()
-{
-
-}
-
-bool UserCommandRunner::expandUserCmdTapSmartCard()
-{
-
 }
 
 bool UserCommandRunner::expandUserCmdShowBarCode()
