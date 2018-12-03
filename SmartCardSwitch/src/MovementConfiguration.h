@@ -28,6 +28,23 @@ public:
 						int locatorLineNumberStart,
 						int locatorLineNumberTerminal);
 
+	bool SetStepperMovementCardInsert(
+						long lowClks,
+						long highClks,
+						long accelerationBuffer,
+						long accelerationBufferDecrement,
+						long decelerationBuffer,
+						long decelerationBufferIncrement);
+
+	bool SetStepperMovementGoHome(
+						long lowClks,
+						long highClks,
+						long accelerationBuffer,
+						long accelerationBufferDecrement,
+						long decelerationBuffer,
+						long decelerationBufferIncrement);
+
+
 	bool GetStepperConfig(unsigned int index,
 						long & lowClks,
 						long & highClks,
@@ -38,6 +55,23 @@ public:
 						int & locatorIndex,
 						int & locatorLineNumberStart,
 						int & locatorLineNumberTerminal);
+
+	bool GetStepperMovementCardInsert(
+						long & lowClks,
+						long & highClks,
+						long & accelerationBuffer,
+						long & accelerationBufferDecrement,
+						long & decelerationBuffer,
+						long & decelerationBufferIncrement);
+
+	bool GetStepperMovementGoHome(
+						long & lowClks,
+						long & highClks,
+						long & accelerationBuffer,
+						long & accelerationBufferDecrement,
+						long & decelerationBuffer,
+						long & decelerationBufferIncrement);
+
 
 	void SetBdcConfig(unsigned long lowClks, unsigned long highClks, unsigned long cycles);
 	void GetBdcConfig(unsigned long& lowClks, unsigned long& highClks, unsigned long& cycles);
@@ -63,6 +97,9 @@ private:
 		std::string ToJsonObj();
 	};
 	std::vector<StepperMovementConfig> _steppers;
+
+	StepperMovementConfig _stepperMovementCardInsert;
+	StepperMovementConfig _stepperMovementGoHome;
 
 	struct BdcMovementConfig
 	{

@@ -112,6 +112,22 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 									locatorLineNumberTerminal);
 			}
 
+			//cardInsert
+			_stepperMovementCardInsert.lowClks = 						ds["cardInsert"]["lowClks"];
+			_stepperMovementCardInsert.highClks = 						ds["cardInsert"]["highClks"];
+			_stepperMovementCardInsert.accelerationBuffer = 			ds["cardInsert"]["accelerationBuffer"];
+			_stepperMovementCardInsert.accelerationBufferDecrement = 	ds["cardInsert"]["accelerationBufferDecrement"];
+			_stepperMovementCardInsert.decelerationBuffer = 			ds["cardInsert"]["decelerationBuffer"];
+			_stepperMovementCardInsert.decelerationBufferIncrement = 	ds["cardInsert"]["decelerationBufferIncrement"];
+
+			//goHome
+			_stepperMovementGoHome.lowClks = 						ds["goHome"]["lowClks"];
+			_stepperMovementGoHome.highClks = 						ds["goHome"]["highClks"];
+			_stepperMovementGoHome.accelerationBuffer = 			ds["goHome"]["accelerationBuffer"];
+			_stepperMovementGoHome.accelerationBufferDecrement = 	ds["goHome"]["accelerationBufferDecrement"];
+			_stepperMovementGoHome.decelerationBuffer = 			ds["goHome"]["decelerationBuffer"];
+			_stepperMovementGoHome.decelerationBufferIncrement = 	ds["goHome"]["decelerationBufferIncrement"];
+
 			//restore data for BDC
 			_bdc.lowClks = ds["bdc"]["lowClks"];
 			_bdc.highClks = ds["bdc"]["highClks"];
@@ -148,6 +164,12 @@ bool MovementConfiguration::PersistToFile()
 		json.pop_back();//delete the extra ','
 	}
 	json = json + "]";//end of steppers
+
+	//cardInsert
+	json = json + ",\"cardInsert\":" + _stepperMovementCardInsert.ToJsonObj();
+
+	//goHome
+	json = json + ",\"goHome\":" + _stepperMovementGoHome.ToJsonObj();
 
 	//BDC delay
 	json = json + ",\"bdc\":" + _bdc.ToJsonObj();
@@ -234,6 +256,42 @@ bool MovementConfiguration::SetStepperConfig(unsigned int index,
 	return rc;
 }
 
+bool MovementConfiguration::SetStepperMovementCardInsert(
+					long lowClks,
+					long highClks,
+					long accelerationBuffer,
+					long accelerationBufferDecrement,
+					long decelerationBuffer,
+					long decelerationBufferIncrement)
+{
+	_stepperMovementCardInsert.lowClks = lowClks;
+	_stepperMovementCardInsert.highClks = highClks;
+	_stepperMovementCardInsert.accelerationBuffer = accelerationBuffer;
+	_stepperMovementCardInsert.accelerationBufferDecrement = accelerationBufferDecrement;
+	_stepperMovementCardInsert.decelerationBuffer = decelerationBuffer;
+	_stepperMovementCardInsert.decelerationBufferIncrement = decelerationBufferIncrement;
+
+	return true;
+}
+
+bool MovementConfiguration::SetStepperMovementGoHome(
+					long lowClks,
+					long highClks,
+					long accelerationBuffer,
+					long accelerationBufferDecrement,
+					long decelerationBuffer,
+					long decelerationBufferIncrement)
+{
+	_stepperMovementGoHome.lowClks = lowClks;
+	_stepperMovementGoHome.highClks = highClks;
+	_stepperMovementGoHome.accelerationBuffer = accelerationBuffer;
+	_stepperMovementGoHome.accelerationBufferDecrement = accelerationBufferDecrement;
+	_stepperMovementGoHome.decelerationBuffer = decelerationBuffer;
+	_stepperMovementGoHome.decelerationBufferIncrement = decelerationBufferIncrement;
+
+	return true;
+}
+
 
 bool MovementConfiguration::GetStepperConfig(unsigned int index,
 					long & lowClks,
@@ -266,6 +324,43 @@ bool MovementConfiguration::GetStepperConfig(unsigned int index,
 
 	return true;
 }
+
+bool MovementConfiguration::GetStepperMovementCardInsert(
+					long & lowClks,
+					long & highClks,
+					long & accelerationBuffer,
+					long & accelerationBufferDecrement,
+					long & decelerationBuffer,
+					long & decelerationBufferIncrement)
+{
+	lowClks = _stepperMovementCardInsert.lowClks;
+	highClks = _stepperMovementCardInsert.highClks;
+	accelerationBuffer = _stepperMovementCardInsert.accelerationBuffer;
+	accelerationBufferDecrement = _stepperMovementCardInsert.accelerationBufferDecrement;
+	decelerationBuffer = _stepperMovementCardInsert.decelerationBuffer;
+	decelerationBufferIncrement = _stepperMovementCardInsert.decelerationBufferIncrement;
+
+	return true;
+}
+
+bool MovementConfiguration::GetStepperMovementGoHome(
+					long & lowClks,
+					long & highClks,
+					long & accelerationBuffer,
+					long & accelerationBufferDecrement,
+					long & decelerationBuffer,
+					long & decelerationBufferIncrement)
+{
+	lowClks = _stepperMovementGoHome.lowClks;
+	highClks = _stepperMovementGoHome.highClks;
+	accelerationBuffer = _stepperMovementGoHome.accelerationBuffer;
+	accelerationBufferDecrement = _stepperMovementGoHome.accelerationBufferDecrement;
+	decelerationBuffer = _stepperMovementGoHome.decelerationBuffer;
+	decelerationBufferIncrement = _stepperMovementGoHome.decelerationBufferIncrement;
+
+	return true;
+}
+
 
 void MovementConfiguration::SetBdcConfig(unsigned long lowClks, unsigned long highClks, unsigned long cycles)
 {
