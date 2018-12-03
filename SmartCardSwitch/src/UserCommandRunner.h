@@ -216,6 +216,34 @@ private:
 	bool expandUserCmdPressAssistKey();
 	bool expandUserCmdTouchScreen();
 
+	enum class CurrentPosition
+	{
+		Unknown = 0,
+		Home,
+		SmartCardGate,
+		BarCodeCardGate,
+		SoftKeyGate,
+		PedKeyGate,
+		AssistKeyGate,
+		TouchScreenGate,
+		SmartCardSlotGate,
+		ContactlessReaderGate,
+		BarCodeReaderGate
+	};
+	CurrentPosition getCurrentPosition();
+
+	int currentX();
+	int currentY();
+	int currentZ();
+	int currentW();
+
+	//append commands to move stepper index from initialPos to finalPos.
+	void moveStepper(unsigned int index, unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds);
+	void moveStepperX(unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds) { moveStepper(0, initialPos, finalPos, cmds); }
+	void moveStepperY(unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds) { moveStepper(1, initialPos, finalPos, cmds); }
+	void moveStepperZ(unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds) { moveStepper(2, initialPos, finalPos, cmds); }
+	void moveStepperW(unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds) { moveStepper(3, initialPos, finalPos, cmds); }
+
 	//clamp operation
 	std::vector<std::string> openClamp();
 	std::vector<std::string> closeClamp();
