@@ -129,6 +129,7 @@ private:
 	const std::string ErrorSteppersNotPoweredAfterReset = "steppers are not powered after reset";
 	const std::string ErrorBdcsNotPoweredAfterReset = "BDCs are not powered after reset";
 	const std::string ErrorFailedExpandingResetDevice = "failed in expanding reset device";
+	const std::string ErrorSmartCardReaderSlotOccupied = "smart card reader slot is occupied";
 	const std::string ErrorFailedExpandingInsertSmartCard = "failed in expanding insert smart card";
 	const std::string ErrorFailedExpandingRemoveSmartCard = "failed in expanding remove smart card";
 	const std::string ErrorFailedExpandingSwipeSmartCard = "failed in expanding swipe smart card";
@@ -161,19 +162,23 @@ private:
 		std::string command;
 		std::string commandId;
 
-		//specific data for connect device
+		//----user command parameters----
+		//connect device
 		std::string deviceName;
-		//specific data for confirm reset
+		//confirm reset
 		unsigned int locatorIndexReset;
 		unsigned int lineNumberReset;
-		//specific data for smart card related command
+		//smart card related command
 		unsigned int smartCardNumber;
-		//specific data for bar code related command
+		//bar code related command
 		unsigned int barCodeNumber;
-		//specific data for keys
+		//keys
 		unsigned int downPeriod;
 		unsigned int upPeriod;
 		std::vector<unsigned int> keyNumbers;
+
+		//---- user command result ----
+		bool smartCardReaderSlotOccupied;
 
 		//console commands to fulfill this user command
 		std::deque<std::string> consoleCommands;
@@ -226,7 +231,7 @@ private:
 		PedKeyGate,
 		AssistKeyGate,
 		TouchScreenGate,
-		SmartCardSlotGate,
+		SmartCardReaderGate,
 		ContactlessReaderGate,
 		BarCodeReaderGate
 	};
@@ -236,6 +241,16 @@ private:
 	int currentY();
 	int currentZ();
 	int currentW();
+
+	//append commands to configure stepper movement
+	void configStepperMovement(unsigned int index,
+							unsigned int lowClks,
+							unsigned int highClks,
+							unsigned int accelerationBuffer,
+							unsigned int accelerationBufferDecrement,
+							unsigned int decelerationBuffer,
+							unsigned int decelerationBufferIncrement,
+							std::vector<std::string>& cmds);
 
 	//append commands to move stepper index from initialPos to finalPos.
 	void moveStepper(unsigned int index, unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds);
@@ -249,8 +264,10 @@ private:
 	std::vector<std::string> closeClamp();
 	std::vector<std::string> releaseCard();
 	//movement between smart card and gate
-	std::vector<std::string> gate_smartCard(unsigned int cardNumber);
-	std::vector<std::string> smartCard_gate(unsigned int cardNumber);
+	std::vector<std::string> gate_smartCard_fetch(unsigned int cardNumber);
+	std::vector<std::string> gate_smartCard_place(unsigned int cardNumber);
+	std::vector<std::string> smartCard_gate_fetch(unsigned int cardNumber);
+	std::vector<std::string> smartCard_gate_place(unsigned int cardNumber);
 	//movement between PED keys and gate
 	std::vector<std::string> pedKey_gate(unsigned int keyNumber);
 	std::vector<std::string> pedKey_pedKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
@@ -267,9 +284,9 @@ private:
 	std::vector<std::string> touchScreenKey_gate(unsigned int keyNumber);
 	std::vector<std::string> touchScreenKey_touchScreenKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
 	std::vector<std::string> gate_touchScreenKey(unsigned int keyNumber);
-	//movement between smart card slot and gate
-	std::vector<std::string> smartCardSlot_gate();
-	std::vector<std::string> gate_smartCardSlot();
+	//movement between smart card reader and gate
+	std::vector<std::string> smartCardReader_gate();
+	std::vector<std::string> gate_smartCardReader();
 	//movement between contactless reader and gate
 	std::vector<std::string> contactlessReader_gate();
 	std::vector<std::string> gate_contactlessReader();
@@ -281,11 +298,12 @@ private:
 	std::vector<std::string> gate_barcodeCard(unsigned int cardNumber);
 	//from Gate to Gate
 	std::vector<std::string> toHome();
+	std::vector<std::string> toSmartCardGate();
 	std::vector<std::string> toPedKeyGate();
 	std::vector<std::string> toSoftKeyGate();
 	std::vector<std::string> toAssistKeyGate();
 	std::vector<std::string> toTouchScreenGate();
-	std::vector<std::string> toSmartCardSlotGate();
+	std::vector<std::string> toSmartCardReaderGate();
 	std::vector<std::string> toContactlessReaderGate();
 	std::vector<std::string> toBarcodeCardGate();
 	std::vector<std::string> toBarcodeReaderGate();
@@ -308,6 +326,15 @@ private:
 		unsigned int steps;
 		unsigned int locatorIndex;
 
+		//command results
+		std::vector<std::string> resultDevices;
+		bool resultDeviceConnected;
+		bool resultDevicePowered;
+		bool resultDeviceFuseOk;
+		bool resultOptPowered;
+		bool resultBdcsPowered;
+		BdcStatus resultBdcMode;
+		bool resultSteppersPowered;
 		struct StepperStatus
 		{
 			StepperState state;
@@ -318,18 +345,7 @@ private:
 			unsigned int locatorIndex;
 			unsigned int locatorLineNumberStart;
 			unsigned int locatorLineNumberTerminal;
-		};
-
-		//command results
-		std::vector<std::string> resultDevices;
-		bool resultDeviceConnected;
-		bool resultDevicePowered;
-		bool resultDeviceFuseOk;
-		bool resultOptPowered;
-		bool resultBdcsPowered;
-		BdcStatus resultBdcMode;
-		bool resultSteppersPowered;
-		StepperStatus resultSteppers[STEPPER_AMOUNT];
+		} resultSteppers[STEPPER_AMOUNT];
 		unsigned char resultLocators[LOCATOR_AMOUNT];
 	};
 	ConsoleCommand _consoleCommand;

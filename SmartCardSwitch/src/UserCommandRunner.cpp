@@ -153,6 +153,7 @@ void UserCommandRunner::finishUserCommand(CommandState consoleCmdState, const st
 						+ ", " + std::to_string(_consoleCommand.resultSteppers[3].homeOffset));
 
 				userCmdState = CommandState::Succeeded;
+				_userCommand.smartCardReaderSlotOccupied = false;
 			}
 		}
 		else
@@ -220,6 +221,29 @@ void UserCommandRunner::parseUserCmdResetDevice(Poco::DynamicStruct& ds)
 	//nothing further to be done
 }
 
+void UserCommandRunner::configStepperMovement(unsigned int index,
+											unsigned int lowClks,
+											unsigned int highClks,
+											unsigned int accelerationBuffer,
+											unsigned int accelerationBufferDecrement,
+											unsigned int decelerationBuffer,
+											unsigned int decelerationBufferIncrement,
+											std::vector<std::string>& cmds)
+{
+	std::string cmd;
+
+	cmd = ConsoleCommandFactory::CmdStepperConfigStep(index, lowClks, highClks);
+	cmds.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdStepperAccelerationBuffer(index, accelerationBuffer);
+	cmds.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdStepperAccelerationBufferDecrement(index, accelerationBufferDecrement);
+	cmds.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdStepperDecelerationBuffer(index, decelerationBuffer);
+	cmds.push_back(cmd);
+	cmd = ConsoleCommandFactory::CmdStepperDecelerationBufferIncrement(index, decelerationBufferIncrement);
+	cmds.push_back(cmd);
+}
+
 bool UserCommandRunner::expandUserCmdResetDevice()
 {
 	const unsigned int STEPPERS_AMOUNT = 4;
@@ -257,28 +281,31 @@ bool UserCommandRunner::expandUserCmdResetDevice()
 	//configure steppers
 	{
 		unsigned int i = z;
-		auto rc = pMovementConfiguration->GetStepperConfig(i,
-															lowClks,
+		auto rc = pMovementConfiguration->GetStepperGoHome(lowClks,
 															highClks,
 															accelerationBuffer,
 															accelerationBufferDecrement,
 															decelerationBuffer,
-															decelerationBufferIncrement,
+															decelerationBufferIncrement);
+		rc = rc && pMovementConfiguration->GetStepperBoundary(i,
 															locatorIndex,
 															locatorLineNumberStart,
 															locatorLineNumberTerminal);
 		if(rc)
 		{
-			cmd = ConsoleCommandFactory::CmdStepperConfigStep(i, lowClks, highClks);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperAccelerationBuffer(i, accelerationBuffer);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperAccelerationBufferDecrement(i, accelerationBufferDecrement);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperDecelerationBuffer(i, decelerationBuffer);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperDecelerationBufferIncrement(i, decelerationBufferIncrement);
-			_userCommand.consoleCommands.push_back(cmd);
+			std::vector<std::string> cmds;
+
+			configStepperMovement(i,
+								lowClks,
+								highClks,
+								accelerationBuffer,
+								accelerationBufferDecrement,
+								decelerationBuffer,
+								decelerationBufferIncrement,
+								cmds);
+			for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+				_userCommand.consoleCommands.push_back(*it);
+			}
 			cmd = ConsoleCommandFactory::CmdStepperConfigHome(i, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
 			_userCommand.consoleCommands.push_back(cmd);
 			cmd = ConsoleCommandFactory::CmdStepperRun(i, 0, 0);
@@ -292,28 +319,25 @@ bool UserCommandRunner::expandUserCmdResetDevice()
 	}
 	{
 		unsigned int i = w;
-		auto rc = pMovementConfiguration->GetStepperConfig(i,
-															lowClks,
-															highClks,
-															accelerationBuffer,
-															accelerationBufferDecrement,
-															decelerationBuffer,
-															decelerationBufferIncrement,
+		auto rc = pMovementConfiguration->GetStepperBoundary(i,
 															locatorIndex,
 															locatorLineNumberStart,
 															locatorLineNumberTerminal);
 		if(rc)
 		{
-			cmd = ConsoleCommandFactory::CmdStepperConfigStep(i, lowClks, highClks);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperAccelerationBuffer(i, accelerationBuffer);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperAccelerationBufferDecrement(i, accelerationBufferDecrement);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperDecelerationBuffer(i, decelerationBuffer);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperDecelerationBufferIncrement(i, decelerationBufferIncrement);
-			_userCommand.consoleCommands.push_back(cmd);
+			std::vector<std::string> cmds;
+
+			configStepperMovement(i,
+								lowClks,
+								highClks,
+								accelerationBuffer,
+								accelerationBufferDecrement,
+								decelerationBuffer,
+								decelerationBufferIncrement,
+								cmds);
+			for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+				_userCommand.consoleCommands.push_back(*it);
+			}
 			cmd = ConsoleCommandFactory::CmdStepperConfigHome(i, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
 			_userCommand.consoleCommands.push_back(cmd);
 			cmd = ConsoleCommandFactory::CmdStepperRun(i, 0, 0);
@@ -327,28 +351,25 @@ bool UserCommandRunner::expandUserCmdResetDevice()
 	}
 	{
 		unsigned int i = y;
-		auto rc = pMovementConfiguration->GetStepperConfig(i,
-															lowClks,
-															highClks,
-															accelerationBuffer,
-															accelerationBufferDecrement,
-															decelerationBuffer,
-															decelerationBufferIncrement,
+		auto rc = pMovementConfiguration->GetStepperBoundary(i,
 															locatorIndex,
 															locatorLineNumberStart,
 															locatorLineNumberTerminal);
 		if(rc)
 		{
-			cmd = ConsoleCommandFactory::CmdStepperConfigStep(i, lowClks, highClks);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperAccelerationBuffer(i, accelerationBuffer);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperAccelerationBufferDecrement(i, accelerationBufferDecrement);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperDecelerationBuffer(i, decelerationBuffer);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperDecelerationBufferIncrement(i, decelerationBufferIncrement);
-			_userCommand.consoleCommands.push_back(cmd);
+			std::vector<std::string> cmds;
+
+			configStepperMovement(i,
+								lowClks,
+								highClks,
+								accelerationBuffer,
+								accelerationBufferDecrement,
+								decelerationBuffer,
+								decelerationBufferIncrement,
+								cmds);
+			for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+				_userCommand.consoleCommands.push_back(*it);
+			}
 			cmd = ConsoleCommandFactory::CmdStepperConfigHome(i, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
 			_userCommand.consoleCommands.push_back(cmd);
 			cmd = ConsoleCommandFactory::CmdStepperRun(i, 0, 0);
@@ -362,28 +383,25 @@ bool UserCommandRunner::expandUserCmdResetDevice()
 	}
 	{
 		unsigned int i = x;
-		auto rc = pMovementConfiguration->GetStepperConfig(i,
-															lowClks,
-															highClks,
-															accelerationBuffer,
-															accelerationBufferDecrement,
-															decelerationBuffer,
-															decelerationBufferIncrement,
+		auto rc = pMovementConfiguration->GetStepperBoundary(i,
 															locatorIndex,
 															locatorLineNumberStart,
 															locatorLineNumberTerminal);
 		if(rc)
 		{
-			cmd = ConsoleCommandFactory::CmdStepperConfigStep(i, lowClks, highClks);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperAccelerationBuffer(i, accelerationBuffer);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperAccelerationBufferDecrement(i, accelerationBufferDecrement);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperDecelerationBuffer(i, decelerationBuffer);
-			_userCommand.consoleCommands.push_back(cmd);
-			cmd = ConsoleCommandFactory::CmdStepperDecelerationBufferIncrement(i, decelerationBufferIncrement);
-			_userCommand.consoleCommands.push_back(cmd);
+			std::vector<std::string> cmds;
+
+			configStepperMovement(i,
+								lowClks,
+								highClks,
+								accelerationBuffer,
+								accelerationBufferDecrement,
+								decelerationBuffer,
+								decelerationBufferIncrement,
+								cmds);
+			for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+				_userCommand.consoleCommands.push_back(*it);
+			}
 			cmd = ConsoleCommandFactory::CmdStepperConfigHome(i, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
 			_userCommand.consoleCommands.push_back(cmd);
 			cmd = ConsoleCommandFactory::CmdStepperRun(i, 0, 0);
@@ -501,9 +519,9 @@ UserCommandRunner::CurrentPosition UserCommandRunner::getCurrentPosition()
 		return CurrentPosition::TouchScreenGate;
 	}
 
-	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardSlotGate, x, y, z, w);
+	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, x, y, z, w);
 	if((curX == x) && (curY == y) && (curZ == z) && (curW = w)) {
-		return CurrentPosition::SmartCardSlotGate;
+		return CurrentPosition::SmartCardReaderGate;
 	}
 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReaderGate, x, y, z, w);
@@ -588,6 +606,38 @@ std::vector<std::string> UserCommandRunner::toHome()
 	return cmds;
 }
 
+std::vector<std::string> UserCommandRunner::toSmartCardGate()
+{
+	auto currentPosition = getCurrentPosition();
+	std::vector<std::string> cmds;
+
+	if(currentPosition == CurrentPosition::Unknown)
+	{
+		pLogger->LogError("UserCommandRunner::toSmartCardGate unknown current position");
+	}
+	else if(currentPosition != CurrentPosition::SmartCardGate)
+	{
+		int curX, curY, curZ, curW;
+		int x, y, z, w;
+		std::string cmd;
+
+		//move up
+		curZ = currentZ();
+		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
+		moveStepperZ(curZ, z, cmds);
+
+		curX = currentX();
+		curY = currentY();
+		curW = currentW();
+		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
+		moveStepperW(curW, w, cmds);
+		moveStepperY(curY, y, cmds);
+		moveStepperX(curX, x, cmds);
+	}
+
+	return cmds;
+}
+
 std::vector<std::string> UserCommandRunner::toPedKeyGate()
 {
 	auto currentPosition = getCurrentPosition();
@@ -595,7 +645,7 @@ std::vector<std::string> UserCommandRunner::toPedKeyGate()
 
 	if(currentPosition == CurrentPosition::Unknown)
 	{
-		pLogger->LogError("UserCommandRunner::toHome unknown current position");
+		pLogger->LogError("UserCommandRunner::toPedKeyGate unknown current position");
 	}
 	else if(currentPosition != CurrentPosition::PedKeyGate)
 	{
@@ -629,7 +679,7 @@ std::vector<std::string> UserCommandRunner::toSoftKeyGate()
 
 	if(currentPosition == CurrentPosition::Unknown)
 	{
-		pLogger->LogError("UserCommandRunner::toHome unknown current position");
+		pLogger->LogError("UserCommandRunner::toSoftKeyGate unknown current position");
 	}
 	else if(currentPosition != CurrentPosition::SoftKeyGate)
 	{
@@ -663,7 +713,7 @@ std::vector<std::string> UserCommandRunner::toAssistKeyGate()
 
 	if(currentPosition == CurrentPosition::Unknown)
 	{
-		pLogger->LogError("UserCommandRunner::toHome unknown current position");
+		pLogger->LogError("UserCommandRunner::toAssistKeyGate unknown current position");
 	}
 	else if(currentPosition != CurrentPosition::AssistKeyGate)
 	{
@@ -697,7 +747,7 @@ std::vector<std::string> UserCommandRunner::toTouchScreenGate()
 
 	if(currentPosition == CurrentPosition::Unknown)
 	{
-		pLogger->LogError("UserCommandRunner::toHome unknown current position");
+		pLogger->LogError("UserCommandRunner::toTouchScreenGate unknown current position");
 	}
 	else if(currentPosition != CurrentPosition::TouchScreenGate)
 	{
@@ -724,16 +774,16 @@ std::vector<std::string> UserCommandRunner::toTouchScreenGate()
 	return cmds;
 }
 
-std::vector<std::string> UserCommandRunner::toSmartCardSlotGate()
+std::vector<std::string> UserCommandRunner::toSmartCardReaderGate()
 {
 	auto currentPosition = getCurrentPosition();
 	std::vector<std::string> cmds;
 
 	if(currentPosition == CurrentPosition::Unknown)
 	{
-		pLogger->LogError("UserCommandRunner::toHome unknown current position");
+		pLogger->LogError("UserCommandRunner::toSmartCardReaderGate unknown current position");
 	}
-	else if(currentPosition != CurrentPosition::SmartCardSlotGate)
+	else if(currentPosition != CurrentPosition::SmartCardReaderGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
@@ -748,7 +798,7 @@ std::vector<std::string> UserCommandRunner::toSmartCardSlotGate()
 		curY = currentY();
 		curZ = currentZ();
 		curW = currentW();
-		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardSlotGate, x, y, z, w);
+		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, x, y, z, w);
 		moveStepperW(curW, w, cmds);
 		moveStepperY(curY, y, cmds);
 		moveStepperX(curX, x, cmds);
@@ -765,7 +815,7 @@ std::vector<std::string> UserCommandRunner::toContactlessReaderGate()
 
 	if(currentPosition == CurrentPosition::Unknown)
 	{
-		pLogger->LogError("UserCommandRunner::toHome unknown current position");
+		pLogger->LogError("UserCommandRunner::toContactlessReaderGate unknown current position");
 	}
 	else if(currentPosition != CurrentPosition::ContactlessReaderGate)
 	{
@@ -799,7 +849,7 @@ std::vector<std::string> UserCommandRunner::toBarcodeCardGate()
 
 	if(currentPosition == CurrentPosition::Unknown)
 	{
-		pLogger->LogError("UserCommandRunner::toHome unknown current position");
+		pLogger->LogError("UserCommandRunner::toBarcodeCardGate unknown current position");
 	}
 	else if(currentPosition != CurrentPosition::BarCodeCardGate)
 	{
@@ -833,7 +883,7 @@ std::vector<std::string> UserCommandRunner::toBarcodeReaderGate()
 
 	if(currentPosition == CurrentPosition::Unknown)
 	{
-		pLogger->LogError("UserCommandRunner::toHome unknown current position");
+		pLogger->LogError("UserCommandRunner::toBarcodeReaderGate unknown current position");
 	}
 	else if(currentPosition != CurrentPosition::BarCodeReaderGate)
 	{
@@ -860,18 +910,237 @@ std::vector<std::string> UserCommandRunner::toBarcodeReaderGate()
 	return cmds;
 }
 
+std::vector<std::string> UserCommandRunner::gate_smartCard_fetch(unsigned int cardNumber)
+{
+	std::string cmd;
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+	long smartCardFetchStart;
+	long smartCardPlaceStart;
+	long smartCardAccessEnd;
+
+	long lowClks;
+	long highClks;
+	long accelerationBuffer;
+	long accelerationBufferDecrement;
+	long decelerationBuffer;
+	long decelerationBufferIncrement;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, curX, curY, curZ, curW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCard_fetch failed to retrieve smart card gate");
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCard, finalX, finalY, finalZ, finalW, _userCommand.smartCardNumber);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCard_fetch failed to retrieve smart card: " + std::to_string(_userCommand.smartCardNumber));
+		return result;
+	}
+	rc = pCoordinateStorage->GetSmartCardFetchStart(smartCardFetchStart);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCard_fetch failed to retrieve smart card fetch start");
+		return result;
+	}
+	rc = pCoordinateStorage->GetSmartCardPlaceStart(smartCardPlaceStart);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCard_fetch failed to retrieve smart card place start");
+		return result;
+	}
+	rc = pCoordinateStorage->GetSmartCardAccessEnd(smartCardAccessEnd);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCard_fetch failed to retrieve smart card access end");
+		return result;
+	}
+	rc = pMovementConfiguration->GetStepperCardInsert(lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCard_fetch failed to retrieve stepper card slow insert");
+		return result;
+	}
+
+
+	//move to smart card
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//move down
+	cmds.clear();
+	moveStepperZ(curZ, smartCardFetchStart, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//slow movement
+	cmds.clear();
+	configStepperMovement(2, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperZ(smartCardFetchStart, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::smartCard_gate_fetch(unsigned int cardNumber)
+{
+	std::string cmd;
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	long lowClks;
+	long highClks;
+	long accelerationBuffer;
+	long accelerationBufferDecrement;
+	long decelerationBuffer;
+	long decelerationBufferIncrement;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::smartCard_gate_fetch failed to retrieve smart card gate");
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCard, curX, curY, curZ, curW, _userCommand.smartCardNumber);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::smartCard_gate_fetch failed to retrieve smart card: " + std::to_string(_userCommand.smartCardNumber));
+		return result;
+	}
+	rc = pMovementConfiguration->GetStepperGeneral(2, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::smartCard_gate_fetch failed to retrieve stepper card slow insert");
+		return result;
+	}
+
+	//configure movement
+	cmds.clear();
+	configStepperMovement(2, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//Z
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//Y
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//X
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::gate_smartCardReader()
+{
+	std::string cmd;
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	long lowClks;
+	long highClks;
+	long accelerationBuffer;
+	long accelerationBufferDecrement;
+	long decelerationBuffer;
+	long decelerationBufferIncrement;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCardReader failed to retrieve smart card reader");
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, curX, curY, curZ, curW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCardReader failed to retrieve smart card reader gate");
+		return result;
+	}
+
+}
 
 bool UserCommandRunner::expandUserCmdInsertSmartCard()
 {
-	//check if smart card slot is empty
+	std::string cmd;
+	std::vector<std::string> cmds;
+
+	_userCommand.consoleCommands.clear();
 
 	//to smart card gate
-
-	//move to smart card
+	cmds = toSmartCardGate();
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
 
 	//open clamp
+	cmds.clear();
+	cmds = openClamp();
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
 
-	//move down
+	//move to smart card
+	cmds.clear();
+	cmds = gate_smartCard_fetch(_userCommand.smartCardNumber);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//close clamp
+	cmds.clear();
+	cmds = closeClamp();
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//move to gate with card
+	cmds.clear();
+	cmds = smartCard_gate_fetch(_userCommand.smartCardNumber);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//to smart card reader gate
+	cmds.clear();
+	cmds = toSmartCardReaderGate();
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+
+
+
+
+
+
 
 	//close clamp
 
@@ -1124,7 +1393,10 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 	}
 	else if(_userCommand.command == UserCmdInsertSmartCard)
 	{
-		if(expandUserCmdInsertSmartCard()) {
+		if(_userCommand.smartCardReaderSlotOccupied) {
+			errorInfo = ErrorSmartCardReaderSlotOccupied;
+		}
+		else if(expandUserCmdInsertSmartCard()) {
 			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}

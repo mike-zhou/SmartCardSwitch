@@ -17,18 +17,12 @@ public:
 	MovementConfiguration(const std::string& pathFileName);
 	bool PersistToFile();
 
-	bool SetStepperConfig(unsigned int index,
-						long lowClks,
-						long highClks,
-						long accelerationBuffer,
-						long accelerationBufferDecrement,
-						long decelerationBuffer,
-						long decelerationBufferIncrement,
+	bool SetStepperBoundary(unsigned int index,
 						int locatorIndex,
 						int locatorLineNumberStart,
 						int locatorLineNumberTerminal);
 
-	bool SetStepperMovementCardInsert(
+	bool SetStepperGeneral(unsigned int index,
 						long lowClks,
 						long highClks,
 						long accelerationBuffer,
@@ -36,7 +30,7 @@ public:
 						long decelerationBuffer,
 						long decelerationBufferIncrement);
 
-	bool SetStepperMovementGoHome(
+	bool SetStepperCardInsert(
 						long lowClks,
 						long highClks,
 						long accelerationBuffer,
@@ -44,19 +38,20 @@ public:
 						long decelerationBuffer,
 						long decelerationBufferIncrement);
 
+	bool SetStepperGoHome(
+						long lowClks,
+						long highClks,
+						long accelerationBuffer,
+						long accelerationBufferDecrement,
+						long decelerationBuffer,
+						long decelerationBufferIncrement);
 
-	bool GetStepperConfig(unsigned int index,
-						long & lowClks,
-						long & highClks,
-						long & accelerationBuffer,
-						long & accelerationBufferDecrement,
-						long & decelerationBuffer,
-						long & decelerationBufferIncrement,
+	bool GetStepperBoundary(unsigned int index,
 						int & locatorIndex,
 						int & locatorLineNumberStart,
 						int & locatorLineNumberTerminal);
 
-	bool GetStepperMovementCardInsert(
+	bool GetStepperGeneral(unsigned int index,
 						long & lowClks,
 						long & highClks,
 						long & accelerationBuffer,
@@ -64,7 +59,15 @@ public:
 						long & decelerationBuffer,
 						long & decelerationBufferIncrement);
 
-	bool GetStepperMovementGoHome(
+	bool GetStepperCardInsert(
+						long & lowClks,
+						long & highClks,
+						long & accelerationBuffer,
+						long & accelerationBufferDecrement,
+						long & decelerationBuffer,
+						long & decelerationBufferIncrement);
+
+	bool GetStepperGoHome(
 						long & lowClks,
 						long & highClks,
 						long & accelerationBuffer,

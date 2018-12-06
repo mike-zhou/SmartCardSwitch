@@ -29,8 +29,8 @@ public:
 		AssistKey = 8,
 		TouchScreenKeyGate = 9,
 		TouchScreenKey = 10,
-		SmartCardSlotGate = 11,
-		SmartCardSlot = 12,
+		SmartCardReaderGate = 11,
+		SmartCardReader = 12,
 		BarCodeReaderGate = 13,
 		BarCodeReader = 14,
 		BarCodeCardGate = 15,
@@ -60,6 +60,20 @@ public:
 					int& w,
 					unsigned int index = 0);
 
+	void SetSmartCardFetchStart(long zPosition);
+	void SetSmartCardPlaceStart(long zPosition);
+	void SetSmartCardAccessEnd(long zPosition);
+	bool GetSmartCardFetchStart(long & zPosition);
+	bool GetSmartCardPlaceStart(long & zPosition);
+	bool GetSmartCardAccessEnd(long & zPosition);
+
+	void SetSmartCardReaderSlowInsertStart(long yPosition);
+	void SetSmartCardReaderSlowInsertEnd(long yPosition);
+	void SetSmartCardReaderRemovalStart(long yPosition);
+	bool GetSmartCardReaderSlowInsertStart(long & yPosition);
+	bool GetSmartCardReaderSlowInsertEnd(long & yPosition);
+	bool GetSmartCardReaderRemovalStart(long & yPosition);
+
 private:
 	//constraints
 	const unsigned int SMART_CARDS_AMOUNT = 64;
@@ -85,6 +99,9 @@ private:
 	//smart cards
 	Coordinate _smartCardGate;
 	std::vector<Coordinate> _smartCards;
+	long _smartCardFetchStart;
+	long _smartCardPlaceStart;
+	long _smartCardAccessEnd;
 
 	//PED keys
 	Coordinate _pedKeyGate;
@@ -102,9 +119,12 @@ private:
 	Coordinate _assistKeyGate;
 	std::vector<Coordinate> _assistKeys;
 
-	//smart card slot
-	Coordinate _smartCardSlotGate;
-	Coordinate _smartCardSlot;
+	//smart card reader
+	Coordinate _smartCardReaderGate;
+	long _smartCardReaderSlowInsertStart;
+	long _smartCardReaderSlowInsertEnd;
+	long _smartCardReaderRemovalStart;
+	Coordinate _smartCardReader;
 
 	//contactless reader
 	Coordinate _contactlessReaderGate;

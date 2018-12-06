@@ -103,16 +103,19 @@ void CommandRunner::saveMovementConfig()
 	{
 		auto& stepper = _userCommand.resultStepperStatus[i];
 
-		pMovementConfiguration->SetStepperConfig(i,
+		pMovementConfiguration->SetStepperGeneral(i,
 			stepper.lowClks,
 			stepper.highClks,
 			stepper.accelerationBuffer,
 			stepper.accelerationBufferDecrement,
 			stepper.decelerationBuffer,
-			stepper.decelerationBufferIncrement,
-			stepper.locatorIndex,
-			stepper.locatorLineNumberStart,
-			stepper.locatorLineNumberTerminal);
+			stepper.decelerationBufferIncrement);
+
+		pMovementConfiguration->SetStepperBoundary(i,
+				stepper.locatorIndex,
+				stepper.locatorLineNumberStart,
+				stepper.locatorLineNumberTerminal);
+
 	}
 
 	if(pMovementConfiguration->PersistToFile()) {

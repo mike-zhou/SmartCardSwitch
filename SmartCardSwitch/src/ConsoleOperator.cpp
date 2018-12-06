@@ -69,16 +69,18 @@ void ConsoleOperator::loadMovementConfig()
 
 	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
 	{
-		auto rc = pMovementConfiguration->GetStepperConfig(i,
+		auto rc = pMovementConfiguration->GetStepperGeneral(i,
 															lowClks,
 															highClks,
 															accelerationBuffer,
 															accelerationBufferDecrement,
 															decelerationBuffer,
-															decelerationBufferIncrement,
-															locatorIndex,
-															locatorLineNumberStart,
-															locatorLineNumberTerminal);
+															decelerationBufferIncrement);
+
+		rc = rc && pMovementConfiguration->GetStepperBoundary(i,locatorIndex,
+				locatorLineNumberStart,
+				locatorLineNumberTerminal);
+
 		if(rc == false)
 		{
 			pLogger->LogError("ConsoleOperator::loadMovementConfig cannot retrieve settings of stepper: " + std::to_string(i));

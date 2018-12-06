@@ -100,13 +100,14 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 				locatorLineNumberStart 		= ds["steppers"][i]["value"]["locatorLineNumberStart"];
 				locatorLineNumberTerminal 	= ds["steppers"][i]["value"]["locatorLineNumberTerminal"];
 
-				SetStepperConfig(index,
+				SetStepperGeneral(index,
 									lowClks,
 									highClks,
 									accelerationBuffer,
 									accelerationBufferDecrement,
 									decelerationBuffer,
-									decelerationBufferIncrement,
+									decelerationBufferIncrement);
+				SetStepperBoundary(index,
 									locatorIndex,
 									locatorLineNumberStart,
 									locatorLineNumberTerminal);
@@ -216,16 +217,42 @@ bool MovementConfiguration::PersistToFile()
 	return rc;
 }
 
-bool MovementConfiguration::SetStepperConfig(unsigned int index,
+bool MovementConfiguration::SetStepperBoundary(unsigned int index,
+					int locatorIndex,
+					int locatorLineNumberStart,
+					int locatorLineNumberTerminal)
+{
+	bool rc = false;
+
+	if(index < STEPPERS_AMOUNT)
+	{
+		if(index >= _steppers.size())
+		{
+			for(; _steppers.size() < STEPPERS_AMOUNT; ) {
+				StepperMovementConfig defaultCfg;
+				_steppers.push_back(defaultCfg);
+			}
+		}
+
+		auto& stepper = _steppers[index];
+		stepper.locatorIndex = locatorIndex;
+		stepper.locatorLineNumberStart = locatorLineNumberStart;
+		stepper.locatorLineNumberTerminal = locatorLineNumberTerminal;
+
+		rc = true;
+	}
+
+	return rc;
+}
+
+
+bool MovementConfiguration::SetStepperGeneral(unsigned int index,
 					long lowClks,
 					long highClks,
 					long accelerationBuffer,
 					long accelerationBufferDecrement,
 					long decelerationBuffer,
-					long decelerationBufferIncrement,
-					int locatorIndex,
-					int locatorLineNumberStart,
-					int locatorLineNumberTerminal)
+					long decelerationBufferIncrement)
 {
 	bool rc = false;
 
@@ -246,9 +273,6 @@ bool MovementConfiguration::SetStepperConfig(unsigned int index,
 		stepper.accelerationBufferDecrement = accelerationBufferDecrement;
 		stepper.decelerationBuffer = decelerationBuffer;
 		stepper.decelerationBufferIncrement = decelerationBufferIncrement;
-		stepper.locatorIndex = locatorIndex;
-		stepper.locatorLineNumberStart = locatorLineNumberStart;
-		stepper.locatorLineNumberTerminal = locatorLineNumberTerminal;
 
 		rc = true;
 	}
@@ -256,7 +280,7 @@ bool MovementConfiguration::SetStepperConfig(unsigned int index,
 	return rc;
 }
 
-bool MovementConfiguration::SetStepperMovementCardInsert(
+bool MovementConfiguration::SetStepperCardInsert(
 					long lowClks,
 					long highClks,
 					long accelerationBuffer,
@@ -274,7 +298,7 @@ bool MovementConfiguration::SetStepperMovementCardInsert(
 	return true;
 }
 
-bool MovementConfiguration::SetStepperMovementGoHome(
+bool MovementConfiguration::SetStepperGoHome(
 					long lowClks,
 					long highClks,
 					long accelerationBuffer,
@@ -292,17 +316,33 @@ bool MovementConfiguration::SetStepperMovementGoHome(
 	return true;
 }
 
+bool MovementConfiguration::GetStepperBoundary(unsigned int index,
+					int & locatorIndex,
+					int & locatorLineNumberStart,
+					int & locatorLineNumberTerminal)
+{
+	if(index >= STEPPERS_AMOUNT) {
+		return false;
+	}
+	if(index >= _steppers.size()) {
+		return false;
+	}
 
-bool MovementConfiguration::GetStepperConfig(unsigned int index,
+	auto& stepper = _steppers[index];
+	locatorIndex = stepper.locatorIndex;
+	locatorLineNumberStart = stepper.locatorLineNumberStart;
+	locatorLineNumberTerminal = stepper.locatorLineNumberTerminal;
+
+	return true;
+}
+
+bool MovementConfiguration::GetStepperGeneral(unsigned int index,
 					long & lowClks,
 					long & highClks,
 					long & accelerationBuffer,
 					long & accelerationBufferDecrement,
 					long & decelerationBuffer,
-					long & decelerationBufferIncrement,
-					int & locatorIndex,
-					int & locatorLineNumberStart,
-					int & locatorLineNumberTerminal)
+					long & decelerationBufferIncrement)
 {
 	if(index >= STEPPERS_AMOUNT) {
 		return false;
@@ -318,14 +358,11 @@ bool MovementConfiguration::GetStepperConfig(unsigned int index,
 	accelerationBufferDecrement = stepper.accelerationBufferDecrement;
 	decelerationBuffer = stepper.decelerationBuffer;
 	decelerationBufferIncrement = stepper.decelerationBufferIncrement;
-	locatorIndex = stepper.locatorIndex;
-	locatorLineNumberStart = stepper.locatorLineNumberStart;
-	locatorLineNumberTerminal = stepper.locatorLineNumberTerminal;
 
 	return true;
 }
 
-bool MovementConfiguration::GetStepperMovementCardInsert(
+bool MovementConfiguration::GetStepperCardInsert(
 					long & lowClks,
 					long & highClks,
 					long & accelerationBuffer,
@@ -343,7 +380,7 @@ bool MovementConfiguration::GetStepperMovementCardInsert(
 	return true;
 }
 
-bool MovementConfiguration::GetStepperMovementGoHome(
+bool MovementConfiguration::GetStepperGoHome(
 					long & lowClks,
 					long & highClks,
 					long & accelerationBuffer,
