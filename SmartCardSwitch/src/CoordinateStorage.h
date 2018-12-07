@@ -67,10 +67,8 @@ public:
 	bool GetSmartCardPlaceStart(long & zPosition);
 	bool GetSmartCardAccessEnd(long & zPosition);
 
-	void SetSmartCardReaderSlowInsertStart(long yPosition);
 	void SetSmartCardReaderSlowInsertEnd(long yPosition);
 	void SetSmartCardReaderRemovalStart(long yPosition);
-	bool GetSmartCardReaderSlowInsertStart(long & yPosition);
 	bool GetSmartCardReaderSlowInsertEnd(long & yPosition);
 	bool GetSmartCardReaderRemovalStart(long & yPosition);
 
@@ -121,7 +119,6 @@ private:
 
 	//smart card reader
 	Coordinate _smartCardReaderGate;
-	long _smartCardReaderSlowInsertStart;
 	long _smartCardReaderSlowInsertEnd;
 	long _smartCardReaderRemovalStart;
 	Coordinate _smartCardReader;

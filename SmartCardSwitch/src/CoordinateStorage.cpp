@@ -872,11 +872,6 @@ bool CoordinateStorage::GetSmartCardAccessEnd(long & zPosition)
 	return true;
 }
 
-void CoordinateStorage::SetSmartCardReaderSlowInsertStart(long yPosition)
-{
-	_smartCardReaderSlowInsertStart = yPosition;
-}
-
 void CoordinateStorage::SetSmartCardReaderSlowInsertEnd(long yPosition)
 {
 	_smartCardReaderSlowInsertEnd = yPosition;
@@ -885,16 +880,6 @@ void CoordinateStorage::SetSmartCardReaderSlowInsertEnd(long yPosition)
 void CoordinateStorage::SetSmartCardReaderRemovalStart(long yPosition)
 {
 	_smartCardReaderRemovalStart = yPosition;
-}
-
-bool CoordinateStorage::GetSmartCardReaderSlowInsertStart(long & yPosition)
-{
-	if(_smartCardReaderSlowInsertStart < 0) {
-		return false;
-	}
-
-	yPosition = _smartCardReaderSlowInsertStart;
-	return true;
 }
 
 bool CoordinateStorage::GetSmartCardReaderSlowInsertEnd(long & yPosition)

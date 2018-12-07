@@ -121,8 +121,10 @@ public:
 	static std::string CmdBdcsPowerOff() 					{ return std::string("41 \r\n"); }
 	static std::string CmdBdcsQueryPower() 					{ return std::string("42 \r\n"); }
 	static std::string CmdBdcCoast(unsigned int index) 		{ return "43 " + std::to_string(index) + "\r\n"; }
-	static std::string CmdBdcReverse(unsigned int index) 	{ return "44 " + std::to_string(index) + "\r\n"; }
-	static std::string CmdBdcForward(unsigned int index) 	{ return "45 " + std::to_string(index) + "\r\n"; }
+	static std::string CmdBdcReverse(unsigned int index, unsigned int lowClks, unsigned int highClks, unsigned int cycles)
+															{ return "44 " + std::to_string(index) + " " + std::to_string(lowClks) + " " + std::to_string(highClks) + " " + std::to_string(cycles) + "\r\n"; }
+	static std::string CmdBdcForward(unsigned int index, unsigned int lowClks, unsigned int highClks, unsigned int cycles)
+															{ return "45 " + std::to_string(index) + " " + std::to_string(lowClks) + " " + std::to_string(highClks) + " " + std::to_string(cycles) + "\r\n"; }
 	static std::string CmdBdcBreak(unsigned int index) 		{ return "46 " + std::to_string(index) + "\r\n"; }
 	static std::string CmdBdcQuery(unsigned int index) 		{ return "47 " + std::to_string(index) + "\r\n"; }
 	static std::string CmdSteppersPowerOn() 				{ return std::string("60 \r\n"); }

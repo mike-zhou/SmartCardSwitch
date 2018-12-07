@@ -910,7 +910,7 @@ std::vector<std::string> UserCommandRunner::toBarcodeReaderGate()
 	return cmds;
 }
 
-std::vector<std::string> UserCommandRunner::gate_smartCard_fetch(unsigned int cardNumber)
+std::vector<std::string> UserCommandRunner::gate_smartCard_withoutCard(unsigned int cardNumber)
 {
 	std::string cmd;
 	std::vector<std::string> cmds;
@@ -931,32 +931,32 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_fetch(unsigned int ca
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, curX, curY, curZ, curW);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCard_fetch failed to retrieve smart card gate");
+		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card gate");
 		return result;
 	}
 	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCard, finalX, finalY, finalZ, finalW, _userCommand.smartCardNumber);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCard_fetch failed to retrieve smart card: " + std::to_string(_userCommand.smartCardNumber));
+		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card: " + std::to_string(_userCommand.smartCardNumber));
 		return result;
 	}
 	rc = pCoordinateStorage->GetSmartCardFetchStart(smartCardFetchStart);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCard_fetch failed to retrieve smart card fetch start");
+		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card fetch start");
 		return result;
 	}
 	rc = pCoordinateStorage->GetSmartCardPlaceStart(smartCardPlaceStart);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCard_fetch failed to retrieve smart card place start");
+		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card place start");
 		return result;
 	}
 	rc = pCoordinateStorage->GetSmartCardAccessEnd(smartCardAccessEnd);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCard_fetch failed to retrieve smart card access end");
+		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card access end");
 		return result;
 	}
 	rc = pMovementConfiguration->GetStepperCardInsert(lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCard_fetch failed to retrieve stepper card slow insert");
+		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve stepper card slow insert");
 		return result;
 	}
 
@@ -982,7 +982,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_fetch(unsigned int ca
 
 	//slow movement
 	cmds.clear();
-	configStepperMovement(2, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, cmds);
+	configStepperMovement(STEPPER_Z, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
@@ -995,7 +995,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_fetch(unsigned int ca
 	return result;
 }
 
-std::vector<std::string> UserCommandRunner::smartCard_gate_fetch(unsigned int cardNumber)
+std::vector<std::string> UserCommandRunner::smartCard_gate_withCard(unsigned int cardNumber)
 {
 	std::string cmd;
 	std::vector<std::string> cmds;
@@ -1013,23 +1013,23 @@ std::vector<std::string> UserCommandRunner::smartCard_gate_fetch(unsigned int ca
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::smartCard_gate_fetch failed to retrieve smart card gate");
+		pLogger->LogError("UserCommandRunner::smartCard_gate_withCard failed to retrieve smart card gate");
 		return result;
 	}
 	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCard, curX, curY, curZ, curW, _userCommand.smartCardNumber);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::smartCard_gate_fetch failed to retrieve smart card: " + std::to_string(_userCommand.smartCardNumber));
+		pLogger->LogError("UserCommandRunner::smartCard_gate_withCard failed to retrieve smart card: " + std::to_string(_userCommand.smartCardNumber));
 		return result;
 	}
-	rc = pMovementConfiguration->GetStepperGeneral(2, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	rc = pMovementConfiguration->GetStepperGeneral(STEPPER_Z, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::smartCard_gate_fetch failed to retrieve stepper card slow insert");
+		pLogger->LogError("UserCommandRunner::smartCard_gate_withCard failed to retrieve stepper card slow insert");
 		return result;
 	}
 
 	//configure movement
 	cmds.clear();
-	configStepperMovement(2, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, cmds);
+	configStepperMovement(STEPPER_Z, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
@@ -1058,14 +1058,15 @@ std::vector<std::string> UserCommandRunner::smartCard_gate_fetch(unsigned int ca
 	return result;
 }
 
-std::vector<std::string> UserCommandRunner::gate_smartCardReader()
+std::vector<std::string> UserCommandRunner::gate_smartCardReader_withCard()
 {
-	std::string cmd;
 	std::vector<std::string> cmds;
 	std::vector<std::string> result;
 
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+	long slowInsertEnd;
+
 
 	long lowClks;
 	long highClks;
@@ -1076,26 +1077,137 @@ std::vector<std::string> UserCommandRunner::gate_smartCardReader()
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCardReader failed to retrieve smart card reader");
+		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withCard failed to retrieve smart card reader");
 		return result;
 	}
 	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, curX, curY, curZ, curW);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCardReader failed to retrieve smart card reader gate");
+		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withCard failed to retrieve smart card reader gate");
+		return result;
+	}
+	rc = pCoordinateStorage->GetSmartCardReaderSlowInsertEnd(slowInsertEnd);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withCard failed to retrieve smart card reader slow insert end");
+		return result;
+	}
+	rc = pMovementConfiguration->GetStepperCardInsert(lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withCard failed to retrieve stepper card slow insert");
 		return result;
 	}
 
+	//configure movement
+	cmds.clear();
+	configStepperMovement(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	//slow insertion
+	cmds.clear();
+	moveStepperY(curY, slowInsertEnd, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	//restore to normal speed
+	rc = pMovementConfiguration->GetStepperGeneral(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withCard failed to retrieve stepper general");
+		result.clear();
+		return result;
+	}
+	//configure movement
+	cmds.clear();
+	configStepperMovement(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	//insert card
+	cmds.clear();
+	moveStepperY(slowInsertEnd, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::smartCardReader_gate()
+{
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::smartCardReader_gate failed to retrieve smart card reader");
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, curX, curY, curZ, curW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::smartCardReader_gate failed to retrieve smart card reader gate");
+		return result;
+	}
+
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::openClamp()
+{
+	unsigned long lowClks, highClks, cycles;
+	std::vector<std::string> result;
+	std::string cmd;
+
+	pMovementConfiguration->GetBdcConfig(lowClks, highClks, cycles);
+	cmd = ConsoleCommandFactory::CmdBdcForward(0, lowClks, highClks, cycles);
+	result.push_back(cmd);
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::closeClamp()
+{
+	unsigned long lowClks, highClks, cycles;
+	std::vector<std::string> result;
+	std::string cmd;
+
+	pMovementConfiguration->GetBdcConfig(lowClks, highClks, cycles);
+	cmd = ConsoleCommandFactory::CmdBdcReverse(0, lowClks, highClks, cycles);
+	result.push_back(cmd);
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::releaseClamp()
+{
+	std::vector<std::string> result;
+	std::string cmd;
+
+	cmd = ConsoleCommandFactory::CmdBdcCoast(0);
+	result.push_back(cmd);
+
+	return result;
 }
 
 bool UserCommandRunner::expandUserCmdInsertSmartCard()
 {
-	std::string cmd;
 	std::vector<std::string> cmds;
 
 	_userCommand.consoleCommands.clear();
 
 	//to smart card gate
 	cmds = toSmartCardGate();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdInsertSmartCard failed to expand user command");
+		return false;
+	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		_userCommand.consoleCommands.push_back(*it);
 	}
@@ -1103,13 +1215,21 @@ bool UserCommandRunner::expandUserCmdInsertSmartCard()
 	//open clamp
 	cmds.clear();
 	cmds = openClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdInsertSmartCard failed to expand user command");
+		return false;
+	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		_userCommand.consoleCommands.push_back(*it);
 	}
 
 	//move to smart card
 	cmds.clear();
-	cmds = gate_smartCard_fetch(_userCommand.smartCardNumber);
+	cmds = gate_smartCard_withoutCard(_userCommand.smartCardNumber);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdInsertSmartCard failed to expand user command");
+		return false;
+	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		_userCommand.consoleCommands.push_back(*it);
 	}
@@ -1117,13 +1237,21 @@ bool UserCommandRunner::expandUserCmdInsertSmartCard()
 	//close clamp
 	cmds.clear();
 	cmds = closeClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdInsertSmartCard failed to expand user command");
+		return false;
+	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		_userCommand.consoleCommands.push_back(*it);
 	}
 
 	//move to gate with card
 	cmds.clear();
-	cmds = smartCard_gate_fetch(_userCommand.smartCardNumber);
+	cmds = smartCard_gate_withCard(_userCommand.smartCardNumber);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdInsertSmartCard failed to expand user command");
+		return false;
+	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		_userCommand.consoleCommands.push_back(*it);
 	}
@@ -1131,34 +1259,59 @@ bool UserCommandRunner::expandUserCmdInsertSmartCard()
 	//to smart card reader gate
 	cmds.clear();
 	cmds = toSmartCardReaderGate();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdInsertSmartCard failed to expand user command");
+		return false;
+	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		_userCommand.consoleCommands.push_back(*it);
 	}
 
-
-
-
-
-
-
-
-	//close clamp
-
-	//move up
-
-	//move to smart card gate
-
-	//move to smart card slot gate
-
-	//slowly insert smart
-
-	//insert smart card totally
+	//insert card
+	cmds.clear();
+	cmds = gate_smartCardReader_withCard();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdInsertSmartCard failed to expand user command");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
 
 	//open clamp
+	cmds.clear();
+	cmds = openClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdInsertSmartCard failed to expand user command");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
 
-	//move to smart card slot gate
+	//move to smart card reader gate
+	cmds.clear();
+	cmds = smartCardReader_gate();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdInsertSmartCard failed to expand user command");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
 
 	//release clamp
+	cmds.clear();
+	cmds = releaseClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdInsertSmartCard failed to expand user command");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	return true;
 }
 
 bool UserCommandRunner::expandUserCmdRemoveSmartCard()

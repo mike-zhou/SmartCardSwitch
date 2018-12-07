@@ -101,6 +101,11 @@ private:
 	static const int STEPPER_AMOUNT = 5;
 	static const int LOCATOR_AMOUNT = 8;
 
+	const unsigned int STEPPER_X = 0;
+	const unsigned int STEPPER_Y = 1;
+	const unsigned int STEPPER_Z = 2;
+	const unsigned int STEPPER_W = 3;
+
 	////////////////////////////////////////
 	// user command related data and functions
 	////////////////////////////////////////
@@ -262,12 +267,12 @@ private:
 	//clamp operation
 	std::vector<std::string> openClamp();
 	std::vector<std::string> closeClamp();
-	std::vector<std::string> releaseCard();
+	std::vector<std::string> releaseClamp();
 	//movement between smart card and gate
-	std::vector<std::string> gate_smartCard_fetch(unsigned int cardNumber);
-	std::vector<std::string> gate_smartCard_place(unsigned int cardNumber);
-	std::vector<std::string> smartCard_gate_fetch(unsigned int cardNumber);
-	std::vector<std::string> smartCard_gate_place(unsigned int cardNumber);
+	std::vector<std::string> gate_smartCard_withoutCard(unsigned int cardNumber);
+	std::vector<std::string> gate_smartCard_withCard(unsigned int cardNumber);
+	std::vector<std::string> smartCard_gate_withCard(unsigned int cardNumber);
+	std::vector<std::string> smartCard_gate_withoutCard(unsigned int cardNumber);
 	//movement between PED keys and gate
 	std::vector<std::string> pedKey_gate(unsigned int keyNumber);
 	std::vector<std::string> pedKey_pedKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
@@ -286,7 +291,8 @@ private:
 	std::vector<std::string> gate_touchScreenKey(unsigned int keyNumber);
 	//movement between smart card reader and gate
 	std::vector<std::string> smartCardReader_gate();
-	std::vector<std::string> gate_smartCardReader();
+	std::vector<std::string> gate_smartCardReader_withCard();
+	std::vector<std::string> gate_smartCardReader_withoutCard();
 	//movement between contactless reader and gate
 	std::vector<std::string> contactlessReader_gate();
 	std::vector<std::string> gate_contactlessReader();
