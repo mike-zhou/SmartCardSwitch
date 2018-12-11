@@ -201,6 +201,29 @@ void CommandRunner::onFeedbackDeviceConnect(std::shared_ptr<ReplyTranslator::Rep
 	}
 }
 
+void CommandRunner::onFeedbackDeviceDelay(std::shared_ptr<ReplyTranslator::ReplyDeviceDelay> replyPtr)
+{
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
+
+	if(replyPtr->errorInfo.empty()) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		//error happened
+		pLogger->LogError("CommandRunner::onFeedbackDeviceDelay failed in device  delay: " + replyPtr->errorInfo);
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnDeviceDelay(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
+	}
+}
+
 void CommandRunner::onFeedbackDeviceQueryPower(std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> replyPtr)
 {
 	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
@@ -1809,6 +1832,26 @@ ICommandReception::CommandId CommandRunner::DeviceConnect(unsigned int index)
 			else {
 				_userCommand.resultConnectedDeviceName.clear();
 			}
+		}
+	}
+
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
+}
+
+ICommandReception::CommandId CommandRunner::DeviceDelay(unsigned int clks)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::DeviceDelay hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::DeviceDelay(clks);
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::DeviceDelay empty ptr returned from CommandFactory::DeviceDelay");
 		}
 	}
 

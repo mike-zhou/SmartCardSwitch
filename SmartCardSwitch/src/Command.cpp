@@ -85,6 +85,32 @@ std::string CommandDeviceConnect::ToJsonCommandUndoString()
 }
 
 ///////////////////////////////////////////////////////////
+// CommandDeviceDelay
+///////////////////////////////////////////////////////////
+CommandDeviceDelay::CommandDeviceDelay(unsigned int clks)
+{
+	_clks = clks;
+}
+
+std::string CommandDeviceDelay::CommandKey()
+{
+	return std::string("device delay");
+}
+
+std::string CommandDeviceDelay::ToJsonCommandString()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"device delay\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+	cmd = cmd + ",\"clks\":" + std::to_string(_clks);
+	cmd += "}";
+
+	return cmd;
+}
+
+///////////////////////////////////////////////////////////
 // CommandDeviceQueryPower
 ///////////////////////////////////////////////////////////
 std::string CommandDeviceQueryPower::CommandKey()

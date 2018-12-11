@@ -24,6 +24,7 @@ enum CommandType
 	Invalid = -1,
 	DevicesGet,
 	DeviceConnect,
+	DeviceDelay,
 	DeviceQueryPower,
 	DeviceQueryFuse,
 	OptPowerOn,
@@ -109,7 +110,6 @@ private:
 	unsigned long _commandId;
 };
 
-
 //{
 //	"command":"device query power",
 //	"commandId":1
@@ -158,6 +158,36 @@ public:
 
 private:
 	unsigned long _commandId;
+};
+
+//{
+//	"command":"device delay",
+//	"commandId":1,
+//	"clks":2
+//}
+class CommandDeviceDelay
+{
+public:
+	CommandDeviceDelay(unsigned long commandId, unsigned int clks)
+	{
+		_commandId = commandId;
+		_clks = clks;
+	}
+
+	CommandType Type() { return CommandType::DeviceDelay; }
+	unsigned long CommandId() { return _commandId; }
+
+	std::string ToString()
+	{
+		char buf[256];
+		sprintf(buf, "C 4 %d %d", _clks,  _commandId & 0xffff);
+		std::string cmd(buf);
+		return cmd;
+	}
+
+private:
+	unsigned long _commandId;
+	unsigned int _clks;
 };
 
 //{
@@ -911,6 +941,7 @@ public:
 	std::shared_ptr<CommandDeviceConnect> GetCommandDeviceConnect();
 	std::shared_ptr<CommandDeviceQueryPower> GetCommandDeviceQueryPower();
 	std::shared_ptr<CommandDeviceQueryFuse> GetCommandDeviceQueryFuse();
+	std::shared_ptr<CommandDeviceDelay> GetCommandDeviceDelay();
 	std::shared_ptr<CommandBdcsPowerOn> GetCommandBdcsPowerOn();
 	std::shared_ptr<CommandBdcsPowerOff> GetCommandBdcsPowerOff();
 	std::shared_ptr<CommandBdcsQueryPower> GetCommandBdcsQueryPower();
@@ -945,6 +976,7 @@ private:
 	const std::string strCommandDeviceConnect = "device connect";
 	const std::string strCommandDeviceQueryPower = "device query power";
 	const std::string strCommandDeviceQueryFuse = "device query fuse";
+	const std::string strCommandDeviceDelay = "device delay";
 	const std::string strCommandBdcsPowerOn = "bdcs power on";
 	const std::string strCommandBdcsPowerOff = "bdcs power off";
 	const std::string strCommandBdcsQueryPower = "bdcs query power";

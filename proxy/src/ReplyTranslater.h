@@ -29,6 +29,7 @@ private:
 	const std::string strCommandDeviceConnect = "device connect";
 	const std::string strCommandDeviceQueryPower = "device query power";
 	const std::string strCommandDeviceQueryFuse = "device query fuse";
+	const std::string strCommandDeviceDelay = "device delay";
 	const std::string strCommandBdcsPowerOn = "bdcs power on";
 	const std::string strCommandBdcsPowerOff = "bdcs power off";
 	const std::string strCommandBdcsQueryPower = "bdcs query power";
@@ -92,6 +93,7 @@ private:
 	std::string formatCmdReply(Poco::JSON::Object::Ptr& replyPtr);
 	std::string deviceQueryPower(Poco::JSON::Object::Ptr& replyPtr);
 	std::string deviceQueryFuse(Poco::JSON::Object::Ptr& replyPtr);
+	std::string deviceDelay(Poco::JSON::Object::Ptr& replyPtr);
 	std::string bdcsPowerOn(Poco::JSON::Object::Ptr& replyPtr);
 	std::string bdcsPowerOff(Poco::JSON::Object::Ptr& replyPtr);
 	std::string bdcsQueryPower(Poco::JSON::Object::Ptr& replyPtr);

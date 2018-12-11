@@ -162,6 +162,19 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 
 		_deviceConnectPtr = ptr;
 	}
+	else if(command == strCommandDeviceDelay)
+	{
+		_type = ReplyType::DeviceDelay;
+
+		std::shared_ptr<ReplyDeviceDelay> ptr (new ReplyDeviceDelay);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+
+		_deviceDelayPtr = ptr;
+	}
 	else if(command == strCommandDeviceQueryPower)
 	{
 		_type = ReplyType::DeviceQueryPower;
@@ -781,6 +794,11 @@ std::shared_ptr<ReplyTranslator::ReplyDevicesGet> ReplyTranslator::ToDevicesGet(
 std::shared_ptr<ReplyTranslator::ReplyDeviceConnect> ReplyTranslator::ToDeviceConnect()
 {
 	return _deviceConnectPtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplyDeviceDelay> ReplyTranslator::ToDeviceDelay()
+{
+	return _deviceDelayPtr;
 }
 
 std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> ReplyTranslator::ToDeviceQueryPower()

@@ -100,6 +100,7 @@ private:
 	void onCommand(struct SocketWrapper& socketWrapper, const std::string& command);
 	void onCommandDevicesGet(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDevicesGet> cmdPtr);
 	void onCommandDeviceConnect(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDeviceConnect> cmdPtr);
+	void onCommandDeviceDelay(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDeviceDelay> cmdPtr);
 	void onCommandDeviceQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDeviceQueryPower> cmdPtr);
 	void onCommandDeviceQueryFuse(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDeviceQueryFuse> cmdPtr);
 	void onCommandBdcsPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandBdcsPowerOn> cmdPtr);

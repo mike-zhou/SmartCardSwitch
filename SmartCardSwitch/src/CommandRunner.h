@@ -46,6 +46,7 @@ private:
 	//ICommandReception
 	virtual CommandId DevicesGet() override;
 	virtual CommandId DeviceConnect(unsigned int index) override;
+	virtual CommandId DeviceDelay(unsigned int clks) override;
 	virtual CommandId DeviceQueryPower() override;
 	virtual CommandId DeviceQueryFuse() override;
 	virtual CommandId OptPowerOn() override;
@@ -112,6 +113,7 @@ private:
 	bool isCorrespondingReply(const std::string& command, unsigned short commandId);
 	void onFeedbackDevicesGet(std::shared_ptr<ReplyTranslator::ReplyDevicesGet> replyPtr);
 	void onFeedbackDeviceConnect(std::shared_ptr<ReplyTranslator::ReplyDeviceConnect> replyPtr);
+	void onFeedbackDeviceDelay(std::shared_ptr<ReplyTranslator::ReplyDeviceDelay> replyPtr);
 	void onFeedbackDeviceQueryPower(std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> replyPtr);
 	void onFeedbackDeviceQueryFuse(std::shared_ptr<ReplyTranslator::ReplyDeviceQueryFuse> replyPtr);
 	void onFeedbackBdcsPowerOn(std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOn> replyPtr);

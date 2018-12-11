@@ -224,6 +224,10 @@ void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::s
 		onCommandDeviceConnect(socketWrapper, translator.GetCommandDeviceConnect());
 		break;
 
+	case CommandType::DeviceDelay:
+		onCommandDeviceDelay(socketWrapper, translator.GetCommandDeviceDelay());
+		break;
+
 	case CommandType::DeviceQueryPower:
 		onCommandDeviceQueryPower(socketWrapper, translator.GetCommandDeviceQueryPower());
 		break;
@@ -426,6 +430,16 @@ void CSocketManager::sendTranslatedCommandToDevice(long long socketId, const std
 	if(deviceIt == _deviceMap.end()) {
 		pLogger->LogError("CSocketManager::"  + std::string(__FUNCTION__) + " socketId hasn't be bonded to device: " + std::to_string(socketId));
 	}
+}
+
+void CSocketManager::onCommandDeviceDelay(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDeviceDelay> cmdPtr)
+{
+	if(cmdPtr == nullptr) {
+		pLogger->LogError("CSocketManager::"  + std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
+
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
 void CSocketManager::onCommandDeviceQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDeviceQueryPower> cmdPtr)

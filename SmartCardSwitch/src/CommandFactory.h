@@ -18,6 +18,7 @@ class CommandFactory
 public:
 	static std::shared_ptr<DeviceCommand> DevicesGet();
 	static std::shared_ptr<DeviceCommand> DeviceConnect(const std::string& deviceName);
+	static std::shared_ptr<DeviceCommand> DeviceDelay(unsigned int clks);
 	static std::shared_ptr<DeviceCommand> DeviceQueryPower();
 	static std::shared_ptr<DeviceCommand> DeviceQueryFuse();
 	static std::shared_ptr<DeviceCommand> BdcsPowerOn();

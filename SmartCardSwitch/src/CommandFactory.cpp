@@ -22,6 +22,13 @@ std::shared_ptr<DeviceCommand> CommandFactory::DeviceConnect(const std::string& 
 	return ptr;
 }
 
+std::shared_ptr<DeviceCommand> CommandFactory::DeviceDelay(unsigned int clks)
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandDeviceDelay(clks));
+
+	return ptr;
+}
+
 std::shared_ptr<DeviceCommand> CommandFactory::DeviceQueryPower()
 {
 	std::shared_ptr<DeviceCommand> ptr(new CommandDeviceQueryPower());

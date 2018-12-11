@@ -22,6 +22,7 @@ public:
 		//replies to command
 		DevicesGet,
 		DeviceConnect,
+		DeviceDelay,
 		DeviceQueryPower,
 		DeviceQueryFuse,
 		OptPowerOn,
@@ -81,6 +82,11 @@ public:
 		std::string deviceName;
 		bool connected;
 		std::string reason;
+	};
+
+	struct ReplyDeviceDelay: ReplyCommon
+	{
+		//empty
 	};
 
 	struct ReplyDeviceQueryPower: ReplyCommon
@@ -282,6 +288,7 @@ public:
 
 	std::shared_ptr<ReplyTranslator::ReplyDevicesGet> ToDevicesGet();
 	std::shared_ptr<ReplyTranslator::ReplyDeviceConnect> ToDeviceConnect();
+	std::shared_ptr<ReplyTranslator::ReplyDeviceDelay> ToDeviceDelay();
 	std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> ToDeviceQueryPower();
 	std::shared_ptr<ReplyTranslator::ReplyDeviceQueryFuse> ToDeviceQueryFuse();
 	std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOn> ToBdcsPowerOn();
@@ -326,6 +333,7 @@ private:
 	//replies to command
 	const std::string strCommandDevicesGet = "devices get";
 	const std::string strCommandDeviceConnect = "device connect";
+	const std::string strCommandDeviceDelay = "device delay";
 	const std::string strCommandDeviceQueryPower = "device query power";
 	const std::string strCommandDeviceQueryFuse = "device query fuse";
 	const std::string strCommandBdcsPowerOn = "bdcs power on";
@@ -362,6 +370,7 @@ private:
 
 	std::shared_ptr<ReplyTranslator::ReplyDevicesGet> _devicesGetPtr;
 	std::shared_ptr<ReplyTranslator::ReplyDeviceConnect> _deviceConnectPtr;
+	std::shared_ptr<ReplyTranslator::ReplyDeviceDelay> _deviceDelayPtr;
 	std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> _deviceQueryPowerPtr;
 	std::shared_ptr<ReplyTranslator::ReplyDeviceQueryFuse> _deviceQueryFusePtr;
 	std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOn> _bdcsPowerOnPtr;

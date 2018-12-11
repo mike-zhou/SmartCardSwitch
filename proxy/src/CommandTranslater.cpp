@@ -64,6 +64,9 @@ CommandType CommandTranslator::Type()
 		else if(command == strCommandDeviceConnect) {
 			_type = CommandType::DeviceConnect;
 		}
+		else if(command == strCommandDeviceDelay) {
+			_type = CommandType::DeviceDelay;
+		}
 		else if(command == strCommandDeviceQueryPower) {
 			_type = CommandType::DeviceQueryPower;
 		}
@@ -242,6 +245,7 @@ std::shared_ptr<CommandDeviceConnect> CommandTranslator::GetCommandDeviceConnect
 	return nullptr;
 }
 
+
 std::shared_ptr<CommandDeviceQueryPower> CommandTranslator::GetCommandDeviceQueryPower()
 {
 	try
@@ -321,6 +325,49 @@ std::shared_ptr<CommandDeviceQueryFuse> CommandTranslator::GetCommandDeviceQuery
 	catch(...)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandDeviceQueryFuse unknown exception in " + _jsonCmd);
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<CommandDeviceDelay> CommandTranslator::GetCommandDeviceDelay()
+{
+	try
+	{
+		Poco::JSON::Parser parser;
+		Poco::Dynamic::Var result = parser.parse(_jsonCmd);
+		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+
+		if(objectPtr->has(std::string("command")))
+		{
+			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
+			unsigned int clks = objectPtr->getValue<unsigned int>("clks");
+
+			if(command.size() < 1) {
+				pLogger->LogError("CommandTranslator::GetCommandDeviceDelay invalid command in " + _jsonCmd);
+			}
+			else if(command != strCommandDeviceDelay) {
+				pLogger->LogError("CommandTranslator::GetCommandDeviceDelay wrong command in " + _jsonCmd);
+			}
+			else
+			{
+				std::shared_ptr<CommandDeviceDelay> p(new CommandDeviceDelay(commandId, clks));
+				return p;
+			}
+		}
+		else
+		{
+			pLogger->LogError("CommandTranslator::GetCommandDeviceDelay no command in " + _jsonCmd);
+		}
+	}
+	catch(Poco::Exception& e)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandDeviceDelay exception occurs: " + e.displayText() + " in " + _jsonCmd);
+	}
+	catch(...)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandDeviceDelay unknown exception in " + _jsonCmd);
 	}
 
 	return nullptr;

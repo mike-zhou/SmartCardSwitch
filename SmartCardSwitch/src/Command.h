@@ -60,6 +60,17 @@ private:
 	std::string _deviceName;
 };
 
+class CommandDeviceDelay: public DeviceCommand
+{
+public:
+	CommandDeviceDelay(unsigned int clks);
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+
+private:
+	unsigned int _clks;
+};
+
 class CommandDeviceQueryPower: public DeviceCommand
 {
 public:

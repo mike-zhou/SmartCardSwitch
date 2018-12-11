@@ -214,6 +214,7 @@ private:
 	void parseUserCmdConfirmReset(Poco::DynamicStruct& ds);
 	void parseUserCmdResetDevice(Poco::DynamicStruct& ds);
 	void parseUserCmdSmartCard(Poco::DynamicStruct& ds);
+	void parseUserCmdTapSmartCard(Poco::DynamicStruct& ds);
 	void parseUserCmdBarCode(Poco::DynamicStruct& ds);
 	void parseUserCmdKeys(Poco::DynamicStruct& ds);
 

@@ -471,6 +471,21 @@ void UserCommandRunner::parseUserCmdSmartCard(Poco::DynamicStruct& ds)
 	_userCommand.smartCardNumber = number;
 }
 
+void UserCommandRunner::parseUserCmdTapSmartCard(Poco::DynamicStruct& ds)
+{
+	unsigned int number = ds["smartCardNumber"];
+
+	if(number >= pCoordinateStorage->SmartCardsAmount())
+	{
+		std::string err = "UserCommandRunner::parseUserCmdSmartCard smart card number of range: " + std::to_string(number);
+		pLogger->LogError(err);
+		throw Poco::Exception(err);
+	}
+
+	_userCommand.smartCardNumber = number;
+	_userCommand.downPeriod = ds["downPeriod"];
+}
+
 int UserCommandRunner::currentX()
 {
 	if(_consoleCommand.resultSteppers[0].state == StepperState::Unknown) {
@@ -1947,7 +1962,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			parseUserCmdSmartCard(ds);
 		}
 		else if(_userCommand.command == UserCmdTapSmartCard) {
-			parseUserCmdSmartCard(ds);
+			parseUserCmdTapSmartCard(ds);
 		}
 		else if(_userCommand.command == UserCmdShowBarCode) {
 			parseUserCmdBarCode(ds);

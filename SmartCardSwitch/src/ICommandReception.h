@@ -51,6 +51,7 @@ public:
 
 	virtual void OnDevicesGet(CommandId key, bool bSuccess, const std::vector<std::string>& devices) {}
 	virtual void OnDeviceConnect(CommandId key, bool bSuccess)  {}
+	virtual void OnDeviceDelay(CommandId key, bool bSuccess)  {}
 	virtual void OnDeviceQueryPower(CommandId key, bool bSuccess, bool bPowered)  {}
 	virtual void OnDeviceQueryFuse(CommandId key, bool bSuccess, bool bFuseOn)  {}
 	virtual void OnDeviceQueryHomeState(CommandId key, bool homePositioned) {}
@@ -112,6 +113,7 @@ public:
 
 	virtual CommandId DevicesGet() = 0;
 	virtual CommandId DeviceConnect(unsigned int index) = 0;
+	virtual CommandId DeviceDelay(unsigned int clks) = 0;
 	virtual CommandId DeviceQueryPower() = 0;
 	virtual CommandId DeviceQueryFuse() = 0;
 	virtual CommandId OptPowerOn() = 0;
