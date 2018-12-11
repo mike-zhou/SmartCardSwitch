@@ -202,6 +202,11 @@ private:
 	bool _deviceHomePositioned;
 
 	void notifyObservers(const std::string& cmdId, CommandState state, const std::string& errorInfo);
+	void finishUserCommandConnectDevice(CommandState & updatedCmdState, std::string & updatedErrorInfo);
+	void finishUserCommandConfirmReset(CommandState & updatedCmdState, std::string & updatedErrorInfo);
+	void finishUserCommandResetDevice(CommandState & updatedCmdState, std::string & updatedErrorInfo);
+	void finishUserCommandInsertSmartCard(CommandState & updatedCmdState, std::string & updatedErrorInfo);
+	void finishUserCommandRemoveSmartCard(CommandState & updatedCmdState, std::string & updatedErrorInfo);
 	void finishUserCommand(CommandState consoleCmdState, const std::string& errorInfo);
 
 	//fill _userCommand with information in user command JSON
