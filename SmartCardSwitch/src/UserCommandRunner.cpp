@@ -1524,13 +1524,6 @@ std::vector<std::string> UserCommandRunner::smartCard_gate_withoutCard(unsigned 
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 
-	long lowClks;
-	long highClks;
-	long accelerationBuffer;
-	long accelerationBufferDecrement;
-	long decelerationBuffer;
-	long decelerationBufferIncrement;
-
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCard, curX, curY, curZ, curW, _userCommand.smartCardNumber);
 	if(rc == false) {
 		pLogger->LogError("UserCommandRunner::smartCard_gate_withoutCard failed to retrieve smart card");
@@ -1585,18 +1578,18 @@ bool UserCommandRunner::expandUserCmdRemoveSmartCard()
 	cmds.clear();
 	cmds = openClamp();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed in openClamp");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		_userCommand.consoleCommands.push_back(*it);
 	}
 
-	//move to smart card
+	//move to smart card reader
 	cmds.clear();
 	cmds = gate_smartCardReader_withoutCard();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed in gate_smartCardReader_withoutCard");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1607,7 +1600,7 @@ bool UserCommandRunner::expandUserCmdRemoveSmartCard()
 	cmds.clear();
 	cmds = closeClamp();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed in closeClamp");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1618,7 +1611,7 @@ bool UserCommandRunner::expandUserCmdRemoveSmartCard()
 	cmds.clear();
 	cmds = smartCardReader_gate();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed in smartCardReader_gate");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1629,7 +1622,7 @@ bool UserCommandRunner::expandUserCmdRemoveSmartCard()
 	cmds.clear();
 	cmds = toSmartCardGate();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed in toSmartCardGate");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1640,7 +1633,7 @@ bool UserCommandRunner::expandUserCmdRemoveSmartCard()
 	cmds.clear();
 	cmds = gate_smartCard_withCard(_userCommand.smartCardNumber);
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed in gate_smartCard_withCard");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1651,7 +1644,7 @@ bool UserCommandRunner::expandUserCmdRemoveSmartCard()
 	cmds.clear();
 	cmds = openClamp();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed in openClamp");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1662,7 +1655,7 @@ bool UserCommandRunner::expandUserCmdRemoveSmartCard()
 	cmds.clear();
 	cmds = smartCard_gate_withoutCard(_userCommand.smartCardNumber);
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed in smartCard_gate_withoutCard");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1673,7 +1666,7 @@ bool UserCommandRunner::expandUserCmdRemoveSmartCard()
 	cmds.clear();
 	cmds = releaseClamp();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed in releaseClamp");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1705,7 +1698,7 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	cmds.clear();
 	cmds = openClamp();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in openClamp");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1716,7 +1709,7 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	cmds.clear();
 	cmds = gate_smartCard_withoutCard(_userCommand.smartCardNumber);
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in gate_smartCard_withoutCard");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1727,7 +1720,7 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	cmds.clear();
 	cmds = closeClamp();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in closeClamp");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1738,7 +1731,7 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	cmds.clear();
 	cmds = smartCard_gate_withCard(_userCommand.smartCardNumber);
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in smartCard_gate_withCard");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1749,7 +1742,7 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	cmds.clear();
 	cmds = toSmartCardReaderGate();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in toSmartCardReaderGate");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1760,7 +1753,7 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	cmds.clear();
 	cmds = gate_smartCardReader_withCard();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in gate_smartCardReader_withCard");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1771,7 +1764,7 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	cmds.clear();
 	cmds = smartCardReader_gate();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in smartCardReader_gate");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1782,7 +1775,7 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	cmds.clear();
 	cmds = toSmartCardGate();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in toSmartCardGate");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1793,7 +1786,7 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	cmds.clear();
 	cmds = gate_smartCard_withCard(_userCommand.smartCardNumber);
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in gate_smartCard_withCard");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1804,7 +1797,7 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	cmds.clear();
 	cmds = openClamp();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in openClamp");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1815,7 +1808,7 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	cmds.clear();
 	cmds = smartCard_gate_withoutCard(_userCommand.smartCardNumber);
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in smartCard_gate_withoutCard");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1826,7 +1819,7 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	cmds.clear();
 	cmds = releaseClamp();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed to expand user command");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in release Clamp");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1836,9 +1829,224 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 	return true;
 }
 
+std::vector<std::string> UserCommandRunner::deviceDelay(unsigned int clks)
+{
+	std::string cmd;
+	std::vector<std::string> result;
+
+	cmd = ConsoleCommandFactory::CmdDeviceDelay(clks);
+
+	result.push_back(cmd);
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::gate_contactlessReader()
+{
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::ContactlessReader, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_contactlessReader failed to retrieve contactless reader");
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::ContactlessReaderGate, curX, curY, curZ, curW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_contactlessReader failed to retrieve contactless reader gate");
+		return result;
+	}
+
+	cmds.clear();
+	moveStepperY(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::contactlessReader_gate()
+{
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::ContactlessReaderGate, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::contactlessReader_gate failed to retrieve contactless reader gate");
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::ContactlessReader, curX, curY, curZ, curW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::contactlessReader_gate failed to retrieve contactless reader");
+		return result;
+	}
+
+	cmds.clear();
+	moveStepperY(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
 bool UserCommandRunner::expandUserCmdTapSmartCard()
 {
+	std::vector<std::string> cmds;
 
+	_userCommand.consoleCommands.clear();
+
+	//to smart card gate
+	cmds = toSmartCardGate();
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//open clamp
+	cmds.clear();
+	cmds = openClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in openClamp");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//move to smart card
+	cmds.clear();
+	cmds = gate_smartCard_withoutCard(_userCommand.smartCardNumber);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in gate_smartCard_withoutCard");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//close clamp
+	cmds.clear();
+	cmds = closeClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in closeClamp");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//move to gate with card
+	cmds.clear();
+	cmds = smartCard_gate_withCard(_userCommand.smartCardNumber);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in smartCard_gate_withCard");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	cmds.clear();
+	cmds = toContactlessReaderGate();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in toContactlessReaderGate");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	cmds.clear();
+	cmds = gate_contactlessReader();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in gate_contactlessReader");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	cmds.clear();
+	cmds = deviceDelay(_userCommand.downPeriod);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in deviceDelay");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	cmds.clear();
+	cmds = contactlessReader_gate();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in contactlessReader_gate");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	cmds = toSmartCardGate();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in toSmartCardGate");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//move to smart card
+	cmds.clear();
+	cmds = gate_smartCard_withCard(_userCommand.smartCardNumber);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in gate_smartCard_withCard");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//open clamp
+	cmds.clear();
+	cmds = openClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in openClamp");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//move to smart card gate
+	cmds.clear();
+	cmds = smartCard_gate_withoutCard(_userCommand.smartCardNumber);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in smartCard_gate_withoutCard");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//release clamp
+	cmds.clear();
+	cmds = releaseClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdTapSmartCard failed in releaseClamp");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	return true;
 }
 
 void UserCommandRunner::parseUserCmdBarCode(Poco::DynamicStruct& ds)
@@ -2230,6 +2438,29 @@ void UserCommandRunner::OnDeviceQueryFuse(CommandId key, bool bSuccess, bool bFu
 	else {
 		pLogger->LogError("UserCommandRunner::OnDeviceQueryFuse failure command Id: " + std::to_string(_consoleCommand.cmdId));
 		_consoleCommand.resultDeviceFuseOk = false;
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnDeviceDelay(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnDeviceDelay successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultOptPowered = true;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnDeviceDelay failure command Id: " + std::to_string(_consoleCommand.cmdId));
 		_consoleCommand.state = CommandState::Failed;
 	}
 }

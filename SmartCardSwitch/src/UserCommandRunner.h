@@ -50,6 +50,7 @@ private:
 	virtual void OnDeviceConnect(CommandId key, bool bSuccess) override;
 	virtual void OnDeviceQueryPower(CommandId key, bool bSuccess, bool bPowered)  override;
 	virtual void OnDeviceQueryFuse(CommandId key, bool bSuccess, bool bFuseOn) override;
+	virtual void OnDeviceDelay(CommandId key, bool bSuccess)  override;
  	virtual void OnOptPowerOn(CommandId key, bool bSuccess)  override;
 	virtual void OnOptPowerOff(CommandId key, bool bSuccess)   override;
 	virtual void OnOptQueryPower(CommandId key, bool bSuccess, bool bPowered) override;
@@ -270,6 +271,8 @@ private:
 	void moveStepperZ(unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds) { moveStepper(2, initialPos, finalPos, cmds); }
 	void moveStepperW(unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds) { moveStepper(3, initialPos, finalPos, cmds); }
 
+	//delay
+	std::vector<std::string> deviceDelay(unsigned int clks);
 	//clamp operation
 	std::vector<std::string> openClamp();
 	std::vector<std::string> closeClamp();

@@ -36,7 +36,7 @@ public:
 		BarCodeCardGate = 15,
 		BarCodeCard = 16,
 		ContactlessReaderGate = 17,
-		contactlessReader = 18
+		ContactlessReader = 18
 	};
 
 	unsigned int SmartCardsAmount() { return _smartCards.size(); }
