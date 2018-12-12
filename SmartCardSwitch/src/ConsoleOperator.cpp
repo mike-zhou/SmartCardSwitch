@@ -398,6 +398,13 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 		}
 		break;
 
+		case ConsoleCommandFactory::Type::DeviceDelay:
+		{
+			unsigned int clks = d1;
+			_cmdKey = _pCommandReception->DeviceDelay(clks);
+		}
+		break;
+
 		case ConsoleCommandFactory::Type::BdcsPowerOn:
 		{
 			_cmdKey = _pCommandReception->BdcsPowerOn();
@@ -752,6 +759,25 @@ void ConsoleOperator::OnDeviceQueryFuse(CommandId key, bool bSuccess, bool bFuse
 
 	for(auto it=_observerPtrArray.begin(); it!=_observerPtrArray.end(); it++) {
 		(*it)->OnDeviceQueryFuse(key, bSuccess, bFuseOn);
+	}
+}
+
+void ConsoleOperator::OnDeviceDelay(CommandId key, bool bSuccess)
+{
+	if(_cmdKey == InvalidCommandId) {
+		return;
+	}
+	if(_cmdKey != key) {
+		pLogger->LogDebug("ConsoleOperator::OnDeviceDelay unexpected cmdKey: " + std::to_string(key) + ", expected: " + std::to_string(_cmdKey));
+		return;
+	}
+
+	_bCmdFinish = true;
+	_bCmdSucceed = bSuccess;
+	_cmdKey = InvalidCommandId;
+
+	for(auto it=_observerPtrArray.begin(); it!=_observerPtrArray.end(); it++) {
+		(*it)->OnDeviceDelay(key, bSuccess);
 	}
 }
 

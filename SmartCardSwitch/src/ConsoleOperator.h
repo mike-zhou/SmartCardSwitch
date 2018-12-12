@@ -48,6 +48,7 @@ private:
 	virtual void OnDeviceConnect(CommandId key, bool bSuccess) override;
 	virtual void OnDeviceQueryPower(CommandId key, bool bSuccess, bool bPowered) override;
 	virtual void OnDeviceQueryFuse(CommandId key, bool bSuccess, bool bFuseOn) override;
+	virtual void OnDeviceDelay(CommandId key, bool bSuccess)  override;
 	virtual void OnOptPowerOn(CommandId key, bool bSuccess)  override;
 	virtual void OnOptPowerOff(CommandId key, bool bSuccess)  override;
 	virtual void OnOptQueryPower(CommandId key, bool bSuccess, bool bPowered)  override;

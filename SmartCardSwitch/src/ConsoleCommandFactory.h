@@ -21,6 +21,7 @@ public:
 		DeviceConnect = 1,
 		DeviceQueryPower = 2,
 		DeviceQueryFuse = 3,
+		DeviceDelay = 4,
 		OptPowerOn = 20,
 		OptPowerOff = 21,
 		OptQueryPower = 22,
@@ -68,6 +69,7 @@ public:
 		help = help + "DeviceConnect:--------------------- " + "1 deviceNumber" + "\r\n";
 		help = help + "DeviceQueryPower:------------------ " + "2" + "\r\n";
 		help = help + "DeviceQueryFuse:------------------- " + "3" + "\r\n";
+		help = help + "DeviceDelay:----------------------- " + "4 clks" + "\r\n";
 		help = help + "OptPowerOn:------------------------ " + "20" + "\r\n";
 		help = help + "OptPowerOff:----------------------- " + "21" + "\r\n";
 		help = help + "OptQueryPower:--------------------- " + "22" + "\r\n";
@@ -111,6 +113,7 @@ public:
 	static std::string CmdDeviceConnect(unsigned int index) { return "1 " + std::to_string(index) + "\r\n"; }
 	static std::string CmdDeviceQueryPower() 				{ return std::string("2 \r\n"); }
 	static std::string CmdDeviceQueryFuse() 				{ return std::string("3 \r\n"); }
+	static std::string CmdDeviceDelay(unsigned int clks)	{ return std::string("4 ") + std::to_string(clks) + "\r\n"; }
 	static std::string CmdOptPowerOn() 						{ return std::string("20 \r\n"); }
 	static std::string CmdOptPowerOff() 					{ return std::string("21 \r\n"); }
 	static std::string CmdOptQueryPower() 					{ return std::string("22 \r\n"); }
@@ -121,10 +124,13 @@ public:
 	static std::string CmdBdcsPowerOff() 					{ return std::string("41 \r\n"); }
 	static std::string CmdBdcsQueryPower() 					{ return std::string("42 \r\n"); }
 	static std::string CmdBdcCoast(unsigned int index) 		{ return "43 " + std::to_string(index) + "\r\n"; }
+
 	static std::string CmdBdcReverse(unsigned int index, unsigned int lowClks, unsigned int highClks, unsigned int cycles)
 															{ return "44 " + std::to_string(index) + " " + std::to_string(lowClks) + " " + std::to_string(highClks) + " " + std::to_string(cycles) + "\r\n"; }
+
 	static std::string CmdBdcForward(unsigned int index, unsigned int lowClks, unsigned int highClks, unsigned int cycles)
 															{ return "45 " + std::to_string(index) + " " + std::to_string(lowClks) + " " + std::to_string(highClks) + " " + std::to_string(cycles) + "\r\n"; }
+
 	static std::string CmdBdcBreak(unsigned int index) 		{ return "46 " + std::to_string(index) + "\r\n"; }
 	static std::string CmdBdcQuery(unsigned int index) 		{ return "47 " + std::to_string(index) + "\r\n"; }
 	static std::string CmdSteppersPowerOn() 				{ return std::string("60 \r\n"); }
