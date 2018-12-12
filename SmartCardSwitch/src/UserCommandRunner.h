@@ -308,9 +308,6 @@ private:
 	//movement between barcode reader and gate
 	std::vector<std::string> barcodeReader_gate();
 	std::vector<std::string> gate_barcodeReader();
-	//movement between barcode cards and gate
-	std::vector<std::string> barcodeCard_gate(unsigned int cardNumber);
-	std::vector<std::string> gate_barcodeCard(unsigned int cardNumber);
 	//from Gate to Gate
 	std::vector<std::string> toHome();
 	std::vector<std::string> toSmartCardGate();

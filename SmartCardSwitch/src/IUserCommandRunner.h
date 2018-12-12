@@ -69,7 +69,8 @@
  * {
  * 	"userCommand":"show bar code",
  * 	"commandId":"uniqueCommandId",
- * 	"barCodeNumber":0
+ * 	"smartCardNumber":0,
+ * 	"downPeriod":1
  * }
  *
  * {

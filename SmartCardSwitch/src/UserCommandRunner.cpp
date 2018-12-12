@@ -1822,7 +1822,7 @@ std::vector<std::string> UserCommandRunner::gate_contactlessReader()
 	}
 
 	cmds.clear();
-	moveStepperY(curZ, finalZ, cmds);
+	moveStepperZ(curZ, finalZ, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
@@ -1850,7 +1850,7 @@ std::vector<std::string> UserCommandRunner::contactlessReader_gate()
 	}
 
 	cmds.clear();
-	moveStepperY(curZ, finalZ, cmds);
+	moveStepperZ(curZ, finalZ, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
@@ -2013,6 +2013,7 @@ bool UserCommandRunner::expandUserCmdTapSmartCard()
 void UserCommandRunner::parseUserCmdBarCode(Poco::DynamicStruct& ds)
 {
 	unsigned int number = ds["smartCardNumber"];
+	unsigned int downPeriod = ds["downPeriod"];
 
 	if(number >= pCoordinateStorage->SmartCardsAmount())
 	{
@@ -2022,6 +2023,7 @@ void UserCommandRunner::parseUserCmdBarCode(Poco::DynamicStruct& ds)
 	}
 
 	_userCommand.smartCardNumber = number;
+	_userCommand.downPeriod = downPeriod;
 }
 
 void UserCommandRunner::parseUserCmdKeys(Poco::DynamicStruct& ds)
@@ -2059,9 +2061,229 @@ void UserCommandRunner::parseUserCmdKeys(Poco::DynamicStruct& ds)
 	}
 }
 
+std::vector<std::string> UserCommandRunner::barcodeReader_gate()
+{
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReaderGate, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::barcodeReader_gate failed to retrieve bar code reader");
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReader, curX, curY, curZ, curW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::barcodeReader_gate failed to retrieve bar code reader gate");
+		return result;
+	}
+
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::gate_barcodeReader()
+{
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReader, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_barcodeReader failed to retrieve bar code reader");
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReaderGate, curX, curY, curZ, curW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_barcodeReader failed to retrieve bar code reader gate");
+		return result;
+	}
+
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
 bool UserCommandRunner::expandUserCmdShowBarCode()
 {
+	std::vector<std::string> cmds;
 
+	_userCommand.consoleCommands.clear();
+
+	//to smart card gate
+	cmds = toSmartCardGate();
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//open clamp
+	cmds.clear();
+	cmds = openClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in openClamp");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//move to smart card
+	cmds.clear();
+	cmds = gate_smartCard_withoutCard(_userCommand.smartCardNumber);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in gate_smartCard_withoutCard");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//close clamp
+	cmds.clear();
+	cmds = closeClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in closeClamp");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//move to gate with card
+	cmds.clear();
+	cmds = smartCard_gate_withCard(_userCommand.smartCardNumber);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in smartCard_gate_withCard");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//to smart card reader gate
+	cmds.clear();
+	cmds = toSmartCardReaderGate();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in toSmartCardReaderGate");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//to bar code reader gate
+	cmds.clear();
+	cmds = toBarcodeReaderGate();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in toBarcodeReaderGate");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//gate to bar code reader
+	cmds.clear();
+	cmds = gate_barcodeReader();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in gate_barcodeReader");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//delay
+	cmds.clear();
+	cmds = deviceDelay(_userCommand.downPeriod);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in deviceDelay");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//bar code reader to gate
+	cmds.clear();
+	cmds = barcodeReader_gate();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in barcodeReader_gate");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//to smart card gate
+	cmds.clear();
+	cmds = toSmartCardGate();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in toSmartCardGate");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//move to smart card
+	cmds.clear();
+	cmds = gate_smartCard_withCard(_userCommand.smartCardNumber);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in gate_smartCard_withCard");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//open clamp
+	cmds.clear();
+	cmds = openClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in openClamp");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//move to smart card gate
+	cmds.clear();
+	cmds = smartCard_gate_withoutCard(_userCommand.smartCardNumber);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in smartCard_gate_withoutCard");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//release clamp
+	cmds.clear();
+	cmds = releaseClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdShowBarCode failed in releaseClamp");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	return true;
 }
 
 bool UserCommandRunner::expandUserCmdPressPedKey()
