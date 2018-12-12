@@ -542,11 +542,6 @@ UserCommandRunner::CurrentPosition UserCommandRunner::getCurrentPosition()
 		return CurrentPosition::SmartCardGate;
 	}
 
-	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeCardGate, x, y, z, w);
-	if((curX == x) && (curY == y) && (curZ == z) && (curW = w)) {
-		return CurrentPosition::BarCodeCardGate;
-	}
-
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKeyGate, x, y, z, w);
 	if((curX == x) && (curY == y) && (curZ == z) && (curW = w)) {
 		return CurrentPosition::PedKeyGate;
@@ -881,40 +876,6 @@ std::vector<std::string> UserCommandRunner::toContactlessReaderGate()
 		curZ = currentZ();
 		curW = currentW();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::ContactlessReaderGate, x, y, z, w);
-		moveStepperW(curW, w, cmds);
-		moveStepperY(curY, y, cmds);
-		moveStepperX(curX, x, cmds);
-		moveStepperZ(curZ, z, cmds);
-	}
-
-	return cmds;
-}
-
-std::vector<std::string> UserCommandRunner::toBarcodeCardGate()
-{
-	auto currentPosition = getCurrentPosition();
-	std::vector<std::string> cmds;
-
-	if(currentPosition == CurrentPosition::Unknown)
-	{
-		pLogger->LogError("UserCommandRunner::toBarcodeCardGate unknown current position");
-	}
-	else if(currentPosition != CurrentPosition::BarCodeCardGate)
-	{
-		int curX, curY, curZ, curW;
-		int x, y, z, w;
-		std::string cmd;
-
-		//move up
-		curZ = currentZ();
-		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
-		moveStepperZ(curZ, z, cmds);
-
-		curX = currentX();
-		curY = currentY();
-		curZ = currentZ();
-		curW = currentW();
-		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeCardGate, x, y, z, w);
 		moveStepperW(curW, w, cmds);
 		moveStepperY(curY, y, cmds);
 		moveStepperX(curX, x, cmds);
@@ -2053,7 +2014,7 @@ void UserCommandRunner::parseUserCmdBarCode(Poco::DynamicStruct& ds)
 {
 	unsigned int number = ds["smartCardNumber"];
 
-	if(number >= pCoordinateStorage->BarCodeCardsAmout())
+	if(number >= pCoordinateStorage->SmartCardsAmount())
 	{
 		std::string err = "UserCommandRunner::parseUserCmdShowBarCode bar code card number of range: " + std::to_string(number);
 		pLogger->LogError(err);

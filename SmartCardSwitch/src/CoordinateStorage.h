@@ -33,14 +33,11 @@ public:
 		SmartCardReader = 12,
 		BarCodeReaderGate = 13,
 		BarCodeReader = 14,
-		BarCodeCardGate = 15,
-		BarCodeCard = 16,
 		ContactlessReaderGate = 17,
 		ContactlessReader = 18
 	};
 
 	unsigned int SmartCardsAmount() { return _smartCards.size(); }
-	unsigned int BarCodeCardsAmout() { return _barCodeCards.size(); }
 	unsigned int PedKeysAmount() { return _pedKeys.size(); }
 	unsigned int SoftKeysAmount() { return _softKeys.size(); }
 	unsigned int TouchScreenKeysAmount() { return _touchScreenKeys.size(); }
@@ -130,10 +127,6 @@ private:
 	//barcode reader
 	Coordinate _barCodeReaderGate;
 	Coordinate _barCodeReader;
-
-	//barcode cards
-	Coordinate _barCodeCardGate;
-	std::vector<Coordinate> _barCodeCards;
 };
 
 #endif /* COORDINATESTORAGE_H_ */

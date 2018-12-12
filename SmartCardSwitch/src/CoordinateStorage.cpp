@@ -172,15 +172,15 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 				SetCoordinate(Type::AssistKey, x, y, z, w, index);
 			}
 
-			//smart card slot
-			_smartCardReaderGate.x = ds["smartCardSlot"]["gate"]["x"];
-			_smartCardReaderGate.y = ds["smartCardSlot"]["gate"]["y"];
-			_smartCardReaderGate.z = ds["smartCardSlot"]["gate"]["z"];
-			_smartCardReaderGate.w = ds["smartCardSlot"]["gate"]["w"];
-			_smartCardReader.x = ds["smartCardSlot"]["slot"]["x"];
-			_smartCardReader.y = ds["smartCardSlot"]["slot"]["y"];
-			_smartCardReader.z = ds["smartCardSlot"]["slot"]["z"];
-			_smartCardReader.w = ds["smartCardSlot"]["slot"]["w"];
+			//smart card reader
+			_smartCardReaderGate.x = ds["smartCardReader"]["gate"]["x"];
+			_smartCardReaderGate.y = ds["smartCardReader"]["gate"]["y"];
+			_smartCardReaderGate.z = ds["smartCardReader"]["gate"]["z"];
+			_smartCardReaderGate.w = ds["smartCardReader"]["gate"]["w"];
+			_smartCardReader.x = ds["smartCardReader"]["slot"]["x"];
+			_smartCardReader.y = ds["smartCardReader"]["slot"]["y"];
+			_smartCardReader.z = ds["smartCardReader"]["slot"]["z"];
+			_smartCardReader.w = ds["smartCardReader"]["slot"]["w"];
 
 			//contactless reader
 			_contactlessReaderGate.x = ds["contactlessReader"]["gate"]["x"];
@@ -201,26 +201,6 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			_barCodeReader.y = ds["barCodeReader"]["slot"]["y"];
 			_barCodeReader.z = ds["barCodeReader"]["slot"]["z"];
 			_barCodeReader.w = ds["barCodeReader"]["slot"]["w"];
-
-			//bar code cards
-			_barCodeCardGate.x = ds["barCodes"]["gate"]["x"];
-			_barCodeCardGate.y = ds["barCodes"]["gate"]["y"];
-			_barCodeCardGate.z = ds["barCodes"]["gate"]["z"];
-			_barCodeCardGate.w = ds["barCodes"]["gate"]["w"];
-			auto barCodesAmount = ds["barCodes"]["keys"].size();
-			for(unsigned int i=0; i<barCodesAmount; i++)
-			{
-				long x, y, z, w;
-				long index;
-
-				index = ds["barCodes"]["cards"][i]["index"];
-				x = ds["barCodes"]["keys"][i]["value"]["x"];
-				y = ds["barCodes"]["keys"][i]["value"]["y"];
-				z = ds["barCodes"]["keys"][i]["value"]["z"];
-				w = ds["barCodes"]["keys"][i]["value"]["w"];
-
-				SetCoordinate(Type::BarCodeCard, x, y, z, w, index);
-			}
 
 			pLogger->LogInfo("CoordinateStorage::CoordinateStorage storage file is parsed successfully");
 		}
@@ -314,7 +294,7 @@ bool CoordinateStorage::PersistToFile()
 	json = json + "}";//end of assistKeys.
 
 	//smart card slot
-	json = json + ",\"smartCardSlot\": {";
+	json = json + ",\"smartCardReader\": {";
 	json = json + "\"gate\":" + _smartCardReaderGate.ToJsonObj() + ",";
 	json = json + "\"slot\":" + _smartCardReader.ToJsonObj();
 	json = json + "}";
@@ -330,21 +310,6 @@ bool CoordinateStorage::PersistToFile()
 	json = json + "\"gate\":" + _barCodeReaderGate.ToJsonObj() + ",";
 	json = json + "\"slot\":" + _barCodeReader.ToJsonObj();
 	json = json + "}";
-
-	//bar code cards
-	json = json + ",\"barCodes\": {";
-	json = json + "\"gate\":" + _barCodeCardGate.ToJsonObj() + ",";
-	json = json + "\"cards\":["; //start of keys
-	for(unsigned int i=0; i<_barCodeCards.size(); i++)
-	{
-		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _barCodeCards[i].ToJsonObj() + "},";
-	}
-	if(!_barCodeCards.empty()) {
-		json.pop_back(); //delete the extra ','
-	}
-	json = json + "]";//end of cards
-	json = json + "}";//end of barCodes.
-
 
 	json = json + "}";
 
@@ -573,35 +538,6 @@ bool CoordinateStorage::SetCoordinate(Type type,
 	}
 	break;
 
-
-	case Type::BarCodeCardGate:
-	{
-		_barCodeCardGate = value;
-		rc = true;
-	}
-	break;
-
-	case Type::BarCodeCard:
-	{
-		if(index < BAR_CODE_AMOUNT)
-		{
-			if(index >= _barCodeCards.size())
-			{
-				Coordinate tmp;
-				// fill _assistKeys
-				for(; index >= _barCodeCards.size(); ) {
-					_barCodeCards.push_back(tmp);
-				}
-			}
-			_assistKeys[index] = value;
-			rc = true;
-		}
-		else {
-			pLogger->LogError("CoordinateStorage::SetCoordinate assist key index out of range: " + std::to_string(index));
-		}
-	}
-	break;
-
 	case Type::Home:
 	{
 		_home = value;
@@ -761,27 +697,6 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	{
 		value = _barCodeReader;
 		rc = true;
-	}
-	break;
-
-	case Type::BarCodeCardGate:
-	{
-		value = _barCodeCardGate;
-		rc = true;
-	}
-	break;
-
-	case Type::BarCodeCard:
-	{
-		if(index < _barCodeCards.size())
-		{
-			value = _barCodeCards[index];
-			rc = true;
-		}
-		else
-		{
-			pLogger->LogError("CoordinateStorage::GetCoordinate barcode card index out of range: " + std::to_string(index));
-		}
 	}
 	break;
 

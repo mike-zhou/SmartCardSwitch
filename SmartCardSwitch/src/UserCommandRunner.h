@@ -320,7 +320,6 @@ private:
 	std::vector<std::string> toTouchScreenGate();
 	std::vector<std::string> toSmartCardReaderGate();
 	std::vector<std::string> toContactlessReaderGate();
-	std::vector<std::string> toBarcodeCardGate();
 	std::vector<std::string> toBarcodeReaderGate();
 
 	std::vector<IUserCommandRunnerObserver *> _observerPtrArray;
