@@ -2903,9 +2903,312 @@ bool UserCommandRunner::expandUserCmdPressSoftKey()
 	return true;
 }
 
+std::vector<std::string> UserCommandRunner::assistKey_gate(unsigned int keyNumber)
+{
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKeyGate, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::assistKey_gate failed to retrieve assist key gate");
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKey, curX, curY, curZ, curW, keyNumber);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::assistKey_gate failed to retrieve assist key:" + std::to_string(keyNumber));
+		return result;
+	}
+
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::assistKey_assistKey(unsigned int keyNumberFrom, unsigned int keyNumberTo)
+{
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKey, finalX, finalY, finalZ, finalW, keyNumberTo);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::assistKey_assistKey failed to retrieve assist key: " + std::to_string(keyNumberTo));
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKey, curX, curY, curZ, curW, keyNumberFrom);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::assistKey_assistKey failed to retrieve assist key gate");
+		return result;
+	}
+
+	//to key
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//press key
+	curX = finalX;
+	curY = finalY;
+	curZ = finalZ;
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKeyPressed, finalX, finalY, finalZ, finalW, keyNumberTo);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::assistKey_assistKey failed to retrieve assist key pressed: " + std::to_string(keyNumberTo));
+		result.clear();
+		return result;
+	}
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//delay
+	cmds.clear();
+	cmds = deviceDelay(_userCommand.downPeriod);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//release key
+	curX = finalX;
+	curY = finalY;
+	curZ = finalZ;
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKey, finalX, finalY, finalZ, finalW, keyNumberTo);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::assistKey_assistKey failed to retrieve assist key: " + std::to_string(keyNumberTo));
+		result.clear();
+		return result;
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//delay
+	cmds.clear();
+	cmds = deviceDelay(_userCommand.upPeriod);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::gate_assistKey(unsigned int keyNumber)
+{
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKey, finalX, finalY, finalZ, finalW, keyNumber);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_assistKey failed to retrieve assist key: " + std::to_string(keyNumber));
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKeyGate, curX, curY, curZ, curW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_assistKey failed to retrieve assist key gate");
+		return result;
+	}
+
+	//to key
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//press key
+	curX = finalX;
+	curY = finalY;
+	curZ = finalZ;
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKeyPressed, finalX, finalY, finalZ, finalW, keyNumber);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_assistKey failed to retrieve assist key pressed: " + std::to_string(keyNumber));
+		result.clear();
+		return result;
+	}
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//delay
+	cmds.clear();
+	cmds = deviceDelay(_userCommand.downPeriod);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//release key
+	curX = finalX;
+	curY = finalY;
+	curZ = finalZ;
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKey, finalX, finalY, finalZ, finalW, keyNumber);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_assistKey failed to retrieve assist key: " + std::to_string(keyNumber));
+		result.clear();
+		return result;
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//delay
+	cmds.clear();
+	cmds = deviceDelay(_userCommand.upPeriod);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
 bool UserCommandRunner::expandUserCmdPressAssistKey()
 {
+	std::vector<std::string> cmds;
 
+	if(_userCommand.keyNumbers.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdPressAssistKey no key to press");
+		return false;
+	}
+	_userCommand.consoleCommands.clear();
+
+	cmds = toAssistKeyGate();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdPressAssistKey failed in toAssistKeyGate");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	auto pKeys = _userCommand.keyNumbers.data();
+	unsigned int lastKeyIndex = _userCommand.keyNumbers.size() - 1;
+	//press first key
+	cmds.clear();
+	cmds = gate_assistKey(pKeys[0]);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdPressAssistKey failed in gate_assistKey");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//press other keys
+	for(unsigned int i=0; i<lastKeyIndex; i++)
+	{
+		cmds.clear();
+		cmds = assistKey_assistKey(pKeys[i], pKeys[i+1]);
+		if(cmds.empty()) {
+			pLogger->LogError("UserCommandRunner::expandUserCmdPressAssistKey failed in assistKey_assistKey: " + std::to_string(pKeys[i]) + " to " + std::to_string(pKeys[i+1]));
+			return false;
+		}
+		for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+			_userCommand.consoleCommands.push_back(*it);
+		}
+	}
+
+	//back to gate
+	cmds.clear();
+	cmds = assistKey_gate(pKeys[lastKeyIndex]);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdPressAssistKey failed in assistKey_gate");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	return true;
 }
 
 bool UserCommandRunner::expandUserCmdTouchScreen()
