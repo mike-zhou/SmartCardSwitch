@@ -2286,9 +2286,313 @@ bool UserCommandRunner::expandUserCmdShowBarCode()
 	return true;
 }
 
+std::vector<std::string> UserCommandRunner::pedKey_gate(unsigned int keyNumber)
+{
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKeyGate, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_pedKey failed to retrieve ped key gate");
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKey, curX, curY, curZ, curW, keyNumber);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_pedKey failed to retrieve ped key:" + std::to_string(keyNumber));
+		return result;
+	}
+
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::pedKey_pedKey(unsigned int keyNumberFrom, unsigned int keyNumberTo)
+{
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKey, finalX, finalY, finalZ, finalW, keyNumberTo);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::pedKey_pedKey failed to retrieve ped key: " + std::to_string(keyNumberTo));
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKey, curX, curY, curZ, curW, keyNumberFrom);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::pedKey_pedKey failed to retrieve ped key gate");
+		return result;
+	}
+
+	//to key
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//press key
+	curX = finalX;
+	curY = finalY;
+	curZ = finalZ;
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKeyPressed, finalX, finalY, finalZ, finalW, keyNumberTo);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::pedKey_pedKey failed to retrieve ped key pressed: " + std::to_string(keyNumberTo));
+		result.clear();
+		return result;
+	}
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//delay
+	cmds.clear();
+	cmds = deviceDelay(_userCommand.downPeriod);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//release key
+	curX = finalX;
+	curY = finalY;
+	curZ = finalZ;
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKey, finalX, finalY, finalZ, finalW, keyNumberTo);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::pedKey_pedKey failed to retrieve ped key: " + std::to_string(keyNumberTo));
+		result.clear();
+		return result;
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//delay
+	cmds.clear();
+	cmds = deviceDelay(_userCommand.upPeriod);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::gate_pedKey(unsigned int keyNumber)
+{
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKey, finalX, finalY, finalZ, finalW, keyNumber);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_pedKey failed to retrieve ped key: " + std::to_string(keyNumber));
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKeyGate, curX, curY, curZ, curW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_pedKey failed to retrieve ped key gate");
+		return result;
+	}
+
+	//to key
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//press key
+	curX = finalX;
+	curY = finalY;
+	curZ = finalZ;
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKeyPressed, finalX, finalY, finalZ, finalW, keyNumber);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_pedKey failed to retrieve ped key pressed: " + std::to_string(keyNumber));
+		result.clear();
+		return result;
+	}
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//delay
+	cmds.clear();
+	cmds = deviceDelay(_userCommand.downPeriod);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//release key
+	curX = finalX;
+	curY = finalY;
+	curZ = finalZ;
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKey, finalX, finalY, finalZ, finalW, keyNumber);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_pedKey failed to retrieve ped key: " + std::to_string(keyNumber));
+		result.clear();
+		return result;
+	}
+	cmds.clear();
+	moveStepperZ(curZ, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperX(curX, finalX, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	//delay
+	cmds.clear();
+	cmds = deviceDelay(_userCommand.upPeriod);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
+
 bool UserCommandRunner::expandUserCmdPressPedKey()
 {
+	std::vector<std::string> cmds;
 
+	if(_userCommand.keyNumbers.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdPressPedKey no key to press");
+		return false;
+	}
+	_userCommand.consoleCommands.clear();
+
+	cmds = toPedKeyGate();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdPressPedKey failed in toPedKeyGate");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	auto pKeys = _userCommand.keyNumbers.data();
+	unsigned int lastKeyIndex = _userCommand.keyNumbers.size() - 1;
+	//press first key
+	cmds.clear();
+	cmds = gate_pedKey(pKeys[0]);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdPressPedKey failed in toPedKeyGate");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	//press other keys
+	for(unsigned int i=0; i<lastKeyIndex; i++)
+	{
+		cmds.clear();
+		cmds = pedKey_pedKey(pKeys[i], pKeys[i+1]);
+		if(cmds.empty()) {
+			pLogger->LogError("UserCommandRunner::expandUserCmdPressPedKey failed in pedKey_pedKey: " + std::to_string(pKeys[i]) + " to " + std::to_string(pKeys[i+1]));
+			return false;
+		}
+		for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+			_userCommand.consoleCommands.push_back(*it);
+		}
+	}
+
+	//back to gate
+	cmds.clear();
+	cmds = pedKey_gate(pKeys[lastKeyIndex]);
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdPressPedKey failed in pedKey_gate");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
+	return true;
 }
 
 bool UserCommandRunner::expandUserCmdPressSoftKey()

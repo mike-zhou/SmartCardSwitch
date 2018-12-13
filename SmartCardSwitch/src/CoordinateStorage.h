@@ -19,22 +19,26 @@ public:
 	enum Type
 	{
 		Home = 0,
-		SmartCardGate = 1,
-		SmartCard = 2,
-		PedKeyGate = 3,
-		PedKey = 4,
-		SoftKeyGate = 5,
-		SoftKey = 6,
-		AssistKeyGate = 7,
-		AssistKey = 8,
-		TouchScreenKeyGate = 9,
-		TouchScreenKey = 10,
-		SmartCardReaderGate = 11,
-		SmartCardReader = 12,
-		BarCodeReaderGate = 13,
-		BarCodeReader = 14,
-		ContactlessReaderGate = 17,
-		ContactlessReader = 18
+		SmartCardGate ,
+		SmartCard,
+		PedKeyGate,
+		PedKey,
+		PedKeyPressed,
+		SoftKeyGate,
+		SoftKey,
+		SoftKeyPressed,
+		AssistKeyGate,
+		AssistKey,
+		AssistKeyPressed,
+		TouchScreenKeyGate ,
+		TouchScreenKey,
+		TouchScreenKeyPressed,
+		SmartCardReaderGate,
+		SmartCardReader,
+		BarCodeReaderGate,
+		BarCodeReader,
+		ContactlessReaderGate,
+		ContactlessReader
 	};
 
 	unsigned int SmartCardsAmount() { return _smartCards.size(); }
@@ -101,18 +105,23 @@ private:
 	//PED keys
 	Coordinate _pedKeyGate;
 	std::vector<Coordinate> _pedKeys;
+	std::vector<Coordinate> _pedKeysPressed;
 
 	//soft keys
 	Coordinate _softKeyGate;
 	std::vector<Coordinate> _softKeys;
+	std::vector<Coordinate> _softKeysPressed;
+
 
 	//touch screen keys
 	Coordinate _touchScreenKeyGate;
 	std::vector<Coordinate> _touchScreenKeys;
+	std::vector<Coordinate> _touchScreenKeysPressed;
 
 	//assist keys
 	Coordinate _assistKeyGate;
 	std::vector<Coordinate> _assistKeys;
+	std::vector<Coordinate> _assistKeysPressed;
 
 	//smart card reader
 	Coordinate _smartCardReaderGate;
