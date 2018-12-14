@@ -14,6 +14,66 @@
 
 class MsgPackager
 {
+public:
+	//put the jsonCmd to a package of TagLengthValue.
+	static void PackageMsg(const std::string& msg /*input*/, std::vector<unsigned char>& pkg/*output*/)
+	{
+		unsigned short length;
+
+		//TAG
+		pkg.push_back((HEADER_TAG >> 8) & 0xff);
+		pkg.push_back(HEADER_TAG & 0xFF);
+
+		//Length
+		length = versionWidth + msg.size() + tailWidth;
+		pkg.push_back((length >> 8) & 0xff);
+		pkg.push_back(length & 0xff);
+
+		//value
+		//value.version
+		pkg.push_back((VERSION >> 8) & 0xff);
+		pkg.push_back(VERSION & 0xff);
+		//value.cmd
+		for(auto it=msg.begin(); it!=msg.end(); it++) {
+			pkg.push_back(*it);
+		}
+		//value.tail
+		pkg.push_back((TAIL_TAG >> 8) & 0xff);
+		pkg.push_back(TAIL_TAG & 0xff);
+
+	}
+
+	// make JSON command with data.
+	// invalid data at the beginning of data will be deleted.
+	// if a JSON command is created, the relevant content in data is deleted.
+	static void RetrieveMsgs(std::deque<unsigned char>& data/*input*/, std::vector<std::string>& msgs/*output*/)
+	{
+		for(;;)
+		{
+			std::string msg;
+
+			auto rc = retrieveMsg(data, msg);
+
+			if((rc == DataState::HEADER_ERROR) ||
+				(rc == DataState::LENGTH_ERROR) ||
+				(rc == DataState::VERSION_ERROR) ||
+				(rc == DataState::JSON_ERROR) ||
+				(rc == DataState::TAIL_ERROR))
+			{
+				//discard the first byte
+				data.pop_front();
+			}
+			else if(rc == DataState::PARTIAL_COMMAND)
+			{
+				break;
+			}
+			else if(rc == DataState::COMPLETE_COMMAND)
+			{
+				msgs.push_back(msg);
+			}
+		}
+	}
+
 private:
 	static const unsigned short HEADER_TAG = 0xAABB;
 	static const unsigned short VERSION = 0x0000;
@@ -94,66 +154,6 @@ private:
 		}
 
 		return DataState::COMPLETE_COMMAND;
-	}
-
-public:
-	//put the jsonCmd to a package of TagLengthValue.
-	static void PackageMsg(const std::string& msg /*input*/, std::vector<unsigned char>& pkg/*output*/)
-	{
-		unsigned short length;
-
-		//TAG
-		pkg.push_back((HEADER_TAG >> 8) & 0xff);
-		pkg.push_back(HEADER_TAG & 0xFF);
-
-		//Length
-		length = versionWidth + msg.size() + tailWidth;
-		pkg.push_back((length >> 8) & 0xff);
-		pkg.push_back(length & 0xff);
-
-		//value
-		//value.version
-		pkg.push_back((VERSION >> 8) & 0xff);
-		pkg.push_back(VERSION & 0xff);
-		//value.cmd
-		for(auto it=msg.begin(); it!=msg.end(); it++) {
-			pkg.push_back(*it);
-		}
-		//value.tail
-		pkg.push_back((TAIL_TAG >> 8) & 0xff);
-		pkg.push_back(TAIL_TAG & 0xff);
-
-	}
-
-	// make JSON command with data.
-	// invalid data at the beginning of data will be deleted.
-	// if a JSON command is created, the relevant content in data is deleted.
-	static void RetrieveMsgs(std::deque<unsigned char>& data/*input*/, std::vector<std::string>& msgs/*output*/)
-	{
-		for(;;)
-		{
-			std::string msg;
-
-			auto rc = retrieveMsg(data, msg);
-
-			if((rc == DataState::HEADER_ERROR) ||
-				(rc == DataState::LENGTH_ERROR) ||
-				(rc == DataState::VERSION_ERROR) ||
-				(rc == DataState::JSON_ERROR) ||
-				(rc == DataState::TAIL_ERROR))
-			{
-				//discard the first byte
-				data.pop_front();
-			}
-			else if(rc == DataState::PARTIAL_COMMAND)
-			{
-				break;
-			}
-			else if(rc == DataState::COMPLETE_COMMAND)
-			{
-				msgs.push_back(msg);
-			}
-		}
 	}
 };
 

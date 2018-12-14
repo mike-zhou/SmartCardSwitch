@@ -25,6 +25,9 @@
 #include "ConsoleOperator.h"
 #include "CoordinateStorage.h"
 #include "MovementConfiguration.h"
+#include "UserProxy.h"
+#include "UserListener.h"
+#include "UserCommandRunner.h"
 
 using namespace std;
 
@@ -156,6 +159,9 @@ protected:
 			DeviceAccessor * pDeviceAccessor;
 			CommandRunner * pCommandRunner;
 			ConsoleOperator * pConsoleOperator;
+			UserListener * pUserListener;
+			UserProxy * pUserProxy;
+			UserCommandRunner * pUserCommandRunner;
 
 			//device accessor
 			std::string proxyIp = config().getString("proxy_ip_address", "127.0.0.1");
@@ -171,18 +177,28 @@ protected:
 			//ConsoleOperator
 			pConsoleOperator = new ConsoleOperator(pCommandRunner);
 
+			pUserProxy = new UserProxy;
+			pUserCommandRunner = new UserCommandRunner;
+			pUserListener = new UserListener(pUserProxy);
+
 			//couple tasks:
 			// command flow: ConsoleOperator >> CommandRunner >> DeviceAccessor
 			// reply flow:   DeviceAccessor >> CommandRunner >> ConsoleOperator
 			pCommandRunner->SetDevice(pDeviceAccessor);
 			pDeviceAccessor->AddObserver(pCommandRunner);
 			pCommandRunner->AddResponseReceiver(pConsoleOperator);
-
+			//couple user command runner to console operator
+			pUserCommandRunner->SetConsoleOperator(pConsoleOperator);
+			pUserProxy->SetUserCommandRunner(pUserCommandRunner);
+			pUserCommandRunner->AddObserver(pUserProxy);
 
 			//tm takes the ownership of tasks
 			tm.start(pCommandRunner);
 			tm.start(pDeviceAccessor);
 			tm.start(pConsoleOperator);
+			tm.start(pUserCommandRunner);
+			tm.start(pUserProxy);
+			tm.start(pUserListener);
 		}
 		catch(Poco::Exception& e)
 		{

@@ -3741,6 +3741,15 @@ void UserCommandRunner::AddObserver(IUserCommandRunnerObserver * pObserver)
 	}
 }
 
+void UserCommandRunner::SetConsoleOperator(ConsoleOperator * pCO)
+{
+	if(pCO == nullptr) {
+		pLogger->LogError("UserCommandRunner::SetConsoleOperator invalid parameter");
+		return;
+	}
+	_pConsoleOperator = pCO;
+}
+
 void UserCommandRunner::OnDevicesGet(CommandId key, bool bSuccess, const std::vector<std::string>& devices)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
