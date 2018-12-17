@@ -1554,6 +1554,13 @@ void CommandRunner::processFeedbacks()
 			}
 			break;
 
+			case ReplyTranslator::ReplyType::DeviceDelay:
+			{
+				auto replyPtr = translator.ToDeviceDelay();
+				onFeedbackDeviceDelay(replyPtr);
+			}
+			break;
+
 			case ReplyTranslator::ReplyType::DeviceQueryPower:
 			{
 				auto replyPtr = translator.ToDeviceQueryPower();

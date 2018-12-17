@@ -171,7 +171,7 @@ std::string ReplyTranslater::deviceDelay(Poco::JSON::Object::Ptr& replyPtr)
 	std::string error;
 
 	auto size = ds["params"].size();
-	if(size != 1) {
+	if(size != 2) {
 		throw Poco::JSON::JSONException("ReplyTranslater::deviceDelay wrong parameter amount: " + std::to_string(size));
 	}
 
