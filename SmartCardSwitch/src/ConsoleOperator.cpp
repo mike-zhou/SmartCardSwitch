@@ -24,11 +24,17 @@ ConsoleOperator::ConsoleOperator(ICommandReception * pCmdReceiver) : Task("Conso
 	_bCmdFinish = true;
 	_bCmdSucceed = false;
 	_queriedHomeOffset = -1;
+	_index = 0;
 
 	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
 	{
 		StepperData s;
 		_steppers.push_back(s);
+	}
+
+	for(unsigned int i=0; i<BDC_AMOUNT; i++) {
+		BdcData b;
+		_bdcs.push_back(b);
 	}
 }
 
@@ -253,6 +259,55 @@ void ConsoleOperator::stepperMove(unsigned int index, bool forward, unsigned int
 	pLogger->LogInfo("ConsoleOperator::stepperMove moved from " + std::to_string(data.homeOffset) + " to " + std::to_string(_steppers[index].homeOffset));
 }
 
+void ConsoleOperator::saveMovementConfig(MovementType type, unsigned int index)
+{
+	switch(type)
+	{
+		case MovementType::StepperBoundary:
+		{
+			if(index >= STEPPER_AMOUNT) {
+				pLogger->LogError("ConsoleOperator::saveMovementConfig stepper index out of range: " + std::to_string(index));
+			}
+			else
+			{
+				unsigned int locatorIndex = _steppers[index].locatorIndex;
+				unsigned int locatorLineNumberStart = _steppers[index].locatorLineNumberStart;
+				unsigned int locatorLineNumberTerminal = _steppers[index].locatorLineNumberTerminal;
+
+				if(!pMovementConfiguration->SetStepperBoundary(index, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal)) {
+					pLogger->LogError("ConsoleOperator::saveMovementConfig failed in stepper boundary saving: " + std::to_string(index));
+				}
+			}
+		}
+		break;
+		case MovementType::StepperGeneral:
+		{
+
+		}
+		break;
+		case MovementType::StepperCardInsert:
+		{
+
+		}
+		break;
+		case MovementType::StepperGoHome:
+		{
+
+		}
+		break;
+		case MovementType::Bdc:
+		{
+
+		}
+		break;
+		default:
+		{
+			pLogger->LogError("ConsoleOperator::saveMovementConfig unknown movement type: " + std::to_string((int)type));
+		}
+		break;
+	}
+}
+
 void ConsoleOperator::saveCoordinates(int type, unsigned int index)
 {
 	CoordinateStorage::Type coType = (CoordinateStorage::Type)type;
@@ -437,6 +492,12 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 			unsigned int highClks = d3;
 			unsigned int cycles = d4;
 			_cmdKey = _pCommandReception->BdcReverse(index, lowClks, highClks, cycles);
+			if(_cmdKey != InvalidCommandId)
+			{
+				_bdcs[index].lowClks = lowClks;
+				_bdcs[index].highClks = highClks;
+				_bdcs[index].cycles = cycles;
+			}
 		}
 		break;
 
@@ -447,6 +508,12 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 			unsigned int highClks = d3;
 			unsigned int cycles = d4;
 			_cmdKey = _pCommandReception->BdcForward(index, lowClks, highClks, cycles);
+			if(_cmdKey != InvalidCommandId)
+			{
+				_bdcs[index].lowClks = lowClks;
+				_bdcs[index].highClks = highClks;
+				_bdcs[index].cycles = cycles;
+			}
 		}
 		break;
 
@@ -494,6 +561,11 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 			unsigned int lowClks = d2;
 			unsigned int highClks = d3;
 			_cmdKey = _pCommandReception->StepperConfigStep(index, lowClks, highClks);
+			if(_cmdKey != InvalidCommandId)
+			{
+				_steppers[index].lowClks = lowClks;
+				_steppers[index].highClks = highClks;
+			}
 		}
 		break;
 
@@ -502,6 +574,10 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 			unsigned int index = d1;
 			unsigned int value = d2;
 			_cmdKey = _pCommandReception->StepperAccelerationBuffer(index, value);
+			if(_cmdKey != InvalidCommandId)
+			{
+				_steppers[index].accelerationBuffer = value;
+			}
 		}
 		break;
 
@@ -511,6 +587,10 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 			unsigned int value = d2;
 
 			_cmdKey = _pCommandReception->StepperAccelerationBufferDecrement(index, value);
+			if(_cmdKey != InvalidCommandId)
+			{
+				_steppers[index].accelerationBufferDecrement = value;
+			}
 		}
 		break;
 
@@ -520,6 +600,10 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 			unsigned int value = d2;
 
 			_cmdKey = _pCommandReception->StepperDecelerationBuffer(index, value);
+			if(_cmdKey != InvalidCommandId)
+			{
+				_steppers[index].decelerationBuffer = value;
+			}
 		}
 		break;
 
@@ -528,6 +612,10 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 			unsigned int index = d1;
 			unsigned int value = d2;
 			_cmdKey = _pCommandReception->StepperDecelerationBufferIncrement(index, value);
+			if(_cmdKey != InvalidCommandId)
+			{
+				_steppers[index].decelerationBufferIncrement = value;
+			}
 		}
 		break;
 
@@ -536,6 +624,10 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 			unsigned int index = d1;
 			bool enable = (d2 != 0);
 			_cmdKey = _pCommandReception->StepperEnable(index, enable);
+			if(_cmdKey != InvalidCommandId)
+			{
+				_steppers[index].enabled = enable;
+			}
 		}
 		break;
 
@@ -544,6 +636,10 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 			unsigned int index = d1;
 			bool forward = (d2 != 0);
 			_cmdKey = _pCommandReception->StepperForward(index, forward);
+			if(_cmdKey != InvalidCommandId)
+			{
+				_steppers[index].forward = forward;
+			}
 		}
 		break;
 
@@ -563,6 +659,10 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 			unsigned int finalPos = d3;
 
 			_cmdKey = _pCommandReception->StepperRun(index, initialPos, finalPos);
+			if(_cmdKey != InvalidCommandId)
+			{
+				_steppers[index].homeOffset = finalPos;
+			}
 		}
 		break;
 
@@ -574,6 +674,12 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 			unsigned int lineNumberTerminal = d4;
 
 			_cmdKey = _pCommandReception->StepperConfigHome(index, locatorIndex, lineNumberStart, lineNumberTerminal);
+			if(_cmdKey != InvalidCommandId)
+			{
+				_steppers[index].locatorIndex = locatorIndex;
+				_steppers[index].locatorLineNumberStart = lineNumberStart;
+				_steppers[index].locatorLineNumberTerminal = lineNumberTerminal;
+			}
 		}
 		break;
 
@@ -600,9 +706,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperQuery:
 		{
-			unsigned int index = d1;
-
-			_cmdKey = _pCommandReception->StepperQuery(index);
+			_index = d1;
+			_cmdKey = _pCommandReception->StepperQuery(_index);
 		}
 		break;
 
@@ -615,14 +720,24 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::BdcConfig:
 		{
-			pMovementConfiguration->SetBdcConfig(d1, d2, d3);
+			unsigned int lowClks = _bdcs[0].lowClks;
+			unsigned int highClks = _bdcs[0].highClks;
+			unsigned int cycles = _bdcs[0].cycles;
+
+			pMovementConfiguration->SetBdcConfig(lowClks, highClks, cycles);
+
 			_cmdKey = InvalidCommandId;
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::SaveMovementConfig:
 		{
-			_cmdKey = _pCommandReception->SaveMovementConfig();
+			MovementType type = (MovementType)d1;
+			int index = d2;
+
+			//_cmdKey = _pCommandReception->SaveMovementConfig();
+			saveMovementConfig(type, index);
+			_cmdKey = InvalidCommandId;
 		}
 		break;
 
@@ -1351,6 +1466,24 @@ void ConsoleOperator::OnStepperQuery(CommandId key, bool bSuccess,
 	_bCmdSucceed = bSuccess;
 	_queriedHomeOffset = homeOffset;
 	_bCmdFinish = true;
+
+	if(_bCmdSucceed)
+	{
+		_steppers[_index].state = state;
+		_steppers[_index].enabled = bEnabled;
+		_steppers[_index].forward = bForward;
+
+		_steppers[_index].locatorIndex = locatorIndex;
+		_steppers[_index].locatorLineNumberStart = locatorLineNumberStart;
+		_steppers[_index].locatorLineNumberTerminal = locatorLineNumberTerminal;
+		_steppers[_index].homeOffset = homeOffset;
+		_steppers[_index].lowClks = lowClks;
+		_steppers[_index].highClks = highClks;
+		_steppers[_index].accelerationBuffer = accelerationBuffer;
+		_steppers[_index].accelerationBufferDecrement = accelerationBufferDecrement;
+		_steppers[_index].decelerationBuffer = decelerationBuffer;
+		_steppers[_index].decelerationBufferIncrement = decelerationBufferIncrement;
+	}
 
 	for(auto it=_observerPtrArray.begin(); it!=_observerPtrArray.end(); it++) {
 		(*it)->OnStepperQuery(key, bSuccess,

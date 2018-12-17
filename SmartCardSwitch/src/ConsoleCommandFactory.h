@@ -103,8 +103,8 @@ public:
 		help = help + "StepperSetState: ------------------ " + "76 stepperIndex state" + "\r\n";
 		help = help + "LocatorQuery:---------------------- " + "90 locatorIndex" + "\r\n";
 		help = help + "BdcConfig:------------------------- " + "200 lowClks highClks cycles" + "\r\n";
-		help = help + "SaveMovementConfig:---------------- " + "300" + "\r\n";
-		help = help + "SaveCoordinates:------------------- " + "350" + "\r\n";
+		help = help + "SaveMovementConfig:---------------- " + "300 type" + "\r\n";
+		help = help + "SaveCoordinates:------------------- " + "350 type index" + "\r\n";
 
 		return help;
 	}

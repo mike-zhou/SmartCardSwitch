@@ -102,7 +102,6 @@ private:
 	const unsigned int LOCATOR_LINE_NUMBER_MIN = 1;
 	const unsigned int LOCATOR_LINE_NUMBER_MAX = 8;
 
-
 	std::deque<char> _input;
 
 	Poco::Mutex _mutex;
@@ -111,18 +110,40 @@ private:
 
 	ICommandReception * _pCommandReception; //the instance where commands can be sent to.
 	ICommandReception::CommandId _cmdKey;
+	unsigned int _index;
 	bool _bCmdFinish;
 	bool _bCmdSucceed;
 	int _queriedHomeOffset;
 	std::vector<std::string> _devices;
 	struct StepperData
 	{
+		StepperState state = StepperState::Unknown;
+
 		long homeOffset = -1;
 		unsigned int steps = 0;
 		bool enabled = true;
 		bool forward = false;
+
+		int locatorIndex = 0;
+		int locatorLineNumberStart = 0;
+		int locatorLineNumberTerminal = 0;
+
+		unsigned int lowClks = 1;
+		unsigned int highClks = 1;
+		unsigned int accelerationBuffer = 0;
+		unsigned int accelerationBufferDecrement = 1;
+		unsigned int decelerationBuffer = 0;
+		unsigned int decelerationBufferIncrement = 1;
 	};
 	std::vector<StepperData> _steppers;
+
+	struct BdcData
+	{
+		unsigned int lowClks = 0;
+		unsigned int highClks = 0;
+		unsigned int cycles = 0;
+	};
+	std::vector<BdcData> _bdcs;
 
 	bool runConsoleCommand(const std::string& command);
 
@@ -131,8 +152,18 @@ private:
 	void prepareRunning();
 	void waitCommandFinish();
 
-	void loadMovementConfig();
+	enum MovementType
+	{
+		StepperBoundary = 0,
+		StepperGeneral,
+		StepperCardInsert,
+		StepperGoHome,
+		Bdc = 20
+	};
+	void saveMovementConfig(MovementType type, unsigned int index);
 	void saveCoordinates(int type, unsigned int index);
+
+	void loadMovementConfig();
 
 	//compound commands
 	void stepperSetState(unsigned int index, int state);
