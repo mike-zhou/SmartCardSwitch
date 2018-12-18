@@ -223,6 +223,11 @@ bool MovementConfiguration::SetStepperBoundary(unsigned int index,
 					int locatorLineNumberTerminal)
 {
 	bool rc = false;
+	char buf[256];
+
+	sprintf(buf, "MovementConfiguration::SetStepperBoundary index: %ld, locatorIndex: %ld, start: %ld, terminal: %ld", index, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
+	std::string info(buf);
+	pLogger->LogInfo(info);
 
 	if(index < STEPPERS_AMOUNT)
 	{
@@ -255,6 +260,12 @@ bool MovementConfiguration::SetStepperGeneral(unsigned int index,
 					long decelerationBufferIncrement)
 {
 	bool rc = false;
+	char buf[512];
+
+	sprintf(buf, "MovementConfiguration::SetStepperGeneral index: %ld, lowClks: %ld, highClks: %ld, AB: %ld, ABD: %ld, DB: %ld, DBI: %ld",
+			index, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	std::string info(buf);
+	pLogger->LogInfo(info);
 
 	if(index < STEPPERS_AMOUNT)
 	{
@@ -288,6 +299,13 @@ bool MovementConfiguration::SetStepperCardInsert(
 					long decelerationBuffer,
 					long decelerationBufferIncrement)
 {
+	char buf[512];
+
+	sprintf(buf, "MovementConfiguration::SetStepperCardInsert lowClks: %ld, highClks: %ld, AB: %ld, ABD: %ld, DB: %ld, DBI: %ld",
+			lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	std::string info(buf);
+	pLogger->LogInfo(info);
+
 	_stepperMovementCardInsert.lowClks = lowClks;
 	_stepperMovementCardInsert.highClks = highClks;
 	_stepperMovementCardInsert.accelerationBuffer = accelerationBuffer;
@@ -306,6 +324,13 @@ bool MovementConfiguration::SetStepperGoHome(
 					long decelerationBuffer,
 					long decelerationBufferIncrement)
 {
+	char buf[512];
+
+	sprintf(buf, "MovementConfiguration::SetStepperGoHome lowClks: %ld, highClks: %ld, AB: %ld, ABD: %ld, DB: %ld, DBI: %ld",
+			lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	std::string info(buf);
+	pLogger->LogInfo(info);
+
 	_stepperMovementGoHome.lowClks = lowClks;
 	_stepperMovementGoHome.highClks = highClks;
 	_stepperMovementGoHome.accelerationBuffer = accelerationBuffer;
@@ -333,6 +358,12 @@ bool MovementConfiguration::GetStepperBoundary(unsigned int index,
 	locatorLineNumberStart = stepper.locatorLineNumberStart;
 	locatorLineNumberTerminal = stepper.locatorLineNumberTerminal;
 
+	char buf[256];
+
+	sprintf(buf, "MovementConfiguration::GetStepperBoundary index: %ld, locatorIndex: %ld, start: %ld, terminal: %ld", index, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
+	std::string info(buf);
+	pLogger->LogInfo(info);
+
 	return true;
 }
 
@@ -359,6 +390,13 @@ bool MovementConfiguration::GetStepperGeneral(unsigned int index,
 	decelerationBuffer = stepper.decelerationBuffer;
 	decelerationBufferIncrement = stepper.decelerationBufferIncrement;
 
+	char buf[512];
+
+	sprintf(buf, "MovementConfiguration::GetStepperGeneral index: %ld, lowClks: %ld, highClks: %ld, AB: %ld, ABD: %ld, DB: %ld, DBI: %ld",
+			index, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	std::string info(buf);
+	pLogger->LogInfo(info);
+
 	return true;
 }
 
@@ -376,6 +414,13 @@ bool MovementConfiguration::GetStepperCardInsert(
 	accelerationBufferDecrement = _stepperMovementCardInsert.accelerationBufferDecrement;
 	decelerationBuffer = _stepperMovementCardInsert.decelerationBuffer;
 	decelerationBufferIncrement = _stepperMovementCardInsert.decelerationBufferIncrement;
+
+	char buf[512];
+
+	sprintf(buf, "MovementConfiguration::GetStepperCardInsert lowClks: %ld, highClks: %ld, AB: %ld, ABD: %ld, DB: %ld, DBI: %ld",
+			lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	std::string info(buf);
+	pLogger->LogInfo(info);
 
 	return true;
 }
@@ -395,12 +440,26 @@ bool MovementConfiguration::GetStepperGoHome(
 	decelerationBuffer = _stepperMovementGoHome.decelerationBuffer;
 	decelerationBufferIncrement = _stepperMovementGoHome.decelerationBufferIncrement;
 
+	char buf[512];
+
+	sprintf(buf, "MovementConfiguration::GetStepperGoHome lowClks: %ld, highClks: %ld, AB: %ld, ABD: %ld, DB: %ld, DBI: %ld",
+			lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	std::string info(buf);
+	pLogger->LogInfo(info);
+
 	return true;
 }
 
 
 void MovementConfiguration::SetBdcConfig(unsigned long lowClks, unsigned long highClks, unsigned long cycles)
 {
+	char buf[512];
+
+	sprintf(buf, "MovementConfiguration::SetBdcConfig lowClks: %ld, highClks: %ld, cycles: %ld",
+			lowClks, highClks, cycles);
+	std::string info(buf);
+	pLogger->LogInfo(info);
+
 	_bdc.lowClks = lowClks;
 	_bdc.highClks = highClks;
 	_bdc.cycles = cycles;
@@ -411,6 +470,13 @@ void MovementConfiguration::GetBdcConfig(unsigned long& lowClks, unsigned long& 
 	lowClks = _bdc.lowClks;
 	highClks = _bdc.highClks;
 	cycles = _bdc.cycles;
+
+	char buf[512];
+
+	sprintf(buf, "MovementConfiguration::GetBdcConfig lowClks: %ld, highClks: %ld, cycles: %ld",
+			lowClks, highClks, cycles);
+	std::string info(buf);
+	pLogger->LogInfo(info);
 }
 
 
