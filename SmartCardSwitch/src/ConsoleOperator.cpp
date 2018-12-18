@@ -177,17 +177,17 @@ void ConsoleOperator::stepperSetState(unsigned int index, int state)
 		return;
 	}
 
-	prepareRunning();
+	//prepareRunning();
 	_pCommandReception->StepperSetState(index, stepperState);
-	waitCommandFinish();
+	//waitCommandFinish();
 
-	if(_bCmdSucceed) {
-		pLogger->LogInfo("ConsoleOperator::stepperSetState succeeded in setting stepper state to " + std::to_string(state));
-		_steppers[index].homeOffset = 0;
-	}
-	else {
-		pLogger->LogInfo("ConsoleOperator::stepperSetState failed in setting stepper state to " + std::to_string(state));
-	}
+//	if(_bCmdSucceed) {
+//		pLogger->LogInfo("ConsoleOperator::stepperSetState succeeded in setting stepper state to " + std::to_string(state));
+//		_steppers[index].homeOffset = 0;
+//	}
+//	else {
+//		pLogger->LogInfo("ConsoleOperator::stepperSetState failed in setting stepper state to " + std::to_string(state));
+//	}
 }
 
 void ConsoleOperator::stepperMove(unsigned int index, bool forward, unsigned int steps)

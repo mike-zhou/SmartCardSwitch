@@ -906,7 +906,7 @@ std::string CommandStepperSteps::ToJsonCommandString()
 	cmd = cmd + "\"command\":\"stepper steps\",";
 	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
 	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
-	cmd = cmd + "\"steps\":" + std::to_string(_steps);
+	cmd = cmd + "\"value\":" + std::to_string(_steps);
 	cmd += "}";
 
 	return cmd;
@@ -920,7 +920,7 @@ std::string CommandStepperSteps::ToJsonCommandUndoString()
 	cmd = cmd + "\"command\":\"stepper steps\",";
 	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
 	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
-	cmd = cmd + "\"steps\":" + std::to_string(_steps);
+	cmd = cmd + "\"value\":" + std::to_string(_steps);
 	cmd += "}";
 
 	return cmd;
