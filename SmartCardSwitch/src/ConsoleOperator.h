@@ -155,9 +155,9 @@ private:
 	enum MovementType
 	{
 		StepperBoundary = 0,
-		StepperGeneral,
-		StepperCardInsert,
-		StepperGoHome,
+		StepperGeneral = 1,
+		StepperCardInsert = 2,
+		StepperGoHome = 3,
 		Bdc = 20
 	};
 	void saveMovementConfig(MovementType type, unsigned int index);

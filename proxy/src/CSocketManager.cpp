@@ -60,11 +60,11 @@ void CSocketManager::OnDeviceReply(const std::string& deviceName, const std::str
 
 	auto it = _deviceMap.find(deviceName);
 	if(_deviceMap.end() != it) {
-		pLogger->LogInfo("CDeviceSocketMapping::OnDeviceReply: " + deviceName + ":" + reply);
+		pLogger->LogInfo("CSocketManager::OnDeviceReply: " + deviceName + ":" + reply);
 		it->second.replyPool.push_back(reply);
 	}
 	else {
-		pLogger->LogError("CDeviceSocketMapping::OnDeviceReply: unknown device has a  reply: " + deviceName + ":" + reply);
+		pLogger->LogError("CSocketManager::OnDeviceReply: unknown device has a  reply: " + deviceName + ":" + reply);
 	}
 }
 

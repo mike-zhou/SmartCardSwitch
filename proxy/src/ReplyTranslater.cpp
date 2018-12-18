@@ -910,7 +910,7 @@ std::string ReplyTranslater::stepperEnable(Poco::JSON::Object::Ptr& replyPtr)
 	strIndex = ds["params"][0].toString();
 	index = getHexValue(strIndex);
 	strEnable = ds["params"][1].toString();
-	enable = (strEnable != "0") ? true : false;
+	enable = (getHexValue(strEnable) != 0) ? true : false;
 	strCmdId = ds["params"][size - 1].toString();
 	commandId = getHexValue(strCmdId);
 
@@ -956,7 +956,7 @@ std::string ReplyTranslater::stepperForward(Poco::JSON::Object::Ptr& replyPtr)
 	strIndex = ds["params"][0].toString();
 	index = getHexValue(strIndex);
 	strForward = ds["params"][1].toString();
-	forward = (strForward != "0") ? true : false;
+	forward = (getHexValue(strForward) != 0) ? true : false;
 	strCmdId = ds["params"][size - 1].toString();
 	commandId = getHexValue(strCmdId);
 
