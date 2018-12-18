@@ -282,22 +282,83 @@ void ConsoleOperator::saveMovementConfig(MovementType type, unsigned int index)
 		break;
 		case MovementType::StepperGeneral:
 		{
+			if(index >= STEPPER_AMOUNT) {
+				pLogger->LogError("ConsoleOperator::saveMovementConfig stepper index out of range: " + std::to_string(index));
+			}
+			else
+			{
+				unsigned int lowClks = _steppers[index].lowClks;
+				unsigned int highClks = _steppers[index].highClks;
+				unsigned int accelerationBuffer = _steppers[index].accelerationBuffer;
+				unsigned int accelerationBufferDecrement = _steppers[index].accelerationBufferDecrement;
+				unsigned int decelerationBuffer = _steppers[index].decelerationBuffer;
+				unsigned int decelerationBufferIncrement = _steppers[index].decelerationBufferIncrement;
 
+				if(!pMovementConfiguration->SetStepperGeneral(index, lowClks, highClks, accelerationBuffer,
+						accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement)) {
+					pLogger->LogError("ConsoleOperator::saveMovementConfig failed in stepper general movement saving: " + std::to_string(index));
+				}
+			}
 		}
 		break;
 		case MovementType::StepperCardInsert:
 		{
+			if(index >= STEPPER_AMOUNT) {
+				pLogger->LogError("ConsoleOperator::saveMovementConfig stepper index out of range: " + std::to_string(index));
+			}
+			else
+			{
+				//save card insert config of designated stepper as default.
+				unsigned int lowClks = _steppers[index].lowClks;
+				unsigned int highClks = _steppers[index].highClks;
+				unsigned int accelerationBuffer = _steppers[index].accelerationBuffer;
+				unsigned int accelerationBufferDecrement = _steppers[index].accelerationBufferDecrement;
+				unsigned int decelerationBuffer = _steppers[index].decelerationBuffer;
+				unsigned int decelerationBufferIncrement = _steppers[index].decelerationBufferIncrement;
 
+				if(!pMovementConfiguration->SetStepperCardInsert(lowClks, highClks, accelerationBuffer,
+						accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement)) {
+					pLogger->LogError("ConsoleOperator::saveMovementConfig failed in stepper insert movement saving");
+				}
+			}
 		}
 		break;
 		case MovementType::StepperGoHome:
 		{
+			if(index >= STEPPER_AMOUNT) {
+				pLogger->LogError("ConsoleOperator::saveMovementConfig stepper index out of range: " + std::to_string(index));
+			}
+			else
+			{
+				//save home config of designated stepper as default.
+				unsigned int lowClks = _steppers[index].lowClks;
+				unsigned int highClks = _steppers[index].highClks;
+				unsigned int accelerationBuffer = _steppers[index].accelerationBuffer;
+				unsigned int accelerationBufferDecrement = _steppers[index].accelerationBufferDecrement;
+				unsigned int decelerationBuffer = _steppers[index].decelerationBuffer;
+				unsigned int decelerationBufferIncrement = _steppers[index].decelerationBufferIncrement;
 
+				if(!pMovementConfiguration->SetStepperGoHome(lowClks, highClks, accelerationBuffer,
+						accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement)) {
+					pLogger->LogError("ConsoleOperator::saveMovementConfig failed in stepper home movement saving");
+				}
+			}
 		}
 		break;
 		case MovementType::Bdc:
 		{
+			if(index >= BDC_AMOUNT) {
+				pLogger->LogError("ConsoleOperator::saveMovementConfig bdc index out of range: " + std::to_string(index));
+			}
+			else
+			{
+				//save config of designated bdc as default.
+				unsigned int lowClks = _bdcs[index].lowClks;
+				unsigned int highClks = _bdcs[index].highClks;
+				unsigned int cycles = _bdcs[index].cycles;
 
+				pMovementConfiguration->SetBdcConfig(lowClks, highClks, cycles);
+			}
 		}
 		break;
 		default:
@@ -305,6 +366,10 @@ void ConsoleOperator::saveMovementConfig(MovementType type, unsigned int index)
 			pLogger->LogError("ConsoleOperator::saveMovementConfig unknown movement type: " + std::to_string((int)type));
 		}
 		break;
+	}
+
+	if(!pMovementConfiguration->PersistToFile()) {
+		pLogger->LogError("ConsoleOperator::saveMovementConfig failed to persist movement");
 	}
 }
 
