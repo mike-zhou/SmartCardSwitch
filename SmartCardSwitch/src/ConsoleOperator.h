@@ -24,7 +24,7 @@
 /**
  * This class is used to operator the device manually.
  * It reads command from console or other source,
- * calls corresponding functions of ICommandReception instance,
+ * calls corresponding functions in ICommandReception instance which is CommandRunner object,
  * process results from ICommandReception instance.
  */
 class ConsoleOperator: public Poco::Task, public IResponseReceiver
@@ -104,7 +104,8 @@ private:
 
 	std::deque<char> _input;
 
-	Poco::Mutex _mutex;
+	Poco::Mutex _upperMutex; //make sure that only ONE console command from console or UserCommandRunner is processed at any time.
+	Poco::Mutex _lowerMutex; //synchronize interactions between this object and CommandRunner object.
 
 	std::vector<IResponseReceiver *> _observerPtrArray;
 

@@ -469,7 +469,7 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 	d8 = -1;
 	d9 = -1;
 
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	Poco::ScopedLock<Poco::Mutex> lock(_upperMutex);
 
 	try
 	{
@@ -489,6 +489,7 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 	{
 		case ConsoleCommandFactory::Type::DevicesGet:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			_cmdKey = _pCommandReception->DevicesGet();
 		}
 		break;
@@ -500,7 +501,9 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 			}
 			else
 			{
+				Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 				int deviceNumber = d1;
+
 				_cmdKey = _pCommandReception->DeviceConnect(deviceNumber);
 			}
 		}
@@ -508,54 +511,65 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::DeviceQueryPower:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			_cmdKey = _pCommandReception->DeviceQueryPower();
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::DeviceQueryFuse:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			_cmdKey = _pCommandReception->DeviceQueryFuse();
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::DeviceDelay:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int clks = d1;
+
 			_cmdKey = _pCommandReception->DeviceDelay(clks);
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::BdcsPowerOn:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			_cmdKey = _pCommandReception->BdcsPowerOn();
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::BdcsPowerOff:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			_cmdKey = _pCommandReception->BdcsPowerOff();
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::BdcsQueryPower:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			_cmdKey = _pCommandReception->BdcsQueryPower();
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::BdcCoast:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
+
 			_cmdKey = _pCommandReception->BdcCoast(index);
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::BdcReverse:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			unsigned int lowClks = d2;
 			unsigned int highClks = d3;
 			unsigned int cycles = d4;
+
 			_cmdKey = _pCommandReception->BdcReverse(index, lowClks, highClks, cycles);
 			if(_cmdKey != InvalidCommandId)
 			{
@@ -568,10 +582,12 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::BdcForward:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			unsigned int lowClks = d2;
 			unsigned int highClks = d3;
 			unsigned int cycles = d4;
+
 			_cmdKey = _pCommandReception->BdcForward(index, lowClks, highClks, cycles);
 			if(_cmdKey != InvalidCommandId)
 			{
@@ -584,47 +600,57 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::BdcBreak:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
+
 			_cmdKey = _pCommandReception->BdcBreak(index);
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::BdcQuery:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
+
 			_cmdKey = _pCommandReception->BdcQuery(index);
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::SteppersPowerOn:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			_cmdKey = _pCommandReception->SteppersPowerOn();
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::SteppersPowerOff:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			_cmdKey = _pCommandReception->SteppersPowerOff();
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::SteppersQueryPower:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			_cmdKey = _pCommandReception->SteppersQueryPower();
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::StepperQueryResolution:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			_cmdKey = _pCommandReception->StepperQueryResolution();
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::StepperConfigStep:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			unsigned int lowClks = d2;
 			unsigned int highClks = d3;
+
 			_cmdKey = _pCommandReception->StepperConfigStep(index, lowClks, highClks);
 			if(_cmdKey != InvalidCommandId)
 			{
@@ -636,8 +662,10 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperAccelerationBuffer:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			unsigned int value = d2;
+
 			_cmdKey = _pCommandReception->StepperAccelerationBuffer(index, value);
 			if(_cmdKey != InvalidCommandId)
 			{
@@ -648,6 +676,7 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperAccelerationBufferDecrement:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			unsigned int value = d2;
 
@@ -661,6 +690,7 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperDecelerationBuffer:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			unsigned int value = d2;
 
@@ -674,8 +704,10 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperDecelerationBufferIncrement:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			unsigned int value = d2;
+
 			_cmdKey = _pCommandReception->StepperDecelerationBufferIncrement(index, value);
 			if(_cmdKey != InvalidCommandId)
 			{
@@ -686,8 +718,10 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperEnable:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			bool enable = (d2 != 0);
+
 			_cmdKey = _pCommandReception->StepperEnable(index, enable);
 			if(_cmdKey != InvalidCommandId)
 			{
@@ -698,8 +732,10 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperForward:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			bool forward = (d2 != 0);
+
 			_cmdKey = _pCommandReception->StepperForward(index, forward);
 			if(_cmdKey != InvalidCommandId)
 			{
@@ -710,6 +746,7 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperSteps:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			unsigned int value = d2;
 
@@ -719,6 +756,7 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperRun:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			unsigned int initialPos = d2;
 			unsigned int finalPos = d3;
@@ -733,6 +771,7 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperConfigHome:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			unsigned int locatorIndex = d2;
 			unsigned int lineNumberStart = d3;
@@ -750,6 +789,7 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperMove:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			bool forward = (d2 != 0);
 			unsigned int steps = d3;
@@ -761,6 +801,7 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperSetState:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			int state = d2;
 
@@ -771,14 +812,18 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command)
 
 		case ConsoleCommandFactory::Type::StepperQuery:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			_index = d1;
+
 			_cmdKey = _pCommandReception->StepperQuery(_index);
 		}
 		break;
 
 		case ConsoleCommandFactory::Type::LocatorQuery:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
+
 			_cmdKey = _pCommandReception->LocatorQuery(index);
 		}
 		break;
@@ -855,6 +900,8 @@ ICommandReception::CommandId ConsoleOperator::RunConsoleCommand(const std::strin
 
 void ConsoleOperator::OnDevicesGet(CommandId key, bool bSuccess, const std::vector<std::string>& devices)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -887,6 +934,8 @@ void ConsoleOperator::OnDevicesGet(CommandId key, bool bSuccess, const std::vect
 
 void ConsoleOperator::OnDeviceConnect(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -906,6 +955,8 @@ void ConsoleOperator::OnDeviceConnect(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnDeviceQueryPower(CommandId key, bool bSuccess, bool bPowered)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -925,6 +976,8 @@ void ConsoleOperator::OnDeviceQueryPower(CommandId key, bool bSuccess, bool bPow
 
 void ConsoleOperator::OnDeviceQueryFuse(CommandId key, bool bSuccess, bool bFuseOn)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -944,6 +997,8 @@ void ConsoleOperator::OnDeviceQueryFuse(CommandId key, bool bSuccess, bool bFuse
 
 void ConsoleOperator::OnDeviceDelay(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -963,6 +1018,8 @@ void ConsoleOperator::OnDeviceDelay(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnOptPowerOn(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -982,6 +1039,8 @@ void ConsoleOperator::OnOptPowerOn(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnOptPowerOff(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1001,6 +1060,8 @@ void ConsoleOperator::OnOptPowerOff(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnOptQueryPower(CommandId key, bool bSuccess, bool bPowered)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1020,6 +1081,8 @@ void ConsoleOperator::OnOptQueryPower(CommandId key, bool bSuccess, bool bPowere
 
 void ConsoleOperator::OnDcmPowerOn(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1039,6 +1102,8 @@ void ConsoleOperator::OnDcmPowerOn(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnDcmPowerOff(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1058,6 +1123,8 @@ void ConsoleOperator::OnDcmPowerOff(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnDcmQueryPower(CommandId key, bool bSuccess, bool bPowered)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1077,6 +1144,8 @@ void ConsoleOperator::OnDcmQueryPower(CommandId key, bool bSuccess, bool bPowere
 
 void ConsoleOperator::OnBdcsPowerOn(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1096,6 +1165,8 @@ void ConsoleOperator::OnBdcsPowerOn(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnBdcsPowerOff(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1115,6 +1186,8 @@ void ConsoleOperator::OnBdcsPowerOff(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnBdcsQueryPower(CommandId key, bool bSuccess, bool bPowered)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1134,6 +1207,8 @@ void ConsoleOperator::OnBdcsQueryPower(CommandId key, bool bSuccess, bool bPower
 
 void ConsoleOperator::OnBdcCoast(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1153,6 +1228,8 @@ void ConsoleOperator::OnBdcCoast(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnBdcReverse(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1172,6 +1249,8 @@ void ConsoleOperator::OnBdcReverse(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnBdcForward(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1191,6 +1270,8 @@ void ConsoleOperator::OnBdcForward(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnBdcBreak(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1268,6 +1349,8 @@ void ConsoleOperator::OnSteppersPowerOff(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnSteppersQueryPower(CommandId key, bool bSuccess, bool bPowered)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1287,6 +1370,8 @@ void ConsoleOperator::OnSteppersQueryPower(CommandId key, bool bSuccess, bool bP
 
 void ConsoleOperator::OnStepperQueryResolution(CommandId key, bool bSuccess, unsigned long resolutionUs)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1306,6 +1391,8 @@ void ConsoleOperator::OnStepperQueryResolution(CommandId key, bool bSuccess, uns
 
 void ConsoleOperator::OnStepperConfigStep(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1326,6 +1413,8 @@ void ConsoleOperator::OnStepperConfigStep(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnStepperAccelerationBuffer(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1346,6 +1435,8 @@ void ConsoleOperator::OnStepperAccelerationBuffer(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnStepperAccelerationBufferDecrement(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1366,6 +1457,8 @@ void ConsoleOperator::OnStepperAccelerationBufferDecrement(CommandId key, bool b
 
 void ConsoleOperator::OnStepperDecelerationBuffer(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1386,6 +1479,8 @@ void ConsoleOperator::OnStepperDecelerationBuffer(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnStepperDecelerationBufferIncrement(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1406,6 +1501,8 @@ void ConsoleOperator::OnStepperDecelerationBufferIncrement(CommandId key, bool b
 
 void ConsoleOperator::OnStepperRun(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1426,6 +1523,8 @@ void ConsoleOperator::OnStepperRun(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnStepperConfigHome(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1446,6 +1545,8 @@ void ConsoleOperator::OnStepperConfigHome(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnStepperEnable(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1466,6 +1567,8 @@ void ConsoleOperator::OnStepperEnable(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnStepperForward(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1486,6 +1589,8 @@ void ConsoleOperator::OnStepperForward(CommandId key, bool bSuccess)
 
 void ConsoleOperator::OnStepperSteps(CommandId key, bool bSuccess)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1519,6 +1624,8 @@ void ConsoleOperator::OnStepperQuery(CommandId key, bool bSuccess,
 									unsigned long decelerationBuffer,
 									unsigned long decelerationBufferIncrement)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
@@ -1570,6 +1677,8 @@ void ConsoleOperator::OnStepperQuery(CommandId key, bool bSuccess,
 
 void ConsoleOperator::OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput)
 {
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
 	if(_cmdKey == InvalidCommandId) {
 		return;
 	}
