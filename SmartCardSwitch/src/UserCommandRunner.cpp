@@ -930,6 +930,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_withoutCard(unsigned 
 	long smartCardFetchStart;
 	long smartCardPlaceStart;
 	long smartCardAccessEnd;
+	long offset;
 
 	long lowClks;
 	long highClks;
@@ -948,19 +949,24 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_withoutCard(unsigned 
 		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card: " + std::to_string(_userCommand.smartCardNumber));
 		return result;
 	}
-	rc = pCoordinateStorage->GetSmartCardFetchStart(smartCardFetchStart);
+	rc = pCoordinateStorage->GetSmartCardFetchStartZ(smartCardFetchStart);
 	if(rc == false) {
 		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card fetch start");
 		return result;
 	}
-	rc = pCoordinateStorage->GetSmartCardPlaceStart(smartCardPlaceStart);
+	rc = pCoordinateStorage->GetSmartCardPlaceStartZ(smartCardPlaceStart);
 	if(rc == false) {
 		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card place start");
 		return result;
 	}
-	rc = pCoordinateStorage->GetSmartCardAccessEnd(smartCardAccessEnd);
+	rc = pCoordinateStorage->GetSmartCardAccessEndZ(smartCardAccessEnd);
 	if(rc == false) {
 		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card access end");
+		return result;
+	}
+	rc = pCoordinateStorage->GetSmartCardFetchOffset(offset);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve fetch offset");
 		return result;
 	}
 	rc = pMovementConfiguration->GetStepperCardInsert(lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
@@ -968,7 +974,10 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_withoutCard(unsigned 
 		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve stepper card slow insert");
 		return result;
 	}
-
+	if(finalY < offset) {
+		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard wrong offset value: " + std::to_string(offset));
+		return result;
+	}
 
 	//move to smart card
 	cmds.clear();
@@ -977,7 +986,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_withoutCard(unsigned 
 		result.push_back(*it);
 	}
 	cmds.clear();
-	moveStepperY(curY, finalY, cmds);
+	moveStepperY(curY, finalY - offset, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
@@ -997,6 +1006,11 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_withoutCard(unsigned 
 	}
 	cmds.clear();
 	moveStepperZ(smartCardFetchStart, finalZ, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+	cmds.clear();
+	moveStepperY(finalY - offset, finalY, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
@@ -1094,7 +1108,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCardReader_withCard()
 		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withCard failed to retrieve smart card reader gate");
 		return result;
 	}
-	rc = pCoordinateStorage->GetSmartCardReaderSlowInsertEnd(slowInsertEnd);
+	rc = pCoordinateStorage->GetSmartCardReaderSlowInsertEndY(slowInsertEnd);
 	if(rc == false) {
 		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withCard failed to retrieve smart card reader slow insert end");
 		return result;
@@ -1333,6 +1347,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCardReader_withoutCard()
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 	long slowInsertStart;
+	long offset;
 
 
 	long lowClks;
@@ -1352,9 +1367,14 @@ std::vector<std::string> UserCommandRunner::gate_smartCardReader_withoutCard()
 		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withoutCard failed to retrieve smart card reader gate");
 		return result;
 	}
-	rc = pCoordinateStorage->GetSmartCardReaderRemovalStart(slowInsertStart);
+	rc = pCoordinateStorage->GetSmartCardReaderRemovalStartY(slowInsertStart);
 	if(rc == false) {
 		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withoutCard failed to retrieve smart card reader slow insert start");
+		return result;
+	}
+	rc = pCoordinateStorage->GetSmartCardFetchOffset(offset);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withoutCard failed to retrieve smart card offset");
 		return result;
 	}
 	rc = pMovementConfiguration->GetStepperCardInsert(lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
@@ -1363,6 +1383,13 @@ std::vector<std::string> UserCommandRunner::gate_smartCardReader_withoutCard()
 		return result;
 	}
 
+	cmds.clear();
+	moveStepperZ(curZ, curZ + offset, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	cmds.clear();
 	moveStepperY(curY, slowInsertStart, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
@@ -1374,7 +1401,14 @@ std::vector<std::string> UserCommandRunner::gate_smartCardReader_withoutCard()
 		result.push_back(*it);
 	}
 
+	cmds.clear();
 	moveStepperY(slowInsertStart, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	cmds.clear();
+	moveStepperZ(curZ + offset, curZ, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
@@ -1422,7 +1456,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_withCard(unsigned int
 		pLogger->LogError("UserCommandRunner::gate_smartCard_withCard failed to retrieve smart card gate");
 		return result;
 	}
-	rc = pCoordinateStorage->GetSmartCardPlaceStart(placeStart);
+	rc = pCoordinateStorage->GetSmartCardPlaceStartZ(placeStart);
 	if(rc == false) {
 		pLogger->LogError("UserCommandRunner::gate_smartCard_withCard failed to retrieve smart card place start");
 		return result;
@@ -1433,6 +1467,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_withCard(unsigned int
 		return result;
 	}
 
+	cmds.clear();
 	moveStepperX(curX, finalX, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);

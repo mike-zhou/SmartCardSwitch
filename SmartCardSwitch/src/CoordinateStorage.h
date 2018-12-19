@@ -61,17 +61,19 @@ public:
 					int& w,
 					unsigned int index = 0);
 
-	void SetSmartCardFetchStart(long zPosition);
-	void SetSmartCardPlaceStart(long zPosition);
-	void SetSmartCardAccessEnd(long zPosition);
-	bool GetSmartCardFetchStart(long & zPosition);
-	bool GetSmartCardPlaceStart(long & zPosition);
-	bool GetSmartCardAccessEnd(long & zPosition);
+	void SetSmartCardFetchStartZ(long zPosition);
+	void SetSmartCardPlaceStartZ(long zPosition);
+	void SetSmartCardAccessEndZ(long zPosition);
+	void SetSmartCardFetchOffset(long offset);
+	bool GetSmartCardFetchStartZ(long & zPosition);
+	bool GetSmartCardPlaceStartZ(long & zPosition);
+	bool GetSmartCardAccessEndZ(long & zPosition);
+	bool GetSmartCardFetchOffset(long & offset);
 
-	void SetSmartCardReaderSlowInsertEnd(long yPosition);
-	void SetSmartCardReaderRemovalStart(long yPosition);
-	bool GetSmartCardReaderSlowInsertEnd(long & yPosition);
-	bool GetSmartCardReaderRemovalStart(long & yPosition);
+	void SetSmartCardReaderSlowInsertEndY(long yPosition);
+	void SetSmartCardReaderRemovalStartY(long yPosition);
+	bool GetSmartCardReaderSlowInsertEndY(long & yPosition);
+	bool GetSmartCardReaderRemovalStartY(long & yPosition);
 
 private:
 	//constraints
@@ -101,6 +103,7 @@ private:
 	long _smartCardFetchStart;
 	long _smartCardPlaceStart;
 	long _smartCardAccessEnd;
+	long _smartCardFetchOffset;
 
 	//PED keys
 	Coordinate _pedKeyGate;

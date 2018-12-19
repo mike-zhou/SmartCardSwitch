@@ -25,6 +25,13 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 {
 	_filePathName = filePathName;
 
+	_smartCardFetchStart = -1;
+	_smartCardPlaceStart = -1;
+	_smartCardAccessEnd = -1;
+	_smartCardFetchOffset = -1;
+	_smartCardReaderSlowInsertEnd = -1;
+	_smartCardReaderRemovalStart = -1;
+
 	if(_filePathName.empty()) {
 		pLogger->LogError("CoordinateStorage::CoordinateStorage empty file path & name");
 		return;
@@ -202,6 +209,14 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			_barCodeReader.z = ds["barCodeReader"]["slot"]["z"];
 			_barCodeReader.w = ds["barCodeReader"]["slot"]["w"];
 
+			//offset
+			_smartCardFetchStart = ds["smartCardFetchStart"];
+			_smartCardPlaceStart = ds["smartCardPlaceStart"];
+			_smartCardAccessEnd = ds["smartCardAccessEnd"];
+			_smartCardFetchOffset = ds["smartCardFetchOffset"];
+			_smartCardReaderSlowInsertEnd = ds["smartCardReaderSlowInsertEnd"];
+			_smartCardReaderRemovalStart = ds["smartCardReaderRemovalStart"];
+
 			pLogger->LogInfo("CoordinateStorage::CoordinateStorage storage file is parsed successfully");
 		}
 	}
@@ -310,6 +325,14 @@ bool CoordinateStorage::PersistToFile()
 	json = json + "\"gate\":" + _barCodeReaderGate.ToJsonObj() + ",";
 	json = json + "\"slot\":" + _barCodeReader.ToJsonObj();
 	json = json + "}";
+
+	//offset
+	json = json + ", \"smartCardFetchStart\":" + std::to_string(_smartCardFetchStart);
+	json = json + ", \"smartCardPlaceStart\":" + std::to_string(_smartCardPlaceStart);
+	json = json + ", \"smartCardAccessEnd\":" + std::to_string(_smartCardAccessEnd);
+	json = json + ", \"smartCardFetchOffset\":" + std::to_string(_smartCardFetchOffset);
+	json = json + ", \"smartCardReaderSlowInsertEnd\":" + std::to_string(_smartCardReaderSlowInsertEnd);
+	json = json + ", \"smartCardReaderRemovalStart\":" + std::to_string(_smartCardReaderRemovalStart);
 
 	json = json + "}";
 
@@ -742,22 +765,27 @@ std::string CoordinateStorage::Coordinate::ToJsonObj()
 	return json;
 }
 
-void CoordinateStorage::SetSmartCardFetchStart(long zPosition)
+void CoordinateStorage::SetSmartCardFetchStartZ(long zPosition)
 {
 	_smartCardFetchStart = zPosition;
 }
 
-void CoordinateStorage::SetSmartCardPlaceStart(long zPosition)
+void CoordinateStorage::SetSmartCardPlaceStartZ(long zPosition)
 {
 	_smartCardPlaceStart = zPosition;
 }
 
-void CoordinateStorage::SetSmartCardAccessEnd(long zPosition)
+void CoordinateStorage::SetSmartCardAccessEndZ(long zPosition)
 {
 	_smartCardAccessEnd = zPosition;
 }
 
-bool CoordinateStorage::GetSmartCardFetchStart(long & zPosition)
+void CoordinateStorage::SetSmartCardFetchOffset(long offset)
+{
+	_smartCardFetchOffset = offset;
+}
+
+bool CoordinateStorage::GetSmartCardFetchStartZ(long & zPosition)
 {
 	if(_smartCardFetchStart < 0) {
 		return false;
@@ -767,7 +795,7 @@ bool CoordinateStorage::GetSmartCardFetchStart(long & zPosition)
 	return true;
 }
 
-bool CoordinateStorage::GetSmartCardPlaceStart(long & zPosition)
+bool CoordinateStorage::GetSmartCardPlaceStartZ(long & zPosition)
 {
 	if(_smartCardPlaceStart < 0) {
 		return false;
@@ -777,7 +805,7 @@ bool CoordinateStorage::GetSmartCardPlaceStart(long & zPosition)
 	return true;
 }
 
-bool CoordinateStorage::GetSmartCardAccessEnd(long & zPosition)
+bool CoordinateStorage::GetSmartCardAccessEndZ(long & zPosition)
 {
 	if(_smartCardAccessEnd < 0) {
 		return false;
@@ -787,17 +815,27 @@ bool CoordinateStorage::GetSmartCardAccessEnd(long & zPosition)
 	return true;
 }
 
-void CoordinateStorage::SetSmartCardReaderSlowInsertEnd(long yPosition)
+bool CoordinateStorage::GetSmartCardFetchOffset(long & offset)
+{
+	if(_smartCardFetchOffset < 0) {
+		return false;
+	}
+
+	offset = _smartCardFetchOffset;
+	return true;
+}
+
+void CoordinateStorage::SetSmartCardReaderSlowInsertEndY(long yPosition)
 {
 	_smartCardReaderSlowInsertEnd = yPosition;
 }
 
-void CoordinateStorage::SetSmartCardReaderRemovalStart(long yPosition)
+void CoordinateStorage::SetSmartCardReaderRemovalStartY(long yPosition)
 {
 	_smartCardReaderRemovalStart = yPosition;
 }
 
-bool CoordinateStorage::GetSmartCardReaderSlowInsertEnd(long & yPosition)
+bool CoordinateStorage::GetSmartCardReaderSlowInsertEndY(long & yPosition)
 {
 	if(_smartCardReaderSlowInsertEnd < 0) {
 		return false;
@@ -807,7 +845,7 @@ bool CoordinateStorage::GetSmartCardReaderSlowInsertEnd(long & yPosition)
 	return true;
 }
 
-bool CoordinateStorage::GetSmartCardReaderRemovalStart(long & yPosition)
+bool CoordinateStorage::GetSmartCardReaderRemovalStartY(long & yPosition)
 {
 	if(_smartCardReaderRemovalStart < 0) {
 		return false;
