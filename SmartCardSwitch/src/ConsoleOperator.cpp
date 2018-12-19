@@ -216,7 +216,10 @@ void ConsoleOperator::stepperMove(unsigned int index, bool forward, unsigned int
 
 	// set stepper direction
 	prepareRunning();
-	_pCommandReception->StepperForward(index, forward);
+	{
+		Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+		_cmdKey = _pCommandReception->StepperForward(index, forward);
+	}
 	waitCommandFinish();
 	if(!_bCmdSucceed) {
 		pLogger->LogError("ConsoleOperator::stepperMove failed to set stepper direction: " + std::to_string(index));
@@ -226,7 +229,10 @@ void ConsoleOperator::stepperMove(unsigned int index, bool forward, unsigned int
 
 	// set steps
 	prepareRunning();
-	_pCommandReception->StepperSteps(index, steps);
+	{
+		Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+		_cmdKey = _pCommandReception->StepperSteps(index, steps);
+	}
 	waitCommandFinish();
 	if(!_bCmdSucceed) {
 		pLogger->LogError("ConsoleOperator::stepperMove failed to set steps: " + std::to_string(index));
@@ -235,6 +241,10 @@ void ConsoleOperator::stepperMove(unsigned int index, bool forward, unsigned int
 
 	//move stepper
 	prepareRunning();
+	{
+		Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+		_cmdKey = _pCommandReception->StepperRun(index, data.homeOffset, finalPos);
+	}
 	_pCommandReception->StepperRun(index, data.homeOffset, finalPos);
 	waitCommandFinish();
 	if(!_bCmdSucceed) {
@@ -243,7 +253,10 @@ void ConsoleOperator::stepperMove(unsigned int index, bool forward, unsigned int
 
 	//query stepper
 	prepareRunning();
-	_pCommandReception->StepperQuery(index);
+	{
+		_pCommandReception->StepperRun(index, data.homeOffset, finalPos);
+		_cmdKey = _pCommandReception->StepperQuery(index);
+	}
 	waitCommandFinish();
 	if(!_bCmdSucceed) {
 		pLogger->LogError("ConsoleOperator::stepperMove failed to query stepper : " + std::to_string(index));
