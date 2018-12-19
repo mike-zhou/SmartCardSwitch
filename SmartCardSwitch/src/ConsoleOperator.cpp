@@ -53,9 +53,13 @@ void ConsoleOperator::prepareRunning()
 
 void ConsoleOperator::waitCommandFinish()
 {
-	for(;;) {
-		if(_bCmdFinish) {
-			break;
+	for(;;)
+	{
+		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+			if(_bCmdFinish) {
+				break;
+			}
 		}
 		sleep(1);
 	}
@@ -177,17 +181,20 @@ void ConsoleOperator::stepperSetState(unsigned int index, int state)
 		return;
 	}
 
-	//prepareRunning();
-	_pCommandReception->StepperSetState(index, stepperState);
-	//waitCommandFinish();
+	prepareRunning();
+	{
+		Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+		_cmdKey = _pCommandReception->StepperSetState(index, stepperState);
+	}
+	waitCommandFinish();
 
-//	if(_bCmdSucceed) {
-//		pLogger->LogInfo("ConsoleOperator::stepperSetState succeeded in setting stepper state to " + std::to_string(state));
-//		_steppers[index].homeOffset = 0;
-//	}
-//	else {
-//		pLogger->LogInfo("ConsoleOperator::stepperSetState failed in setting stepper state to " + std::to_string(state));
-//	}
+	if(_bCmdSucceed) {
+		pLogger->LogInfo("ConsoleOperator::stepperSetState succeeded in setting stepper state to " + std::to_string(state));
+		_steppers[index].homeOffset = 0;
+	}
+	else {
+		pLogger->LogInfo("ConsoleOperator::stepperSetState failed in setting stepper state to " + std::to_string(state));
+	}
 }
 
 void ConsoleOperator::stepperMove(unsigned int index, bool forward, unsigned int steps)
