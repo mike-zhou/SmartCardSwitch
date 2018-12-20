@@ -178,7 +178,9 @@ protected:
 			pConsoleOperator = new ConsoleOperator(pCommandRunner);
 
 			//user proxy
-			Poco::Net::SocketAddress userListenerAddress("127.0.0.1:60001");
+			std::string userProxyListenerIp = config().getString("user_proxy_listener_ip", "127.0.0.1");
+			std::string userPorxyListenerPort = config().getString("user_proxy_listener_port", "60001");
+			Poco::Net::SocketAddress userListenerAddress(userProxyListenerIp + ":" + userPorxyListenerPort);
 			pUserProxy = new UserProxy;
 			pUserCommandRunner = new UserCommandRunner;
 			pUserListener = new UserListener(pUserProxy);
