@@ -109,7 +109,7 @@
  * {
  * 	"userCommand":"touch screen",
  * 	"commandId":"uniqueCommandId",
- * 	"areas":[
+ * 	"keys":[
  * 		{"index":0, "keyNumber":1},
  * 		{"index":1, "keyNumber":5}
  * 	],

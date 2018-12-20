@@ -6,6 +6,8 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
+#include <iostream>
+
 #include "Poco/Util/ServerApplication.h"
 #include "Poco/Util/Option.h"
 #include "Poco/Util/OptionSet.h"
@@ -16,9 +18,11 @@
 #include "Poco/Net/SocketAddress.h"
 #include "Poco/Net/StreamSocket.h"
 #include "Poco/Exception.h"
-#include <iostream>
-#include "CommandFactory.h"
-#include "FeedbackParser.h"
+
+#include "ConsoleInput.h"
+#include "CommandRunner.h"
+#include "Logger.h"
+
 
 using namespace std;
 
@@ -31,6 +35,8 @@ using Poco::Util::HelpFormatter;
 using Poco::Task;
 using Poco::TaskManager;
 using Poco::DateTimeFormatter;
+
+Logger * pLogger;
 
 class ClientConsole: public ServerApplication
 {
@@ -84,108 +90,51 @@ protected:
 		helpFormatter.format(std::cout);
 	}
 
-	void sendCmdPkg(Poco::Net::StreamSocket& socket, std::vector<unsigned char>& cmdPkg)
-	{
-		unsigned int amount = 0;
-
-		for(;;)
-		{
-			int count;
-
-			count = cmdPkg.size() - amount;
-			printf("sendCmdPkg: %d bytes to send\r\n", count);
-			count = socket.sendBytes(cmdPkg.data() + amount, count, 0);
-			if(count < 0) {
-				printf("ERROR: sendCmdPkg error in socket.sendBytes\r\n");
-			}
-			printf("sendCmdPkg: %d bytes have been sent\r\n", count);
-			amount += count;
-
-			if(amount == cmdPkg.size()) {
-				break;
-			}
-			if(amount > cmdPkg.size()) {
-				printf("ERROR: sendCmdPkg sent more data out: %d:%d\r\n", amount, cmdPkg.size());
-				break;
-			}
-		}
-	}
-
-	void receiveFeedbacks(Poco::Net::StreamSocket& socket, std::vector<std::string>& jsons)
-	{
-		std::deque<unsigned char> data;
-		unsigned char buffer[1024];
-
-		for(;;)
-		{
-			Poco::Timespan timeSpan(1000000);// 1 second
-
-			if(socket.poll(timeSpan, Poco::Net::StreamSocket::SELECT_READ)) {
-				int amount = socket.receiveBytes(buffer, 1024, 0);
-				for(int i=0; i<amount; i++) {
-					data.push_back(buffer[i]);
-				}
-				printf("receiveFeedbacks %d bytes of feedback arrives\r\n", amount);
-				FeedbackParser::RetrieveFeedbacks(data, jsons);
-				if(data.size() == 0) {
-					break;
-				}
-				else {
-					printf("receiveFeedbacks continue receiving data\r\n");
-				}
-			}
-			else {
-				printf("ERROR: receiveFeedbacks no data arrives in time constrain\r\n");
-				break;
-			}
-		}
-	}
-
 	int main(const ArgVec& args)
 	{
 		if (_helpRequested) {
 			return Application::EXIT_OK;
 		}
 
-		try
-		{
-			Poco::Net::SocketAddress socketAddress("127.0.0.1:60000");
-			Poco::Net::StreamSocket socket;
+		TaskManager tmLogger;
+		TaskManager tm;
 
-			printf("Connecting to %s\r\n", socketAddress.toString().c_str());
-			socket.connect(socketAddress);
-			printf("Connected to %s\r\n", socketAddress.toString().c_str());
+		ConsoleInput * pConsoleInput;
+		CommandRunner * pCmdRunner;
+		Poco::Net::SocketAddress address("127.0.0.1:60001");
+		std::string logPath = "./logs/clientConsole";
+		std::string logFileName = "clientConsoleLog";
+		std::string logFileSize = "1M";
+		std::string logFileAmount = "10";
 
-			{
-				auto cmdVector = CommandFactory::DevicesGet();
-				sendCmdPkg(socket, cmdVector);
-			}
-			{
-				std::vector<std::string> jsons;
-				receiveFeedbacks(socket, jsons);
-				if(jsons.size() > 0) {
-					for(auto it=jsons.begin(); it!=jsons.end(); it++)
-					{
-						printf("feedback: %s\r\n", it->c_str());
-					}
-				}
-				else {
-					printf("ERROR: no feedback in time constrain\r\n");
-				}
-			}
+		pLogger = new Logger(logPath, logFileName, logFileSize, logFileAmount);
+		pLogger->CopyToConsole(true);
+		tmLogger.start(pLogger); //tmLogger takes the ownership of pLogger.
+		pLogger->LogInfo("**** SmartCardSwitch Client ****");
 
-			printf("Socket is closing\r\n");
-			socket.close();
-			printf("Socket closed\r\n");
-		}
-		catch(Poco::Exception& e)
+
+		pCmdRunner = new CommandRunner;
+		pConsoleInput = new ConsoleInput(pCmdRunner);
+
+		if(pCmdRunner->Init(address))
 		{
-			printf("Poco::Exception %s\r\n", e.displayText().c_str());
+			tm.start(pCmdRunner);
+			tm.start(pConsoleInput);
+
+			waitForTerminationRequest();
+			tm.cancelAll();
+			tm.joinAll();
 		}
-		catch(...)
+		else
 		{
-			printf("Unknown exception occurs\r\n");
+			printf("failed to initialize CommandRunner\r\n");
+
+			delete pCmdRunner;
+			delete pConsoleInput;
 		}
+
+		tmLogger.cancelAll();
+		tmLogger.joinAll();
 
 		return Application::EXIT_OK;
 	}

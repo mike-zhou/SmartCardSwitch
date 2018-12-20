@@ -471,13 +471,28 @@ void UserCommandRunner::parseUserCmdSmartCard(Poco::DynamicStruct& ds)
 	_userCommand.smartCardNumber = number;
 }
 
+void UserCommandRunner::parseUserCmdSwipeSmartCard(Poco::DynamicStruct& ds)
+{
+	unsigned int number = ds["smartCardNumber"];
+
+	if(number >= pCoordinateStorage->SmartCardsAmount())
+	{
+		std::string err = "UserCommandRunner::parseUserCmdSwipeSmartCard smart card number of range: " + std::to_string(number);
+		pLogger->LogError(err);
+		throw Poco::Exception(err);
+	}
+
+	_userCommand.smartCardNumber = number;
+	_userCommand.downPeriod = ds["downPeriod"];
+}
+
 void UserCommandRunner::parseUserCmdTapSmartCard(Poco::DynamicStruct& ds)
 {
 	unsigned int number = ds["smartCardNumber"];
 
 	if(number >= pCoordinateStorage->SmartCardsAmount())
 	{
-		std::string err = "UserCommandRunner::parseUserCmdSmartCard smart card number of range: " + std::to_string(number);
+		std::string err = "UserCommandRunner::parseUserCmdTapSmartCard smart card number of range: " + std::to_string(number);
 		pLogger->LogError(err);
 		throw Poco::Exception(err);
 	}
@@ -2083,13 +2098,13 @@ void UserCommandRunner::parseUserCmdKeys(Poco::DynamicStruct& ds)
 				_userCommand.keyNumbers[index] = number;
 			}
 			else {
-				std::string err = "UserCommandRunner::parseUserCmdPressPedKey key number of range: " + std::to_string(number);
+				std::string err = "UserCommandRunner::parseUserCmdKeys key number of range: " + std::to_string(number);
 				pLogger->LogError(err);
 				throw Poco::Exception(err);
 			}
 		}
 		else {
-			std::string err = "UserCommandRunner::parseUserCmdPressPedKey index out of range: " + std::to_string(index);
+			std::string err = "UserCommandRunner::parseUserCmdKeys index out of range: " + std::to_string(index);
 			pLogger->LogError(err);
 			throw Poco::Exception(err);
 		}
@@ -3599,7 +3614,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			parseUserCmdSmartCard(ds);
 		}
 		else if(_userCommand.command == UserCmdSwipeSmartCard) {
-			parseUserCmdSmartCard(ds);
+			parseUserCmdSwipeSmartCard(ds);
 		}
 		else if(_userCommand.command == UserCmdTapSmartCard) {
 			parseUserCmdTapSmartCard(ds);
