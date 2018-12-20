@@ -201,9 +201,9 @@ protected:
 			tm.start(pCommandRunner);
 			tm.start(pDeviceAccessor);
 			tm.start(pConsoleOperator);
-			//tm.start(pUserCommandRunner);
-			//tm.start(pUserProxy);
-			//tm.start(pUserListener);
+			tm.start(pUserCommandRunner);
+			tm.start(pUserProxy);
+			tm.start(pUserListener);
 		}
 		catch(Poco::Exception& e)
 		{

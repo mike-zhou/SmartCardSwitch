@@ -96,7 +96,7 @@ private:
 
 				cmd = getConsoleCommand();
 
-				if(cmd.empty())
+				if(!cmd.empty())
 				{
 					//parse command
 					int d0, d1, d2, d3, d4, d5, d6, d7, d8, d9;
@@ -130,6 +130,15 @@ private:
 
 					switch(d0)
 					{
+						case 0:
+						{
+							Poco::Net::SocketAddress address("127.0.0.1:60001");
+							if(!_pCmdRunner->Init(address)) {
+								pLogger->LogError("ConsoleInput::runTask failed to connect to " + address.toString());
+							}
+						}
+						break;
+
 						case 1:
 						{
 							if(d1 == -1) {
@@ -328,6 +337,8 @@ private:
 					if(!json.empty()) {
 						_pCmdRunner->RunJsonCommand(json);
 					}
+
+					pLogger->LogInfo(CommandFactory::Help());
 				}
 			}
 		}
