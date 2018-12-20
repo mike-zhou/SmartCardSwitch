@@ -177,9 +177,12 @@ protected:
 			//ConsoleOperator
 			pConsoleOperator = new ConsoleOperator(pCommandRunner);
 
+			//user proxy
+			Poco::Net::SocketAddress userListenerAddress("127.0.0.1:60001");
 			pUserProxy = new UserProxy;
 			pUserCommandRunner = new UserCommandRunner;
 			pUserListener = new UserListener(pUserProxy);
+			pUserListener->Bind(userListenerAddress);
 
 			//couple tasks:
 			// command flow: ConsoleOperator >> CommandRunner >> DeviceAccessor
