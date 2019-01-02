@@ -25,12 +25,15 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 {
 	_filePathName = filePathName;
 
-	_smartCardFetchStart = -1;
 	_smartCardPlaceStart = -1;
-	_smartCardAccessEnd = -1;
 	_smartCardFetchOffset = -1;
 	_smartCardReaderSlowInsertEnd = -1;
-	_smartCardReaderRemovalStart = -1;
+	_smartCardReleaseOffset = -1;
+
+	_home.x = 0;
+	_home.y = 0;
+	_home.z = 0;
+	_home.w = 0;
 
 	if(_filePathName.empty()) {
 		pLogger->LogError("CoordinateStorage::CoordinateStorage empty file path & name");
@@ -184,38 +187,36 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			_smartCardReaderGate.y = ds["smartCardReader"]["gate"]["y"];
 			_smartCardReaderGate.z = ds["smartCardReader"]["gate"]["z"];
 			_smartCardReaderGate.w = ds["smartCardReader"]["gate"]["w"];
-			_smartCardReader.x = ds["smartCardReader"]["slot"]["x"];
-			_smartCardReader.y = ds["smartCardReader"]["slot"]["y"];
-			_smartCardReader.z = ds["smartCardReader"]["slot"]["z"];
-			_smartCardReader.w = ds["smartCardReader"]["slot"]["w"];
+			_smartCardReader.x = ds["smartCardReader"]["reader"]["x"];
+			_smartCardReader.y = ds["smartCardReader"]["reader"]["y"];
+			_smartCardReader.z = ds["smartCardReader"]["reader"]["z"];
+			_smartCardReader.w = ds["smartCardReader"]["reader"]["w"];
 
 			//contactless reader
 			_contactlessReaderGate.x = ds["contactlessReader"]["gate"]["x"];
 			_contactlessReaderGate.y = ds["contactlessReader"]["gate"]["y"];
 			_contactlessReaderGate.z = ds["contactlessReader"]["gate"]["z"];
 			_contactlessReaderGate.w = ds["contactlessReader"]["gate"]["w"];
-			_contactlessReader.x = ds["contactlessReader"]["slot"]["x"];
-			_contactlessReader.y = ds["contactlessReader"]["slot"]["y"];
-			_contactlessReader.z = ds["contactlessReader"]["slot"]["z"];
-			_contactlessReader.w = ds["contactlessReader"]["slot"]["w"];
+			_contactlessReader.x = ds["contactlessReader"]["reader"]["x"];
+			_contactlessReader.y = ds["contactlessReader"]["reader"]["y"];
+			_contactlessReader.z = ds["contactlessReader"]["reader"]["z"];
+			_contactlessReader.w = ds["contactlessReader"]["reader"]["w"];
 
 			//bar code reader
 			_barCodeReaderGate.x = ds["barCodeReader"]["gate"]["x"];
 			_barCodeReaderGate.y = ds["barCodeReader"]["gate"]["y"];
 			_barCodeReaderGate.z = ds["barCodeReader"]["gate"]["z"];
 			_barCodeReaderGate.w = ds["barCodeReader"]["gate"]["w"];
-			_barCodeReader.x = ds["barCodeReader"]["slot"]["x"];
-			_barCodeReader.y = ds["barCodeReader"]["slot"]["y"];
-			_barCodeReader.z = ds["barCodeReader"]["slot"]["z"];
-			_barCodeReader.w = ds["barCodeReader"]["slot"]["w"];
+			_barCodeReader.x = ds["barCodeReader"]["reader"]["x"];
+			_barCodeReader.y = ds["barCodeReader"]["reader"]["y"];
+			_barCodeReader.z = ds["barCodeReader"]["reader"]["z"];
+			_barCodeReader.w = ds["barCodeReader"]["reader"]["w"];
 
 			//offset
-			_smartCardFetchStart = ds["smartCardFetchStart"];
 			_smartCardPlaceStart = ds["smartCardPlaceStart"];
-			_smartCardAccessEnd = ds["smartCardAccessEnd"];
 			_smartCardFetchOffset = ds["smartCardFetchOffset"];
 			_smartCardReaderSlowInsertEnd = ds["smartCardReaderSlowInsertEnd"];
-			_smartCardReaderRemovalStart = ds["smartCardReaderRemovalStart"];
+			_smartCardReleaseOffset = ds["smartCardReleaseOffset"];
 
 			pLogger->LogInfo("CoordinateStorage::CoordinateStorage storage file is parsed successfully");
 		}
@@ -308,31 +309,29 @@ bool CoordinateStorage::PersistToFile()
 	json = json + "]";//end of keys
 	json = json + "}";//end of assistKeys.
 
-	//smart card slot
+	//smart card reader
 	json = json + ",\"smartCardReader\": {";
 	json = json + "\"gate\":" + _smartCardReaderGate.ToJsonObj() + ",";
-	json = json + "\"slot\":" + _smartCardReader.ToJsonObj();
+	json = json + "\"reader\":" + _smartCardReader.ToJsonObj();
 	json = json + "}";
 
 	//contactless reader
 	json = json + ",\"contactlessReader\": {";
 	json = json + "\"gate\":" + _contactlessReaderGate.ToJsonObj() + ",";
-	json = json + "\"slot\":" + _contactlessReader.ToJsonObj();
+	json = json + "\"reader\":" + _contactlessReader.ToJsonObj();
 	json = json + "}";
 
 	//bar code reader
 	json = json + ",\"barCodeReader\": {";
 	json = json + "\"gate\":" + _barCodeReaderGate.ToJsonObj() + ",";
-	json = json + "\"slot\":" + _barCodeReader.ToJsonObj();
+	json = json + "\"reader\":" + _barCodeReader.ToJsonObj();
 	json = json + "}";
 
 	//offset
-	json = json + ", \"smartCardFetchStart\":" + std::to_string(_smartCardFetchStart);
 	json = json + ", \"smartCardPlaceStart\":" + std::to_string(_smartCardPlaceStart);
-	json = json + ", \"smartCardAccessEnd\":" + std::to_string(_smartCardAccessEnd);
 	json = json + ", \"smartCardFetchOffset\":" + std::to_string(_smartCardFetchOffset);
+	json = json + ",\"smartCardReleaseOffset\":" + std::to_string(_smartCardReleaseOffset);
 	json = json + ", \"smartCardReaderSlowInsertEnd\":" + std::to_string(_smartCardReaderSlowInsertEnd);
-	json = json + ", \"smartCardReaderRemovalStart\":" + std::to_string(_smartCardReaderRemovalStart);
 
 	json = json + "}";
 
@@ -346,7 +345,7 @@ bool CoordinateStorage::PersistToFile()
 			storageFile.remove(false);
 		}
 
-		fd = open(_filePathName.c_str(), O_CREAT | O_WRONLY);
+		fd = open(_filePathName.c_str(), O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 		if(fd >= 0)
 		{
 			pLogger->LogInfo("CoordinateStorage::PersistToFile write " + std::to_string(json.size()) + " bytes to file " + _filePathName);
@@ -765,19 +764,9 @@ std::string CoordinateStorage::Coordinate::ToJsonObj()
 	return json;
 }
 
-void CoordinateStorage::SetSmartCardFetchStartZ(long zPosition)
-{
-	_smartCardFetchStart = zPosition;
-}
-
 void CoordinateStorage::SetSmartCardPlaceStartZ(long zPosition)
 {
 	_smartCardPlaceStart = zPosition;
-}
-
-void CoordinateStorage::SetSmartCardAccessEndZ(long zPosition)
-{
-	_smartCardAccessEnd = zPosition;
 }
 
 void CoordinateStorage::SetSmartCardFetchOffset(long offset)
@@ -785,14 +774,9 @@ void CoordinateStorage::SetSmartCardFetchOffset(long offset)
 	_smartCardFetchOffset = offset;
 }
 
-bool CoordinateStorage::GetSmartCardFetchStartZ(long & zPosition)
+void CoordinateStorage::SetSmartCardReleaseOffsetZ(long offset)
 {
-	if(_smartCardFetchStart < 0) {
-		return false;
-	}
-
-	zPosition = _smartCardFetchStart;
-	return true;
+	_smartCardReleaseOffset = offset;
 }
 
 bool CoordinateStorage::GetSmartCardPlaceStartZ(long & zPosition)
@@ -802,16 +786,6 @@ bool CoordinateStorage::GetSmartCardPlaceStartZ(long & zPosition)
 	}
 
 	zPosition = _smartCardPlaceStart;
-	return true;
-}
-
-bool CoordinateStorage::GetSmartCardAccessEndZ(long & zPosition)
-{
-	if(_smartCardAccessEnd < 0) {
-		return false;
-	}
-
-	zPosition = _smartCardAccessEnd;
 	return true;
 }
 
@@ -825,14 +799,19 @@ bool CoordinateStorage::GetSmartCardFetchOffset(long & offset)
 	return true;
 }
 
+bool CoordinateStorage::GetSmartCardReleaseOffset(long & offset)
+{
+	if(_smartCardReleaseOffset < 0) {
+		return false;
+	}
+
+	offset = _smartCardReleaseOffset;
+	return true;
+}
+
 void CoordinateStorage::SetSmartCardReaderSlowInsertEndY(long yPosition)
 {
 	_smartCardReaderSlowInsertEnd = yPosition;
-}
-
-void CoordinateStorage::SetSmartCardReaderRemovalStartY(long yPosition)
-{
-	_smartCardReaderRemovalStart = yPosition;
 }
 
 bool CoordinateStorage::GetSmartCardReaderSlowInsertEndY(long & yPosition)
@@ -842,16 +821,6 @@ bool CoordinateStorage::GetSmartCardReaderSlowInsertEndY(long & yPosition)
 	}
 
 	yPosition = _smartCardReaderSlowInsertEnd;
-	return true;
-}
-
-bool CoordinateStorage::GetSmartCardReaderRemovalStartY(long & yPosition)
-{
-	if(_smartCardReaderRemovalStart < 0) {
-		return false;
-	}
-
-	yPosition = _smartCardReaderRemovalStart;
 	return true;
 }
 

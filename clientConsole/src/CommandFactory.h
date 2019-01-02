@@ -180,7 +180,7 @@ public:
 
 		json += "{";
 		json +=  	"\"userCommand\":\"power on opt\",";
-		json +=  	"\"commandId\":\"" + getUniqueId();
+		json +=  	"\"commandId\":\"" + getUniqueId() + "\"";
 		json += "}";
 
 		return json;
@@ -192,7 +192,7 @@ public:
 
 		json += "{";
 		json +=  	"\"userCommand\":\"power off opt\",";
-		json +=  	"\"commandId\":\"" + getUniqueId();
+		json +=  	"\"commandId\":\"" + getUniqueId() + "\"";
 		json += "}";
 
 		return json;

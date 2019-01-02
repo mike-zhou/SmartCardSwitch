@@ -114,7 +114,6 @@ private:
 	unsigned int _index;
 	bool _bCmdFinish;
 	bool _bCmdSucceed;
-	int _queriedHomeOffset;
 	std::vector<std::string> _devices;
 	struct StepperData
 	{
@@ -146,7 +145,7 @@ private:
 	};
 	std::vector<BdcData> _bdcs;
 
-	bool runConsoleCommand(const std::string& command);
+	bool runConsoleCommand(const std::string& command, ICommandReception::CommandId & cmdId);
 
 	std::string getConsoleCommand();
 	void showHelp();
@@ -168,7 +167,7 @@ private:
 
 	//compound commands
 	void stepperSetState(unsigned int index, int state);
-	void stepperMove(unsigned int index, bool forward, unsigned int steps);
+	void stepperMove(const unsigned int index, const bool forward, const unsigned int steps);
 };
 
 

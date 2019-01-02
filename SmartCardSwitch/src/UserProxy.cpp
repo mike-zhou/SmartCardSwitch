@@ -19,8 +19,12 @@
 
 extern Logger * pLogger;
 
-UserProxy::UserProxy(): Task("UserProxy")
+UserProxy::UserProxy(const std::string & deviceName, unsigned int locatorNumber, unsigned int lineNumber): Task("UserProxy")
 {
+	_deviceName = deviceName;
+	_locatorNumberForReset = locatorNumber;
+	_lineNumberForReset = lineNumber;
+
 	_pUserCmdRunner = nullptr;
 	_state = State::ConnectDevice;
 }
@@ -47,9 +51,13 @@ void UserProxy::parseReply(const std::string& reply)
 
 		commandId = ds["commandId"].toString();
 		state = ds["result"].toString();
-		if(state == "failed") {
+		if(state == UserCmdStatusFailed) {
 			errorInfo = ds["errorInfo"].toString();
 		}
+		else if(state == UserCmdStatusInternalError) {
+			errorInfo = UserCmdStatusInternalError;
+		}
+		//todo: check all kinds of state before useing it in the following code.
 
 		{
 			//update user command result.
@@ -79,8 +87,10 @@ void UserProxy::OnCommandStatus(const std::string& jsonStatus)
 	{
 		case State::ConnectDevice:
 		case State::WaitForDeviceAvailability:
-		case State::AskForResetConfirm:
-		case State::WaitForResetConfirm:
+		case State::CheckResetKeyPressed:
+		case State::WaitForResetPressed:
+		case State::CheckResetKeyReleased:
+		case State::WaitForResetReleased:
 		case State::ResetDevice:
 		case State::WaitForDeviceReady:
 		{
@@ -144,8 +154,8 @@ void UserProxy::AddSocket(StreamSocket& socket)
 		}
 		break;
 
-		case State::AskForResetConfirm:
-		case State::WaitForResetConfirm:
+		case State::CheckResetKeyPressed:
+		case State::WaitForResetPressed:
 		{
 			std::string errorInfo;
 			std::vector<unsigned char> pkg;
@@ -243,7 +253,7 @@ bool UserProxy::sendDeviceConnectCommand()
 	std::string cmd = "{\"userCommand\":\"connect device\",\"deviceName\":\"" + _deviceName + "\",\"commandId\":\"connect device\"}";
 
 	_commandId = "connect device";
-	_commandState = "ongoing";
+	_commandState = UserCmdStatusOnGoing;
 
 	_pUserCmdRunner->RunCommand(cmd, error);
 
@@ -255,19 +265,37 @@ bool UserProxy::sendDeviceConnectCommand()
 	return true;
 }
 
-bool UserProxy::sendConfirmResetCommand()
+bool UserProxy::sendCheckResetPressedCommand()
 {
 	std::string error;
-	std::string cmd = "{\"userCommand\":\"confirm reset\",\"commandId\":\"confirm reset\",\"locatorIndex\":0,\"lineNumber\":1}";
+	std::string cmd = "{\"userCommand\":\"check reset pressed\",\"commandId\":\"check reset pressed\",\"locatorIndex\":" + std::to_string(_locatorNumberForReset) + ",\"lineNumber\":" + std::to_string(_lineNumberForReset) + "}";
 
-	_commandId = "confirm reset";
-	_commandState = "ongoing";
+	_commandId = "check reset pressed";
+	_commandState = UserCmdStatusOnGoing;
 
 	_pUserCmdRunner->RunCommand(cmd, error);
 
 	if(!error.empty())
 	{
-		pLogger->LogError("UserProxy::sendConfirmResetCommand error: " + error);
+		pLogger->LogError("UserProxy::sendCheckResetPressedCommand error: " + error);
+		return false;
+	}
+	return true;
+}
+
+bool UserProxy::sendCheckResetReleasedCommand()
+{
+	std::string error;
+	std::string cmd = "{\"userCommand\":\"check reset released\",\"commandId\":\"check reset released\",\"locatorIndex\":" + std::to_string(_locatorNumberForReset) + ",\"lineNumber\":" + std::to_string(_lineNumberForReset) + "}";
+
+	_commandId = "check reset released";
+	_commandState = UserCmdStatusOnGoing;
+
+	_pUserCmdRunner->RunCommand(cmd, error);
+
+	if(!error.empty())
+	{
+		pLogger->LogError("UserProxy::sendCheckResetReleasedCommand error: " + error);
 		return false;
 	}
 	return true;
@@ -279,7 +307,7 @@ bool UserProxy::sendDeviceResetCommand()
 	std::string cmd = "{\"userCommand\":\"reset device\",\"commandId\":\"reset device\"}";
 
 	_commandId = "reset device";
-	_commandState = "ongoing";
+	_commandState = UserCmdStatusOnGoing;
 
 	_pUserCmdRunner->RunCommand(cmd, error);
 
@@ -353,19 +381,19 @@ void UserProxy::runTask()
 
 					case State::WaitForDeviceAvailability:
 					{
-						if(_commandState == "ongoing")
+						if(_commandState == UserCmdStatusOnGoing)
 						{
 							sleep(100); //wait for a short time for the reply.
 						}
-						if(_commandState == "ongoing")
+						if(_commandState == UserCmdStatusOnGoing)
 						{
-							currentTime.update(); //no reply has arrived yet.
+							currentTime.update(); //no reply has arrived yet, then wait for period of deviceConnectInterval
 						}
-						else if(_commandState == "succeeded")
+						else if(_commandState == UserCmdStatusSucceeded)
 						{
-							_state = State::AskForResetConfirm;
+							_state = State::CheckResetKeyPressed;
 						}
-						else if(_commandState == "failed")
+						else if(_commandState == UserCmdStatusFailed)
 						{
 							_state = State::ConnectDevice;
 							currentTime.update();
@@ -375,45 +403,85 @@ void UserProxy::runTask()
 						{
 							_state = State::ConnectDevice;
 							currentTime.update();
+							pLogger->LogError("UserProxy::runTask wrong command state: " + _commandState);
+						}
+					}
+					break;
+
+					case State::CheckResetKeyPressed:
+					{
+						_state = State::WaitForResetPressed;
+
+						if(!sendCheckResetPressedCommand()) {
+							_state = State::CheckResetKeyPressed;
+							currentTime.update();
+						}
+					}
+					break;
+
+					case State::WaitForResetPressed:
+					{
+						if(_commandState == UserCmdStatusOnGoing)
+						{
+							sleep(100); //wait for a short time for the reply.
+						}
+						if(_commandState == UserCmdStatusOnGoing)
+						{
+							currentTime.update(); //no reply has arrived yet.
+						}
+						else if(_commandState == UserCmdStatusSucceeded)
+						{
+							_state = State::CheckResetKeyReleased;
+						}
+						else if(_commandState == UserCmdStatusFailed)
+						{
+							_state = State::CheckResetKeyPressed;
+							pLogger->LogError("UserProxy::runTask failed to confirm reset, error: " + _errorInfo);
+							currentTime.update();
+						}
+						else
+						{
+							_state = State::WaitForResetPressed;
+							currentTime.update();
 							pLogger->LogError("UserProxy::runTask wrong command result: " + _commandState);
 						}
 					}
 					break;
 
-					case State::AskForResetConfirm:
+					case State::CheckResetKeyReleased:
 					{
-						_state = State::WaitForResetConfirm;
+						_state = State::WaitForResetReleased;
 
-						if(!sendConfirmResetCommand()) {
-							_state = State::AskForResetConfirm;
+						if(!sendCheckResetReleasedCommand()) {
+							_state = State::CheckResetKeyPressed;
 							currentTime.update();
 						}
 					}
 					break;
 
-					case State::WaitForResetConfirm:
+					case State::WaitForResetReleased:
 					{
-						if(_commandState == "ongoing")
+						if(_commandState == UserCmdStatusOnGoing)
 						{
 							sleep(100); //wait for a short time for the reply.
 						}
-						if(_commandState == "ongoing")
+						if(_commandState == UserCmdStatusOnGoing)
 						{
 							currentTime.update(); //no reply has arrived yet.
 						}
-						else if(_commandState == "succeeded")
+						else if(_commandState == UserCmdStatusSucceeded)
 						{
 							_state = State::ResetDevice;
 						}
-						else if(_commandState == "failed")
+						else if(_commandState == UserCmdStatusFailed)
 						{
-							_state = State::WaitForResetConfirm;
-							currentTime.update();
+							_state = State::CheckResetKeyReleased;
 							pLogger->LogError("UserProxy::runTask failed to confirm reset, error: " + _errorInfo);
+							currentTime.update();
 						}
 						else
 						{
-							_state = State::WaitForResetConfirm;
+							_state = State::WaitForResetReleased;
 							currentTime.update();
 							pLogger->LogError("UserProxy::runTask wrong command result: " + _commandState);
 						}
@@ -433,19 +501,19 @@ void UserProxy::runTask()
 
 					case State::WaitForDeviceReady:
 					{
-						if(_commandState == "ongoing")
+						if(_commandState == UserCmdStatusOnGoing)
 						{
 							sleep(100);
 						}
-						if(_commandState == "ongoing")
+						if(_commandState == UserCmdStatusOnGoing)
 						{
 							currentTime.update();
 						}
-						else if(_commandState == "succeeded")
+						else if(_commandState == UserCmdStatusSucceeded)
 						{
 							_state = State::Normal;
 						}
-						else if(_commandState == "failed")
+						else if(_commandState == UserCmdStatusFailed)
 						{
 							_state = State::ResetDevice;
 							currentTime.update();

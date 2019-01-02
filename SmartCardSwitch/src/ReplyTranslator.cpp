@@ -677,6 +677,7 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 		//specific attributes
 		if(errorInfo.empty()) {
 			ptr->index = ds["index"];
+			ptr->position = ds["position"];
 		}
 
 		_stepperRunPtr = ptr;

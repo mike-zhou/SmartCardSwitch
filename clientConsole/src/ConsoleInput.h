@@ -337,9 +337,9 @@ private:
 					if(!json.empty()) {
 						_pCmdRunner->RunJsonCommand(json);
 					}
-
-					pLogger->LogInfo(CommandFactory::Help());
 				}
+
+				pLogger->LogInfo(CommandFactory::Help());
 			}
 		}
 

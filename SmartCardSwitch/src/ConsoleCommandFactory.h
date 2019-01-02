@@ -54,60 +54,21 @@ public:
 		StepperQuery = 75,
 		StepperSetState = 76,
 		LocatorQuery = 90,
-		BdcConfig = 200,
 		SaveMovementConfig = 300,
-		LoadMovementConfigStepper = 301,
+		SaveMovementConfigStepperBoundary = 301,
+		SaveMovementConfigStepperGeneral = 302,
+		SaveMovementConfigCardInsert = 303,
+		SaveMovementConfigGoHome = 304,
+		SaveMovementConfigBdc = 305,
+		LoadMovementConfigStepper = 320,
 		SaveCoordinates = 350,
-		LoadCoordinates = 351
+		SaveCoordinateSmartCardPlaceStartZ = 351,
+		SaveCoordinateSmartCardFetchOffset = 352,
+		SaveCoordinateSmartCardReleaseOffsetZ = 353,
+		SaveCoordinateSmartCardReaderSlowInsertEndY = 354
 	};
 
-	static std::string GetHelp()
-	{
-		std::string help;
-
-		help = help + "DevicesGet:------------------------ " + "0" + "\r\n";
-		help = help + "DeviceConnect:--------------------- " + "1 deviceNumber" + "\r\n";
-		help = help + "DeviceQueryPower:------------------ " + "2" + "\r\n";
-		help = help + "DeviceQueryFuse:------------------- " + "3" + "\r\n";
-		help = help + "DeviceDelay:----------------------- " + "4 clks" + "\r\n";
-		help = help + "OptPowerOn:------------------------ " + "20" + "\r\n";
-		help = help + "OptPowerOff:----------------------- " + "21" + "\r\n";
-		help = help + "OptQueryPower:--------------------- " + "22" + "\r\n";
-		help = help + "DcmPowerOn:------------------------ " + "30" + "\r\n";
-		help = help + "DcmPowerOff:----------------------- " + "31" + "\r\n";
-		help = help + "DcmQueryPower:--------------------- " + "32" + "\r\n";
-		help = help + "BdcsPowerOn:----------------------- " + "40" + "\r\n";
-		help = help + "BdcsPowerOff:---------------------- " + "41" + "\r\n";
-		help = help + "BdcsQueryPower:-------------------- " + "42" + "\r\n";
-		help = help + "BdcCoast:-------------------------- " + "43 bdcIndex" + "\r\n";
-		help = help + "BdcReverse:------------------------ " + "44 bdcIndex lowClks highClks cycles" + "\r\n";
-		help = help + "BdcForward:------------------------ " + "45 bdcIndex lowClks highClks cycles" + "\r\n";
-		help = help + "BdcBreak:-------------------------- " + "46 bdcIndex" + "\r\n";
-		help = help + "BdcQuery:-------------------------- " + "47 bdcIndex" + "\r\n";
-		help = help + "SteppersPowerOn:------------------- " + "60" + "\r\n";
-		help = help + "SteppersPowerOff:------------------ " + "61" + "\r\n";
-		help = help + "SteppersQueryPower:---------------- " + "62" + "\r\n";
-		help = help + "StepperQueryResolution: ----------- " + "63" + "\r\n";
-		help = help + "StepperConfigStep:----------------- " + "64 stepperIndex lowClks highClks" + "\r\n";
-		help = help + "StepperAccelerationBuffer:--------- " + "65 stepperIndex value" + "\r\n";
-		help = help + "StepperAccelerationBufferDecrement: " + "66 stepperIndex value" + "\r\n";
-		help = help + "StepperDecelerationBuffer:          " + "67 stepperIndex value" + "\r\n";
-		help = help + "StepperDecelerationBufferIncrement: " + "68 stepperIndex value" + "\r\n";
-		help = help + "StepperEnable: -------------------- " + "69 stepperIndex 1/0" + "\r\n";
-		help = help + "StepperForward: ------------------- " + "70 stepperIndex 1/0" + "\r\n";
-		help = help + "StepperSteps: --------------------- " + "71 stepperIndex stepAmount" + "\r\n";
-		help = help + "StepperRun: ----------------------- " + "72 stepperIndex intialPos finalPos" + "\r\n";
-		help = help + "StepperConfigHome:----------------- " + "73 stepperIndex locatorIndex lineNumberStart lineNumberTerminal" + "\r\n";
-		help = help + "StepperMove:----------------------- " + "74 stepperIndex forward stepAmount" + "\r\n";
-		help = help + "StepperQuery: --------------------- " + "75 stepperIndex" + "\r\n";
-		help = help + "StepperSetState: ------------------ " + "76 stepperIndex state" + "\r\n";
-		help = help + "LocatorQuery:---------------------- " + "90 locatorIndex" + "\r\n";
-		help = help + "BdcConfig:------------------------- " + "200 lowClks highClks cycles" + "\r\n";
-		help = help + "SaveMovementConfig:---------------- " + "300 type index" + "\r\n";
-		help = help + "SaveCoordinates:------------------- " + "350 type index" + "\r\n";
-
-		return help;
-	}
+	static std::string GetHelp();
 
 	static std::string CmdDevicesGet() 						{ return std::string("0\r\n"); }
 	static std::string CmdDeviceConnect(unsigned int index) { return "1 " + std::to_string(index) + "\r\n"; }
@@ -202,6 +163,11 @@ public:
 
 	static std::string CmdStepperQuery(unsigned int index) 	{ return "75 " + std::to_string(index) + "\r\n"; }
 	static std::string CmdLocatorQuery(unsigned int index) 	{ return "90 " + std::to_string(index) + "\r\n"; }
+
+	static Type GetCmdType(const std::string& consoleCmd);
+	static bool GetParameterStepperIndex(const std::string & consoleCmd, unsigned int & stepperIndex);
+	static bool GetParameterStepperSteps(const std::string & consoleCmd, unsigned int & steps);
+	static bool GetParameterLocatorIndex(const std::string & consoleCmd, unsigned int & locatorIndex);
 };
 
 

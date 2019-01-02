@@ -1336,7 +1336,7 @@ void CommandRunner::onFeedbackStepperQuery(std::shared_ptr<ReplyTranslator::Repl
 			//acceleration buffer
 			if(_userCommand.resultStepperStatus[replyPtr->index].accelerationBuffer != replyPtr->accelerationBuffer) {
 				pLogger->LogError("CommandRunner::onFeedbackStepperQuery accelerationBuffer mismatch: index: " + std::to_string(replyPtr->index) +
-						", value queried: " + std::to_string(replyPtr->lowClks) +
+						", value queried: " + std::to_string(replyPtr->accelerationBuffer) +
 						", local value: " + std::to_string(_userCommand.resultStepperStatus[replyPtr->index].accelerationBuffer));
 
 			}
@@ -2550,7 +2550,7 @@ ICommandReception::CommandId CommandRunner::StepperConfigHome(unsigned int index
 			pLogger->LogError("CommandRunner::StepperConfigHome lineNumberStart is out of range: " + std::to_string(lineNumberStart));
 		}
 		else if((lineNumberTerminal < LOCATOR_LINE_NUMBER_MIN) || (lineNumberTerminal > LOCATOR_LINE_NUMBER_MAX)) {
-			pLogger->LogError("CommandRunner::StepperConfigHome lineNumberStart is out of range: " + std::to_string(lineNumberTerminal));
+			pLogger->LogError("CommandRunner::StepperConfigHome lineNumberTerminal is out of range: " + std::to_string(lineNumberTerminal));
 		}
 		else if(lineNumberTerminal == lineNumberStart) {
 			pLogger->LogError("CommandRunner::StepperConfigHome lineNumberStart is same as lineNumberTerminal");

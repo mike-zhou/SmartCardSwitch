@@ -61,19 +61,15 @@ public:
 					int& w,
 					unsigned int index = 0);
 
-	void SetSmartCardFetchStartZ(long zPosition);
 	void SetSmartCardPlaceStartZ(long zPosition);
-	void SetSmartCardAccessEndZ(long zPosition);
 	void SetSmartCardFetchOffset(long offset);
-	bool GetSmartCardFetchStartZ(long & zPosition);
+	void SetSmartCardReleaseOffsetZ(long offset);
 	bool GetSmartCardPlaceStartZ(long & zPosition);
-	bool GetSmartCardAccessEndZ(long & zPosition);
 	bool GetSmartCardFetchOffset(long & offset);
+	bool GetSmartCardReleaseOffset(long & offset);
 
 	void SetSmartCardReaderSlowInsertEndY(long yPosition);
-	void SetSmartCardReaderRemovalStartY(long yPosition);
 	bool GetSmartCardReaderSlowInsertEndY(long & yPosition);
-	bool GetSmartCardReaderRemovalStartY(long & yPosition);
 
 private:
 	//constraints
@@ -100,10 +96,9 @@ private:
 	//smart cards
 	Coordinate _smartCardGate;
 	std::vector<Coordinate> _smartCards;
-	long _smartCardFetchStart;
 	long _smartCardPlaceStart;
-	long _smartCardAccessEnd;
-	long _smartCardFetchOffset;
+	long _smartCardFetchOffset; //shared with card removal from smart card reader
+	long _smartCardReleaseOffset;
 
 	//PED keys
 	Coordinate _pedKeyGate;
@@ -129,7 +124,6 @@ private:
 	//smart card reader
 	Coordinate _smartCardReaderGate;
 	long _smartCardReaderSlowInsertEnd;
-	long _smartCardReaderRemovalStart;
 	Coordinate _smartCardReader;
 
 	//contactless reader

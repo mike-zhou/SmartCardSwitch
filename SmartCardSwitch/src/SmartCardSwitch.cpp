@@ -180,20 +180,25 @@ protected:
 			//user proxy
 			std::string userProxyListenerIp = config().getString("user_proxy_listener_ip", "127.0.0.1");
 			std::string userPorxyListenerPort = config().getString("user_proxy_listener_port", "60001");
+			std::string deviceToConnect = config().getString("device_name", "Mixed_Motor_Drivers_HV1.0_SV1.0");
+			unsigned int locatorNumberForReset = config().getInt("locator_number_for_reset", 2);
+			unsigned int lineNumberForReset = config().getInt("line_number_for_reset", 8);
 			Poco::Net::SocketAddress userListenerAddress(userProxyListenerIp + ":" + userPorxyListenerPort);
-			pUserProxy = new UserProxy;
+			pUserProxy = new UserProxy(deviceToConnect, locatorNumberForReset, lineNumberForReset);
 			pUserCommandRunner = new UserCommandRunner;
 			pUserListener = new UserListener(pUserProxy);
 			pUserListener->Bind(userListenerAddress);
 
 			//couple tasks:
-			// command flow: ConsoleOperator >> CommandRunner >> DeviceAccessor
-			// reply flow:   DeviceAccessor >> CommandRunner >> ConsoleOperator
+			// command flow: UserProxy >> UserCommandRunner >> ConsoleOperator >> CommandRunner >> DeviceAccessor
+			// reply flow:   DeviceAccessor >> CommandRunner >> ConsoleOperator >> UsesrCommandRunner >> UserProxy
 			pCommandRunner->SetDevice(pDeviceAccessor);
 			pDeviceAccessor->AddObserver(pCommandRunner);
 			pCommandRunner->AddResponseReceiver(pConsoleOperator);
-			//couple user command runner to console operator
+			//couple user command runner with console operator
 			pUserCommandRunner->SetConsoleOperator(pConsoleOperator);
+			pConsoleOperator->AddObserver(pUserCommandRunner);
+			//couple user command runner with user proxy
 			pUserProxy->SetUserCommandRunner(pUserCommandRunner);
 			pUserCommandRunner->AddObserver(pUserProxy);
 

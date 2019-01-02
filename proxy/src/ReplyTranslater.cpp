@@ -364,7 +364,7 @@ std::string ReplyTranslater::bdcReverse(Poco::JSON::Object::Ptr& replyPtr)
 
 	//parameters
 	auto size = ds["params"].size();
-	if(size != 2) {
+	if(size != 5) {
 		throw Poco::JSON::JSONException("ReplyTranslater::bdcReverse wrong parameter amount: " + std::to_string(size));
 	}
 	strIndex = ds["params"][0].toString();
@@ -405,7 +405,7 @@ std::string ReplyTranslater::bdcForward(Poco::JSON::Object::Ptr& replyPtr)
 
 	//parameters
 	auto size = ds["params"].size();
-	if(size != 2) {
+	if(size != 5) {
 		throw Poco::JSON::JSONException("ReplyTranslater::bdcForward wrong parameter amount: " + std::to_string(size));
 	}
 	strIndex = ds["params"][0].toString();
@@ -1350,6 +1350,18 @@ std::string ReplyTranslater::formatCmdReply(Poco::JSON::Object::Ptr& replyPtr)
 
 	case 4:
 		reply = deviceDelay(replyPtr);
+		break;
+
+	case 20:
+		reply = steppersPowerOn(replyPtr);
+		break;
+
+	case 21:
+		reply = steppersPowerOff(replyPtr);
+		break;
+
+	case 22:
+		reply = steppersQueryPower(replyPtr);
 		break;
 
 	case 40:

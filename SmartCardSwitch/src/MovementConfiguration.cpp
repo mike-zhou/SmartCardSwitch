@@ -187,7 +187,7 @@ bool MovementConfiguration::PersistToFile()
 			storageFile.remove(false);
 		}
 
-		fd = open(_pathFileName.c_str(), O_CREAT | O_WRONLY);
+		fd = open(_pathFileName.c_str(), O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 		if(fd >= 0)
 		{
 			pLogger->LogInfo("MovementConfiguration::PersistToFile write " + std::to_string(json.size()) + " bytes to file " + _pathFileName);
@@ -262,7 +262,7 @@ bool MovementConfiguration::SetStepperGeneral(unsigned int index,
 	bool rc = false;
 	char buf[512];
 
-	sprintf(buf, "MovementConfiguration::SetStepperGeneral index: %ld, lowClks: %ld, highClks: %ld, AB: %ld, ABD: %ld, DB: %ld, DBI: %ld",
+	sprintf(buf, "MovementConfiguration::SetStepperGeneral index: %ld, lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
 			index, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	std::string info(buf);
 	pLogger->LogInfo(info);
@@ -301,7 +301,7 @@ bool MovementConfiguration::SetStepperCardInsert(
 {
 	char buf[512];
 
-	sprintf(buf, "MovementConfiguration::SetStepperCardInsert lowClks: %ld, highClks: %ld, AB: %ld, ABD: %ld, DB: %ld, DBI: %ld",
+	sprintf(buf, "MovementConfiguration::SetStepperCardInsert lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
 			lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	std::string info(buf);
 	pLogger->LogInfo(info);
@@ -326,7 +326,7 @@ bool MovementConfiguration::SetStepperGoHome(
 {
 	char buf[512];
 
-	sprintf(buf, "MovementConfiguration::SetStepperGoHome lowClks: %ld, highClks: %ld, AB: %ld, ABD: %ld, DB: %ld, DBI: %ld",
+	sprintf(buf, "MovementConfiguration::SetStepperGoHome lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
 			lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	std::string info(buf);
 	pLogger->LogInfo(info);
@@ -392,7 +392,7 @@ bool MovementConfiguration::GetStepperGeneral(unsigned int index,
 
 	char buf[512];
 
-	sprintf(buf, "MovementConfiguration::GetStepperGeneral index: %ld, lowClks: %ld, highClks: %ld, AB: %ld, ABD: %ld, DB: %ld, DBI: %ld",
+	sprintf(buf, "MovementConfiguration::GetStepperGeneral index: %ld, lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
 			index, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	std::string info(buf);
 	pLogger->LogInfo(info);
@@ -417,7 +417,7 @@ bool MovementConfiguration::GetStepperCardInsert(
 
 	char buf[512];
 
-	sprintf(buf, "MovementConfiguration::GetStepperCardInsert lowClks: %ld, highClks: %ld, AB: %ld, ABD: %ld, DB: %ld, DBI: %ld",
+	sprintf(buf, "MovementConfiguration::GetStepperCardInsert lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
 			lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	std::string info(buf);
 	pLogger->LogInfo(info);
@@ -442,7 +442,7 @@ bool MovementConfiguration::GetStepperGoHome(
 
 	char buf[512];
 
-	sprintf(buf, "MovementConfiguration::GetStepperGoHome lowClks: %ld, highClks: %ld, AB: %ld, ABD: %ld, DB: %ld, DBI: %ld",
+	sprintf(buf, "MovementConfiguration::GetStepperGoHome lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
 			lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	std::string info(buf);
 	pLogger->LogInfo(info);

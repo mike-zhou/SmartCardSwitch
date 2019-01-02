@@ -54,7 +54,7 @@ void UserCommandRunner::notifyObservers(const std::string& cmdId, CommandState s
 
 		case CommandState::Succeeded:
 		{
-			strState = "succeed";
+			strState = "succeeded";
 		}
 		break;
 
@@ -98,13 +98,25 @@ void UserCommandRunner::finishUserCommandConnectDevice(CommandState & updatedCmd
 	}
 }
 
-void UserCommandRunner::finishUserCommandConfirmReset(CommandState & updatedCmdState, std::string & updatedErrorInfo)
+void UserCommandRunner::finishUserCommandCheckResetPressed(CommandState & updatedCmdState, std::string & updatedErrorInfo)
 {
-	if(_consoleCommand.resultLocators[_userCommand.locatorIndexReset] == _userCommand.locatorIndexReset) {
+	if(_consoleCommand.resultLocators[_userCommand.locatorIndexReset] == _userCommand.lineNumberReset) {
 		updatedCmdState = CommandState::Succeeded;
 	}
 	else {
 		updatedCmdState = CommandState::Failed;
+		updatedErrorInfo = ErrorResetIsNotPressed;
+	}
+}
+
+void UserCommandRunner::finishUserCommandCheckResetReleased(CommandState & updatedCmdState, std::string & updatedErrorInfo)
+{
+	if(_consoleCommand.resultLocators[_userCommand.locatorIndexReset] != _userCommand.lineNumberReset) {
+		updatedCmdState = CommandState::Succeeded;
+	}
+	else {
+		updatedCmdState = CommandState::Failed;
+		updatedErrorInfo = ErrorResetIsNotReleased;
 	}
 }
 
@@ -173,9 +185,13 @@ void UserCommandRunner::finishUserCommand(CommandState consoleCmdState, const st
 		{
 			finishUserCommandConnectDevice(userCmdState, error);
 		}
-		else if(_userCommand.command == UserCmdConfirmReset)
+		else if(_userCommand.command == UserCmdCheckResetPressed)
 		{
-			finishUserCommandConfirmReset(userCmdState, error);
+			finishUserCommandCheckResetPressed(userCmdState, error);
+		}
+		else if(_userCommand.command == UserCmdCheckResetReleased)
+		{
+			finishUserCommandCheckResetReleased(userCmdState, error);
 		}
 		else if(_userCommand.command == UserCmdResetDevice)
 		{
@@ -228,7 +244,7 @@ bool UserCommandRunner::expandUserCmdConnectDevice()
 	return true;
 }
 
-void UserCommandRunner::parseUserCmdConfirmReset(Poco::DynamicStruct& ds)
+void UserCommandRunner::parseUserCmdCheckResetPressed(Poco::DynamicStruct& ds)
 {
 	unsigned int locatorIndex = ds["locatorIndex"];
 	unsigned int lineNumber = ds["lineNumber"];
@@ -237,7 +253,7 @@ void UserCommandRunner::parseUserCmdConfirmReset(Poco::DynamicStruct& ds)
 	_userCommand.lineNumberReset = lineNumber;
 }
 
-bool UserCommandRunner::expandUserCmdConfirmReset()
+bool UserCommandRunner::expandUserCmdCheckResetPressed()
 {
 	std::string cmd;
 
@@ -245,6 +261,31 @@ bool UserCommandRunner::expandUserCmdConfirmReset()
 
 	cmd = ConsoleCommandFactory::CmdLocatorQuery(_userCommand.locatorIndexReset);
 	_userCommand.consoleCommands.push_back(cmd);
+
+	_consoleCommand.locatorIndex = _userCommand.locatorIndexReset;// is there another way not to touch consoleCommand?
+
+	return true;
+}
+
+void UserCommandRunner::parseUserCmdCheckResetReleased(Poco::DynamicStruct& ds)
+{
+	unsigned int locatorIndex = ds["locatorIndex"];
+	unsigned int lineNumber = ds["lineNumber"];
+
+	_userCommand.locatorIndexReset = locatorIndex;
+	_userCommand.lineNumberReset = lineNumber;
+}
+
+bool UserCommandRunner::expandUserCmdCheckResetReleased()
+{
+	std::string cmd;
+
+	_userCommand.consoleCommands.clear();
+
+	cmd = ConsoleCommandFactory::CmdLocatorQuery(_userCommand.locatorIndexReset);
+	_userCommand.consoleCommands.push_back(cmd);
+
+	_consoleCommand.locatorIndex = _userCommand.locatorIndexReset; // is there another way not to touch consoleCommand?
 
 	return true;
 }
@@ -279,8 +320,6 @@ void UserCommandRunner::configStepperMovement(unsigned int index,
 
 bool UserCommandRunner::expandUserCmdResetDevice()
 {
-	const unsigned int STEPPERS_AMOUNT = 4;
-
 	std::string cmd;
 	long lowClks;
 	long highClks;
@@ -312,6 +351,7 @@ bool UserCommandRunner::expandUserCmdResetDevice()
 	_userCommand.consoleCommands.push_back(cmd);
 
 	//configure steppers
+	// z
 	{
 		unsigned int i = z;
 		auto rc = pMovementConfiguration->GetStepperGoHome(lowClks,
@@ -350,6 +390,7 @@ bool UserCommandRunner::expandUserCmdResetDevice()
 			return false;
 		}
 	}
+	// w
 	{
 		unsigned int i = w;
 		auto rc = pMovementConfiguration->GetStepperBoundary(i,
@@ -382,6 +423,7 @@ bool UserCommandRunner::expandUserCmdResetDevice()
 			return false;
 		}
 	}
+	// y
 	{
 		unsigned int i = y;
 		auto rc = pMovementConfiguration->GetStepperBoundary(i,
@@ -414,6 +456,7 @@ bool UserCommandRunner::expandUserCmdResetDevice()
 			return false;
 		}
 	}
+	// x
 	{
 		unsigned int i = x;
 		auto rc = pMovementConfiguration->GetStepperBoundary(i,
@@ -447,8 +490,45 @@ bool UserCommandRunner::expandUserCmdResetDevice()
 		}
 	}
 
+	//apply general movement configuration
+	for(unsigned int i = 0; i < STEPPER_AMOUNT; i++)
+	{
+		auto rc = pMovementConfiguration->GetStepperGeneral(i,
+															lowClks,
+															highClks,
+															accelerationBuffer,
+															accelerationBufferDecrement,
+															decelerationBuffer,
+															decelerationBufferIncrement);
+		rc = rc && pMovementConfiguration->GetStepperBoundary(i,
+															locatorIndex,
+															locatorLineNumberStart,
+															locatorLineNumberTerminal);
+		if(rc)
+		{
+			std::vector<std::string> cmds;
+
+			configStepperMovement(i,
+								lowClks,
+								highClks,
+								accelerationBuffer,
+								accelerationBufferDecrement,
+								decelerationBuffer,
+								decelerationBufferIncrement,
+								cmds);
+			for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+				_userCommand.consoleCommands.push_back(*it);
+			}
+		}
+		else
+		{
+			pLogger->LogError("UserCommandRunner::expandUserCmdResetDevice failed to retrieve general configuration for stepper: " + std::to_string(i));
+			return false;
+		}
+	}
+
 	//query steppers
-	for(unsigned int i=0; i<STEPPERS_AMOUNT; i++)
+	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
 	{
 		cmd = ConsoleCommandFactory::CmdStepperQuery(i);
 		_userCommand.consoleCommands.push_back(cmd);
@@ -847,7 +927,7 @@ std::vector<std::string> UserCommandRunner::toSmartCardReaderGate()
 		int x, y, z, w;
 		std::string cmd;
 
-		//move up
+		//move up to cruise height
 		curZ = currentZ();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
 		moveStepperZ(curZ, z, cmds);
@@ -857,9 +937,9 @@ std::vector<std::string> UserCommandRunner::toSmartCardReaderGate()
 		curZ = currentZ();
 		curW = currentW();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, x, y, z, w);
-		moveStepperW(curW, w, cmds);
 		moveStepperY(curY, y, cmds);
 		moveStepperX(curX, x, cmds);
+		moveStepperW(curW, w, cmds);
 		moveStepperZ(curZ, z, cmds);
 	}
 
@@ -942,55 +1022,21 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_withoutCard(unsigned 
 
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
-	long smartCardFetchStart;
-	long smartCardPlaceStart;
-	long smartCardAccessEnd;
 	long offset;
-
-	long lowClks;
-	long highClks;
-	long accelerationBuffer;
-	long accelerationBufferDecrement;
-	long decelerationBuffer;
-	long decelerationBufferIncrement;
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, curX, curY, curZ, curW);
 	if(rc == false) {
 		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card gate");
 		return result;
 	}
-	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCard, finalX, finalY, finalZ, finalW, _userCommand.smartCardNumber);
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCard, finalX, finalY, finalZ, finalW, cardNumber);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card: " + std::to_string(_userCommand.smartCardNumber));
-		return result;
-	}
-	rc = pCoordinateStorage->GetSmartCardFetchStartZ(smartCardFetchStart);
-	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card fetch start");
-		return result;
-	}
-	rc = pCoordinateStorage->GetSmartCardPlaceStartZ(smartCardPlaceStart);
-	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card place start");
-		return result;
-	}
-	rc = pCoordinateStorage->GetSmartCardAccessEndZ(smartCardAccessEnd);
-	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card access end");
+		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve smart card: " + std::to_string(cardNumber));
 		return result;
 	}
 	rc = pCoordinateStorage->GetSmartCardFetchOffset(offset);
 	if(rc == false) {
 		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve fetch offset");
-		return result;
-	}
-	rc = pMovementConfiguration->GetStepperCardInsert(lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
-	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard failed to retrieve stepper card slow insert");
-		return result;
-	}
-	if(finalY < offset) {
-		pLogger->LogError("UserCommandRunner::gate_smartCard_withoutCard wrong offset value: " + std::to_string(offset));
 		return result;
 	}
 
@@ -1000,32 +1046,22 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_withoutCard(unsigned 
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
+
 	cmds.clear();
-	moveStepperY(curY, finalY - offset, cmds);
+	moveStepperY(curY, finalY + offset, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
 
 	//move down
 	cmds.clear();
-	moveStepperZ(curZ, smartCardFetchStart, cmds);
+	moveStepperZ(curZ, finalZ, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
 
-	//slow movement
 	cmds.clear();
-	configStepperMovement(STEPPER_Z, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, cmds);
-	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
-		result.push_back(*it);
-	}
-	cmds.clear();
-	moveStepperZ(smartCardFetchStart, finalZ, cmds);
-	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
-		result.push_back(*it);
-	}
-	cmds.clear();
-	moveStepperY(finalY - offset, finalY, cmds);
+	moveStepperY(finalY + offset, finalY, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
@@ -1042,34 +1078,15 @@ std::vector<std::string> UserCommandRunner::smartCard_gate_withCard(unsigned int
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 
-	long lowClks;
-	long highClks;
-	long accelerationBuffer;
-	long accelerationBufferDecrement;
-	long decelerationBuffer;
-	long decelerationBufferIncrement;
-
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
 		pLogger->LogError("UserCommandRunner::smartCard_gate_withCard failed to retrieve smart card gate");
 		return result;
 	}
-	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCard, curX, curY, curZ, curW, _userCommand.smartCardNumber);
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCard, curX, curY, curZ, curW, cardNumber);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::smartCard_gate_withCard failed to retrieve smart card: " + std::to_string(_userCommand.smartCardNumber));
+		pLogger->LogError("UserCommandRunner::smartCard_gate_withCard failed to retrieve smart card: " + std::to_string(cardNumber));
 		return result;
-	}
-	rc = pMovementConfiguration->GetStepperGeneral(STEPPER_Z, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
-	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::smartCard_gate_withCard failed to retrieve stepper card slow insert");
-		return result;
-	}
-
-	//configure movement
-	cmds.clear();
-	configStepperMovement(STEPPER_Z, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, cmds);
-	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
-		result.push_back(*it);
 	}
 
 	//Z
@@ -1146,6 +1163,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCardReader_withCard()
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
+
 	//restore to normal speed
 	rc = pMovementConfiguration->GetStepperGeneral(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	if(rc == false) {
@@ -1169,7 +1187,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCardReader_withCard()
 	return result;
 }
 
-std::vector<std::string> UserCommandRunner::smartCardReader_gate()
+std::vector<std::string> UserCommandRunner::smartCardReader_gate_withCard()
 {
 	std::vector<std::string> cmds;
 	std::vector<std::string> result;
@@ -1177,19 +1195,65 @@ std::vector<std::string> UserCommandRunner::smartCardReader_gate()
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 
-	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, finalX, finalY, finalZ, finalW);
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::smartCardReader_gate failed to retrieve smart card reader");
+		pLogger->LogError("UserCommandRunner::smartCardReader_gate_withCard failed to retrieve smart card reader");
 		return result;
 	}
-	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, curX, curY, curZ, curW);
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, curX, curY, curZ, curW);
 	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::smartCardReader_gate failed to retrieve smart card reader gate");
+		pLogger->LogError("UserCommandRunner::smartCardReader_gate_withCard failed to retrieve smart card reader gate");
 		return result;
 	}
 
 	cmds.clear();
 	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	return result;
+}
+
+std::vector<std::string> UserCommandRunner::smartCardReader_gate_withoutCard()
+{
+	std::vector<std::string> cmds;
+	std::vector<std::string> result;
+
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+	long fetchOffset;
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::smartCardReader_gate_withoutCard failed to retrieve smart card reader");
+		return result;
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, curX, curY, curZ, curW);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::smartCardReader_gate_withoutCard failed to retrieve smart card reader gate");
+		return result;
+	}
+	rc = pCoordinateStorage->GetSmartCardFetchOffset(fetchOffset);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::smartCardReader_gate_withoutCard failed to retrieve fetchOffset");
+		return result;
+	}
+
+	cmds.clear();
+	moveStepperZ(curZ, curZ - fetchOffset, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	cmds.clear();
+	moveStepperY(curY, finalY, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
+
+	cmds.clear();
+	moveStepperZ(curZ - fetchOffset, curZ, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
@@ -1204,7 +1268,7 @@ std::vector<std::string> UserCommandRunner::openClamp()
 	std::string cmd;
 
 	pMovementConfiguration->GetBdcConfig(lowClks, highClks, cycles);
-	cmd = ConsoleCommandFactory::CmdBdcForward(0, lowClks, highClks, cycles);
+	cmd = ConsoleCommandFactory::CmdBdcReverse(0, lowClks, highClks, cycles);
 	result.push_back(cmd);
 
 	return result;
@@ -1217,7 +1281,7 @@ std::vector<std::string> UserCommandRunner::closeClamp()
 	std::string cmd;
 
 	pMovementConfiguration->GetBdcConfig(lowClks, highClks, cycles);
-	cmd = ConsoleCommandFactory::CmdBdcReverse(0, lowClks, highClks, cycles);
+	cmd = ConsoleCommandFactory::CmdBdcForward(0, lowClks, highClks, cycles);
 	result.push_back(cmd);
 
 	return result;
@@ -1331,7 +1395,7 @@ bool UserCommandRunner::expandUserCmdInsertSmartCard()
 
 	//move to smart card reader gate
 	cmds.clear();
-	cmds = smartCardReader_gate();
+	cmds = smartCardReader_gate_withoutCard();
 	if(cmds.empty()) {
 		pLogger->LogError("UserCommandRunner::expandUserCmdInsertSmartCard failed to expand user command");
 		return false;
@@ -1361,16 +1425,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCardReader_withoutCard()
 
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
-	long slowInsertStart;
 	long offset;
-
-
-	long lowClks;
-	long highClks;
-	long accelerationBuffer;
-	long accelerationBufferDecrement;
-	long decelerationBuffer;
-	long decelerationBufferIncrement;
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
@@ -1382,61 +1437,26 @@ std::vector<std::string> UserCommandRunner::gate_smartCardReader_withoutCard()
 		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withoutCard failed to retrieve smart card reader gate");
 		return result;
 	}
-	rc = pCoordinateStorage->GetSmartCardReaderRemovalStartY(slowInsertStart);
-	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withoutCard failed to retrieve smart card reader slow insert start");
-		return result;
-	}
 	rc = pCoordinateStorage->GetSmartCardFetchOffset(offset);
 	if(rc == false) {
 		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withoutCard failed to retrieve smart card offset");
 		return result;
 	}
-	rc = pMovementConfiguration->GetStepperCardInsert(lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
-	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withoutCard failed to retrieve stepper card slow insert");
-		return result;
-	}
 
 	cmds.clear();
-	moveStepperZ(curZ, curZ + offset, cmds);
+	moveStepperZ(curZ, curZ - offset, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
 
 	cmds.clear();
-	moveStepperY(curY, slowInsertStart, cmds);
-	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
-		result.push_back(*it);
-	}
-
-	cmds.clear();
-	configStepperMovement(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, cmds);
-	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
-		result.push_back(*it);
-	}
-
-	cmds.clear();
-	moveStepperY(slowInsertStart, finalY, cmds);
+	moveStepperY(curY, finalY, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
 
 	cmds.clear();
 	moveStepperZ(curZ + offset, curZ, cmds);
-	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
-		result.push_back(*it);
-	}
-
-	rc = pMovementConfiguration->GetStepperGeneral(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
-	if(rc == false) {
-		pLogger->LogError("UserCommandRunner::gate_smartCardReader_withoutCard failed to retrieve stepper general");
-		result.clear();
-		return result;
-	}
-
-	cmds.clear();
-	configStepperMovement(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
@@ -1452,6 +1472,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_withCard(unsigned int
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 	long placeStart;
+	long releaseOffset;
 
 
 	long lowClks;
@@ -1481,6 +1502,11 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_withCard(unsigned int
 		pLogger->LogError("UserCommandRunner::gate_smartCard_withCard failed to retrieve stepper card slow insert");
 		return result;
 	}
+	rc = pCoordinateStorage->GetSmartCardReleaseOffset(releaseOffset);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::gate_smartCard_withCard failed to retrieve smart card release offset");
+		return result;
+	}
 
 	cmds.clear();
 	moveStepperX(curX, finalX, cmds);
@@ -1507,7 +1533,7 @@ std::vector<std::string> UserCommandRunner::gate_smartCard_withCard(unsigned int
 	}
 
 	cmds.clear();
-	moveStepperZ(placeStart, finalZ, cmds);
+	moveStepperZ(placeStart, finalZ + releaseOffset, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
@@ -1534,6 +1560,7 @@ std::vector<std::string> UserCommandRunner::smartCard_gate_withoutCard(unsigned 
 
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+	long offset;
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCard, curX, curY, curZ, curW, _userCommand.smartCardNumber);
 	if(rc == false) {
@@ -1545,6 +1572,18 @@ std::vector<std::string> UserCommandRunner::smartCard_gate_withoutCard(unsigned 
 		pLogger->LogError("UserCommandRunner::smartCard_gate_withoutCard failed to retrieve smart card gate");
 		return result;
 	}
+	rc = pCoordinateStorage->GetSmartCardFetchOffset(offset);
+	if(rc == false) {
+		pLogger->LogError("UserCommandRunner::smartCard_gate_withoutCard failed to retrieve smart card fetch offset");
+		return result;
+	}
+
+	//in order not to interfere card in smart card bay
+	cmds.clear();
+	moveStepperY(curY, curY + offset, cmds);
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		result.push_back(*it);
+	}
 
 	cmds.clear();
 	moveStepperZ(curZ, finalZ, cmds);
@@ -1553,7 +1592,7 @@ std::vector<std::string> UserCommandRunner::smartCard_gate_withoutCard(unsigned 
 	}
 
 	cmds.clear();
-	moveStepperY(curY, finalY, cmds);
+	moveStepperY(curY + offset, finalY, cmds);
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
 		result.push_back(*it);
 	}
@@ -1620,9 +1659,9 @@ bool UserCommandRunner::expandUserCmdRemoveSmartCard()
 
 	//move to smart card reader gate
 	cmds.clear();
-	cmds = smartCardReader_gate();
+	cmds = smartCardReader_gate_withCard();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed in smartCardReader_gate");
+		pLogger->LogError("UserCommandRunner::expandUserCmdRemoveSmartCard failed in smartCardReader_gate_withCard");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -1771,11 +1810,33 @@ bool UserCommandRunner::expandUserCmdSwipeSmartCard()
 		_userCommand.consoleCommands.push_back(*it);
 	}
 
+	//open and close clamp to clear any offset error.
+	//open clamp
+	cmds.clear();
+	cmds = openClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in openClamp");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+	//close clamp
+	cmds.clear();
+	cmds = closeClamp();
+	if(cmds.empty()) {
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in closeClamp");
+		return false;
+	}
+	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
+		_userCommand.consoleCommands.push_back(*it);
+	}
+
 	//move to smart card reader gate
 	cmds.clear();
-	cmds = smartCardReader_gate();
+	cmds = smartCardReader_gate_withCard();
 	if(cmds.empty()) {
-		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in smartCardReader_gate");
+		pLogger->LogError("UserCommandRunner::expandUserCmdSwipeSmartCard failed in smartCardReader_gate_withCard");
 		return false;
 	}
 	for(auto it=cmds.begin(); it!=cmds.end(); it++) {
@@ -3574,11 +3635,13 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_userCommandMutex);
 
-	if(_deviceHomePositioned == false) {
-		errorInfo = ErrorDeviceNotHomePositioned;
-		pLogger->LogError("UserCommandRunner::RunCommand device not home positioned, denied: " + jsonCmd);
-		return;
-	}
+	pLogger->LogInfo("UserCommandRunner::RunCommand parse command: ====== " + jsonCmd);
+
+//	if(_deviceHomePositioned == false) {
+//		errorInfo = ErrorDeviceNotHomePositioned;
+//		pLogger->LogError("UserCommandRunner::RunCommand device not home positioned, denied: " + jsonCmd);
+//		return;
+//	}
 
 	if(_userCommand.state != CommandState::Idle) {
 		errorInfo = ErrorUserCommandOnGoing;
@@ -3595,14 +3658,19 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
 		Poco::DynamicStruct ds = *objectPtr;
 
+		//common data among all user command
 		_userCommand.command = ds["userCommand"].toString();
-		_userCommand.commandId = ds["userCommandId"].toString();
+		_userCommand.commandId = ds["commandId"].toString();
 
+		//parse specific data in user command
 		if(_userCommand.command == UserCmdConnectDevice) {
 			parseUserCmdConnectDevice(ds);
 		}
-		else if(_userCommand.command == UserCmdConfirmReset) {
-			parseUserCmdConfirmReset(ds);
+		else if(_userCommand.command == UserCmdCheckResetPressed) {
+			parseUserCmdCheckResetPressed(ds);
+		}
+		else if(_userCommand.command == UserCmdCheckResetReleased) {
+			parseUserCmdCheckResetReleased(ds);
 		}
 		else if(_userCommand.command == UserCmdResetDevice) {
 			parseUserCmdResetDevice(ds);
@@ -3656,7 +3724,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		return;
 	}
 
-	//expand user command to console commands
+	//expand USER command to CONSOLE commands
 	if(_userCommand.command == UserCmdConnectDevice)
 	{
 		if(expandUserCmdConnectDevice()) {
@@ -3667,14 +3735,24 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			errorInfo = ErrorFailedExpandingConnectDevice;
 		}
 	}
-	else if(_userCommand.command == UserCmdConfirmReset)
+	else if(_userCommand.command == UserCmdCheckResetPressed)
 	{
-		if(expandUserCmdConfirmReset()) {
+		if(expandUserCmdCheckResetPressed()) {
 			_userCommand.state = CommandState::OnGoing;
 			errorInfo.clear();
 		}
 		else {
-			errorInfo = ErrorFailedExpandingConfirmReset;
+			errorInfo = ErrorFailedExpandingCheckResetPressed;
+		}
+	}
+	else if(_userCommand.command == UserCmdCheckResetReleased)
+	{
+		if(expandUserCmdCheckResetReleased()) {
+			_userCommand.state = CommandState::OnGoing;
+			errorInfo.clear();
+		}
+		else {
+			errorInfo = ErrorFailedExpandingCheckResetReleased;
 		}
 	}
 	else if(_userCommand.command == UserCmdResetDevice)
@@ -3912,7 +3990,6 @@ void UserCommandRunner::OnDeviceDelay(CommandId key, bool bSuccess)
 	if(bSuccess)
 	{
 		pLogger->LogInfo("UserCommandRunner::OnDeviceDelay successful command Id: " + std::to_string(_consoleCommand.cmdId));
-		_consoleCommand.resultOptPowered = true;
 		_consoleCommand.state = CommandState::Succeeded;
 	}
 	else {
@@ -4074,7 +4151,6 @@ void UserCommandRunner::OnBdcCoast(CommandId key, bool bSuccess)
 	if(bSuccess)
 	{
 		pLogger->LogInfo("UserCommandRunner::OnBdcCoast successful command Id: " + std::to_string(_consoleCommand.cmdId));
-		_consoleCommand.resultBdcMode = BdcStatus::COAST;
 		_consoleCommand.state = CommandState::Succeeded;
 	}
 	else {
@@ -4097,7 +4173,6 @@ void UserCommandRunner::OnBdcReverse(CommandId key, bool bSuccess)
 	if(bSuccess)
 	{
 		pLogger->LogInfo("UserCommandRunner::OnBdcReverse successful command Id: " + std::to_string(_consoleCommand.cmdId));
-		_consoleCommand.resultBdcMode = BdcStatus::REVERSE;
 		_consoleCommand.state = CommandState::Succeeded;
 	}
 	else {
@@ -4120,7 +4195,6 @@ void UserCommandRunner::OnBdcForward(CommandId key, bool bSuccess)
 	if(bSuccess)
 	{
 		pLogger->LogInfo("UserCommandRunner::OnBdcForward successful command Id: " + std::to_string(_consoleCommand.cmdId));
-		_consoleCommand.resultBdcMode = BdcStatus::FORWARD;
 		_consoleCommand.state = CommandState::Succeeded;
 	}
 	else {
@@ -4143,7 +4217,6 @@ void UserCommandRunner::OnBdcBreak(CommandId key, bool bSuccess)
 	if(bSuccess)
 	{
 		pLogger->LogInfo("UserCommandRunner::OnBdcBreak successful command Id: " + std::to_string(_consoleCommand.cmdId));
-		_consoleCommand.resultBdcMode = BdcStatus::BREAK;
 		_consoleCommand.state = CommandState::Succeeded;
 	}
 	else {
@@ -4166,7 +4239,6 @@ void UserCommandRunner::OnBdcQuery(CommandId key, bool bSuccess, BdcStatus statu
 	if(bSuccess)
 	{
 		pLogger->LogInfo("UserCommandRunner::OnBdcQuery successful command Id: " + std::to_string(_consoleCommand.cmdId));
-		_consoleCommand.resultBdcMode = status;
 		_consoleCommand.state = CommandState::Succeeded;
 	}
 	else {
@@ -4576,6 +4648,23 @@ void UserCommandRunner::OnLocatorQuery(CommandId key, bool bSuccess, unsigned in
 	}
 }
 
+void UserCommandRunner::setConsoleCommandParameter(const std::string & cmd)
+{
+	unsigned int stepperIndex, locatorIndex, steps;
+
+	if(ConsoleCommandFactory::GetParameterStepperIndex(cmd, stepperIndex)) {
+		_consoleCommand.stepperIndex = stepperIndex;
+	}
+
+	if(ConsoleCommandFactory::GetParameterStepperSteps(cmd, steps)) {
+		_consoleCommand.steps = steps;
+	}
+
+	if(ConsoleCommandFactory::GetParameterLocatorIndex(cmd, locatorIndex)) {
+		_consoleCommand.locatorIndex = locatorIndex;
+	}
+}
+
 void UserCommandRunner::runTask()
 {
 	while(1)
@@ -4594,10 +4683,12 @@ void UserCommandRunner::runTask()
 			}
 			if(userCmdState == CommandState::Idle)
 			{
+				// no user command is on-going
 				sleep(10);
 				continue;
 			}
 
+			//run console command
 			{
 				Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
 				consoleCmdState = _consoleCommand.state;
@@ -4614,10 +4705,10 @@ void UserCommandRunner::runTask()
 
 					_consoleCommand.state = CommandState::OnGoing; //change state here to give a correct state if callback comes instantly.
 					consoleCmd = _userCommand.consoleCommands.front();
-					pLogger->LogInfo("UserCommandRunner::runTask run console cmd: " + consoleCmd);
+					pLogger->LogInfo("UserCommandRunner::runTask run console cmd: ------ " + consoleCmd);
+					setConsoleCommandParameter(consoleCmd);
 					_consoleCommand.cmdId = _pConsoleOperator->RunConsoleCommand(consoleCmd);
 					pLogger->LogInfo("UserCommandRunner::runTask command Id: " + std::to_string(_consoleCommand.cmdId));
-
 					if(_consoleCommand.cmdId == ICommandReception::ICommandDataTypes::InvalidCommandId)
 					{
 						//failed to run the console command

@@ -27,10 +27,9 @@
 class UserProxy: public Poco::Task, public IUserPool, public IUserCommandRunnerObserver
 {
 public:
-	UserProxy();
+	UserProxy(const std::string & deviceName, unsigned int locatorNumber, unsigned int lineNumber);
 
 	void SetUserCommandRunner(IUserCommandRunner * pRunner);
-	void SetDeviceName(const std::string& deviceName);
 
 private:
 	//Poco::Task
@@ -43,7 +42,7 @@ private:
 	virtual void AddSocket(StreamSocket& socket) override;
 
 private:
-	const unsigned long DeviceConnectInterval = 10000000; //10 seconds
+	const unsigned long DeviceConnectInterval = 1000000; //1 seconds
 
 	Poco::Mutex _mutex;
 
@@ -51,8 +50,10 @@ private:
 	{
 		ConnectDevice = 0,
 		WaitForDeviceAvailability,
-		AskForResetConfirm,
-		WaitForResetConfirm,
+		CheckResetKeyPressed,
+		WaitForResetPressed,
+		CheckResetKeyReleased,
+		WaitForResetReleased,
 		ResetDevice,
 		WaitForDeviceReady,
 		Normal
@@ -63,6 +64,8 @@ private:
 
 	IUserCommandRunner * _pUserCmdRunner;
 
+	unsigned int _locatorNumberForReset;
+	unsigned int _lineNumberForReset;
 	std::string _deviceName;
 	std::string _commandId;
 	std::string _commandState;
@@ -70,7 +73,8 @@ private:
 
 	void parseReply(const std::string& reply);
 	bool sendDeviceConnectCommand();
-	bool sendConfirmResetCommand();
+	bool sendCheckResetPressedCommand();
+	bool sendCheckResetReleasedCommand();
 	bool sendDeviceResetCommand();
 
 	std::deque<unsigned char> _input;

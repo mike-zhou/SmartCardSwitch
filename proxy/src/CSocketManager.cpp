@@ -140,7 +140,7 @@ void CSocketManager::moveReplyToSocket(long long socketId, const std::string& re
 		pLogger->LogError("CSocketManager::moveReplyToSocket no socket for socketId: " + std::to_string(socketId));
 	}
 	else {
-		pLogger->LogInfo("CSocketManager::moveReplyToSocket send reply: " + std::to_string(socketId) + ":" + reply);
+		pLogger->LogInfo("CSocketManager::moveReplyToSocket outgoing stage of socket: " + std::to_string(socketId) + ":" + reply);
 	}
 }
 
@@ -210,7 +210,7 @@ void CSocketManager::retrieveCommands(std::deque<unsigned char>& data, std::vect
 
 void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::string& jsonCommand)
 {
-	pLogger->LogInfo("CSocketManager::onCommand JSON command from socket: " + std::to_string(socketWrapper.socketId) + ": " + jsonCommand);
+	pLogger->LogInfo("CSocketManager::onCommand ###### JSON command from socket: " + std::to_string(socketWrapper.socketId) + ": " + jsonCommand);
 
 	CommandTranslator translator(jsonCommand);
 
@@ -794,26 +794,6 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 
 void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 {
-	//move pending replies in device wrapper to socket wrapper
-	auto it = _deviceMap.begin();
-	for(; it!=_deviceMap.end(); it++)
-	{
-		auto& deviceWrapper = it->second;
-		if(socketWrapper.socketId == deviceWrapper.socketId)
-		{
-			auto& replyPool = deviceWrapper.replyPool;
-			for(auto itReply = replyPool.begin(); itReply!=replyPool.end(); itReply++)
-			{
-				auto reply = ReplyFactory::Reply(*itReply);
-				for(auto c=reply.begin(); c!=reply.end(); c++) {
-					socketWrapper.outgoing.push_back(*c);
-				}
-			}
-			replyPool.clear();
-			break;
-		}
-	}
-
 	if(socketWrapper.outgoing.size() < 1) {
 		return; //no data to write to socket
 	}

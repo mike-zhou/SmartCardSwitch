@@ -25,8 +25,8 @@
 
 /**
  * This class accepts user command with IUserCommandRunner interface,
- * expands user command to consoles commands,
- * passes those console command to ConsoleOperator instance one by one,
+ * expands user command to console commands,
+ * passes those console commands to ConsoleOperator instance one by one,
  * and sends result of user command to IUserCommandRunnerObserver
  */
 class UserCommandRunner: public Poco::Task, public IUserCommandRunner, public IResponseReceiver
@@ -99,7 +99,7 @@ private:
 	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) override;
 
 private:
-	static const int STEPPER_AMOUNT = 5;
+	static const int STEPPER_AMOUNT = 4;
 	static const int LOCATOR_AMOUNT = 8;
 
 	const unsigned int STEPPER_X = 0;
@@ -110,43 +110,6 @@ private:
 	////////////////////////////////////////
 	// user command related data and functions
 	////////////////////////////////////////
-
-	const std::string UserCmdConnectDevice = "connect device";
-	const std::string UserCmdConfirmReset = "confirm reset";
-	const std::string UserCmdResetDevice = "reset device";
-	const std::string UserCmdInsertSmartCard = "insert smart card";
-	const std::string UserCmdRemoveSmartCard = "remove smart card";
-	const std::string UserCmdSwipeSmartCard = "swipe smart card";
-	const std::string UserCmdTapSmartCard = "tap smart card";
-	const std::string UserCmdShowBarCode = "show bar code";
-	const std::string UserCmdPressPedKey = "press PED key";
-	const std::string UserCmdPressSoftKey = "press soft key";
-	const std::string UserCmdPressAssistKey = "press assist key";
-	const std::string UserCmdTouchScreen = "touch screen";
-
-	const std::string ErrorDeviceNotAvailable = "device hans't been connected";
-	const std::string ErrorDeviceNotPowered = "device is not powered";
-	const std::string ErrorDeviceNotHomePositioned = "device hasn't been home positioned";
-	const std::string ErrorUserCommandOnGoing = "a user command is running";
-	const std::string ErrorInvalidJsonUserCommand = "user command cannot be parsed";
-	const std::string ErrorUnSupportedCommand = "command is not supported";
-	const std::string ErrorFailedExpandingConnectDevice = "failed in expanding connect device";
-	const std::string ErrorFailedExpandingConfirmReset = "failed in expanding confirm reset";
-	const std::string ErrorSteppersNotPoweredAfterReset = "steppers are not powered after reset";
-	const std::string ErrorBdcsNotPoweredAfterReset = "BDCs are not powered after reset";
-	const std::string ErrorFailedExpandingResetDevice = "failed in expanding reset device";
-	const std::string ErrorSmartCardReaderSlotOccupied = "smart card reader slot is occupied";
-	const std::string ErrorFailedExpandingInsertSmartCard = "failed in expanding insert smart card";
-	const std::string ErrorFailedExpandingRemoveSmartCard = "failed in expanding remove smart card";
-	const std::string ErrorFailedExpandingSwipeSmartCard = "failed in expanding swipe smart card";
-	const std::string ErrorFailedExpandingTapSmartCard = "failed in expanding tap smart card";
-	const std::string ErrorFailedExpandingShowBarCode = "failed in expanding show bar code";
-	const std::string ErrorFailedExpandingPressPedKey = "failed in expanding press PED key";
-	const std::string ErrorFailedExpandingPressSoftKey = "failed in expanding press soft key";
-	const std::string ErrorFailedExpandingPressAssistKey = "failed in expanding press assist key";
-	const std::string ErrorFailedExpandingTouchScreen = "failed in expanding touch screen";
-	const std::string ErrorFailedToRunConsoleCommand = "failed to run console command";
-	const std::string ErrorFailedToRunUserCommand = "failed to run user command";
 
 	Poco::Mutex _userCommandMutex;
 
@@ -204,7 +167,8 @@ private:
 
 	void notifyObservers(const std::string& cmdId, CommandState state, const std::string& errorInfo);
 	void finishUserCommandConnectDevice(CommandState & updatedCmdState, std::string & updatedErrorInfo);
-	void finishUserCommandConfirmReset(CommandState & updatedCmdState, std::string & updatedErrorInfo);
+	void finishUserCommandCheckResetPressed(CommandState & updatedCmdState, std::string & updatedErrorInfo);
+	void finishUserCommandCheckResetReleased(CommandState & updatedCmdState, std::string & updatedErrorInfo);
 	void finishUserCommandResetDevice(CommandState & updatedCmdState, std::string & updatedErrorInfo);
 	void finishUserCommandInsertSmartCard(CommandState & updatedCmdState, std::string & updatedErrorInfo);
 	void finishUserCommandRemoveSmartCard(CommandState & updatedCmdState, std::string & updatedErrorInfo);
@@ -212,7 +176,8 @@ private:
 
 	//fill _userCommand with information in user command JSON
 	void parseUserCmdConnectDevice(Poco::DynamicStruct& ds);
-	void parseUserCmdConfirmReset(Poco::DynamicStruct& ds);
+	void parseUserCmdCheckResetPressed(Poco::DynamicStruct& ds);
+	void parseUserCmdCheckResetReleased(Poco::DynamicStruct& ds);
 	void parseUserCmdResetDevice(Poco::DynamicStruct& ds);
 	void parseUserCmdSmartCard(Poco::DynamicStruct& ds);
 	void parseUserCmdSwipeSmartCard(Poco::DynamicStruct& ds);
@@ -222,7 +187,8 @@ private:
 
 	//return true if user command can be fulfilled with low level commands
 	bool expandUserCmdConnectDevice();
-	bool expandUserCmdConfirmReset();
+	bool expandUserCmdCheckResetPressed();
+	bool expandUserCmdCheckResetReleased();
 	bool expandUserCmdResetDevice();
 	bool expandUserCmdInsertSmartCard();
 	bool expandUserCmdRemoveSmartCard();
@@ -300,7 +266,8 @@ private:
 	std::vector<std::string> touchScreenKey_touchScreenKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
 	std::vector<std::string> gate_touchScreenKey(unsigned int keyNumber);
 	//movement between smart card reader and gate
-	std::vector<std::string> smartCardReader_gate();
+	std::vector<std::string> smartCardReader_gate_withCard();
+	std::vector<std::string> smartCardReader_gate_withoutCard();
 	std::vector<std::string> gate_smartCardReader_withCard();
 	std::vector<std::string> gate_smartCardReader_withoutCard();
 	//movement between contactless reader and gate
@@ -345,7 +312,6 @@ private:
 		bool resultDeviceFuseOk;
 		bool resultOptPowered;
 		bool resultBdcsPowered;
-		BdcStatus resultBdcMode;
 		bool resultSteppersPowered;
 		struct StepperStatus
 		{
@@ -361,6 +327,8 @@ private:
 		unsigned char resultLocators[LOCATOR_AMOUNT];
 	};
 	ConsoleCommand _consoleCommand;
+
+	void setConsoleCommandParameter(const std::string & cmd);
 
 	ConsoleOperator * _pConsoleOperator;
 };
