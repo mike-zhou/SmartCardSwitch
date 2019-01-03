@@ -28,6 +28,7 @@
 #include "UserProxy.h"
 #include "UserListener.h"
 #include "UserCommandRunner.h"
+#include "WebServer.h"
 
 using namespace std;
 
@@ -162,6 +163,7 @@ protected:
 			UserListener * pUserListener;
 			UserProxy * pUserProxy;
 			UserCommandRunner * pUserCommandRunner;
+			WebServer * pWebServer;
 
 			//device accessor
 			std::string proxyIp = config().getString("proxy_ip_address", "127.0.0.1");
@@ -189,6 +191,13 @@ protected:
 			pUserListener = new UserListener(pUserProxy);
 			pUserListener->Bind(userListenerAddress);
 
+			//web server
+			unsigned int webServerPort = config().getInt("web_server_port", 80);
+			unsigned int webServerMaxQueue = config().getInt("web_server_max_queue", 128);
+			unsigned int webServerMaxThreads = config().getInt("web_server_max_threads", 16);
+			std::string webServerFilesFolder = config().getString("web_server_folder", "wrongFolder");
+			pWebServer = new WebServer(webServerPort, webServerMaxQueue, webServerMaxThreads, webServerFilesFolder);
+
 			//couple tasks:
 			// command flow: UserProxy >> UserCommandRunner >> ConsoleOperator >> CommandRunner >> DeviceAccessor
 			// reply flow:   DeviceAccessor >> CommandRunner >> ConsoleOperator >> UsesrCommandRunner >> UserProxy
@@ -201,14 +210,18 @@ protected:
 			//couple user command runner with user proxy
 			pUserProxy->SetUserCommandRunner(pUserCommandRunner);
 			pUserCommandRunner->AddObserver(pUserProxy);
+			//couple web server with console operator
+			pWebServer->SetConsoleOperator(pConsoleOperator);
+			pConsoleOperator->AddObserver(pWebServer);
 
 			//tm takes the ownership of tasks
 			tm.start(pCommandRunner);
 			tm.start(pDeviceAccessor);
 			tm.start(pConsoleOperator);
-			tm.start(pUserCommandRunner);
-			tm.start(pUserProxy);
-			tm.start(pUserListener);
+//			tm.start(pUserCommandRunner);
+//			tm.start(pUserProxy);
+//			tm.start(pUserListener);
+			tm.start(pWebServer);
 		}
 		catch(Poco::Exception& e)
 		{
