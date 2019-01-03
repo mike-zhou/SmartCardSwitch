@@ -167,6 +167,7 @@ public:
 	static Type GetCmdType(const std::string& consoleCmd);
 	static bool GetParameterStepperIndex(const std::string & consoleCmd, unsigned int & stepperIndex);
 	static bool GetParameterStepperSteps(const std::string & consoleCmd, unsigned int & steps);
+	static bool GetParameterStepperForward(const std::string & consoleCmd, bool & bForward);
 	static bool GetParameterLocatorIndex(const std::string & consoleCmd, unsigned int & locatorIndex);
 };
 

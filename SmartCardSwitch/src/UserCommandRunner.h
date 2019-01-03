@@ -303,6 +303,7 @@ private:
 		//params
 		unsigned int stepperIndex;
 		unsigned int steps;
+		bool stepperForward;
 		unsigned int locatorIndex;
 
 		//command results

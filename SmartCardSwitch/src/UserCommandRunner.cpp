@@ -4463,7 +4463,7 @@ void UserCommandRunner::OnStepperForward(CommandId key, bool bSuccess)
 	if(bSuccess)
 	{
 		pLogger->LogInfo("UserCommandRunner::OnStepperForward successful command Id: " + std::to_string(_consoleCommand.cmdId));
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].forward = true;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].forward = _consoleCommand.stepperForward;
 		_consoleCommand.state = CommandState::Succeeded;
 	}
 	else {
@@ -4651,6 +4651,7 @@ void UserCommandRunner::OnLocatorQuery(CommandId key, bool bSuccess, unsigned in
 void UserCommandRunner::setConsoleCommandParameter(const std::string & cmd)
 {
 	unsigned int stepperIndex, locatorIndex, steps;
+	bool stepperForward;
 
 	if(ConsoleCommandFactory::GetParameterStepperIndex(cmd, stepperIndex)) {
 		_consoleCommand.stepperIndex = stepperIndex;
@@ -4658,6 +4659,10 @@ void UserCommandRunner::setConsoleCommandParameter(const std::string & cmd)
 
 	if(ConsoleCommandFactory::GetParameterStepperSteps(cmd, steps)) {
 		_consoleCommand.steps = steps;
+	}
+
+	if(ConsoleCommandFactory::GetParameterStepperForward(cmd, stepperForward)) {
+		_consoleCommand.stepperForward = stepperForward;
 	}
 
 	if(ConsoleCommandFactory::GetParameterLocatorIndex(cmd, locatorIndex)) {
@@ -4688,7 +4693,7 @@ void UserCommandRunner::runTask()
 				continue;
 			}
 
-			//run console command
+			//run a console command
 			{
 				Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
 				consoleCmdState = _consoleCommand.state;

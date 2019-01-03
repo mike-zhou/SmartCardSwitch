@@ -170,7 +170,7 @@ bool ConsoleCommandFactory::GetParameterStepperIndex(const std::string & console
 			dataArray + 8,
 			dataArray + 9);
 
-	auto type = GetCmdType(consoleCmd);
+	auto type = (Type)dataArray[0];
 
 	switch(type)
 	{
@@ -218,12 +218,48 @@ bool ConsoleCommandFactory::GetParameterStepperSteps(const std::string & console
 			dataArray + 8,
 			dataArray + 9);
 
-	auto type = GetCmdType(consoleCmd);
+	auto type = (Type)dataArray[0];
 
 	switch(type)
 	{
 		case Type::StepperSteps:
 			steps = dataArray[2];
+			return true;
+
+		default:
+			break;
+	}
+
+	return false;
+}
+
+bool ConsoleCommandFactory::GetParameterStepperForward(const std::string & consoleCmd, bool & bForward)
+{
+	const unsigned int Amount = 10;
+	int dataArray[Amount];
+
+	for(unsigned int i=0; i<Amount; i++) {
+		dataArray[i] = -1;
+	}
+
+	sscanf(consoleCmd.data(), "%d %d %d %d %d %d %d %d %d %d\r\n",
+			dataArray,
+			dataArray + 1,
+			dataArray + 2,
+			dataArray + 3,
+			dataArray + 4,
+			dataArray + 5,
+			dataArray + 6,
+			dataArray + 7,
+			dataArray + 8,
+			dataArray + 9);
+
+	auto type = (Type)dataArray[0];
+
+	switch(type)
+	{
+		case Type::StepperForward:
+			bForward = (dataArray[2] != 0);
 			return true;
 
 		default:
@@ -254,7 +290,7 @@ bool ConsoleCommandFactory::GetParameterLocatorIndex(const std::string & console
 			dataArray + 8,
 			dataArray + 9);
 
-	auto type = GetCmdType(consoleCmd);
+	auto type = (Type)dataArray[0];
 
 	switch(type)
 	{
