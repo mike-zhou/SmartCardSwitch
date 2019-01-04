@@ -40,8 +40,12 @@ void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poc
 	if(request.getURI() == "/") {
 		sendDefaultHtml(response);
 	}
+	else if(request.getURI() == "/stepperMove") {
+
+	}
 	else {
 		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("Bad request");
 		response.send();
 	}
 }
