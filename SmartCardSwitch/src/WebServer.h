@@ -39,7 +39,8 @@ public:
 private:
 	WebServer * _pWebServer;
 
-	void sendDefaultHtml(Poco::Net::HTTPServerResponse& response);
+	void onDefaultHtml(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+	void onStepperMove(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
 
 

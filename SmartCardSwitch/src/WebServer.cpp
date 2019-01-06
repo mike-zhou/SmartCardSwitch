@@ -22,7 +22,7 @@ extern Logger * pLogger;
 extern CoordinateStorage * pCoordinateStorage;
 extern MovementConfiguration * pMovementConfiguration;
 
-void ScsRequestHandler::sendDefaultHtml(Poco::Net::HTTPServerResponse& response)
+void ScsRequestHandler::onDefaultHtml(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	auto defaultPage = _pWebServer->GetDefaultPageContent();
 
@@ -33,15 +33,50 @@ void ScsRequestHandler::sendDefaultHtml(Poco::Net::HTTPServerResponse& response)
 	ostr << defaultPage;
 }
 
+void ScsRequestHandler::onStepperMove(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	auto& iStream = request.stream();
+	std::string command;
+
+	//read body of request
+	for(;;)
+	{
+		char c;
+
+		iStream.read(&c, 1);
+		if(iStream.eof()) {
+			break;
+		}
+		else if(iStream.bad()) {
+			pLogger->LogError("ScsRequestHandler::onStepperMove stream bad");
+			break;
+		}
+		else if(iStream.fail()) {
+			pLogger->LogError("ScsRequestHandler::onStepperMove stream fail");
+			break;
+		}
+
+		command.push_back(c);
+	}
+
+	if(command.empty()) {
+		pLogger->LogError("ScsRequestHandler::onStepperMove no command in request");
+	}
+	else {
+		pLogger->LogInfo("ScsRequestHandler::onStepperMove command: " + command);
+	}
+
+}
+
 void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	pLogger->LogInfo("ScsRequestHandler::handleRequest %%%%%% URI: " + request.getURI());
 
 	if(request.getURI() == "/") {
-		sendDefaultHtml(response);
+		onDefaultHtml(request, response);
 	}
 	else if(request.getURI() == "/stepperMove") {
-
+		onStepperMove(request, response);
 	}
 	else {
 		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
@@ -327,8 +362,7 @@ void WebServer::runTask()
 	try
 	{
 		// set-up a server socket
-		Poco::Net::SocketAddress address("127.0.0.1:80");
-		Poco::Net::ServerSocket svs(address);
+		Poco::Net::ServerSocket svs(_port);
 		// set-up a HTTPServer instance
 		Poco::Net::HTTPServer srv(new ScsRequestHandlerFactory(this), svs, pParams);
 		// start the HTTPServer
