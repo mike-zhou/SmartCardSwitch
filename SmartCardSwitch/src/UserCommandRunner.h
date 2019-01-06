@@ -148,9 +148,6 @@ private:
 
 		//---- user command result ----
 		bool smartCardReaderSlotOccupied;
-
-		//console commands to fulfill this user command
-		std::deque<std::string> consoleCommands;
 	};
 	ExpandedUserCommand _userCommand;
 
@@ -185,20 +182,20 @@ private:
 	void parseUserCmdBarCode(Poco::DynamicStruct& ds);
 	void parseUserCmdKeys(Poco::DynamicStruct& ds);
 
-	//return true if user command can be fulfilled with low level commands
-	bool expandUserCmdConnectDevice();
-	bool expandUserCmdCheckResetPressed();
-	bool expandUserCmdCheckResetReleased();
-	bool expandUserCmdResetDevice();
-	bool expandUserCmdInsertSmartCard();
-	bool expandUserCmdRemoveSmartCard();
-	bool expandUserCmdSwipeSmartCard();
-	bool expandUserCmdTapSmartCard();
-	bool expandUserCmdShowBarCode();
-	bool expandUserCmdPressPedKey();
-	bool expandUserCmdPressSoftKey();
-	bool expandUserCmdPressAssistKey();
-	bool expandUserCmdTouchScreen();
+	//fulfill user command with console commands
+	void executeUserCmdConnectDevice();
+	void executeUserCmdCheckResetPressed();
+	void executeUserCmdCheckResetReleased();
+	void executeUserCmdResetDevice();
+	void executeUserCmdInsertSmartCard();
+	void executeUserCmdRemoveSmartCard();
+	void executeUserCmdSwipeSmartCard();
+	void executeUserCmdTapSmartCard();
+	void executeUserCmdShowBarCode();
+	void executeUserCmdPressPedKey();
+	void executeUserCmdPressSoftKey();
+	void executeUserCmdPressAssistKey();
+	void executeUserCmdTouchScreen();
 
 	enum class CurrentPosition
 	{
@@ -228,64 +225,63 @@ private:
 							unsigned int accelerationBuffer,
 							unsigned int accelerationBufferDecrement,
 							unsigned int decelerationBuffer,
-							unsigned int decelerationBufferIncrement,
-							std::vector<std::string>& cmds);
+							unsigned int decelerationBufferIncrement);
 
 	//append commands to move stepper index from initialPos to finalPos.
-	void moveStepper(unsigned int index, unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds);
-	void moveStepperX(unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds) { moveStepper(0, initialPos, finalPos, cmds); }
-	void moveStepperY(unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds) { moveStepper(1, initialPos, finalPos, cmds); }
-	void moveStepperZ(unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds) { moveStepper(2, initialPos, finalPos, cmds); }
-	void moveStepperW(unsigned int initialPos, unsigned int finalPos, std::vector<std::string>& cmds) { moveStepper(3, initialPos, finalPos, cmds); }
+	void moveStepper(unsigned int index, unsigned int initialPos, unsigned int finalPos);
+	void moveStepperX(unsigned int initialPos, unsigned int finalPos) { moveStepper(0, initialPos, finalPos); }
+	void moveStepperY(unsigned int initialPos, unsigned int finalPos) { moveStepper(1, initialPos, finalPos); }
+	void moveStepperZ(unsigned int initialPos, unsigned int finalPos) { moveStepper(2, initialPos, finalPos); }
+	void moveStepperW(unsigned int initialPos, unsigned int finalPos) { moveStepper(3, initialPos, finalPos); }
 
 	//delay
-	std::vector<std::string> deviceDelay(unsigned int clks);
+	void deviceDelay(unsigned int clks);
 	//clamp operation
-	std::vector<std::string> openClamp();
-	std::vector<std::string> closeClamp();
-	std::vector<std::string> releaseClamp();
+	void openClamp();
+	void closeClamp();
+	void releaseClamp();
 	//movement between smart card and gate
-	std::vector<std::string> gate_smartCard_withoutCard(unsigned int cardNumber);
-	std::vector<std::string> gate_smartCard_withCard(unsigned int cardNumber);
-	std::vector<std::string> smartCard_gate_withCard(unsigned int cardNumber);
-	std::vector<std::string> smartCard_gate_withoutCard(unsigned int cardNumber);
+	void gate_smartCard_withoutCard(unsigned int cardNumber);
+	void gate_smartCard_withCard(unsigned int cardNumber);
+	void smartCard_gate_withCard(unsigned int cardNumber);
+	void smartCard_gate_withoutCard(unsigned int cardNumber);
 	//movement between PED keys and gate
-	std::vector<std::string> pedKey_gate(unsigned int keyNumber);
-	std::vector<std::string> pedKey_pedKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
-	std::vector<std::string> gate_pedKey(unsigned int keyNumber);
+	void pedKey_gate(unsigned int keyNumber);
+	void pedKey_pedKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
+	void gate_pedKey(unsigned int keyNumber);
 	//movement between softkey and gate
-	std::vector<std::string> softKey_gate(unsigned int keyNumber);
-	std::vector<std::string> softKey_softKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
-	std::vector<std::string> gate_softKey(unsigned int keyNumber);
+	void softKey_gate(unsigned int keyNumber);
+	void softKey_softKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
+	void gate_softKey(unsigned int keyNumber);
 	//movement between assist key and gate
-	std::vector<std::string> assistKey_gate(unsigned int keyNumber);
-	std::vector<std::string> assistKey_assistKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
-	std::vector<std::string> gate_assistKey(unsigned int keyNumber);
+	void assistKey_gate(unsigned int keyNumber);
+	void assistKey_assistKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
+	void gate_assistKey(unsigned int keyNumber);
 	//movement between touch screen area and gate
-	std::vector<std::string> touchScreenKey_gate(unsigned int keyNumber);
-	std::vector<std::string> touchScreenKey_touchScreenKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
-	std::vector<std::string> gate_touchScreenKey(unsigned int keyNumber);
+	void touchScreenKey_gate(unsigned int keyNumber);
+	void touchScreenKey_touchScreenKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);
+	void gate_touchScreenKey(unsigned int keyNumber);
 	//movement between smart card reader and gate
-	std::vector<std::string> smartCardReader_gate_withCard();
-	std::vector<std::string> smartCardReader_gate_withoutCard();
-	std::vector<std::string> gate_smartCardReader_withCard();
-	std::vector<std::string> gate_smartCardReader_withoutCard();
+	void smartCardReader_gate_withCard();
+	void smartCardReader_gate_withoutCard();
+	void gate_smartCardReader_withCard();
+	void gate_smartCardReader_withoutCard();
 	//movement between contactless reader and gate
-	std::vector<std::string> contactlessReader_gate();
-	std::vector<std::string> gate_contactlessReader();
+	void contactlessReader_gate();
+	void gate_contactlessReader();
 	//movement between barcode reader and gate
-	std::vector<std::string> barcodeReader_gate();
-	std::vector<std::string> gate_barcodeReader();
+	void barcodeReader_gate();
+	void gate_barcodeReader();
 	//from Gate to Gate
-	std::vector<std::string> toHome();
-	std::vector<std::string> toSmartCardGate();
-	std::vector<std::string> toPedKeyGate();
-	std::vector<std::string> toSoftKeyGate();
-	std::vector<std::string> toAssistKeyGate();
-	std::vector<std::string> toTouchScreenGate();
-	std::vector<std::string> toSmartCardReaderGate();
-	std::vector<std::string> toContactlessReaderGate();
-	std::vector<std::string> toBarcodeReaderGate();
+	void toHome();
+	void toSmartCardGate();
+	void toPedKeyGate();
+	void toSoftKeyGate();
+	void toAssistKeyGate();
+	void toTouchScreenGate();
+	void toSmartCardReaderGate();
+	void toContactlessReaderGate();
+	void toBarcodeReaderGate();
 
 	std::vector<IUserCommandRunnerObserver *> _observerPtrArray;
 
@@ -329,7 +325,9 @@ private:
 	};
 	ConsoleCommand _consoleCommand;
 
+	void throwError(const std::string& errorInfo);
 	void setConsoleCommandParameter(const std::string & cmd);
+	void runConsoleCommand(const std::string& cmd);
 
 	ConsoleOperator * _pConsoleOperator;
 };

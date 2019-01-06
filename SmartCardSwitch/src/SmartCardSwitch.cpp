@@ -218,9 +218,9 @@ protected:
 			tm.start(pCommandRunner);
 			tm.start(pDeviceAccessor);
 			tm.start(pConsoleOperator);
-//			tm.start(pUserCommandRunner);
-//			tm.start(pUserProxy);
-//			tm.start(pUserListener);
+			tm.start(pUserCommandRunner);
+			tm.start(pUserProxy);
+			tm.start(pUserListener);
 			tm.start(pWebServer);
 		}
 		catch(Poco::Exception& e)

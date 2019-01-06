@@ -41,16 +41,8 @@ public:
 	const std::string ErrorSteppersNotPoweredAfterReset = "steppers are not powered after reset";
 	const std::string ErrorBdcsNotPoweredAfterReset = "BDCs are not powered after reset";
 	const std::string ErrorFailedExpandingResetDevice = "failed in expanding reset device";
-	const std::string ErrorSmartCardReaderSlotOccupied = "smart card reader slot is occupied";
-	const std::string ErrorFailedExpandingInsertSmartCard = "failed in expanding insert smart card";
-	const std::string ErrorFailedExpandingRemoveSmartCard = "failed in expanding remove smart card";
-	const std::string ErrorFailedExpandingSwipeSmartCard = "failed in expanding swipe smart card";
-	const std::string ErrorFailedExpandingTapSmartCard = "failed in expanding tap smart card";
-	const std::string ErrorFailedExpandingShowBarCode = "failed in expanding show bar code";
-	const std::string ErrorFailedExpandingPressPedKey = "failed in expanding press PED key";
-	const std::string ErrorFailedExpandingPressSoftKey = "failed in expanding press soft key";
-	const std::string ErrorFailedExpandingPressAssistKey = "failed in expanding press assist key";
-	const std::string ErrorFailedExpandingTouchScreen = "failed in expanding touch screen";
+	const std::string ErrorSmartCardReaderSlotOccupied = "smart card reader is occupied";
+	const std::string ErrorSmartCardReaderEmpty = "no card in smart card reader";
 	const std::string ErrorFailedToRunConsoleCommand = "failed to run console command";
 	const std::string ErrorFailedToRunUserCommand = "failed to run user command";
 

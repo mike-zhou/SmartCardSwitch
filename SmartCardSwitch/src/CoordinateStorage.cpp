@@ -722,6 +722,13 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	}
 	break;
 
+	case Type::ContactlessReaderGate:
+	{
+		value = _contactlessReaderGate;
+		rc = true;
+	}
+	break;
+
 	case Type::Home:
 	{
 		value = _home;
