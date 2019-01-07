@@ -83,8 +83,18 @@ function moveStepper(stepper, forward, steps)
 		var DONE = 4; // readyState 4 means the request is done.
 		var OK = 200; // status 200 is a successful return.
 		if (xhr.readyState === DONE) {
-			if (xhr.status === OK) {
-				console.log(xhr.responseText); // 'This is the output.'
+			console.log("response is available");
+			console.log("response type: " + xhr.responseType);
+
+			if (xhr.status === OK) 
+			{
+				var jsonObj = xhr.response;
+				var curHomeOffset = stepper + 'CurHomeOffset';
+
+				console.log(JSON.stringify(jsonObj)); // 'This is the output.'
+
+				document.getElementById(curHomeOffset).innerHTML = jsonObj[stepper]["homeOffset"].toString();
+
 			} else {
 				console.log('Error: ' + xhr.status); // An error occurred during the request.
 			}

@@ -152,6 +152,9 @@ private:
 	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) override;
 
 private:
+	static const int STEPPER_AMOUNT = 4;
+	static const int LOCATOR_AMOUNT = 8;
+
 	Poco::Mutex _mutex;
 
 	enum class CommandState
@@ -160,7 +163,41 @@ private:
 		OnGoing,
 		Failed,
 		Succeeded
-	} _cmdState;
+	};
+
+	struct ConsoleCommand
+	{
+		ICommandReception::CommandId cmdId;
+		CommandState state;
+
+		//params
+		unsigned int stepperIndex;
+		unsigned int steps;
+		bool stepperForward;
+		unsigned int locatorIndex;
+
+		//command results
+		std::vector<std::string> resultDevices;
+		bool resultDeviceConnected;
+		bool resultDevicePowered;
+		bool resultDeviceFuseOk;
+		bool resultOptPowered;
+		bool resultBdcsPowered;
+		bool resultSteppersPowered;
+		struct StepperStatus
+		{
+			StepperState state;
+			bool enabled;
+			bool forward;
+			unsigned int homeOffset;
+			unsigned int targetPosition;
+			unsigned int locatorIndex;
+			unsigned int locatorLineNumberStart;
+			unsigned int locatorLineNumberTerminal;
+		} resultSteppers[STEPPER_AMOUNT];
+		unsigned char resultLocators[LOCATOR_AMOUNT];
+	};
+	ConsoleCommand _consoleCommand;
 
 	unsigned int _port;
 	unsigned int _maxQueue;

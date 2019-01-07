@@ -26,6 +26,7 @@ void ScsRequestHandler::onDefaultHtml(Poco::Net::HTTPServerRequest& request, Poc
 {
 	auto defaultPage = _pWebServer->GetDefaultPageContent();
 
+	response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
 	response.setContentType("text/html");
 	response.setChunkedTransferEncoding(true);
 
@@ -64,8 +65,21 @@ void ScsRequestHandler::onStepperMove(Poco::Net::HTTPServerRequest& request, Poc
 	}
 	else {
 		pLogger->LogInfo("ScsRequestHandler::onStepperMove command: " + command);
-	}
 
+		//only for test
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+		response.setContentType("application/json");
+
+		std::string json;
+
+		json += "{\"stepper0\":{";
+		json += 	"\"homeOffset\":10";
+		json += 	"}";
+		json += "}";
+
+		auto& oStream = response.send();
+		oStream << json;
+	}
 }
 
 void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
@@ -95,8 +109,10 @@ WebServer::WebServer(unsigned int port, unsigned int maxQueue, unsigned int maxT
 	_maxQueue = maxQueue;
 	_maxThread = maxThread;
 	_filesFolder = filesFolder;
-	_cmdState = CommandState::Idle;
 	_pConsoleOperator = nullptr;
+
+	_consoleCommand.state  = CommandState::Idle;
+	_consoleCommand.cmdId = ICommandReception::ICommandDataTypes::InvalidCommandId;
 }
 
 
@@ -344,6 +360,63 @@ void WebServer::OnStepperSetState(CommandId key, bool bSuccess)
 }
 
 void WebServer::OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput)
+{
+
+}
+
+bool WebServer::StepperMove(unsigned int index, bool forward, unsigned int steps, std::string & errorInfo)
+{
+
+}
+
+bool WebServer::StepperConfigBoundary(
+					unsigned int stepperIndex,
+					unsigned int locatorIndex,
+					unsigned int locatorLineNumberStart,
+					unsigned int locatorLineNumberTerminal,
+					std::string & errorInfo)
+{
+
+}
+
+bool WebServer::StepperConfigMovement(
+					unsigned int index,
+					unsigned int accelerationBuffer,
+					unsigned int accelerationBufferDecrement,
+					unsigned int decelerationBuffer,
+					unsigned int decelerationBufferIncrement,
+					std::string & errorInfo)
+{
+
+}
+
+bool WebServer::BdcForward(unsigned int index, std::string & errorInfo)
+{
+
+}
+
+bool WebServer::BdcReverse(unsigned int index, std::string & errorInfo)
+{
+
+}
+
+bool WebServer::BdcRelease(unsigned int index, std::string & errorInfo)
+{
+
+}
+
+bool WebServer::OptPowerOn(std::string & errorInfo)
+{
+
+}
+
+bool WebServer::OptPowerOff(std::string & errorInfo)
+{
+
+}
+
+
+std::string WebServer::DeviceStatus()
 {
 
 }
