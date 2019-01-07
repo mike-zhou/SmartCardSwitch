@@ -39,6 +39,7 @@ public:
 private:
 	WebServer * _pWebServer;
 
+	//command handlers
 	void onDefaultHtml(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 	void onStepperMove(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
@@ -155,7 +156,8 @@ private:
 	static const int STEPPER_AMOUNT = 4;
 	static const int LOCATOR_AMOUNT = 8;
 
-	Poco::Mutex _mutex;
+	Poco::Mutex _webServerMutex;
+	Poco::Mutex _replyMutex;
 
 	enum class CommandState
 	{
@@ -207,6 +209,8 @@ private:
 	std::string _defaultPageContent;
 
 	ConsoleOperator * _pConsoleOperator;
+
+	void runConsoleCommand(const std::string & cmd, std::string & errorInfo);
 };
 
 #endif /* WEBSERVER_H_ */

@@ -12,6 +12,11 @@
 #include "Poco/Net/SocketAddress.h"
 #include "Poco/Path.h"
 #include "Poco/File.h"
+#include "Poco/JSON/Parser.h"
+#include "Poco/Dynamic/Var.h"
+#include "Poco/JSON/Object.h"
+#include "Poco/JSON/JSONException.h"
+#include "Poco/Dynamic/Struct.h"
 
 #include "WebServer.h"
 #include "Logger.h"
@@ -60,26 +65,70 @@ void ScsRequestHandler::onStepperMove(Poco::Net::HTTPServerRequest& request, Poc
 		command.push_back(c);
 	}
 
-	if(command.empty()) {
+	//execute command
+	if(command.empty())
+	{
 		pLogger->LogError("ScsRequestHandler::onStepperMove no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
 	}
-	else {
+	else
+	{
 		pLogger->LogInfo("ScsRequestHandler::onStepperMove command: " + command);
+		unsigned int stepperIndex;
+		bool forward;
+		unsigned int steps;
+		bool exceptionOccurred = true;
 
-		//only for test
-		response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
-		response.setContentType("application/json");
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
 
-		std::string json;
+			stepperIndex = ds["index"];
+			forward = ds["forward"];
+			steps = ds["steps"];
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperMove exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperMove unknown exception occurred");
+		}
 
-		json += "{\"stepper0\":{";
-		json += 	"\"homeOffset\":10";
-		json += 	"}";
-		json += "}";
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperMove reply bad request to browser");
 
-		auto& oStream = response.send();
-		oStream << json;
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in " + command);
+			response.send();
+		}
+		else
+		{
+			std::string errorInfo;
+
+			if(!_pWebServer->StepperMove(stepperIndex, forward, steps, errorInfo))
+			{
+				pLogger->LogError("ScsRequestHandler::onStepperMove failed to move stepper: " + errorInfo);
+			}
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+			response.setContentType("application/json");
+			auto& oStream = response.send();
+			oStream << _pWebServer->DeviceStatus();
+		}
 	}
+
+	pLogger->LogInfo("ScsRequestHandler::onStepperMove request has been processed");
 }
 
 void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
@@ -313,17 +362,80 @@ void WebServer::OnStepperEnable(CommandId key, bool bSuccess)
 
 void WebServer::OnStepperForward(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		//update result.
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].forward = _consoleCommand.stepperForward;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnStepperSteps(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnStepperRun(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		//update result
+		if(_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].forward) {
+			_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].homeOffset += _consoleCommand.steps;
+		}
+		else {
+			_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].homeOffset -= _consoleCommand.steps;
+		}
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnStepperConfigHome(CommandId key, bool bSuccess)
@@ -366,7 +478,73 @@ void WebServer::OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInp
 
 bool WebServer::StepperMove(unsigned int index, bool forward, unsigned int steps, std::string & errorInfo)
 {
+	errorInfo.clear();
+	std::string cmd;
 
+	if(index >= STEPPER_AMOUNT)
+	{
+		errorInfo = "stepper index is out of range, index:" + std::to_string(index);
+		pLogger->LogError("WebServer::StepperMove " + errorInfo);
+		return false;
+	}
+
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
+
+	//check parameters
+	{
+		Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+		if(_consoleCommand.state != CommandState::Idle) {
+			errorInfo = "internal error: wrong command state";
+		}
+		if(_consoleCommand.resultSteppers[index].state != StepperState::KnownPosition)  {
+			errorInfo = "stepper hasn't been positioned";
+		}
+		if(!forward)
+		{
+			if(_consoleCommand.resultSteppers[index].homeOffset < steps)  {
+				errorInfo = "stepper hasn't been positioned";
+			}
+		}
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::StepperMove " + errorInfo);
+			return false;
+		}
+	}
+
+	_consoleCommand.stepperIndex = index;
+	_consoleCommand.stepperForward = forward;
+	_consoleCommand.steps = steps;
+
+	cmd = ConsoleCommandFactory::CmdStepperForward(index, forward);
+	runConsoleCommand(cmd, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperMove error in stepper forward: " + errorInfo);
+		return false;
+	}
+
+	cmd = ConsoleCommandFactory::CmdStepperSteps(index, steps);
+	runConsoleCommand(cmd, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperMove error in stepper steps: " + errorInfo);
+		return false;
+	}
+
+	long finalPos;
+	if(forward) {
+		finalPos = _consoleCommand.resultSteppers[index].homeOffset + steps;
+	}
+	else {
+		finalPos = _consoleCommand.resultSteppers[index].homeOffset - steps;
+	}
+	cmd = ConsoleCommandFactory::CmdStepperRun(index, _consoleCommand.resultSteppers[index].homeOffset, finalPos);
+	runConsoleCommand(cmd, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperMove error in stepper steps: " + errorInfo);
+		return false;
+	}
+
+	return true;
 }
 
 bool WebServer::StepperConfigBoundary(
@@ -421,6 +599,70 @@ std::string WebServer::DeviceStatus()
 
 }
 
+void WebServer::runConsoleCommand(const std::string & cmd, std::string & errorInfo)
+{
+	std::string cmdToLog;
+
+	//log command content except \r\n
+	for(auto it=cmd.begin(); it!=cmd.end(); it++) {
+		char c = *it;
+		if((c >= ' ') && (c <= '~')) {
+			cmdToLog.push_back(c);
+		}
+	}
+
+	// start command
+	{
+		Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+		if(_consoleCommand.state != CommandState::Idle) {
+			errorInfo = "internal error: wrong command state";
+		}
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::runConsoleCommand " + errorInfo);
+			return;
+		}
+
+		_consoleCommand.state = CommandState::OnGoing;
+		_consoleCommand.cmdId = _pConsoleOperator->RunConsoleCommand(cmd);
+		pLogger->LogInfo("WebServer::runConsoleCommand command id: " + std::to_string(_consoleCommand.cmdId));
+		if(_consoleCommand.cmdId == InvalidCommandId)
+		{
+			errorInfo = "failure in running command";
+			pLogger->LogError("WebServer::runConsoleCommand failed to start console command: " + cmdToLog);
+			_consoleCommand.state = CommandState::Idle;
+			return;
+		}
+	}
+
+	//wait for result
+	for(;;)
+	{
+		Poco::ScopedLock<Poco::Mutex> lock(_replyMutex);
+		if(_consoleCommand.state == CommandState::OnGoing) {
+			sleep(10);
+		}
+		else {
+			break;
+		}
+	}
+
+	//check result
+	if(_consoleCommand.state == CommandState::Succeeded) {
+		pLogger->LogInfo("WebServer::runConsoleCommand succeeded in: " + cmdToLog);
+	}
+	else if(_consoleCommand.state == CommandState::Failed) {
+		errorInfo = "failed in running command";
+		pLogger->LogError("WebServer::runConsoleCommand failed to run console command: " + cmdToLog);
+	}
+	else {
+		errorInfo = "failed in running command";
+		pLogger->LogError("WebServer::runConsoleCommand wrong command result: " + std::to_string((int)_consoleCommand.state));
+	}
+
+	_consoleCommand.cmdId = InvalidCommandId;
+	_consoleCommand.state = CommandState::Idle;
+}
 
 void WebServer::runTask()
 {

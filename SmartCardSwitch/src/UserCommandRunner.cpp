@@ -2900,7 +2900,6 @@ void UserCommandRunner::runConsoleCommand(const std::string& cmd)
 		pLogger->LogInfo("UserCommandRunner::runConsoleCommand command Id: " + std::to_string(_consoleCommand.cmdId));
 		if(_consoleCommand.cmdId == ICommandReception::ICommandDataTypes::InvalidCommandId)
 		{
-			Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
 			_consoleCommand.state = CommandState::Idle;
 
 			//failed to run the console command, throw exception to terminate the current USER command
