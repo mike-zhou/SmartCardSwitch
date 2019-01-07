@@ -29,6 +29,12 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 	_smartCardFetchOffset = -1;
 	_smartCardReaderSlowInsertEnd = -1;
 	_smartCardReleaseOffset = -1;
+	_smartCardInsertExtra = -1;
+
+	_maximumX = -1;
+	_maximumY = -1;
+	_maximumZ = -1;
+	_maximumW = -1;
 
 	_home.x = 0;
 	_home.y = 0;
@@ -217,6 +223,13 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			_smartCardFetchOffset = ds["smartCardFetchOffset"];
 			_smartCardReaderSlowInsertEnd = ds["smartCardReaderSlowInsertEnd"];
 			_smartCardReleaseOffset = ds["smartCardReleaseOffset"];
+			_smartCardInsertExtra = ds["smartCardInsertExtra"];
+
+			//maximum
+			_maximumX = ds["maximumX"];
+			_maximumY = ds["maximumY"];
+			_maximumZ = ds["maximumZ"];
+			_maximumW = ds["maximumW"];
 
 			pLogger->LogInfo("CoordinateStorage::CoordinateStorage storage file is parsed successfully");
 		}
@@ -332,6 +345,13 @@ bool CoordinateStorage::PersistToFile()
 	json = json + ", \"smartCardFetchOffset\":" + std::to_string(_smartCardFetchOffset);
 	json = json + ",\"smartCardReleaseOffset\":" + std::to_string(_smartCardReleaseOffset);
 	json = json + ", \"smartCardReaderSlowInsertEnd\":" + std::to_string(_smartCardReaderSlowInsertEnd);
+	json = json + ",\"smartCardInsertExtra\":" + std::to_string(_smartCardInsertExtra);
+
+	//maximum
+	json = json + ",\"maximumX\":" + std::to_string(_maximumX);
+	json = json + ",\"maximumY\":" + std::to_string(_maximumY);
+	json = json + ",\"maximumZ\":" + std::to_string(_maximumZ);
+	json = json + ",\"maximumW\":" + std::to_string(_maximumW);
 
 	json = json + "}";
 
@@ -786,6 +806,11 @@ void CoordinateStorage::SetSmartCardReleaseOffsetZ(long offset)
 	_smartCardReleaseOffset = offset;
 }
 
+void CoordinateStorage::SetSmartCardInsertExtra(long offset)
+{
+	_smartCardInsertExtra = offset;
+}
+
 bool CoordinateStorage::GetSmartCardPlaceStartZ(long & zPosition)
 {
 	if(_smartCardPlaceStart < 0) {
@@ -816,6 +841,16 @@ bool CoordinateStorage::GetSmartCardReleaseOffset(long & offset)
 	return true;
 }
 
+bool CoordinateStorage::GetSmartCardInsertExtra(long & offset)
+{
+	if(_smartCardInsertExtra < 0) {
+		return false;
+	}
+
+	offset = _smartCardInsertExtra;
+	return true;
+}
+
 void CoordinateStorage::SetSmartCardReaderSlowInsertEndY(long yPosition)
 {
 	_smartCardReaderSlowInsertEnd = yPosition;
@@ -828,6 +863,66 @@ bool CoordinateStorage::GetSmartCardReaderSlowInsertEndY(long & yPosition)
 	}
 
 	yPosition = _smartCardReaderSlowInsertEnd;
+	return true;
+}
+
+void CoordinateStorage::SetMaximumX(long value)
+{
+	_maximumX = value;
+}
+
+void CoordinateStorage::setMaximumY(long value)
+{
+	_maximumY = value;
+}
+
+void CoordinateStorage::SetMaximumZ(long value)
+{
+	_maximumZ = value;
+}
+
+void CoordinateStorage::setMaximumW(long value)
+{
+	_maximumW = value;
+}
+
+bool CoordinateStorage::GetMaximumX(long & value)
+{
+	if(_maximumX == -1) {
+		return false;
+	}
+
+	value = _maximumX;
+	return true;
+}
+
+bool CoordinateStorage::GetMaximumY(long & value)
+{
+	if(_maximumY == -1) {
+		return false;
+	}
+
+	value = _maximumY;
+	return true;
+}
+
+bool CoordinateStorage::GetMaximumZ(long & value)
+{
+	if(_maximumZ == -1) {
+		return false;
+	}
+
+	value = _maximumZ;
+	return true;
+}
+
+bool CoordinateStorage::GetMaximumW(long & value)
+{
+	if(_maximumW == -1) {
+		return false;
+	}
+
+	value = _maximumW;
 	return true;
 }
 

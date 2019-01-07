@@ -64,12 +64,23 @@ public:
 	void SetSmartCardPlaceStartZ(long zPosition);
 	void SetSmartCardFetchOffset(long offset);
 	void SetSmartCardReleaseOffsetZ(long offset);
+	void SetSmartCardInsertExtra(long offset);
 	bool GetSmartCardPlaceStartZ(long & zPosition);
 	bool GetSmartCardFetchOffset(long & offset);
 	bool GetSmartCardReleaseOffset(long & offset);
+	bool GetSmartCardInsertExtra(long & offset);
 
 	void SetSmartCardReaderSlowInsertEndY(long yPosition);
 	bool GetSmartCardReaderSlowInsertEndY(long & yPosition);
+
+	void SetMaximumX(long value);
+	void setMaximumY(long value);
+	void SetMaximumZ(long value);
+	void setMaximumW(long value);
+	bool GetMaximumX(long & value);
+	bool GetMaximumY(long & value);
+	bool GetMaximumZ(long & value);
+	bool GetMaximumW(long & value);
 
 private:
 	//constraints
@@ -90,6 +101,8 @@ private:
 		std::string ToJsonObj(); //return a json object standing for this struct.
 	};
 
+	long _maximumX, _maximumY, _maximumZ, _maximumW;
+
 	//home
 	Coordinate _home;
 
@@ -99,6 +112,7 @@ private:
 	long _smartCardPlaceStart;
 	long _smartCardFetchOffset; //shared with card removal from smart card reader
 	long _smartCardReleaseOffset;
+	long _smartCardInsertExtra;
 
 	//PED keys
 	Coordinate _pedKeyGate;
