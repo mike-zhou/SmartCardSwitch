@@ -290,7 +290,6 @@ private:
 	//////////////////////////////////////
 
 	Poco::Mutex _consoleCommandMutex;
-	Poco::Event _consoleEvent;
 	struct ConsoleCommand
 	{
 		ICommandReception::CommandId cmdId;

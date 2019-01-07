@@ -66,7 +66,34 @@ public:
 
 	void SetConsoleOperator(ConsoleOperator * pCO) { _pConsoleOperator = pCO; }
 
+	/**
+	 * APIs for requests
+	 */
+	//returns the default web page.
 	const std::string& GetDefaultPageContent();
+	//move stepper. return true with empty errorInfo if succeed, false with detailed error if fail.
+	bool StepperMove(unsigned int index, bool forward, unsigned int steps, std::string & errorInfo);
+	bool StepperConfigBoundary(
+						unsigned int stepperIndex,
+						unsigned int locatorIndex,
+						unsigned int locatorLineNumberStart,
+						unsigned int locatorLineNumberTerminal,
+						std::string & errorInfo);
+	bool StepperConfigMovement(
+						unsigned int index,
+						unsigned int accelerationBuffer,
+						unsigned int accelerationBufferDecrement,
+						unsigned int decelerationBuffer,
+						unsigned int decelerationBufferIncrement,
+						std::string & errorInfo);
+	bool BdcForward(unsigned int index, std::string & errorInfo);
+	bool BdcReverse(unsigned int index, std::string & errorInfo);
+	bool BdcRelease(unsigned int index, std::string & errorInfo);
+	bool OptPowerOn(std::string & errorInfo);
+	bool OptPowerOff(std::string & errorInfo);
+	//return a JSON string representing current device status.
+	std::string DeviceStatus();
+
 private:
 	//Poco::Task
 	void runTask();
