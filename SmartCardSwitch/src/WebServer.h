@@ -41,10 +41,37 @@ private:
 private:
 	WebServer * _pWebServer;
 
+	std::string getJsonCommand(Poco::Net::HTTPServerRequest& request);
+
+	//***************************
 	//command handlers
+	//***************************
+	//
+	//request:
+	//	uri: /
+	//	body: empty
 	void onDefaultHtml(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+	//request:
+	//	uri: /stepper
+	//	body:
+	//	 {
+	//		"index":0,
+	//		"forward":true,
+	//		"steps":1
+	//	 }
 	void onStepperMove(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+	//request:
+	//	uri: /query
+	//	body: empty
 	void onQuery(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+	//request:
+	//	uri: /bdc
+	//	body:
+	//	 {
+	//		"index":0,
+	//		"action":0 //0: forward; 1: reverse; 2: deactivate
+	//	 }
+	void onBdc(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
 
 
@@ -92,7 +119,7 @@ public:
 						std::string & errorInfo);
 	bool BdcForward(unsigned int index, std::string & errorInfo);
 	bool BdcReverse(unsigned int index, std::string & errorInfo);
-	bool BdcRelease(unsigned int index, std::string & errorInfo);
+	bool BdcDeactivate(unsigned int index, std::string & errorInfo);
 	bool OptPowerOn(std::string & errorInfo);
 	bool OptPowerOff(std::string & errorInfo);
 	bool Query(std::string & errorInfo);
@@ -159,6 +186,7 @@ private:
 private:
 	static const int STEPPER_AMOUNT = 4;
 	static const int LOCATOR_AMOUNT = 8;
+	static const int BDC_AMOUNT = 6;
 
 	Poco::Mutex _webServerMutex;
 	Poco::Mutex _replyMutex;
@@ -181,6 +209,8 @@ private:
 		unsigned int steps;
 		bool stepperForward;
 		unsigned int locatorIndex;
+		unsigned int bdcIndex;
+		BdcStatus bdcStatus;
 
 		//command results
 		std::vector<std::string> resultDevices;
@@ -210,6 +240,7 @@ private:
 			unsigned int decelerationBufferIncrement;
 		} resultSteppers[STEPPER_AMOUNT];
 		unsigned char resultLocators[LOCATOR_AMOUNT];
+		BdcStatus resultBdcStatus[BDC_AMOUNT];
 	};
 	ConsoleCommand _consoleCommand;
 

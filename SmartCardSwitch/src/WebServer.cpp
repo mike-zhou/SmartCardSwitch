@@ -27,6 +27,35 @@ extern Logger * pLogger;
 extern CoordinateStorage * pCoordinateStorage;
 extern MovementConfiguration * pMovementConfiguration;
 
+std::string ScsRequestHandler::getJsonCommand(Poco::Net::HTTPServerRequest& request)
+{
+	auto& iStream = request.stream();
+	std::string json;
+
+	//read body of request
+	for(;;)
+	{
+		char c;
+
+		iStream.read(&c, 1);
+		if(iStream.eof()) {
+			break;
+		}
+		else if(iStream.bad()) {
+			pLogger->LogError("ScsRequestHandler::getJsonCommand stream bad");
+			break;
+		}
+		else if(iStream.fail()) {
+			pLogger->LogError("ScsRequestHandler::getJsonCommand stream fail");
+			break;
+		}
+
+		json.push_back(c);
+	}
+
+	return json;
+}
+
 void ScsRequestHandler::onDefaultHtml(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	auto defaultPage = _pWebServer->GetDefaultPageContent();
@@ -41,29 +70,7 @@ void ScsRequestHandler::onDefaultHtml(Poco::Net::HTTPServerRequest& request, Poc
 
 void ScsRequestHandler::onStepperMove(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
-	auto& iStream = request.stream();
-	std::string command;
-
-	//read body of request
-	for(;;)
-	{
-		char c;
-
-		iStream.read(&c, 1);
-		if(iStream.eof()) {
-			break;
-		}
-		else if(iStream.bad()) {
-			pLogger->LogError("ScsRequestHandler::onStepperMove stream bad");
-			break;
-		}
-		else if(iStream.fail()) {
-			pLogger->LogError("ScsRequestHandler::onStepperMove stream fail");
-			break;
-		}
-
-		command.push_back(c);
-	}
+	std::string command = getJsonCommand(request);
 
 	//execute command
 	if(command.empty())
@@ -145,18 +152,128 @@ void ScsRequestHandler::onQuery(Poco::Net::HTTPServerRequest& request, Poco::Net
 	oStream << _pWebServer->DeviceStatus();
 }
 
+void ScsRequestHandler::onBdc(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onBdc no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onBdc command: " + command);
+		unsigned int bdcIndex;
+		unsigned int action;
+		bool exceptionOccurred = true;
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			bdcIndex = ds["index"];
+			action = ds["action"];
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onBdc exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onBdc unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onBdc reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else if(action > 2)
+		{
+			pLogger->LogError("ScsRequestHandler::onBdc wrong action in command");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in action: " + command);
+			response.send();
+		}
+		else
+		{
+			std::string errorInfo;
+
+			switch(action)
+			{
+				case 0:	//forward
+				{
+					if(!_pWebServer->BdcForward(bdcIndex, errorInfo))
+					{
+						pLogger->LogError("ScsRequestHandler::onBdc failed to forward bdc: " + errorInfo);
+					}
+				}
+				break;
+
+				case 1: //backward
+				{
+					if(!_pWebServer->BdcReverse(bdcIndex, errorInfo))
+					{
+						pLogger->LogError("ScsRequestHandler::onBdc failed to reverse bdc: " + errorInfo);
+					}
+				}
+				break;
+
+				case 2: //deactivate
+				{
+					if(!_pWebServer->BdcDeactivate(bdcIndex, errorInfo))
+					{
+						pLogger->LogError("ScsRequestHandler::onBdc failed to deactivate bdc: " + errorInfo);
+					}
+				}
+				break;
+
+				default:
+				{
+					pLogger->LogError("ScsRequestHandler::onBdc wrong bdc action: " + std::to_string(action));
+				}
+				break;
+			}
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+			response.setContentType("application/json");
+			auto& oStream = response.send();
+			oStream << _pWebServer->DeviceStatus();
+		}
+	}
+
+	pLogger->LogInfo("ScsRequestHandler::onBdc request has been processed");}
+
 void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
-	pLogger->LogInfo("ScsRequestHandler::handleRequest %%%%%% URI: " + request.getURI());
+	const std::string& uri = request.getURI();
+	pLogger->LogInfo("ScsRequestHandler::handleRequest %%%%%% URI: " + uri);
 
-	if(request.getURI() == "/") {
+	if(uri == "/") {
 		onDefaultHtml(request, response);
 	}
-	else if(request.getURI() == "/stepperMove") {
+	else if(uri == "/stepperMove") {
 		onStepperMove(request, response);
 	}
-	else if(request.getURI() == "/query") {
+	else if(uri == "/query") {
 		onQuery(request, response);
+	}
+	else if(uri == "/bdc") {
+		onBdc(request, response);
 	}
 	else
 	{
@@ -400,22 +517,98 @@ void WebServer::OnBdcsQueryPower(CommandId key, bool bSuccess, bool bPowered)
 
 void WebServer::OnBdcCoast(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultBdcStatus[_consoleCommand.bdcIndex] = _consoleCommand.bdcStatus;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnBdcReverse(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultBdcStatus[_consoleCommand.bdcIndex] = _consoleCommand.bdcStatus;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnBdcForward(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultBdcStatus[_consoleCommand.bdcIndex] = _consoleCommand.bdcStatus;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnBdcBreak(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultBdcStatus[_consoleCommand.bdcIndex] = _consoleCommand.bdcStatus;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnBdcQuery(CommandId key, bool bSuccess, BdcStatus status)
@@ -434,6 +627,7 @@ void WebServer::OnBdcQuery(CommandId key, bool bSuccess, BdcStatus status)
 	}
 
 	if(bSuccess) {
+		_consoleCommand.resultBdcStatus[_consoleCommand.bdcIndex] = status;
 		_consoleCommand.state = CommandState::Succeeded;
 	}
 	else {
@@ -754,17 +948,86 @@ bool WebServer::StepperConfigMovement(
 
 bool WebServer::BdcForward(unsigned int index, std::string & errorInfo)
 {
+	unsigned long lowClks, highClks, cycles;
+	std::string command;
 
+	errorInfo.clear();
+	if(index >= BDC_AMOUNT) {
+		errorInfo = "bdc index is out of range, index:" + std::to_string(index);
+		pLogger->LogError("WebServer::BdcForward " + errorInfo);
+		return false;
+	}
+
+	pMovementConfiguration->GetBdcConfig(lowClks, highClks, cycles);
+	command = ConsoleCommandFactory::CmdBdcForward(index, lowClks, highClks, cycles);
+
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
+
+	_consoleCommand.bdcIndex = index;
+	_consoleCommand.bdcStatus = BdcStatus::FORWARD;
+	runConsoleCommand(command, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::BdcForward failed to forward bdc: " + errorInfo);
+		return false;
+	}
+
+	return true;
 }
 
 bool WebServer::BdcReverse(unsigned int index, std::string & errorInfo)
 {
+	unsigned long lowClks, highClks, cycles;
+	std::string command;
 
+	errorInfo.clear();
+	if(index >= BDC_AMOUNT) {
+		errorInfo = "bdc index is out of range, index:" + std::to_string(index);
+		pLogger->LogError("WebServer::BdcReverse " + errorInfo);
+		return false;
+	}
+
+	pMovementConfiguration->GetBdcConfig(lowClks, highClks, cycles);
+	command = ConsoleCommandFactory::CmdBdcForward(index, lowClks, highClks, cycles);
+
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
+
+	_consoleCommand.bdcIndex = index;
+	_consoleCommand.bdcStatus = BdcStatus::REVERSE;
+	runConsoleCommand(command, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::BdcReverse failed to reverse bdc: " + errorInfo);
+		return false;
+	}
+
+	return true;
 }
 
-bool WebServer::BdcRelease(unsigned int index, std::string & errorInfo)
+bool WebServer::BdcDeactivate(unsigned int index, std::string & errorInfo)
 {
+	unsigned long lowClks, highClks, cycles;
+	std::string command;
 
+	errorInfo.clear();
+	if(index >= BDC_AMOUNT) {
+		errorInfo = "bdc index is out of range, index:" + std::to_string(index);
+		pLogger->LogError("WebServer::BdcDeactivate " + errorInfo);
+		return false;
+	}
+
+	pMovementConfiguration->GetBdcConfig(lowClks, highClks, cycles);
+	command = ConsoleCommandFactory::CmdBdcForward(index, lowClks, highClks, cycles);
+
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
+
+	_consoleCommand.bdcIndex = index;
+	_consoleCommand.bdcStatus = BdcStatus::BREAK;
+	runConsoleCommand(command, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::BdcDeactivate failed to deactivate bdc: " + errorInfo);
+		return false;
+	}
+
+	return true;
 }
 
 bool WebServer::OptPowerOn(std::string & errorInfo)
@@ -848,6 +1111,17 @@ bool WebServer::Query(std::string & errorInfo)
 		}
 	}
 
+	for(unsigned int i=0; i<BDC_AMOUNT; i++)
+	{
+		_consoleCommand.bdcIndex = i;
+		cmd = ConsoleCommandFactory::CmdBdcQuery(i);
+		runConsoleCommand(cmd, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::Query failed in bdc query: " + std::to_string(i) + "; error:" + errorInfo);
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -875,6 +1149,28 @@ std::string WebServer::DeviceStatus()
 	{
 		//locator i
 		json += "\"locator" + std::to_string(i) + "\":" + std::to_string(_consoleCommand.resultLocators[i]) + ",";
+	}
+	//bdcs
+	for(unsigned int i=0; i<BDC_AMOUNT; i++)
+	{
+		unsigned int action;
+
+		switch(_consoleCommand.resultBdcStatus[i])
+		{
+		case BdcStatus::FORWARD:
+			action = 0;
+			break;
+
+		case BdcStatus::REVERSE:
+			action = 1;
+			break;
+
+		default:
+			action = 2;
+			break;
+		}
+		//bdc i
+		json += "\"bdc" + std::to_string(i) + "\":" + std::to_string(action) + ",";
 	}
 	//others
 	json += "\"deviceConnected\":" + std::string(_consoleCommand.resultDeviceConnected?"true":"false") + ",";
