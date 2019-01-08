@@ -131,6 +131,20 @@ void ScsRequestHandler::onStepperMove(Poco::Net::HTTPServerRequest& request, Poc
 	pLogger->LogInfo("ScsRequestHandler::onStepperMove request has been processed");
 }
 
+void ScsRequestHandler::onQuery(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string errorInfo;
+
+	if(!_pWebServer->Query(errorInfo)) {
+		pLogger->LogError("ScsRequestHandler::onQuery failed: " + errorInfo);
+	}
+
+	response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+	response.setContentType("application/json");
+	auto& oStream = response.send();
+	oStream << _pWebServer->DeviceStatus();
+}
+
 void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	pLogger->LogInfo("ScsRequestHandler::handleRequest %%%%%% URI: " + request.getURI());
@@ -141,7 +155,11 @@ void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poc
 	else if(request.getURI() == "/stepperMove") {
 		onStepperMove(request, response);
 	}
-	else {
+	else if(request.getURI() == "/query") {
+		onQuery(request, response);
+	}
+	else
+	{
 		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
 		response.setReason("Bad request");
 		response.send();
@@ -227,12 +245,51 @@ void WebServer::OnDeviceConnect(CommandId key, bool bSuccess)
 
 void WebServer::OnDeviceQueryPower(CommandId key, bool bSuccess, bool bPowered)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
+
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultDevicePowered = bPowered;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 
 }
 
 void WebServer::OnDeviceQueryFuse(CommandId key, bool bSuccess, bool bFuseOn)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultDeviceFuseOk = bFuseOn;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnDeviceDelay(CommandId key, bool bSuccess)
@@ -252,7 +309,26 @@ void WebServer::OnOptPowerOff(CommandId key, bool bSuccess)
 
 void WebServer::OnOptQueryPower(CommandId key, bool bSuccess, bool bPowered)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultOptPowered = bPowered;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnDcmPowerOn(CommandId key, bool bSuccess)
@@ -267,7 +343,25 @@ void WebServer::OnDcmPowerOff(CommandId key, bool bSuccess)
 
 void WebServer::OnDcmQueryPower(CommandId key, bool bSuccess, bool bPowered)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnBdcsPowerOn(CommandId key, bool bSuccess)
@@ -282,7 +376,26 @@ void WebServer::OnBdcsPowerOff(CommandId key, bool bSuccess)
 
 void WebServer::OnBdcsQueryPower(CommandId key, bool bSuccess, bool bPowered)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultBdcsPowered = bPowered;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnBdcCoast(CommandId key, bool bSuccess)
@@ -307,7 +420,25 @@ void WebServer::OnBdcBreak(CommandId key, bool bSuccess)
 
 void WebServer::OnBdcQuery(CommandId key, bool bSuccess, BdcStatus status)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnSteppersPowerOn(CommandId key, bool bSuccess)
@@ -463,7 +594,40 @@ void WebServer::OnStepperQuery(CommandId key, bool bSuccess,
 							unsigned long decelerationBuffer,
 							unsigned long decelerationBufferIncrement)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].state = state;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].forward = bForward;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].enabled = bEnabled;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].locatorIndex = locatorIndex;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].locatorLineNumberStart = locatorLineNumberStart;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].locatorLineNumberTerminal = locatorLineNumberTerminal;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].homeOffset = homeOffset;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].lowClks = lowClks;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].highClks = highClks;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].accelerationBuffer = accelerationBuffer;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].accelerationBufferDecrement = accelerationBufferDecrement;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].decelerationBuffer = decelerationBuffer;
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].decelerationBufferIncrement = decelerationBufferIncrement;
+
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnStepperSetState(CommandId key, bool bSuccess)
@@ -473,7 +637,27 @@ void WebServer::OnStepperSetState(CommandId key, bool bSuccess)
 
 void WebServer::OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		_consoleCommand.resultLocators[_consoleCommand.locatorIndex] = lowInput;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 bool WebServer::StepperMove(unsigned int index, bool forward, unsigned int steps, std::string & errorInfo)
@@ -593,6 +777,79 @@ bool WebServer::OptPowerOff(std::string & errorInfo)
 
 }
 
+bool WebServer::Query(std::string & errorInfo)
+{
+	errorInfo.clear();
+	std::string cmd;
+
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
+
+	cmd = ConsoleCommandFactory::CmdDeviceQueryPower();
+	runConsoleCommand(cmd, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::Query failed in device query power: " + errorInfo);
+		return false;
+	}
+
+	cmd = ConsoleCommandFactory::CmdDeviceQueryFuse();
+	runConsoleCommand(cmd, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::Query failed in device query fuse: " + errorInfo);
+		return false;
+	}
+
+	cmd = ConsoleCommandFactory::CmdOptQueryPower();
+	runConsoleCommand(cmd, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::Query failed in opt query power: " + errorInfo);
+		return false;
+	}
+
+	cmd = ConsoleCommandFactory::CmdBdcsQueryPower();
+	runConsoleCommand(cmd, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::Query failed in bdc query power: " + errorInfo);
+		return false;
+	}
+
+	cmd = ConsoleCommandFactory::CmdDcmQueryPower();
+	runConsoleCommand(cmd, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::Query failed in dcm query power: " + errorInfo);
+		return false;
+	}
+
+	cmd = ConsoleCommandFactory::CmdSteppersQueryPower();
+	runConsoleCommand(cmd, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::Query failed in stepper query power: " + errorInfo);
+		return false;
+	}
+
+	for(unsigned int i=0; i<LOCATOR_AMOUNT; i++)
+	{
+		_consoleCommand.locatorIndex = i;
+		cmd = ConsoleCommandFactory::CmdLocatorQuery(i);
+		runConsoleCommand(cmd, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::Query failed in locator query: " + std::to_string(i) + "; error:" + errorInfo);
+			return false;
+		}
+	}
+
+	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
+	{
+		_consoleCommand.stepperIndex = i;
+		cmd = ConsoleCommandFactory::CmdStepperQuery(i);
+		runConsoleCommand(cmd, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::Query failed in stepper query: " + std::to_string(i) + "; error:" + errorInfo);
+			return false;
+		}
+	}
+
+	return true;
+}
 
 std::string WebServer::DeviceStatus()
 {

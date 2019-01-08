@@ -34,7 +34,9 @@ class ScsRequestHandler: public Poco::Net::HTTPRequestHandler
 public:
 	ScsRequestHandler(WebServer * pWebServer) { _pWebServer = pWebServer;}
 
-	void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+private:
+	//Poco::Net::HTTPRequestHandler
+	void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response) override;
 
 private:
 	WebServer * _pWebServer;
@@ -42,6 +44,7 @@ private:
 	//command handlers
 	void onDefaultHtml(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 	void onStepperMove(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+	void onQuery(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
 
 
@@ -92,12 +95,13 @@ public:
 	bool BdcRelease(unsigned int index, std::string & errorInfo);
 	bool OptPowerOn(std::string & errorInfo);
 	bool OptPowerOff(std::string & errorInfo);
+	bool Query(std::string & errorInfo);
 	//return a JSON string representing current device status.
 	std::string DeviceStatus();
 
 private:
 	//Poco::Task
-	void runTask();
+	void runTask() override;
 
 	//IResponseReceiver
 	virtual void OnDevicesGet(CommandId key, bool bSuccess, const std::vector<std::string>& devices) override;
@@ -191,11 +195,19 @@ private:
 			StepperState state;
 			bool enabled;
 			bool forward;
+			//boundary
 			unsigned int homeOffset;
 			unsigned int targetPosition;
 			unsigned int locatorIndex;
 			unsigned int locatorLineNumberStart;
 			unsigned int locatorLineNumberTerminal;
+			//movement
+			unsigned int lowClks;
+			unsigned int highClks;
+			unsigned int accelerationBuffer;
+			unsigned int accelerationBufferDecrement;
+			unsigned int decelerationBuffer;
+			unsigned int decelerationBufferIncrement;
 		} resultSteppers[STEPPER_AMOUNT];
 		unsigned char resultLocators[LOCATOR_AMOUNT];
 	};
