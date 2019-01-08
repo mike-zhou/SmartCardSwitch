@@ -596,7 +596,40 @@ bool WebServer::OptPowerOff(std::string & errorInfo)
 
 std::string WebServer::DeviceStatus()
 {
+	std::string json;
 
+	json += "{";
+	//steppers
+	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
+	{
+		//stepper i object
+		json += "\"stepper" + std::to_string(i) + "\":{";
+		json += "\"state\":" + std::to_string((int)(_consoleCommand.resultSteppers[i].state)) + ",";
+		json += "\"enabled\":" + (_consoleCommand.resultSteppers[i].enabled?std::string("true"):std::string("false")) + ",";
+		json += "\"forward\":" + (_consoleCommand.resultSteppers[i].forward?std::string("true"):std::string("false")) + ",";
+		json += "\"homeOffset\":" + std::to_string(_consoleCommand.resultSteppers[i].homeOffset) + ",";
+		json += "\"locatorIndex\":" + std::to_string(_consoleCommand.resultSteppers[i].locatorIndex) + ",";
+		json += "\"locatorLineNumberStart\":" + std::to_string(_consoleCommand.resultSteppers[i].locatorLineNumberStart) + ",";
+		json += "\"locatorLineNumberTerminal\":" + std::to_string(_consoleCommand.resultSteppers[i].locatorLineNumberTerminal);
+		json += "},";
+	}
+	//locators
+	for(unsigned int i=0; i<LOCATOR_AMOUNT; i++)
+	{
+		//locator i
+		json += "\"locator" + std::to_string(i) + "\":" + std::to_string(_consoleCommand.resultLocators[i]) + ",";
+	}
+	//others
+	json += "\"deviceConnected\":" + std::string(_consoleCommand.resultDeviceConnected?"true":"false") + ",";
+	json += "\"devicePowered\":" + std::string(_consoleCommand.resultDevicePowered?"true":"false") + ",";
+	json += "\"deviceFuseOk\":" + std::string(_consoleCommand.resultDeviceFuseOk?"true":"false") + ",";
+	json += "\"optPowered\":" + std::string(_consoleCommand.resultOptPowered?"true":"false") + ",";
+	json += "\"bdcPowered\":" + std::string(_consoleCommand.resultBdcsPowered?"true":"false") + ",";
+	json += "\"stepperPowered\":" + std::string(_consoleCommand.resultSteppersPowered?"true":"false");
+
+	json += "}";
+
+	return json;
 }
 
 void WebServer::runConsoleCommand(const std::string & cmd, std::string & errorInfo)
