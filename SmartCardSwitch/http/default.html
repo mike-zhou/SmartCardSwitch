@@ -9,6 +9,10 @@
 <h1>SmartCardSwitch Config Server</h1>
 
 <div>
+	<button type="button" id="stepper0Query" onclick="queryDevice()">Query</button>
+</div>
+
+<div>
 	<p> stepper0
 	<div>
 		<div>
@@ -17,25 +21,30 @@
 			<label>   MAX:</label><label id="stepper0MaxOffset"></label><br>
 			<label>Steps:</label>
 			<input type="number" id="stepper0Steps"></input>
-			<button type="button" id="stepper0Decrease">-</button>
-			<button type="button" id="stepper0Increase">+</button>
+			<button type="button" id="stepper0Decrease" onclick="onStepper0Decrease()">-</button>
+			<button type="button" id="stepper0Increase" onclick="onStepper0Increase()">+</button>
 		</div>
 		<div>
 			<button type="button" id="stepper0Decrease32" onclick="onStepper0Decrease32()">-32</button>
-			<button type="button" id="stepper0Decrease16">-16</button>
-			<button type="button" id="stepper0Decrease8">-8</button>
-			<button type="button" id="stepper0Decrease4">-4</button>
-			<button type="button" id="stepper0Decrease1">-1</button>
-			<button type="button" id="stepper0Increase1">+1</button>
-			<button type="button" id="stepper0Increase4">+4</button>
-			<button type="button" id="stepper0Increase8">+8</button>
-			<button type="button" id="stepper0Increase16">+16</button>
-			<button type="button" id="stepper0Increase32">+32</button>
+			<button type="button" id="stepper0Decrease16" onclick="onStepper0Decrease16()">-16</button>
+			<button type="button" id="stepper0Decrease8" onclick="onStepper0Decrease8()">-8</button>
+			<button type="button" id="stepper0Decrease4" onclick="onStepper0Decrease4()">-4</button>
+			<button type="button" id="stepper0Decrease1" onclick="onStepper0Decrease1()">-1</button>
+			<button type="button" id="stepper0Increase1" onclick="onStepper0Increase1()">+1</button>
+			<button type="button" id="stepper0Increase4" onclick="onStepper0Increase4()">+4</button>
+			<button type="button" id="stepper0Increase8" onclick="onStepper0Increase8()">+8</button>
+			<button type="button" id="stepper0Increase16" onclick="onStepper0Increase16()">+16</button>
+			<button type="button" id="stepper0Increase32" onclick="onStepper0Increase32()">+32</button>
 		</div>
-	</div>
-	
-	<div>
-		<button type="button" id="stepper0Query" onclick="queryDevice()">Query</button>
+		<div>
+			lowClks:<input type="number" id="stepper0LowClks" min="0" max="65535" size="5"></input>
+			highClks:<input type="number" id="stepper0HighClks" min="0" max="65535" size="5"></input><br>
+			accelerationBuffer:<input type="number" id="stepper0AccelerationBuffer" min="0" max="65535" size="5"></input>
+			accelerationBufferDecrement:<input type="number" id="stepper0AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br>
+			decelerationBuffer:<input type="number" id="stepper0DecelerationBuffer" min="0" max="65535" size="5"></input>
+			decelerationBufferIncrement:<input type="number" id="stepper0DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
+			<button type="button" id="stepper0ConfigMovement" onclick="onStepper0ConfigMovement()">Config Movement</button>
+		</div>
 	</div>
 </div>
 
@@ -105,6 +114,18 @@ function updatePageStepper(stepper, data)
 	document.getElementById(elementId).innerHTML = data["homeOffset"].toString();
 	elementId = stepper + "MaxOffset";
 	document.getElementById(elementId).innerHTML = data["maximum"].toString();
+	elementId = stepper + "LowClks";
+	document.getElementById(elementId).value = data["lowClks"].toString();
+	elementId = stepper + "HighClks";
+	document.getElementById(elementId).value = data["highClks"].toString();
+	elementId = stepper + "AccelerationBuffer";
+	document.getElementById(elementId).value = data["accelerationBuffer"].toString();
+	elementId = stepper + "AccelerationBufferDecrement";
+	document.getElementById(elementId).value = data["accelerationBufferDecrement"].toString();
+	elementId = stepper + "DecelerationBuffer";
+	document.getElementById(elementId).value = data["decelerationBuffer"].toString();
+	elementId = stepper + "DecelerationBufferIncrement";
+	document.getElementById(elementId).value = data["decelerationBufferIncrement"].toString();
 }
 
 function updatePageLocator(locator, data)
@@ -337,6 +358,57 @@ function queryDevice()
 function onStepper0Decrease32() {
 	moveStepper("stepper0", false, 32);
 }
+
+function onStepper0Decrease16() {
+	moveStepper("stepper0", false, 16);
+}
+
+function onStepper0Decrease8() {
+	moveStepper("stepper0", false, 8);
+}
+
+function onStepper0Decrease4() {
+	moveStepper("stepper0", false, 4);
+}
+
+function onStepper0Decrease1() {
+	moveStepper("stepper0", false, 1);
+}
+
+function onStepper0Decrease() {
+	var steps = document.getElementById("stepper0Steps").value;
+	moveStepper("stepper0", false, steps);
+}
+
+function onStepper0Increase() {
+	var steps = document.getElementById("stepper0Steps").value;
+	moveStepper("stepper0", true, 32);
+}
+
+function onStepper0Increase1() {
+	moveStepper("stepper0", true, 1);
+}
+
+function onStepper0Increase4() {
+	moveStepper("stepper0", true, 4);
+}
+
+function onStepper0Increase8() {
+	moveStepper("stepper0", true, 8);
+}
+
+function onStepper0Increase16() {
+	moveStepper("stepper0", true, 16);
+}
+
+function onStepper0Increase32() {
+	moveStepper("stepper0", true, 32);
+}
+
+function onStepper0ConfigMovement() {
+	
+}
+
 </script>
 
 </body>

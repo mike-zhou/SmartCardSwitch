@@ -1160,7 +1160,13 @@ std::string WebServer::DeviceStatus()
 			json += "\"locatorIndex\":" + std::to_string(data.locatorIndex) + ",";
 			json += "\"locatorLineNumberStart\":" + std::to_string(data.locatorLineNumberStart) + ",";
 			json += "\"locatorLineNumberTerminal\":" + std::to_string(data.locatorLineNumberTerminal) + ",";
-			json += "\"maximum\":" + std::to_string(data.maximum);
+			json += "\"maximum\":" + std::to_string(data.maximum) + ",";
+			json += "\"lowClks\":" + std::to_string(data.lowClks) + ",";
+			json += "\"highClks\":" + std::to_string(data.highClks) + ",";
+			json += "\"accelerationBuffer\":" + std::to_string(data.accelerationBuffer) + ",";
+			json += "\"accelerationBufferDecrement\":" + std::to_string(data.accelerationBufferDecrement) + ",";
+			json += "\"decelerationBuffer\":" + std::to_string(data.decelerationBuffer) + ",";
+			json += "\"decelerationBufferIncrement\":" + std::to_string(data.decelerationBufferIncrement);
 		json += "},";
 	}
 	//locators
