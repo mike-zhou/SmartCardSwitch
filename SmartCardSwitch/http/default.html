@@ -12,9 +12,9 @@
 	<p> stepper0
 	<div>
 		<div>
-			<label>MIN:</label><label id="stepper0MinHomeOffset"></label>
-			<label>   Current:</label><label id="stepper0CurHomeOffset"></label>
-			<label>   MAX:</label><label id="stepper0MaxHomeOffset"></label><br>
+			<label>MIN:</label><label id="stepper0MinOffset">0</label>
+			<label>   Current:</label><label id="stepper0CurOffset"></label>
+			<label>   MAX:</label><label id="stepper0MaxOffset"></label><br>
 			<label>Steps:</label>
 			<input type="number" id="stepper0Steps"></input>
 			<button type="button" id="stepper0Decrease">-</button>
@@ -35,42 +35,222 @@
 	</div>
 	
 	<div>
-		<button type="button" id="stepper0Query">Query</button>
+		<button type="button" id="stepper0Query" onclick="queryDevice()">Query</button>
 	</div>
 </div>
-
 
 <div>
-	<p>bdc0
 	<div>
-		<input name="bdc0" id="bdc0Release" type="radio"><label for="bdc0Release">Release</label>
-		<input name="bdc0" id="bdc0Open" type="radio"><label for="bdc0Open">Open</label>
-		<input name="bdc0" id="bdc0Close" type="radio"><label for="bdc0Close">Close</label>
+		<label>locator0: </label><label id="locator0Value"></label>
+	</div>
+	<div>
+		<label>locator1: </label><label id="locator1Value"></label>
+	</div>
+	<div>
+		<label>locator2: </label><label id="locator2Value"></label>
+	</div>
+	<div>
+		<label>locator3: </label><label id="locator3Value"></label>
+	</div>
+	<div>
+		<label>locator4: </label><label id="locator4Value"></label>
+	</div>
+	<div>
+		<label>locator5: </label><label id="locator5Value"></label>
+	</div>
+	<div>
+		<label>locator6: </label><label id="locator6Value"></label>
+	</div>
+	<div>
+		<label>locator7: </label><label id="locator7Value"></label>
 	</div>
 </div>
 
-<button onclick="myFunction()">Click Me!</button>
+<div>
+	<div>
+		<label>bdc0: </label>
+		<input name="bdc0" id="bdc0Release" type="radio"><label for="bdc0Release">Release</label>
+		<input name="bdc0" id="bdc0Forward" type="radio"><label for="bdc0Forward">Forward</label>
+		<input name="bdc0" id="bdc0Reverse" type="radio"><label for="bdc0Reverse">Reverse</label>
+	</div>
+</div>
+
+<div>
+	Device is connected: <input type="checkbox" id="deviceConnected">
+</div>
+<div>
+	Device is powered: <input type="checkbox" id="devicePowered">
+</div>
+<div>
+	Device fuse is ok: <input type="checkbox" id="deviceFuseOk">
+</div>
+<div>
+	OPT is powered: <input type="checkbox" id="optPowered">
+</div>
+<div>
+	BDCs are powered: <input type="checkbox" id="bdcsPowered">
+</div>
+<div>
+	Steppers are powered: <input type="checkbox" id="steppersPowered">
+</div>
+
+
 <script>
-function myFunction() 
+
+function updatePageStepper(stepper, data)
 {
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', 'opt');
+	var elementId;
 
-	// Track the state changes of the request.
-	xhr.onreadystatechange = function () {
-		var DONE = 4; // readyState 4 means the request is done.
-		var OK = 200; // status 200 is a successful return.
-		if (xhr.readyState === DONE) {
-			if (xhr.status === OK) {
-				console.log(xhr.responseText); // 'This is the output.'
-			} else {
-				console.log('Error: ' + xhr.status); // An error occurred during the request.
-			}
+	elementId = stepper + "CurOffset";
+	document.getElementById(elementId).innerHTML = data["homeOffset"].toString();
+	elementId = stepper + "MaxOffset";
+	document.getElementById(elementId).innerHTML = data["maximum"].toString();
+}
+
+function updatePageLocator(locator, data)
+{
+	var elementId = locator + "Value";
+	document.getElementById(elementId).innerHTML = data.toString();
+}
+
+function updatePageBdc(bdc, data)
+{
+	var elementId;
+	
+	if(data == 0) {
+		//forward
+		elementId = bdc + "Forward";
+		document.getElementById(elementId).checked = true;
+	}
+	else if(data == 1) {
+		//reverse
+		elementId = bdc + "Reverse";
+		document.getElementById(elementId).checked = true;
+	}
+	else if(data == 2) {
+		//release
+		elementId = bdc + "Release";
+		document.getElementById(elementId).checked = true;
+	}
+	else {
+		console.log("Error: wrong bdc status: " + bdc + " " + data.toString());
+	}
+}
+
+function updatePageDeviceConnected(bConnected)
+{
+	document.getElementById("deviceConnected").checked = bConnected;
+}
+
+function updatePageDevicePowered(bPowered)
+{
+	document.getElementById("devicePowered").checked = bPowered;
+}
+
+function updatePageDeviceFuseOk(bOk)
+{
+	document.getElementById("deviceFuseOk").checked = bOk;	
+}
+
+function updatePageOptPowered(bPowered)
+{
+	document.getElementById("optPowered").checked = bPowered;
+}
+
+function updatePageBdcPowered(bPowered)
+{
+	document.getElementById("bdcsPowered").checked = bPowered;
+}
+
+function updatePageStepperPowered(bPowered)
+{
+	document.getElementById("steppersPowered").checked = bPowered;
+}
+
+
+function updatePage(serverResponse)
+{
+	for(key in serverResponse) 
+	{
+		if(key === "stepper0")  {
+			updatePageStepper(key, serverResponse[key]);
 		}
-	};
-
-	// Send the request to send-ajax-data.php
-	xhr.send(null);
+		// else if(key === "stepper1") {
+		// 	updatePageStepper(key, serverResponse[key]);
+		// }
+		// else if(key === "stepper2") {
+		// 	updatePageStepper(key, serverResponse[key]);
+		// }
+		// else if(key === "stepper3") {
+		// 	updatePageStepper(key, serverResponse[key]);
+		// }
+		// else if(key === "stepper4") {
+		// 	updatePageStepper(key, serverResponse[key]);
+		// }
+		else if(key === "locator0") {
+			updatePageLocator(key, serverResponse[key]);
+		}
+		else if(key === "locator1") {
+			updatePageLocator(key, serverResponse[key]);
+		}
+		else if(key === "locator2") {
+			updatePageLocator(key, serverResponse[key]);
+		}
+		else if(key === "locator3") {
+			updatePageLocator(key, serverResponse[key]);
+		}
+		else if(key === "locator4") {
+			updatePageLocator(key, serverResponse[key]);
+		}
+		else if(key === "locator5") {
+			updatePageLocator(key, serverResponse[key]);
+		}
+		else if(key === "locator6") {
+			updatePageLocator(key, serverResponse[key]);
+		}
+		else if(key === "locator7") {
+			updatePageLocator(key, serverResponse[key]);
+		}
+		else if(key === "bdc0") {
+			updatePageBdc(key, serverResponse[key]);
+		}
+		// else if(key === "bdc1") {
+		// 	updatePageBdc(key, serverResponse[key]);
+		// }
+		// else if(key === "bdc2") {
+		// 	updatePageBdc(key, serverResponse[key]);
+		// }
+		// else if(key === "bdc3") {
+		// 	updatePageBdc(key, serverResponse[key]);
+		// }
+		// else if(key === "bdc4") {
+		// 	updatePageBdc(key, serverResponse[key]);
+		// }
+		// else if(key === "bdc5") {
+		// 	updatePageBdc(key, serverResponse[key]);
+		// }
+		else if(key === "deviceConnected") {
+			updatePageDeviceConnected(serverResponse[key]);
+		}
+		else if(key === "devicePowered") {
+			updatePageDevicePowered(serverResponse[key]);
+		}
+		else if(key === "deviceFuseOk") {
+			updatePageDeviceFuseOk(serverResponse[key]);
+		}
+		else if(key === "optPowered") {
+			updatePageOptPowered(serverResponse[key]);
+		}
+		else if(key === "bdcPowered") {
+			updatePageBdcPowered(serverResponse[key]);
+		}
+		else if(key === "stepperPowered") {
+			updatePageStepperPowered(serverResponse[key]);
+		}
+		else {
+			console.log('Error: ' + "unexpected item in server response: " + key);
+		}
+	}
 }
 
 function moveStepper(stepper, forward, steps)
@@ -89,12 +269,8 @@ function moveStepper(stepper, forward, steps)
 			if (xhr.status === OK) 
 			{
 				var jsonObj = xhr.response;
-				var curHomeOffset = stepper + 'CurHomeOffset';
-
 				console.log(JSON.stringify(jsonObj)); // 'This is the output.'
-
-				document.getElementById(curHomeOffset).innerHTML = jsonObj[stepper]["homeOffset"].toString();
-
+				updatePage(jsonObj);
 			} else {
 				console.log('Error: ' + xhr.status); // An error occurred during the request.
 			}
@@ -131,31 +307,31 @@ function moveStepper(stepper, forward, steps)
 	xhr.send(JSON.stringify(parameters));
 }
 
-function queryStepper(stepper)
+function queryDevice()
 {
 	var xhr = new XMLHttpRequest();
 	xhr.responseType = "json";
-	
+	xhr.open('POST', 'query');	
+
 	xhr.onreadystatechange = function () {
 		var DONE = 4; // readyState 4 means the request is done.
 		var OK = 200; // status 200 is a successful return.
 		if (xhr.readyState === DONE) {
-			if (xhr.status === OK) {
-				console.log(xhr.responseText); // 'This is the output.'
+			console.log("response is available");
+			console.log("response type: " + xhr.responseType);
+
+			if (xhr.status === OK) 
+			{
+				var jsonObj = xhr.response;
+				console.log(JSON.stringify(jsonObj)); // 'This is the output.'
+				updatePage(jsonObj);
 			} else {
 				console.log('Error: ' + xhr.status); // An error occurred during the request.
 			}
 		}
 	};
 	
-}
-
-
-function queryStepper(stepper)
-{
-	var xhr = new XMLHttpRequest();
-	xhr.responseType = "json";
-	
+	xhr.send();
 }
 
 function onStepper0Decrease32() {

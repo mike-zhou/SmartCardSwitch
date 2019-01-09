@@ -238,6 +238,7 @@ private:
 			unsigned int accelerationBufferDecrement;
 			unsigned int decelerationBuffer;
 			unsigned int decelerationBufferIncrement;
+			unsigned int maximum;
 		} resultSteppers[STEPPER_AMOUNT];
 		unsigned char resultLocators[LOCATOR_AMOUNT];
 		BdcStatus resultBdcStatus[BDC_AMOUNT];

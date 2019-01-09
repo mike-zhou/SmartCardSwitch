@@ -297,6 +297,13 @@ WebServer::WebServer(unsigned int port, unsigned int maxQueue, unsigned int maxT
 
 	_consoleCommand.state  = CommandState::Idle;
 	_consoleCommand.cmdId = ICommandReception::ICommandDataTypes::InvalidCommandId;
+	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
+	{
+		auto& data = _consoleCommand.resultSteppers[i];
+
+		data.maximum = 0;
+		data.homeOffset = 0;
+	}
 }
 
 
@@ -750,11 +757,15 @@ void WebServer::OnStepperRun(CommandId key, bool bSuccess)
 
 	if(bSuccess) {
 		//update result
-		if(_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].forward) {
-			_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].homeOffset += _consoleCommand.steps;
+		auto& data = _consoleCommand.resultSteppers[_consoleCommand.stepperIndex];
+		if(data.forward) {
+			data.homeOffset += _consoleCommand.steps;
 		}
 		else {
-			_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].homeOffset -= _consoleCommand.steps;
+			data.homeOffset -= _consoleCommand.steps;
+		}
+		if(data.homeOffset > data.maximum) {
+			data.maximum = data.homeOffset;
 		}
 		_consoleCommand.state = CommandState::Succeeded;
 	}
@@ -803,19 +814,24 @@ void WebServer::OnStepperQuery(CommandId key, bool bSuccess,
 
 	if(bSuccess)
 	{
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].state = state;
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].forward = bForward;
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].enabled = bEnabled;
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].locatorIndex = locatorIndex;
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].locatorLineNumberStart = locatorLineNumberStart;
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].locatorLineNumberTerminal = locatorLineNumberTerminal;
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].homeOffset = homeOffset;
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].lowClks = lowClks;
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].highClks = highClks;
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].accelerationBuffer = accelerationBuffer;
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].accelerationBufferDecrement = accelerationBufferDecrement;
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].decelerationBuffer = decelerationBuffer;
-		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].decelerationBufferIncrement = decelerationBufferIncrement;
+		auto& data = _consoleCommand.resultSteppers[_consoleCommand.stepperIndex];
+
+		data.state = state;
+		data.forward = bForward;
+		data.enabled = bEnabled;
+		data.locatorIndex = locatorIndex;
+		data.locatorLineNumberStart = locatorLineNumberStart;
+		data.locatorLineNumberTerminal = locatorLineNumberTerminal;
+		data.homeOffset = homeOffset;
+		data.lowClks = lowClks;
+		data.highClks = highClks;
+		data.accelerationBuffer = accelerationBuffer;
+		data.accelerationBufferDecrement = accelerationBufferDecrement;
+		data.decelerationBuffer = decelerationBuffer;
+		data.decelerationBufferIncrement = decelerationBufferIncrement;
+		if(data.homeOffset > data.maximum) {
+			data.maximum = data.homeOffset;
+		}
 
 		_consoleCommand.state = CommandState::Succeeded;
 	}
@@ -1134,14 +1150,17 @@ std::string WebServer::DeviceStatus()
 	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
 	{
 		//stepper i object
+		auto& data = _consoleCommand.resultSteppers[i];
+
 		json += "\"stepper" + std::to_string(i) + "\":{";
-		json += "\"state\":" + std::to_string((int)(_consoleCommand.resultSteppers[i].state)) + ",";
-		json += "\"enabled\":" + (_consoleCommand.resultSteppers[i].enabled?std::string("true"):std::string("false")) + ",";
-		json += "\"forward\":" + (_consoleCommand.resultSteppers[i].forward?std::string("true"):std::string("false")) + ",";
-		json += "\"homeOffset\":" + std::to_string(_consoleCommand.resultSteppers[i].homeOffset) + ",";
-		json += "\"locatorIndex\":" + std::to_string(_consoleCommand.resultSteppers[i].locatorIndex) + ",";
-		json += "\"locatorLineNumberStart\":" + std::to_string(_consoleCommand.resultSteppers[i].locatorLineNumberStart) + ",";
-		json += "\"locatorLineNumberTerminal\":" + std::to_string(_consoleCommand.resultSteppers[i].locatorLineNumberTerminal);
+			json += "\"state\":" + std::to_string((int)(data.state)) + ",";
+			json += "\"enabled\":" + (data.enabled?std::string("true"):std::string("false")) + ",";
+			json += "\"forward\":" + (data.forward?std::string("true"):std::string("false")) + ",";
+			json += "\"homeOffset\":" + std::to_string(data.homeOffset) + ",";
+			json += "\"locatorIndex\":" + std::to_string(data.locatorIndex) + ",";
+			json += "\"locatorLineNumberStart\":" + std::to_string(data.locatorLineNumberStart) + ",";
+			json += "\"locatorLineNumberTerminal\":" + std::to_string(data.locatorLineNumberTerminal) + ",";
+			json += "\"maximum\":" + std::to_string(data.maximum);
 		json += "},";
 	}
 	//locators
