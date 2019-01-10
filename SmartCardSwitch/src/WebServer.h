@@ -72,6 +72,18 @@ private:
 	//		"action":0 //0: forward; 1: reverse; 2: deactivate
 	//	 }
 	void onBdc(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+	//request:
+	//	uri: /saveCoordinate
+	//	body:
+	//		{
+	//			"coordinateType":"smartCard",
+	//			"index":0,
+	//			"x":1,
+	//			"y":2,
+	//			"z":3,
+	//			"w":4
+	//		}
+	void onSaveCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
 
 

@@ -256,7 +256,14 @@ void ScsRequestHandler::onBdc(Poco::Net::HTTPServerRequest& request, Poco::Net::
 		}
 	}
 
-	pLogger->LogInfo("ScsRequestHandler::onBdc request has been processed");}
+	pLogger->LogInfo("ScsRequestHandler::onBdc request has been processed");
+}
+
+void ScsRequestHandler::onSaveCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+	pLogger->LogInfo("ScsRequestHandler::onSaveCoordinate command: " + command);
+}
 
 void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
@@ -274,6 +281,9 @@ void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poc
 	}
 	else if(uri == "/bdc") {
 		onBdc(request, response);
+	}
+	else if(uri == "/saveCoordinate") {
+		onSaveCoordinate(request, response);
 	}
 	else
 	{

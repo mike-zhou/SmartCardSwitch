@@ -752,6 +752,92 @@ function onStepperConfigMovement(index)
 	xhr.send(JSON.stringify(parameters));
 }
 
+function saveCoordinate()
+{
+	console.log(">>saveCoordinate()");
+	//find out which coordinate radio is selected
+	var radioId = {};
+	var selectedRadio = {};
+	var elements = document.getElementsByName("coordinate");
+	for(var i=0; i<elements.length; i++) {
+		if(elements[i].checked == true) {
+			radioId = elements[i].id;
+			break;
+		}
+	}
+	if(radioId.length < 1) {
+		alert("a coordinate type has to be selected");
+		return;
+	}
+	console.log(radioId + " is selected");
+	{
+		var items = radioId.split("_");
+		selectedRadio["signature"] = items[0];
+		selectedRadio["coordinateType"] = items[1];
+		selectedRadio["index"] = parseInt(items[2]);
+	}
+
+	if(selectedRadio.signature !== "coordinate") {
+		console.log("Error: wrong radio Id");
+		return;
+	}
+	switch(selectedRadio.coordinateType) 
+	{
+		case "safe":
+		case "smartCardGate":
+		case "smartCardReader":
+		case "smartCardReaderGate":
+		case "pedKeyGate":
+		case "softKeyGate":
+		case "touchScreenGate":
+		case "assistKeyGate":
+		case "contactlessReader":
+		case "contactlessReaderGate":
+		case "smartCard":
+		case "pedKey":
+		case "softKey":
+		case "assistKey":
+		case "touchScreenKey:":	
+			break;
+
+		default:
+			console.log("Error: unknown coordinate type");
+			return;
+	}
+
+	//set command
+	var command = {};
+	command["coordinateType"] = selectedRadio.coordinateType;
+	command["index"] = selectedRadio.index;
+	command["x"] = parseInt(document.getElementById("stepper0CurOffset").innerText);
+	command["y"] = parseInt(document.getElementById("stepper1CurOffset").innerText);
+	command["z"] = parseInt(document.getElementById("stepper2CurOffset").innerText);
+	command["w"] = parseInt(document.getElementById("stepper3CurOffset").innerText);
+
+	var xhr = new XMLHttpRequest();
+	xhr.responseType = "json";
+	xhr.open('POST', 'saveCoordinate');
+	
+	xhr.onreadystatechange = function () {
+		var DONE = 4; // readyState 4 means the request is done.
+		var OK = 200; // status 200 is a successful return.
+		if (xhr.readyState === DONE) {
+			console.log("response is available");
+			console.log("response type: " + xhr.responseType);
+
+			if (xhr.status === OK) 
+			{
+				var jsonObj = xhr.response;
+				console.log(JSON.stringify(jsonObj)); // 'This is the output.'
+				updatePage(jsonObj);
+			} else {
+				console.log('Error: ' + xhr.status); // An error occurred during the request.
+			}
+		}
+	};
+	xhr.send(JSON.stringify(command));
+}
+
 function onElementClicked()
 {
 	var elementId = document.activeElement.id;
@@ -815,9 +901,14 @@ function onElementClicked()
 			console.log("Error: wrong bdc action: " + action);
 		}
 	}
+	else if(elementId === "coordinate_save") 
+	{
+		saveCoordinate();
+	}
 	else if(elementId === "deviceQuery") {
 		queryDevice();
 	}
+	
 }
 
 </script>
