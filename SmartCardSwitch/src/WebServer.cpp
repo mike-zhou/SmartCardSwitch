@@ -259,6 +259,18 @@ void ScsRequestHandler::onBdc(Poco::Net::HTTPServerRequest& request, Poco::Net::
 	pLogger->LogInfo("ScsRequestHandler::onBdc request has been processed");
 }
 
+void ScsRequestHandler::onStepperConfigMovement(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+	pLogger->LogInfo("ScsRequestHandler::onStepperConfigMovement command: " + command);
+}
+
+void ScsRequestHandler::onStepperConfigHome(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+	pLogger->LogInfo("ScsRequestHandler::onStepperConfigMovement command: " + command);
+}
+
 void ScsRequestHandler::onSaveCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	std::string command = getJsonCommand(request);
@@ -275,6 +287,12 @@ void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poc
 	}
 	else if(uri == "/stepperMove") {
 		onStepperMove(request, response);
+	}
+	else if(uri == "/stepperConfigMovement") {
+		onStepperConfigMovement(request, response);
+	}
+	else if(uri == "/stepperConfigHome") {
+		onStepperConfigHome(request, response);
 	}
 	else if(uri == "/query") {
 		onQuery(request, response);
