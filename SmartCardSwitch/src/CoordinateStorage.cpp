@@ -218,6 +218,12 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			_barCodeReader.z = ds["barCodeReader"]["reader"]["z"];
 			_barCodeReader.w = ds["barCodeReader"]["reader"]["w"];
 
+			//safe
+			_safe.x = ds["safe"]["x"];
+			_safe.y = ds["safe"]["y"];
+			_safe.z = ds["safe"]["z"];
+			_safe.w = ds["safe"]["w"];
+
 			//offset
 			_smartCardPlaceStart = ds["smartCardPlaceStart"];
 			_smartCardFetchOffset = ds["smartCardFetchOffset"];
@@ -339,6 +345,9 @@ bool CoordinateStorage::PersistToFile()
 	json = json + "\"gate\":" + _barCodeReaderGate.ToJsonObj() + ",";
 	json = json + "\"reader\":" + _barCodeReader.ToJsonObj();
 	json = json + "}";
+
+	//safe
+	json = json + ",\"safe\":" + _safe.ToJsonObj();
 
 	//offset
 	json = json + ", \"smartCardPlaceStart\":" + std::to_string(_smartCardPlaceStart);

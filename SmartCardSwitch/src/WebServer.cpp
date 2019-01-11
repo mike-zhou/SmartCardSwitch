@@ -262,19 +262,179 @@ void ScsRequestHandler::onBdc(Poco::Net::HTTPServerRequest& request, Poco::Net::
 void ScsRequestHandler::onStepperConfigMovement(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	std::string command = getJsonCommand(request);
-	pLogger->LogInfo("ScsRequestHandler::onStepperConfigMovement command: " + command);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onStepperConfigMovement no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onStepperConfigMovement command: " + command);
+		unsigned int bdcIndex;
+		unsigned int action;
+		bool exceptionOccurred = true;
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			bdcIndex = ds["index"];
+			action = ds["action"];
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperConfigMovement exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperConfigMovement unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperConfigMovement reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else
+		{
+
+		}
+	}
 }
 
 void ScsRequestHandler::onStepperConfigHome(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	std::string command = getJsonCommand(request);
-	pLogger->LogInfo("ScsRequestHandler::onStepperConfigMovement command: " + command);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onStepperConfigHome no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onStepperConfigHome command: " + command);
+		unsigned int bdcIndex;
+		unsigned int action;
+		bool exceptionOccurred = true;
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			bdcIndex = ds["index"];
+			action = ds["action"];
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperConfigHome exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperConfigHome unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperConfigHome reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else
+		{
+
+		}
+	}
 }
 
 void ScsRequestHandler::onSaveCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	std::string command = getJsonCommand(request);
-	pLogger->LogInfo("ScsRequestHandler::onSaveCoordinate command: " + command);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onSaveCoordinate no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onSaveCoordinate command: " + command);
+		std::string coordinateType;
+		unsigned int data;
+		bool exceptionOccurred = true;
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			coordinateType = ds["coordinateType"].toString();
+			data = ds["data"];
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onSaveCoordinate exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onSaveCoordinate unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onSaveCoordinate reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else
+		{
+			std::string errorInfo;
+
+			if(_pWebServer->SaveCoordinate(coordinateType, data, errorInfo)) {
+				pLogger->LogError("ScsRequestHandler::onSaveCoordinate failed: " + errorInfo);
+			}
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+			response.setContentType("application/json");
+			response.send();
+		}
+	}
+
+	pLogger->LogInfo("ScsRequestHandler::onSaveCoordinate request has been processed");
 }
 
 void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
@@ -1167,6 +1327,340 @@ bool WebServer::Query(std::string & errorInfo)
 	}
 
 	return true;
+}
+
+bool WebServer::SaveCoordinate(const std::string & coordinateType, unsigned int data, std::string & errorInfo)
+{
+	errorInfo.clear();
+
+	if(coordinateType == "smartCard")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::SmartCard,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of smart card: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "smartCardGate")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::SmartCardGate,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of smart card gate";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "pedKey")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::PedKey,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of ped key: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "pedKeyPressed")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::PedKeyPressed,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of ped key pressed: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "pedKeyGate")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::PedKeyGate,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of ped key gate";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "softKey")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::SoftKey,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of soft key: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "softKeyPressed")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::SoftKeyPressed,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of soft key pressed: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "softKeyGate")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::SoftKeyGate,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of soft key gate";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "assistKey")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::AssistKey,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of assist key: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "assistKeyPressed")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::AssistKeyPressed,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of assist key pressed: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "assistKeyGate")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::AssistKeyGate,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of assist key gate";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "touchScreenKey")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::TouchScreenKey,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of touch screen key: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "touchScreenKeyPressed")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::TouchScreenKeyPressed,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of touch screen key pressed: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "touchScreenKeyGate")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::TouchScreenKeyGate,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of touch screen key gate";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "smartCardReader")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::SmartCardReader,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of smart card reader";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "smartCardReaderGate")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::SmartCardReaderGate,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of smart card reader gate";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "barcodeReader")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::BarCodeReader,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of bar code reader";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "barcodeReaderGate")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::BarCodeReaderGate,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of bar code reader gate";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "contactlessReader")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::ContactlessReader,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of contactless reader";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "contactlessReaderGate")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::ContactlessReaderGate,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of contactless reader gate";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "safe")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::Safe,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of safe";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "smartCardPlaceStartZ") {
+		pCoordinateStorage->SetSmartCardPlaceStartZ(data);
+	}
+	else if(coordinateType == "smartCardFetchOffset") {
+		pCoordinateStorage->SetSmartCardFetchOffset(data);
+	}
+	else if(coordinateType == "smartCardReleaseOffsetZ") {
+		pCoordinateStorage->SetSmartCardReleaseOffsetZ(data);
+	}
+	else if(coordinateType == "smartCardInsertExtra") {
+		pCoordinateStorage->SetSmartCardInsertExtra(data);
+	}
+	else if(coordinateType == "smartCardReaderSlowInsertEndY") {
+		pCoordinateStorage->SetSmartCardReaderSlowInsertEndY(data);
+	}
+	else {
+		errorInfo = "unknown coordinate type: " + coordinateType;
+		pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+	}
+
+	if(errorInfo.empty())
+	{
+		if(pCoordinateStorage->PersistToFile()) {
+			return true;
+		}
+		else {
+			errorInfo = "failed to persist coordinate to file";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+			return false;
+		}
+	}
+	else {
+		return false;
+	}
 }
 
 std::string WebServer::DeviceStatus()

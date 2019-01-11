@@ -38,7 +38,8 @@ public:
 		BarCodeReaderGate = 17,
 		BarCodeReader = 18,
 		ContactlessReaderGate = 19,
-		ContactlessReader = 20
+		ContactlessReader = 20,
+		Safe = 21
 	};
 
 	unsigned int SmartCardsAmount() { return _smartCards.size(); }
@@ -147,6 +148,9 @@ private:
 	//barcode reader
 	Coordinate _barCodeReaderGate;
 	Coordinate _barCodeReader;
+
+	//safe
+	Coordinate _safe;
 };
 
 #endif /* COORDINATESTORAGE_H_ */

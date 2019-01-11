@@ -77,11 +77,7 @@ private:
 	//	body:
 	//		{
 	//			"coordinateType":"smartCard",
-	//			"index":0,
-	//			"x":1,
-	//			"y":2,
-	//			"z":3,
-	//			"w":4
+	//			"index":0
 	//		}
 	void onSaveCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 
@@ -138,6 +134,7 @@ public:
 	bool OptPowerOn(std::string & errorInfo);
 	bool OptPowerOff(std::string & errorInfo);
 	bool Query(std::string & errorInfo);
+	bool SaveCoordinate(const std::string & coordinateType, unsigned int data, std::string & errorInfo);
 	//return a JSON string representing current device status.
 	std::string DeviceStatus();
 
