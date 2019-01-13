@@ -1,934 +1,879 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="UTF-8">
-<title>SmartCardSwitch</title>
+    <meta charset="UTF-8">
+    <title>SmartCardSwitch</title>
 </head>
+
 <body onclick="onElementClicked()">
 
-<h1>SmartCardSwitch Config Server</h1>
+    <h1>SmartCardSwitch Config Server</h1>
 
-<div>
-	<button type="button" id="deviceQuery">Query</button>
-</div>
+    <div>
+        <button type="button" id="deviceQuery">Query</button>
+    </div>
 
-<div>
-	<p> stepper0
-	<div>
-		<div>
-			<label>MIN:</label><label id="stepper_0_minOffset">0</label>
-			<label>   Current:</label><label id="stepper0CurOffset"></label>
-			<label>   MAX:</label><label id="stepper0MaxOffset"></label><br>
-			<label>Steps:</label>
-			<input type="number" id="stepper0Steps"></input>
-			<button type="button" id="stepper_0_decrease">-</button>
-			<button type="button" id="stepper_0_increase">+</button>
-		</div>
-		<div>
-			<button type="button" id="stepper_0_decrease32">-32</button>
-			<button type="button" id="stepper_0_decrease16">-16</button>
-			<button type="button" id="stepper_0_decrease8">-8</button>
-			<button type="button" id="stepper_0_decrease4">-4</button>
-			<button type="button" id="stepper_0_decrease1">-1</button>
-			<button type="button" id="stepper_0_increase1">+1</button>
-			<button type="button" id="stepper_0_increase4">+4</button>
-			<button type="button" id="stepper_0_increase8">+8</button>
-			<button type="button" id="stepper_0_increase16">+16</button>
-			<button type="button" id="stepper_0_increase32">+32</button>
-		</div>
-		<div>
-			lowClks:<input type="number" id="stepper0LowClks" min="0" max="65535" size="5"></input>
-			highClks:<input type="number" id="stepper0HighClks" min="0" max="65535" size="5"></input><br>
-			accelerationBuffer:<input type="number" id="stepper0AccelerationBuffer" min="0" max="65535" size="5"></input>
-			accelerationBufferDecrement:<input type="number" id="stepper0AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br>
-			decelerationBuffer:<input type="number" id="stepper0DecelerationBuffer" min="0" max="65535" size="5"></input>
-			decelerationBufferIncrement:<input type="number" id="stepper0DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
-			<button type="button" id="stepper_0_configMovement">Config Movement</button>
-		</div>
-	</div>
-</div>
+    <div>
+        <p> stepper0
+            <div>
+                <div>
+                    <label>MIN:</label><label id="stepper_0_minOffset">0</label>
+                    <label>   Current:</label><label id="stepper0CurOffset"></label>
+                    <label>   MAX:</label><label id="stepper0MaxOffset"></label><br>
+                    <label>Steps:</label>
+                    <input type="number" id="stepper0Steps"></input>
+                    <button type="button" id="stepper_0_decrease">-</button>
+                    <button type="button" id="stepper_0_increase">+</button>
+                </div>
+                <div>
+                    <button type="button" id="stepper_0_decrease32">-32</button>
+                    <button type="button" id="stepper_0_decrease16">-16</button>
+                    <button type="button" id="stepper_0_decrease8">-8</button>
+                    <button type="button" id="stepper_0_decrease4">-4</button>
+                    <button type="button" id="stepper_0_decrease1">-1</button>
+                    <button type="button" id="stepper_0_increase1">+1</button>
+                    <button type="button" id="stepper_0_increase4">+4</button>
+                    <button type="button" id="stepper_0_increase8">+8</button>
+                    <button type="button" id="stepper_0_increase16">+16</button>
+                    <button type="button" id="stepper_0_increase32">+32</button>
+                </div>
+                <div>
+                    lowClks:<input type="number" id="stepper0LowClks" min="0" max="65535" size="5"></input>
+                    highClks:<input type="number" id="stepper0HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
+                    <input type="number" id="stepper0AccelerationBuffer" min="0" max="65535" size="5"></input>
+                    accelerationBufferDecrement:<input type="number" id="stepper0AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
+                    <input type="number" id="stepper0DecelerationBuffer" min="0" max="65535" size="5"></input>
+                    decelerationBufferIncrement:<input type="number" id="stepper0DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
+                    <button type="button" id="stepper_0_configMovement">Config Movement</button>
+                </div>
+            </div>
+    </div>
 
-<div>
-	<p> stepper1
-	<div>
-		<div>
-			<label>MIN:</label><label id="stepper_1_minOffset">0</label>
-			<label>   Current:</label><label id="stepper1CurOffset"></label>
-			<label>   MAX:</label><label id="stepper1MaxOffset"></label><br>
-			<label>Steps:</label>
-			<input type="number" id="stepper1Steps"></input>
-			<button type="button" id="stepper_1_decrease">-</button>
-			<button type="button" id="stepper_1_increase">+</button>
-		</div>
-		<div>
-			<button type="button" id="stepper_1_decrease32">-32</button>
-			<button type="button" id="stepper_1_decrease16">-16</button>
-			<button type="button" id="stepper_1_decrease8">-8</button>
-			<button type="button" id="stepper_1_decrease4">-4</button>
-			<button type="button" id="stepper_1_decrease1">-1</button>
-			<button type="button" id="stepper_1_increase1">+1</button>
-			<button type="button" id="stepper_1_increase4">+4</button>
-			<button type="button" id="stepper_1_increase8">+8</button>
-			<button type="button" id="stepper_1_increase16">+16</button>
-			<button type="button" id="stepper_1_increase32">+32</button>
-		</div>
-		<div>
-			lowClks:<input type="number" id="stepper1LowClks" min="0" max="65535" size="5"></input>
-			highClks:<input type="number" id="stepper1HighClks" min="0" max="65535" size="5"></input><br>
-			accelerationBuffer:<input type="number" id="stepper1AccelerationBuffer" min="0" max="65535" size="5"></input>
-			accelerationBufferDecrement:<input type="number" id="stepper1AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br>
-			decelerationBuffer:<input type="number" id="stepper1DecelerationBuffer" min="0" max="65535" size="5"></input>
-			decelerationBufferIncrement:<input type="number" id="stepper1DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
-			<button type="button" id="stepper_1_configMovement">Config Movement</button>
-		</div>
-	</div>
-</div>
+    <div>
+        <p> stepper1
+            <div>
+                <div>
+                    <label>MIN:</label><label id="stepper_1_minOffset">0</label>
+                    <label>   Current:</label><label id="stepper1CurOffset"></label>
+                    <label>   MAX:</label><label id="stepper1MaxOffset"></label><br>
+                    <label>Steps:</label>
+                    <input type="number" id="stepper1Steps"></input>
+                    <button type="button" id="stepper_1_decrease">-</button>
+                    <button type="button" id="stepper_1_increase">+</button>
+                </div>
+                <div>
+                    <button type="button" id="stepper_1_decrease32">-32</button>
+                    <button type="button" id="stepper_1_decrease16">-16</button>
+                    <button type="button" id="stepper_1_decrease8">-8</button>
+                    <button type="button" id="stepper_1_decrease4">-4</button>
+                    <button type="button" id="stepper_1_decrease1">-1</button>
+                    <button type="button" id="stepper_1_increase1">+1</button>
+                    <button type="button" id="stepper_1_increase4">+4</button>
+                    <button type="button" id="stepper_1_increase8">+8</button>
+                    <button type="button" id="stepper_1_increase16">+16</button>
+                    <button type="button" id="stepper_1_increase32">+32</button>
+                </div>
+                <div>
+                    lowClks:<input type="number" id="stepper1LowClks" min="0" max="65535" size="5"></input>
+                    highClks:<input type="number" id="stepper1HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
+                    <input type="number" id="stepper1AccelerationBuffer" min="0" max="65535" size="5"></input>
+                    accelerationBufferDecrement:<input type="number" id="stepper1AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
+                    <input type="number" id="stepper1DecelerationBuffer" min="0" max="65535" size="5"></input>
+                    decelerationBufferIncrement:<input type="number" id="stepper1DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
+                    <button type="button" id="stepper_1_configMovement">Config Movement</button>
+                </div>
+            </div>
+    </div>
 
-<div>
-	<p> stepper2
-	<div>
-		<div>
-			<label>MIN:</label><label id="stepper_2_minOffset">0</label>
-			<label>   Current:</label><label id="stepper2CurOffset"></label>
-			<label>   MAX:</label><label id="stepper2MaxOffset"></label><br>
-			<label>Steps:</label>
-			<input type="number" id="stepper2Steps"></input>
-			<button type="button" id="stepper_2_decrease">-</button>
-			<button type="button" id="stepper_2_increase">+</button>
-		</div>
-		<div>
-			<button type="button" id="stepper_2_decrease32">-32</button>
-			<button type="button" id="stepper_2_decrease16">-16</button>
-			<button type="button" id="stepper_2_decrease8">-8</button>
-			<button type="button" id="stepper_2_decrease4">-4</button>
-			<button type="button" id="stepper_2_decrease1">-1</button>
-			<button type="button" id="stepper_2_increase1">+1</button>
-			<button type="button" id="stepper_2_increase4">+4</button>
-			<button type="button" id="stepper_2_increase8">+8</button>
-			<button type="button" id="stepper_2_increase16">+16</button>
-			<button type="button" id="stepper_2_increase32">+32</button>
-		</div>
-		<div>
-			lowClks:<input type="number" id="stepper2LowClks" min="0" max="65535" size="5"></input>
-			highClks:<input type="number" id="stepper2HighClks" min="0" max="65535" size="5"></input><br>
-			accelerationBuffer:<input type="number" id="stepper2AccelerationBuffer" min="0" max="65535" size="5"></input>
-			accelerationBufferDecrement:<input type="number" id="stepper2AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br>
-			decelerationBuffer:<input type="number" id="stepper2DecelerationBuffer" min="0" max="65535" size="5"></input>
-			decelerationBufferIncrement:<input type="number" id="stepper2DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
-			<button type="button" id="stepper_2_configMovement">Config Movement</button>
-		</div>
-	</div>
-</div>
+    <div>
+        <p> stepper2
+            <div>
+                <div>
+                    <label>MIN:</label><label id="stepper_2_minOffset">0</label>
+                    <label>   Current:</label><label id="stepper2CurOffset"></label>
+                    <label>   MAX:</label><label id="stepper2MaxOffset"></label><br>
+                    <label>Steps:</label>
+                    <input type="number" id="stepper2Steps"></input>
+                    <button type="button" id="stepper_2_decrease">-</button>
+                    <button type="button" id="stepper_2_increase">+</button>
+                </div>
+                <div>
+                    <button type="button" id="stepper_2_decrease32">-32</button>
+                    <button type="button" id="stepper_2_decrease16">-16</button>
+                    <button type="button" id="stepper_2_decrease8">-8</button>
+                    <button type="button" id="stepper_2_decrease4">-4</button>
+                    <button type="button" id="stepper_2_decrease1">-1</button>
+                    <button type="button" id="stepper_2_increase1">+1</button>
+                    <button type="button" id="stepper_2_increase4">+4</button>
+                    <button type="button" id="stepper_2_increase8">+8</button>
+                    <button type="button" id="stepper_2_increase16">+16</button>
+                    <button type="button" id="stepper_2_increase32">+32</button>
+                </div>
+                <div>
+                    lowClks:<input type="number" id="stepper2LowClks" min="0" max="65535" size="5"></input>
+                    highClks:<input type="number" id="stepper2HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
+                    <input type="number" id="stepper2AccelerationBuffer" min="0" max="65535" size="5"></input>
+                    accelerationBufferDecrement:<input type="number" id="stepper2AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
+                    <input type="number" id="stepper2DecelerationBuffer" min="0" max="65535" size="5"></input>
+                    decelerationBufferIncrement:<input type="number" id="stepper2DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
+                    <button type="button" id="stepper_2_configMovement">Config Movement</button>
+                </div>
+            </div>
+    </div>
 
-<div>
-	<p> stepper3
-	<div>
-		<div>
-			<label>MIN:</label><label id="stepper_3_minOffset">0</label>
-			<label>   Current:</label><label id="stepper3CurOffset"></label>
-			<label>   MAX:</label><label id="stepper3MaxOffset"></label><br>
-			<label>Steps:</label>
-			<input type="number" id="stepper3Steps"></input>
-			<button type="button" id="stepper_3_decrease">-</button>
-			<button type="button" id="stepper_3_increase">+</button>
-		</div>
-		<div>
-			<button type="button" id="stepper_3_decrease32">-32</button>
-			<button type="button" id="stepper_3_decrease16">-16</button>
-			<button type="button" id="stepper_3_decrease8">-8</button>
-			<button type="button" id="stepper_3_decrease4">-4</button>
-			<button type="button" id="stepper_3_decrease1">-1</button>
-			<button type="button" id="stepper_3_increase1">+1</button>
-			<button type="button" id="stepper_3_increase4">+4</button>
-			<button type="button" id="stepper_3_increase8">+8</button>
-			<button type="button" id="stepper_3_increase16">+16</button>
-			<button type="button" id="stepper_3_increase32">+32</button>
-		</div>
-		<div>
-			lowClks:<input type="number" id="stepper3LowClks" min="0" max="65535" size="5"></input>
-			highClks:<input type="number" id="stepper3HighClks" min="0" max="65535" size="5"></input><br>
-			accelerationBuffer:<input type="number" id="stepper3AccelerationBuffer" min="0" max="65535" size="5"></input>
-			accelerationBufferDecrement:<input type="number" id="stepper3AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br>
-			decelerationBuffer:<input type="number" id="stepper3DecelerationBuffer" min="0" max="65535" size="5"></input>
-			decelerationBufferIncrement:<input type="number" id="stepper3DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
-			<button type="button" id="stepper_3_configMovement">Config Movement</button>
-		</div>
-	</div>
-</div>
+    <div>
+        <p> stepper3
+            <div>
+                <div>
+                    <label>MIN:</label><label id="stepper_3_minOffset">0</label>
+                    <label>   Current:</label><label id="stepper3CurOffset"></label>
+                    <label>   MAX:</label><label id="stepper3MaxOffset"></label><br>
+                    <label>Steps:</label>
+                    <input type="number" id="stepper3Steps"></input>
+                    <button type="button" id="stepper_3_decrease">-</button>
+                    <button type="button" id="stepper_3_increase">+</button>
+                </div>
+                <div>
+                    <button type="button" id="stepper_3_decrease32">-32</button>
+                    <button type="button" id="stepper_3_decrease16">-16</button>
+                    <button type="button" id="stepper_3_decrease8">-8</button>
+                    <button type="button" id="stepper_3_decrease4">-4</button>
+                    <button type="button" id="stepper_3_decrease1">-1</button>
+                    <button type="button" id="stepper_3_increase1">+1</button>
+                    <button type="button" id="stepper_3_increase4">+4</button>
+                    <button type="button" id="stepper_3_increase8">+8</button>
+                    <button type="button" id="stepper_3_increase16">+16</button>
+                    <button type="button" id="stepper_3_increase32">+32</button>
+                </div>
+                <div>
+                    lowClks:<input type="number" id="stepper3LowClks" min="0" max="65535" size="5"></input>
+                    highClks:<input type="number" id="stepper3HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
+                    <input type="number" id="stepper3AccelerationBuffer" min="0" max="65535" size="5"></input>
+                    accelerationBufferDecrement:<input type="number" id="stepper3AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
+                    <input type="number" id="stepper3DecelerationBuffer" min="0" max="65535" size="5"></input>
+                    decelerationBufferIncrement:<input type="number" id="stepper3DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
+                    <button type="button" id="stepper_3_configMovement">Config Movement</button>
+                </div>
+            </div>
+    </div>
 
-<div>
-	<p> stepper4
-	<div>
-		<div>
-			<label>MIN:</label><label id="stepper_4_minOffset">0</label>
-			<label>   Current:</label><label id="stepper4CurOffset"></label>
-			<label>   MAX:</label><label id="stepper4MaxOffset"></label><br>
-			<label>Steps:</label>
-			<input type="number" id="stepper4Steps"></input>
-			<button type="button" id="stepper_4_decrease">-</button>
-			<button type="button" id="stepper_4_increase">+</button>
-		</div>
-		<div>
-			<button type="button" id="stepper_4_decrease32">-32</button>
-			<button type="button" id="stepper_4_decrease16">-16</button>
-			<button type="button" id="stepper_4_decrease8">-8</button>
-			<button type="button" id="stepper_4_decrease4">-4</button>
-			<button type="button" id="stepper_4_decrease1">-1</button>
-			<button type="button" id="stepper_4_increase1">+1</button>
-			<button type="button" id="stepper_4_increase4">+4</button>
-			<button type="button" id="stepper_4_increase8">+8</button>
-			<button type="button" id="stepper_4_increase16">+16</button>
-			<button type="button" id="stepper_4_increase32">+32</button>
-		</div>
-		<div>
-			lowClks:<input type="number" id="stepper4LowClks" min="0" max="65535" size="5"></input>
-			highClks:<input type="number" id="stepper4HighClks" min="0" max="65535" size="5"></input><br>
-			accelerationBuffer:<input type="number" id="stepper4AccelerationBuffer" min="0" max="65535" size="5"></input>
-			accelerationBufferDecrement:<input type="number" id="stepper4AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br>
-			decelerationBuffer:<input type="number" id="stepper4DecelerationBuffer" min="0" max="65535" size="5"></input>
-			decelerationBufferIncrement:<input type="number" id="stepper4DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
-			<button type="button" id="stepper_4_configMovement">Config Movement</button>
-		</div>
-	</div>
-</div>
+    <div>
+        <p> stepper4
+            <div>
+                <div>
+                    <label>MIN:</label><label id="stepper_4_minOffset">0</label>
+                    <label>   Current:</label><label id="stepper4CurOffset"></label>
+                    <label>   MAX:</label><label id="stepper4MaxOffset"></label><br>
+                    <label>Steps:</label>
+                    <input type="number" id="stepper4Steps"></input>
+                    <button type="button" id="stepper_4_decrease">-</button>
+                    <button type="button" id="stepper_4_increase">+</button>
+                </div>
+                <div>
+                    <button type="button" id="stepper_4_decrease32">-32</button>
+                    <button type="button" id="stepper_4_decrease16">-16</button>
+                    <button type="button" id="stepper_4_decrease8">-8</button>
+                    <button type="button" id="stepper_4_decrease4">-4</button>
+                    <button type="button" id="stepper_4_decrease1">-1</button>
+                    <button type="button" id="stepper_4_increase1">+1</button>
+                    <button type="button" id="stepper_4_increase4">+4</button>
+                    <button type="button" id="stepper_4_increase8">+8</button>
+                    <button type="button" id="stepper_4_increase16">+16</button>
+                    <button type="button" id="stepper_4_increase32">+32</button>
+                </div>
+                <div>
+                    lowClks:<input type="number" id="stepper4LowClks" min="0" max="65535" size="5"></input>
+                    highClks:<input type="number" id="stepper4HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
+                    <input type="number" id="stepper4AccelerationBuffer" min="0" max="65535" size="5"></input>
+                    accelerationBufferDecrement:<input type="number" id="stepper4AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
+                    <input type="number" id="stepper4DecelerationBuffer" min="0" max="65535" size="5"></input>
+                    decelerationBufferIncrement:<input type="number" id="stepper4DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
+                    <button type="button" id="stepper_4_configMovement">Config Movement</button>
+                </div>
+            </div>
+    </div>
 
-<div>
-	<div>
-		<div>
-			<input name="coordinate" id="coordinate_safe" type="radio"><label for="coordinate_safe">Safe</label>
-			<input name="coordinate" id="coordinate_smartCardGate" type="radio"><label for="coordinate_smartCardGate">SmartCardGate</label>
-			<input name="coordinate" id="coordinate_smartCardReaderGate" type="radio"><label for="coordinate_smartCardReaderGate">SmartCardReaderGate</label>
-			<input name="coordinate" id="coordinate_smartCardReader" type="radio"><label for="coordinate_smartCardReader">SmartCardReader</label>
-			<input name="coordinate" id="coordinate_softKeyGate" type="radio"><label for="coordinate_softKeyGate">SoftKeyGate</label>
-			<input name="coordinate" id="coordinate_pedKeyGate" type="radio"><label for="coordinate_pedKeyGate">PedKeyGate</label>
-			<input name="coordinate" id="coordinate_touchScreenGate" type="radio"><label for="coordinate_touchScreenGate">TouchScreenGate</label>
-			<input name="coordinate" id="coordinate_assistKeyGate" type="radio"><label for="coordinate_assistKeyGate">AssistKeyGate</label>
-			<input name="coordinate" id="coordinate_contactlessReader" type="radio"><label for="coordinate_contactlessReader">ContactlessReader</label>
-			<input name="coordinate" id="coordinate_contactlessReaderGate" type="radio"><label for="coordinate_contactlessReaderGate">ContactlessReaderGate</label>
-		</div>
-		<div>
-			<label>SmartCards:</label><br>
-			<input name="coordinate" id="coordinate_smartCard_1" type="radio"><label for="coordinate_smartCard_1">1</label>
-			<input name="coordinate" id="coordinate_smartCard_2" type="radio"><label for="coordinate_smartCard_2">2</label>
-			<input name="coordinate" id="coordinate_smartCard_3" type="radio"><label for="coordinate_smartCard_3">3</label>
-			<input name="coordinate" id="coordinate_smartCard_4" type="radio"><label for="coordinate_smartCard_4">4</label>
-			<input name="coordinate" id="coordinate_smartCard_5" type="radio"><label for="coordinate_smartCard_5">5</label>
-			<input name="coordinate" id="coordinate_smartCard_6" type="radio"><label for="coordinate_smartCard_6">6</label>
-			<input name="coordinate" id="coordinate_smartCard_7" type="radio"><label for="coordinate_smartCard_7">7</label>
-			<input name="coordinate" id="coordinate_smartCard_8" type="radio"><label for="coordinate_smartCard_8">8</label>
-			<input name="coordinate" id="coordinate_smartCard_9" type="radio"><label for="coordinate_smartCard_9">9</label>
-			<input name="coordinate" id="coordinate_smartCard_10" type="radio"><label for="coordinate_smartCard_10">10</label>
-			<input name="coordinate" id="coordinate_smartCard_11" type="radio"><label for="coordinate_smartCard_11">11</label>
-			<input name="coordinate" id="coordinate_smartCard_12" type="radio"><label for="coordinate_smartCard_12">12</label>
-			<input name="coordinate" id="coordinate_smartCard_13" type="radio"><label for="coordinate_smartCard_13">13</label>
-			<input name="coordinate" id="coordinate_smartCard_14" type="radio"><label for="coordinate_smartCard_14">14</label>
-			<input name="coordinate" id="coordinate_smartCard_15" type="radio"><label for="coordinate_smartCard_15">15</label>
-			<input name="coordinate" id="coordinate_smartCard_16" type="radio"><label for="coordinate_smartCard_16">16</label>
-			<input name="coordinate" id="coordinate_smartCard_17" type="radio"><label for="coordinate_smartCard_17">17</label>
-			<input name="coordinate" id="coordinate_smartCard_18" type="radio"><label for="coordinate_smartCard_18">18</label>
-			<input name="coordinate" id="coordinate_smartCard_19" type="radio"><label for="coordinate_smartCard_19">19</label>
-			<input name="coordinate" id="coordinate_smartCard_20" type="radio"><label for="coordinate_smartCard_20">20</label>
-			<input name="coordinate" id="coordinate_smartCard_21" type="radio"><label for="coordinate_smartCard_21">21</label>
-			<input name="coordinate" id="coordinate_smartCard_22" type="radio"><label for="coordinate_smartCard_22">22</label>
-			<input name="coordinate" id="coordinate_smartCard_23" type="radio"><label for="coordinate_smartCard_23">23</label>
-			<input name="coordinate" id="coordinate_smartCard_24" type="radio"><label for="coordinate_smartCard_24">24</label>
-			<input name="coordinate" id="coordinate_smartCard_25" type="radio"><label for="coordinate_smartCard_25">25</label>
-			<input name="coordinate" id="coordinate_smartCard_26" type="radio"><label for="coordinate_smartCard_26">26</label>
-			<input name="coordinate" id="coordinate_smartCard_27" type="radio"><label for="coordinate_smartCard_27">27</label>
-			<input name="coordinate" id="coordinate_smartCard_28" type="radio"><label for="coordinate_smartCard_28">28</label>
-			<input name="coordinate" id="coordinate_smartCard_29" type="radio"><label for="coordinate_smartCard_29">29</label>
-			<input name="coordinate" id="coordinate_smartCard_30" type="radio"><label for="coordinate_smartCard_30">30</label>
-			<input name="coordinate" id="coordinate_smartCard_31" type="radio"><label for="coordinate_smartCard_31">31</label>
-			<input name="coordinate" id="coordinate_smartCard_32" type="radio"><label for="coordinate_smartCard_32">32</label>
-			<input name="coordinate" id="coordinate_smartCard_33" type="radio"><label for="coordinate_smartCard_33">33</label>
-			<input name="coordinate" id="coordinate_smartCard_34" type="radio"><label for="coordinate_smartCard_34">34</label>
-			<input name="coordinate" id="coordinate_smartCard_35" type="radio"><label for="coordinate_smartCard_35">35</label>
-			<input name="coordinate" id="coordinate_smartCard_36" type="radio"><label for="coordinate_smartCard_36">36</label>
-			<input name="coordinate" id="coordinate_smartCard_37" type="radio"><label for="coordinate_smartCard_37">37</label>
-			<input name="coordinate" id="coordinate_smartCard_38" type="radio"><label for="coordinate_smartCard_38">38</label>
-			<input name="coordinate" id="coordinate_smartCard_39" type="radio"><label for="coordinate_smartCard_39">39</label>
-			<input name="coordinate" id="coordinate_smartCard_40" type="radio"><label for="coordinate_smartCard_40">40</label>
-			<input name="coordinate" id="coordinate_smartCard_41" type="radio"><label for="coordinate_smartCard_41">41</label>
-			<input name="coordinate" id="coordinate_smartCard_42" type="radio"><label for="coordinate_smartCard_42">42</label>
-			<input name="coordinate" id="coordinate_smartCard_43" type="radio"><label for="coordinate_smartCard_43">43</label>
-			<input name="coordinate" id="coordinate_smartCard_44" type="radio"><label for="coordinate_smartCard_44">44</label>
-			<input name="coordinate" id="coordinate_smartCard_45" type="radio"><label for="coordinate_smartCard_45">45</label>
-			<input name="coordinate" id="coordinate_smartCard_46" type="radio"><label for="coordinate_smartCard_46">46</label>
-			<input name="coordinate" id="coordinate_smartCard_47" type="radio"><label for="coordinate_smartCard_47">47</label>
-			<input name="coordinate" id="coordinate_smartCard_48" type="radio"><label for="coordinate_smartCard_48">48</label>
-			<input name="coordinate" id="coordinate_smartCard_49" type="radio"><label for="coordinate_smartCard_49">49</label>
-			<input name="coordinate" id="coordinate_smartCard_50" type="radio"><label for="coordinate_smartCard_50">50</label>
-			<input name="coordinate" id="coordinate_smartCard_51" type="radio"><label for="coordinate_smartCard_51">51</label>
-			<input name="coordinate" id="coordinate_smartCard_52" type="radio"><label for="coordinate_smartCard_52">52</label>
-			<input name="coordinate" id="coordinate_smartCard_53" type="radio"><label for="coordinate_smartCard_53">53</label>
-			<input name="coordinate" id="coordinate_smartCard_54" type="radio"><label for="coordinate_smartCard_54">54</label>
-			<input name="coordinate" id="coordinate_smartCard_55" type="radio"><label for="coordinate_smartCard_55">55</label>
-			<input name="coordinate" id="coordinate_smartCard_56" type="radio"><label for="coordinate_smartCard_56">56</label>
-			<input name="coordinate" id="coordinate_smartCard_57" type="radio"><label for="coordinate_smartCard_57">57</label>
-			<input name="coordinate" id="coordinate_smartCard_58" type="radio"><label for="coordinate_smartCard_58">58</label>
-			<input name="coordinate" id="coordinate_smartCard_59" type="radio"><label for="coordinate_smartCard_59">59</label>
-		</div>
-		<div>
-			<label>PED Keys:</label><br>
-			<input name="coordinate" id="coordinate_pedKey_1" type="radio"><label for="coordinate_pedKey_1">1</label>
-			<input name="coordinate" id="coordinate_pedKey_2" type="radio"><label for="coordinate_pedKey_2">2</label>
-			<input name="coordinate" id="coordinate_pedKey_3" type="radio"><label for="coordinate_pedKey_3">3</label><br>
-			<input name="coordinate" id="coordinate_pedKey_4" type="radio"><label for="coordinate_pedKey_4">4</label>
-			<input name="coordinate" id="coordinate_pedKey_5" type="radio"><label for="coordinate_pedKey_5">5</label>
-			<input name="coordinate" id="coordinate_pedKey_6" type="radio"><label for="coordinate_pedKey_6">6</label><br>
-			<input name="coordinate" id="coordinate_pedKey_7" type="radio"><label for="coordinate_pedKey_7">7</label>
-			<input name="coordinate" id="coordinate_pedKey_8" type="radio"><label for="coordinate_pedKey_8">8</label>
-			<input name="coordinate" id="coordinate_pedKey_9" type="radio"><label for="coordinate_pedKey_9">9</label><br>
-			<input name="coordinate" id="coordinate_pedKey_10" type="radio"><label for="coordinate_pedKey_10">NO</label>
-			<input name="coordinate" id="coordinate_pedKey_11" type="radio"><label for="coordinate_pedKey_11">0</label>
-			<input name="coordinate" id="coordinate_pedKey_12" type="radio"><label for="coordinate_pedKey_12">YES</label><br>
-			<input name="coordinate" id="coordinate_pedKey_13" type="radio"><label for="coordinate_pedKey_13">X</label>
-			<input name="coordinate" id="coordinate_pedKey_14" type="radio"><label for="coordinate_pedKey_14">&lt;</label>
-			<input name="coordinate" id="coordinate_pedKey_15" type="radio"><label for="coordinate_pedKey_15">O</label>
-		</div>
-		<div>
-			<label>SoftKeys:</label><br>
-			<input name="coordinate" id="coordinate_softKey_1" type="radio"><label for="coordinate_softKey_1">1</label>
-			<input name="coordinate" id="coordinate_softKey_2" type="radio"><label for="coordinate_softKey_2">2</label>
-			<input name="coordinate" id="coordinate_softKey_3" type="radio"><label for="coordinate_softKey_3">3</label>
-			<input name="coordinate" id="coordinate_softKey_4" type="radio"><label for="coordinate_softKey_4">4</label>
-			<input name="coordinate" id="coordinate_softKey_5" type="radio"><label for="coordinate_softKey_5">5</label>
-			<input name="coordinate" id="coordinate_softKey_6" type="radio"><label for="coordinate_softKey_6">6</label>
-			<input name="coordinate" id="coordinate_softKey_7" type="radio"><label for="coordinate_softKey_7">7</label>
-			<input name="coordinate" id="coordinate_softKey_8" type="radio"><label for="coordinate_softKey_8">8</label>
-		</div>
-		<div>
-			<label>TouchScreenKeys:</label><br>
-			<input name="coordinate" id="coordinate_touchScreenKey_1" type="radio"><label for="coordinate_touchScreenKey_1">1</label>
-			<input name="coordinate" id="coordinate_touchScreenKey_2" type="radio"><label for="coordinate_touchScreenKey_2">2</label>
-			<input name="coordinate" id="coordinate_touchScreenKey_3" type="radio"><label for="coordinate_touchScreenKey_3">3</label>
-			<input name="coordinate" id="coordinate_touchScreenKey_4" type="radio"><label for="coordinate_touchScreenKey_4">4</label>
-			<input name="coordinate" id="coordinate_touchScreenKey_5" type="radio"><label for="coordinate_touchScreenKey_5">5</label>
-			<input name="coordinate" id="coordinate_touchScreenKey_6" type="radio"><label for="coordinate_touchScreenKey_6">6</label>
-			<input name="coordinate" id="coordinate_touchScreenKey_7" type="radio"><label for="coordinate_touchScreenKey_7">7</label>
-			<input name="coordinate" id="coordinate_touchScreenKey_8" type="radio"><label for="coordinate_touchScreenKey_8">8</label>
-		</div>
-		<div>
-			<label>SoftKeys:</label><br>
-			<input name="coordinate" id="coordinate_assistKey_1" type="radio"><label for="coordinate_assistKey_1">1</label>
-			<input name="coordinate" id="coordinate_assistKey_2" type="radio"><label for="coordinate_assistKey_2">2</label>
-			<input name="coordinate" id="coordinate_assistKey_3" type="radio"><label for="coordinate_assistKey_3">3</label>
-			<input name="coordinate" id="coordinate_assistKey_4" type="radio"><label for="coordinate_assistKey_4">4</label>
-			<input name="coordinate" id="coordinate_assistKey_5" type="radio"><label for="coordinate_assistKey_5">5</label>
-			<input name="coordinate" id="coordinate_assistKey_6" type="radio"><label for="coordinate_assistKey_6">6</label>
-			<input name="coordinate" id="coordinate_assistKey_7" type="radio"><label for="coordinate_assistKey_7">7</label>
-			<input name="coordinate" id="coordinate_assistKey_8" type="radio"><label for="coordinate_assistKey_8">8</label>
-			<input name="coordinate" id="coordinate_assistKey_9" type="radio"><label for="coordinate_assistKey_9">HELP</label>
+    <div>
+        <div>
+            <div>
+                <input name="coordinate" id="coordinate_safe" type="radio"><label for="coordinate_safe">Safe</label>
+                <input name="coordinate" id="coordinate_smartCardGate" type="radio"><label for="coordinate_smartCardGate">SmartCardGate</label>
+                <input name="coordinate" id="coordinate_smartCardReaderGate" type="radio"><label for="coordinate_smartCardReaderGate">SmartCardReaderGate</label>
+                <input name="coordinate" id="coordinate_smartCardReader" type="radio"><label for="coordinate_smartCardReader">SmartCardReader</label>
+                <input name="coordinate" id="coordinate_softKeyGate" type="radio"><label for="coordinate_softKeyGate">SoftKeyGate</label>
+                <input name="coordinate" id="coordinate_pedKeyGate" type="radio"><label for="coordinate_pedKeyGate">PedKeyGate</label>
+                <input name="coordinate" id="coordinate_touchScreenGate" type="radio"><label for="coordinate_touchScreenGate">TouchScreenGate</label>
+                <input name="coordinate" id="coordinate_assistKeyGate" type="radio"><label for="coordinate_assistKeyGate">AssistKeyGate</label>
+                <input name="coordinate" id="coordinate_contactlessReader" type="radio"><label for="coordinate_contactlessReader">ContactlessReader</label>
+                <input name="coordinate" id="coordinate_contactlessReaderGate" type="radio"><label for="coordinate_contactlessReaderGate">ContactlessReaderGate</label>
+            </div>
+            <div>
+                <label>SmartCards:</label><br>
+                <input name="coordinate" id="coordinate_smartCard_1" type="radio"><label for="coordinate_smartCard_1">1</label>
+                <input name="coordinate" id="coordinate_smartCard_2" type="radio"><label for="coordinate_smartCard_2">2</label>
+                <input name="coordinate" id="coordinate_smartCard_3" type="radio"><label for="coordinate_smartCard_3">3</label>
+                <input name="coordinate" id="coordinate_smartCard_4" type="radio"><label for="coordinate_smartCard_4">4</label>
+                <input name="coordinate" id="coordinate_smartCard_5" type="radio"><label for="coordinate_smartCard_5">5</label>
+                <input name="coordinate" id="coordinate_smartCard_6" type="radio"><label for="coordinate_smartCard_6">6</label>
+                <input name="coordinate" id="coordinate_smartCard_7" type="radio"><label for="coordinate_smartCard_7">7</label>
+                <input name="coordinate" id="coordinate_smartCard_8" type="radio"><label for="coordinate_smartCard_8">8</label>
+                <input name="coordinate" id="coordinate_smartCard_9" type="radio"><label for="coordinate_smartCard_9">9</label>
+                <input name="coordinate" id="coordinate_smartCard_10" type="radio"><label for="coordinate_smartCard_10">10</label>
+                <input name="coordinate" id="coordinate_smartCard_11" type="radio"><label for="coordinate_smartCard_11">11</label>
+                <input name="coordinate" id="coordinate_smartCard_12" type="radio"><label for="coordinate_smartCard_12">12</label>
+                <input name="coordinate" id="coordinate_smartCard_13" type="radio"><label for="coordinate_smartCard_13">13</label>
+                <input name="coordinate" id="coordinate_smartCard_14" type="radio"><label for="coordinate_smartCard_14">14</label>
+                <input name="coordinate" id="coordinate_smartCard_15" type="radio"><label for="coordinate_smartCard_15">15</label>
+                <input name="coordinate" id="coordinate_smartCard_16" type="radio"><label for="coordinate_smartCard_16">16</label>
+                <input name="coordinate" id="coordinate_smartCard_17" type="radio"><label for="coordinate_smartCard_17">17</label>
+                <input name="coordinate" id="coordinate_smartCard_18" type="radio"><label for="coordinate_smartCard_18">18</label>
+                <input name="coordinate" id="coordinate_smartCard_19" type="radio"><label for="coordinate_smartCard_19">19</label>
+                <input name="coordinate" id="coordinate_smartCard_20" type="radio"><label for="coordinate_smartCard_20">20</label>
+                <input name="coordinate" id="coordinate_smartCard_21" type="radio"><label for="coordinate_smartCard_21">21</label>
+                <input name="coordinate" id="coordinate_smartCard_22" type="radio"><label for="coordinate_smartCard_22">22</label>
+                <input name="coordinate" id="coordinate_smartCard_23" type="radio"><label for="coordinate_smartCard_23">23</label>
+                <input name="coordinate" id="coordinate_smartCard_24" type="radio"><label for="coordinate_smartCard_24">24</label>
+                <input name="coordinate" id="coordinate_smartCard_25" type="radio"><label for="coordinate_smartCard_25">25</label>
+                <input name="coordinate" id="coordinate_smartCard_26" type="radio"><label for="coordinate_smartCard_26">26</label>
+                <input name="coordinate" id="coordinate_smartCard_27" type="radio"><label for="coordinate_smartCard_27">27</label>
+                <input name="coordinate" id="coordinate_smartCard_28" type="radio"><label for="coordinate_smartCard_28">28</label>
+                <input name="coordinate" id="coordinate_smartCard_29" type="radio"><label for="coordinate_smartCard_29">29</label>
+                <input name="coordinate" id="coordinate_smartCard_30" type="radio"><label for="coordinate_smartCard_30">30</label>
+                <input name="coordinate" id="coordinate_smartCard_31" type="radio"><label for="coordinate_smartCard_31">31</label>
+                <input name="coordinate" id="coordinate_smartCard_32" type="radio"><label for="coordinate_smartCard_32">32</label>
+                <input name="coordinate" id="coordinate_smartCard_33" type="radio"><label for="coordinate_smartCard_33">33</label>
+                <input name="coordinate" id="coordinate_smartCard_34" type="radio"><label for="coordinate_smartCard_34">34</label>
+                <input name="coordinate" id="coordinate_smartCard_35" type="radio"><label for="coordinate_smartCard_35">35</label>
+                <input name="coordinate" id="coordinate_smartCard_36" type="radio"><label for="coordinate_smartCard_36">36</label>
+                <input name="coordinate" id="coordinate_smartCard_37" type="radio"><label for="coordinate_smartCard_37">37</label>
+                <input name="coordinate" id="coordinate_smartCard_38" type="radio"><label for="coordinate_smartCard_38">38</label>
+                <input name="coordinate" id="coordinate_smartCard_39" type="radio"><label for="coordinate_smartCard_39">39</label>
+                <input name="coordinate" id="coordinate_smartCard_40" type="radio"><label for="coordinate_smartCard_40">40</label>
+                <input name="coordinate" id="coordinate_smartCard_41" type="radio"><label for="coordinate_smartCard_41">41</label>
+                <input name="coordinate" id="coordinate_smartCard_42" type="radio"><label for="coordinate_smartCard_42">42</label>
+                <input name="coordinate" id="coordinate_smartCard_43" type="radio"><label for="coordinate_smartCard_43">43</label>
+                <input name="coordinate" id="coordinate_smartCard_44" type="radio"><label for="coordinate_smartCard_44">44</label>
+                <input name="coordinate" id="coordinate_smartCard_45" type="radio"><label for="coordinate_smartCard_45">45</label>
+                <input name="coordinate" id="coordinate_smartCard_46" type="radio"><label for="coordinate_smartCard_46">46</label>
+                <input name="coordinate" id="coordinate_smartCard_47" type="radio"><label for="coordinate_smartCard_47">47</label>
+                <input name="coordinate" id="coordinate_smartCard_48" type="radio"><label for="coordinate_smartCard_48">48</label>
+                <input name="coordinate" id="coordinate_smartCard_49" type="radio"><label for="coordinate_smartCard_49">49</label>
+                <input name="coordinate" id="coordinate_smartCard_50" type="radio"><label for="coordinate_smartCard_50">50</label>
+                <input name="coordinate" id="coordinate_smartCard_51" type="radio"><label for="coordinate_smartCard_51">51</label>
+                <input name="coordinate" id="coordinate_smartCard_52" type="radio"><label for="coordinate_smartCard_52">52</label>
+                <input name="coordinate" id="coordinate_smartCard_53" type="radio"><label for="coordinate_smartCard_53">53</label>
+                <input name="coordinate" id="coordinate_smartCard_54" type="radio"><label for="coordinate_smartCard_54">54</label>
+                <input name="coordinate" id="coordinate_smartCard_55" type="radio"><label for="coordinate_smartCard_55">55</label>
+                <input name="coordinate" id="coordinate_smartCard_56" type="radio"><label for="coordinate_smartCard_56">56</label>
+                <input name="coordinate" id="coordinate_smartCard_57" type="radio"><label for="coordinate_smartCard_57">57</label>
+                <input name="coordinate" id="coordinate_smartCard_58" type="radio"><label for="coordinate_smartCard_58">58</label>
+                <input name="coordinate" id="coordinate_smartCard_59" type="radio"><label for="coordinate_smartCard_59">59</label>
+            </div>
+            <div>
+                <label>PED Keys:</label><br>
+                <input name="coordinate" id="coordinate_pedKey_1" type="radio"><label for="coordinate_pedKey_1">1</label>
+                <input name="coordinate" id="coordinate_pedKey_2" type="radio"><label for="coordinate_pedKey_2">2</label>
+                <input name="coordinate" id="coordinate_pedKey_3" type="radio"><label for="coordinate_pedKey_3">3</label><br>
+                <input name="coordinate" id="coordinate_pedKey_4" type="radio"><label for="coordinate_pedKey_4">4</label>
+                <input name="coordinate" id="coordinate_pedKey_5" type="radio"><label for="coordinate_pedKey_5">5</label>
+                <input name="coordinate" id="coordinate_pedKey_6" type="radio"><label for="coordinate_pedKey_6">6</label><br>
+                <input name="coordinate" id="coordinate_pedKey_7" type="radio"><label for="coordinate_pedKey_7">7</label>
+                <input name="coordinate" id="coordinate_pedKey_8" type="radio"><label for="coordinate_pedKey_8">8</label>
+                <input name="coordinate" id="coordinate_pedKey_9" type="radio"><label for="coordinate_pedKey_9">9</label><br>
+                <input name="coordinate" id="coordinate_pedKey_10" type="radio"><label for="coordinate_pedKey_10">NO</label>
+                <input name="coordinate" id="coordinate_pedKey_11" type="radio"><label for="coordinate_pedKey_11">0</label>
+                <input name="coordinate" id="coordinate_pedKey_12" type="radio"><label for="coordinate_pedKey_12">YES</label><br>
+                <input name="coordinate" id="coordinate_pedKey_13" type="radio"><label for="coordinate_pedKey_13">X</label>
+                <input name="coordinate" id="coordinate_pedKey_14" type="radio"><label for="coordinate_pedKey_14">&lt;</label>
+                <input name="coordinate" id="coordinate_pedKey_15" type="radio"><label for="coordinate_pedKey_15">O</label>
+            </div>
+            <div>
+                <label>SoftKeys:</label><br>
+                <input name="coordinate" id="coordinate_softKey_1" type="radio"><label for="coordinate_softKey_1">1</label>
+                <input name="coordinate" id="coordinate_softKey_2" type="radio"><label for="coordinate_softKey_2">2</label>
+                <input name="coordinate" id="coordinate_softKey_3" type="radio"><label for="coordinate_softKey_3">3</label>
+                <input name="coordinate" id="coordinate_softKey_4" type="radio"><label for="coordinate_softKey_4">4</label>
+                <input name="coordinate" id="coordinate_softKey_5" type="radio"><label for="coordinate_softKey_5">5</label>
+                <input name="coordinate" id="coordinate_softKey_6" type="radio"><label for="coordinate_softKey_6">6</label>
+                <input name="coordinate" id="coordinate_softKey_7" type="radio"><label for="coordinate_softKey_7">7</label>
+                <input name="coordinate" id="coordinate_softKey_8" type="radio"><label for="coordinate_softKey_8">8</label>
+            </div>
+            <div>
+                <label>TouchScreenKeys:</label><br>
+                <input name="coordinate" id="coordinate_touchScreenKey_1" type="radio"><label for="coordinate_touchScreenKey_1">1</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_2" type="radio"><label for="coordinate_touchScreenKey_2">2</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_3" type="radio"><label for="coordinate_touchScreenKey_3">3</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_4" type="radio"><label for="coordinate_touchScreenKey_4">4</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_5" type="radio"><label for="coordinate_touchScreenKey_5">5</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_6" type="radio"><label for="coordinate_touchScreenKey_6">6</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_7" type="radio"><label for="coordinate_touchScreenKey_7">7</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_8" type="radio"><label for="coordinate_touchScreenKey_8">8</label>
+            </div>
+            <div>
+                <label>SoftKeys:</label><br>
+                <input name="coordinate" id="coordinate_assistKey_1" type="radio"><label for="coordinate_assistKey_1">1</label>
+                <input name="coordinate" id="coordinate_assistKey_2" type="radio"><label for="coordinate_assistKey_2">2</label>
+                <input name="coordinate" id="coordinate_assistKey_3" type="radio"><label for="coordinate_assistKey_3">3</label>
+                <input name="coordinate" id="coordinate_assistKey_4" type="radio"><label for="coordinate_assistKey_4">4</label>
+                <input name="coordinate" id="coordinate_assistKey_5" type="radio"><label for="coordinate_assistKey_5">5</label>
+                <input name="coordinate" id="coordinate_assistKey_6" type="radio"><label for="coordinate_assistKey_6">6</label>
+                <input name="coordinate" id="coordinate_assistKey_7" type="radio"><label for="coordinate_assistKey_7">7</label>
+                <input name="coordinate" id="coordinate_assistKey_8" type="radio"><label for="coordinate_assistKey_8">8</label>
+                <input name="coordinate" id="coordinate_assistKey_9" type="radio"><label for="coordinate_assistKey_9">HELP</label>
 
-		</div>
-		<div>
-			<label>Offsets:</label><br>
-			<input name="coordinate" id="coordinate_smartCardPlaceStartZ" type="radio"><label for="coordinate_smartCardPlaceStartZ">SmartCardPlaceStartZ</label>
-			<input type="number" id="smartCardPlaceStartZ" min="0" max="65535" size="5"></input><br>
-			<input name="coordinate" id="coordinate_smartCardFetchOffset" type="radio"><label for="coordinate_smartCardFetchOffset">SmartCardFetchOffset</label>
-			<input type="number" id="smartCardFetchOffset" min="0" max="65535" size="5"></input><br>
-			<input name="coordinate" id="coordinate_smartCardReleaseOffsetZ" type="radio"><label for="coordinate_smartCardReleaseOffsetZ">SmartCardReleaseOffsetZ</label>
-			<input type="number" id="smartCardReleaseOffsetZ" min="0" max="65535" size="5"></input><br>
-			<input name="coordinate" id="coordinate_smartCardInsertExtra" type="radio"><label for="coordinate_smartCardInsertExtra">SmartCardInsertExtra</label>
-			<input type="number" id="smartCardInsertExtra" min="0" max="65535" size="5"></input><br>
-			<input name="coordinate" id="coordinate_smartCardReaderSlowInsertEndY" type="radio"><label for="coordinate_smartCardReaderSlowInsertEndY">SmartCardReaderSlowInsertEndY</label>
-			<input type="number" id="smartCardReaderSlowInsertEndY" min="0" max="65535" size="5"></input><br>
-		</div>
-	</div>
-	<div>
-		<button type="button" id="coordinate_save">Save coordinate</button>
-	</div>
-</div>
+            </div>
+            <div>
+                <input name="coordinate_key_state" id="coordinate_keyState_0" type="radio"><label for="coordinate_keyState_0">UP</label>
+                <input name="coordinate_key_state" id="coordinate_keyState_1" type="radio"><label for="coordinate_keyState_1">DOWN</label>
+            </div>
+            <div>
+                <label>Offsets:</label><br>
+                <input name="coordinate" id="coordinate_smartCardPlaceStartZ" type="radio"><label for="coordinate_smartCardPlaceStartZ">SmartCardPlaceStartZ</label>
+                <input type="number" id="smartCardPlaceStartZ" min="0" max="65535" size="5"></input><br>
+                <input name="coordinate" id="coordinate_smartCardFetchOffset" type="radio"><label for="coordinate_smartCardFetchOffset">SmartCardFetchOffset</label>
+                <input type="number" id="smartCardFetchOffset" min="0" max="65535" size="5"></input><br>
+                <input name="coordinate" id="coordinate_smartCardReleaseOffsetZ" type="radio"><label for="coordinate_smartCardReleaseOffsetZ">SmartCardReleaseOffsetZ</label>
+                <input type="number" id="smartCardReleaseOffsetZ" min="0" max="65535" size="5"></input><br>
+                <input name="coordinate" id="coordinate_smartCardInsertExtra" type="radio"><label for="coordinate_smartCardInsertExtra">SmartCardInsertExtra</label>
+                <input type="number" id="smartCardInsertExtra" min="0" max="65535" size="5"></input><br>
+                <input name="coordinate" id="coordinate_smartCardReaderSlowInsertEndY" type="radio"><label for="coordinate_smartCardReaderSlowInsertEndY">SmartCardReaderSlowInsertEndY</label>
+                <input type="number" id="smartCardReaderSlowInsertEndY" min="0" max="65535" size="5"></input><br>
+            </div>
+        </div>
+        <div>
+            <button type="button" id="coordinate_save">Save coordinate</button>
+        </div>
+    </div>
 
-<div>
-	<div>
-		<label>locator0: </label><label id="locator0Value"></label>
-	</div>
-	<div>
-		<label>locator1: </label><label id="locator1Value"></label>
-	</div>
-	<div>
-		<label>locator2: </label><label id="locator2Value"></label>
-	</div>
-	<div>
-		<label>locator3: </label><label id="locator3Value"></label>
-	</div>
-	<div>
-		<label>locator4: </label><label id="locator4Value"></label>
-	</div>
-	<div>
-		<label>locator5: </label><label id="locator5Value"></label>
-	</div>
-	<div>
-		<label>locator6: </label><label id="locator6Value"></label>
-	</div>
-	<div>
-		<label>locator7: </label><label id="locator7Value"></label>
-	</div>
-</div>
+    <div>
+        <div>
+            <label>locator0: </label><label id="locator0Value"></label>
+        </div>
+        <div>
+            <label>locator1: </label><label id="locator1Value"></label>
+        </div>
+        <div>
+            <label>locator2: </label><label id="locator2Value"></label>
+        </div>
+        <div>
+            <label>locator3: </label><label id="locator3Value"></label>
+        </div>
+        <div>
+            <label>locator4: </label><label id="locator4Value"></label>
+        </div>
+        <div>
+            <label>locator5: </label><label id="locator5Value"></label>
+        </div>
+        <div>
+            <label>locator6: </label><label id="locator6Value"></label>
+        </div>
+        <div>
+            <label>locator7: </label><label id="locator7Value"></label>
+        </div>
+    </div>
 
-<div>
-	<div>
-		<label>bdc0: </label>
-		<input name="bdc0" id="bdc_0_Release" type="radio"><label for="bdc_0_Release">Release</label>
-		<input name="bdc0" id="bdc_0_Forward" type="radio"><label for="bdc_0_Forward">Forward</label>
-		<input name="bdc0" id="bdc_0_Reverse" type="radio"><label for="bdc_0_Reverse">Reverse</label>
-	</div>
-	<div>
-		<label>bdc1: </label>
-		<input name="bdc1" id="bdc_1_Release" type="radio"><label for="bdc_1_Release">Release</label>
-		<input name="bdc1" id="bdc_1_Forward" type="radio"><label for="bdc_1_Forward">Forward</label>
-		<input name="bdc1" id="bdc_1_Reverse" type="radio"><label for="bdc_1_Reverse">Reverse</label>
-	</div>
-	<div>
-		<label>bdc2: </label>
-		<input name="bdc2" id="bdc_2_Release" type="radio"><label for="bdc_2_Release">Release</label>
-		<input name="bdc2" id="bdc_2_Forward" type="radio"><label for="bdc_2_Forward">Forward</label>
-		<input name="bdc2" id="bdc_2_Reverse" type="radio"><label for="bdc_2_Reverse">Reverse</label>
-	</div>
-	<div>
-		<label>bdc3: </label>
-		<input name="bdc3" id="bdc_3_Release" type="radio"><label for="bdc_3_Release">Release</label>
-		<input name="bdc3" id="bdc_3_Forward" type="radio"><label for="bdc_3_Forward">Forward</label>
-		<input name="bdc3" id="bdc_3_Reverse" type="radio"><label for="bdc_3_Reverse">Reverse</label>
-	</div>
-	<div>
-		<label>bdc4: </label>
-		<input name="bdc4" id="bdc_4_Release" type="radio"><label for="bdc_4_Release">Release</label>
-		<input name="bdc4" id="bdc_4_Forward" type="radio"><label for="bdc_4_Forward">Forward</label>
-		<input name="bdc4" id="bdc_4_Reverse" type="radio"><label for="bdc_4_Reverse">Reverse</label>
-	</div>
-	<div>
-		<label>bdc5: </label>
-		<input name="bdc5" id="bdc_5_Release" type="radio"><label for="bdc_5_Release">Release</label>
-		<input name="bdc5" id="bdc_5_Forward" type="radio"><label for="bdc_5_Forward">Forward</label>
-		<input name="bdc5" id="bdc_5_Reverse" type="radio"><label for="bdc_5_Reverse">Reverse</label>
-	</div>
-</div>
+    <div>
+        <div>
+            <label>bdc0: </label>
+            <input name="bdc0" id="bdc_0_Release" type="radio"><label for="bdc_0_Release">Release</label>
+            <input name="bdc0" id="bdc_0_Forward" type="radio"><label for="bdc_0_Forward">Forward</label>
+            <input name="bdc0" id="bdc_0_Reverse" type="radio"><label for="bdc_0_Reverse">Reverse</label>
+        </div>
+        <div>
+            <label>bdc1: </label>
+            <input name="bdc1" id="bdc_1_Release" type="radio"><label for="bdc_1_Release">Release</label>
+            <input name="bdc1" id="bdc_1_Forward" type="radio"><label for="bdc_1_Forward">Forward</label>
+            <input name="bdc1" id="bdc_1_Reverse" type="radio"><label for="bdc_1_Reverse">Reverse</label>
+        </div>
+        <div>
+            <label>bdc2: </label>
+            <input name="bdc2" id="bdc_2_Release" type="radio"><label for="bdc_2_Release">Release</label>
+            <input name="bdc2" id="bdc_2_Forward" type="radio"><label for="bdc_2_Forward">Forward</label>
+            <input name="bdc2" id="bdc_2_Reverse" type="radio"><label for="bdc_2_Reverse">Reverse</label>
+        </div>
+        <div>
+            <label>bdc3: </label>
+            <input name="bdc3" id="bdc_3_Release" type="radio"><label for="bdc_3_Release">Release</label>
+            <input name="bdc3" id="bdc_3_Forward" type="radio"><label for="bdc_3_Forward">Forward</label>
+            <input name="bdc3" id="bdc_3_Reverse" type="radio"><label for="bdc_3_Reverse">Reverse</label>
+        </div>
+        <div>
+            <label>bdc4: </label>
+            <input name="bdc4" id="bdc_4_Release" type="radio"><label for="bdc_4_Release">Release</label>
+            <input name="bdc4" id="bdc_4_Forward" type="radio"><label for="bdc_4_Forward">Forward</label>
+            <input name="bdc4" id="bdc_4_Reverse" type="radio"><label for="bdc_4_Reverse">Reverse</label>
+        </div>
+        <div>
+            <label>bdc5: </label>
+            <input name="bdc5" id="bdc_5_Release" type="radio"><label for="bdc_5_Release">Release</label>
+            <input name="bdc5" id="bdc_5_Forward" type="radio"><label for="bdc_5_Forward">Forward</label>
+            <input name="bdc5" id="bdc_5_Reverse" type="radio"><label for="bdc_5_Reverse">Reverse</label>
+        </div>
+    </div>
 
-<div>
-	Device is connected: <input type="checkbox" id="deviceConnected">
-</div>
-<div>
-	Device is powered: <input type="checkbox" id="devicePowered">
-</div>
-<div>
-	Device fuse is ok: <input type="checkbox" id="deviceFuseOk">
-</div>
-<div>
-	OPT is powered: <input type="checkbox" id="optPowered">
-</div>
-<div>
-	BDCs are powered: <input type="checkbox" id="bdcsPowered">
-</div>
-<div>
-	Steppers are powered: <input type="checkbox" id="steppersPowered">
-</div>
-
-
-<script>
-
-function updatePageStepper(stepper, data)
-{
-	var elementId;
-
-	elementId = stepper + "CurOffset";
-	document.getElementById(elementId).innerHTML = data["homeOffset"].toString();
-	elementId = stepper + "MaxOffset";
-	document.getElementById(elementId).innerHTML = data["maximum"].toString();
-	elementId = stepper + "LowClks";
-	document.getElementById(elementId).value = data["lowClks"].toString();
-	elementId = stepper + "HighClks";
-	document.getElementById(elementId).value = data["highClks"].toString();
-	elementId = stepper + "AccelerationBuffer";
-	document.getElementById(elementId).value = data["accelerationBuffer"].toString();
-	elementId = stepper + "AccelerationBufferDecrement";
-	document.getElementById(elementId).value = data["accelerationBufferDecrement"].toString();
-	elementId = stepper + "DecelerationBuffer";
-	document.getElementById(elementId).value = data["decelerationBuffer"].toString();
-	elementId = stepper + "DecelerationBufferIncrement";
-	document.getElementById(elementId).value = data["decelerationBufferIncrement"].toString();
-}
-
-function updatePageLocator(locator, data)
-{
-	var elementId = locator + "Value";
-	document.getElementById(elementId).innerHTML = data.toString();
-}
-
-function updatePageBdc(bdc, data)
-{
-	var elementId;
-	
-	if(data == 0) {
-		//forward
-		elementId = bdc + "Forward";
-		document.getElementById(elementId).checked = true;
-	}
-	else if(data == 1) {
-		//reverse
-		elementId = bdc + "Reverse";
-		document.getElementById(elementId).checked = true;
-	}
-	else if(data == 2) {
-		//release
-		elementId = bdc + "Release";
-		document.getElementById(elementId).checked = true;
-	}
-	else {
-		console.log("Error: wrong bdc status: " + bdc + " " + data.toString());
-	}
-}
-
-function updatePageDeviceConnected(bConnected)
-{
-	document.getElementById("deviceConnected").checked = bConnected;
-}
-
-function updatePageDevicePowered(bPowered)
-{
-	document.getElementById("devicePowered").checked = bPowered;
-}
-
-function updatePageDeviceFuseOk(bOk)
-{
-	document.getElementById("deviceFuseOk").checked = bOk;	
-}
-
-function updatePageOptPowered(bPowered)
-{
-	document.getElementById("optPowered").checked = bPowered;
-}
-
-function updatePageBdcPowered(bPowered)
-{
-	document.getElementById("bdcsPowered").checked = bPowered;
-}
-
-function updatePageStepperPowered(bPowered)
-{
-	document.getElementById("steppersPowered").checked = bPowered;
-}
+    <div>
+        Device is connected: <input type="checkbox" id="deviceConnected">
+    </div>
+    <div>
+        Device is powered: <input type="checkbox" id="devicePowered">
+    </div>
+    <div>
+        Device fuse is ok: <input type="checkbox" id="deviceFuseOk">
+    </div>
+    <div>
+        OPT is powered: <input type="checkbox" id="optPowered">
+    </div>
+    <div>
+        BDCs are powered: <input type="checkbox" id="bdcsPowered">
+    </div>
+    <div>
+        Steppers are powered: <input type="checkbox" id="steppersPowered">
+    </div>
 
 
-function updatePage(serverResponse)
-{
-	for(key in serverResponse) 
-	{
-		if(key === "stepper0")  {
-			updatePageStepper(key, serverResponse[key]);
-		}
-		else if(key === "stepper1") {
-			updatePageStepper(key, serverResponse[key]);
-		}
-		else if(key === "stepper2") {
-			updatePageStepper(key, serverResponse[key]);
-		}
-		else if(key === "stepper3") {
-			updatePageStepper(key, serverResponse[key]);
-		}
-		else if(key === "stepper4") {
-			updatePageStepper(key, serverResponse[key]);
-		}
-		else if(key === "locator0") {
-			updatePageLocator(key, serverResponse[key]);
-		}
-		else if(key === "locator1") {
-			updatePageLocator(key, serverResponse[key]);
-		}
-		else if(key === "locator2") {
-			updatePageLocator(key, serverResponse[key]);
-		}
-		else if(key === "locator3") {
-			updatePageLocator(key, serverResponse[key]);
-		}
-		else if(key === "locator4") {
-			updatePageLocator(key, serverResponse[key]);
-		}
-		else if(key === "locator5") {
-			updatePageLocator(key, serverResponse[key]);
-		}
-		else if(key === "locator6") {
-			updatePageLocator(key, serverResponse[key]);
-		}
-		else if(key === "locator7") {
-			updatePageLocator(key, serverResponse[key]);
-		}
-		else if(key === "bdc0") {
-			updatePageBdc("bdc_0_", serverResponse[key]);
-		}
-		else if(key === "bdc1") {
-			updatePageBdc("bdc_1_", serverResponse[key]);
-		}
-		else if(key === "bdc2") {
-			updatePageBdc("bdc_2_", serverResponse[key]);
-		}
-		else if(key === "bdc3") {
-			updatePageBdc("bdc_3_", serverResponse[key]);
-		}
-		else if(key === "bdc4") {
-			updatePageBdc("bdc_4_", serverResponse[key]);
-		}
-		else if(key === "bdc5") {
-			updatePageBdc("bdc_5_", serverResponse[key]);
-		}
-		else if(key === "deviceConnected") {
-			updatePageDeviceConnected(serverResponse[key]);
-		}
-		else if(key === "devicePowered") {
-			updatePageDevicePowered(serverResponse[key]);
-		}
-		else if(key === "deviceFuseOk") {
-			updatePageDeviceFuseOk(serverResponse[key]);
-		}
-		else if(key === "optPowered") {
-			updatePageOptPowered(serverResponse[key]);
-		}
-		else if(key === "bdcPowered") {
-			updatePageBdcPowered(serverResponse[key]);
-		}
-		else if(key === "stepperPowered") {
-			updatePageStepperPowered(serverResponse[key]);
-		}
-		else {
-			console.log('Error: ' + "unexpected item in server response: " + key);
-		}
-	}
-}
+    <script>
+        function updatePageStepper(stepper, data) {
+            var elementId;
 
-function moveStepper(stepper, forward, steps)
-{
-	var xhr = new XMLHttpRequest();
-	xhr.responseType = "json";
-	xhr.open('POST', 'stepperMove');
-	
-	xhr.onreadystatechange = function () {
-		var DONE = 4; // readyState 4 means the request is done.
-		var OK = 200; // status 200 is a successful return.
-		if (xhr.readyState === DONE) {
-			console.log("response is available");
-			console.log("response type: " + xhr.responseType);
+            elementId = stepper + "CurOffset";
+            document.getElementById(elementId).innerHTML = data["homeOffset"].toString();
+            elementId = stepper + "MaxOffset";
+            document.getElementById(elementId).innerHTML = data["maximum"].toString();
+            elementId = stepper + "LowClks";
+            document.getElementById(elementId).value = data["lowClks"].toString();
+            elementId = stepper + "HighClks";
+            document.getElementById(elementId).value = data["highClks"].toString();
+            elementId = stepper + "AccelerationBuffer";
+            document.getElementById(elementId).value = data["accelerationBuffer"].toString();
+            elementId = stepper + "AccelerationBufferDecrement";
+            document.getElementById(elementId).value = data["accelerationBufferDecrement"].toString();
+            elementId = stepper + "DecelerationBuffer";
+            document.getElementById(elementId).value = data["decelerationBuffer"].toString();
+            elementId = stepper + "DecelerationBufferIncrement";
+            document.getElementById(elementId).value = data["decelerationBufferIncrement"].toString();
+        }
 
-			if (xhr.status === OK) 
-			{
-				var jsonObj = xhr.response;
-				console.log(JSON.stringify(jsonObj)); // 'This is the output.'
-				updatePage(jsonObj);
-			} else {
-				console.log('Error: ' + xhr.status); // An error occurred during the request.
-			}
-		}
-	};
-	
-	var parameters = {};
-	//stepper index
-	if(stepper === "stepper0") {
-		parameters["index"] = 0;
-	}
-	else if(stepper === "stepper1") {
-		parameters["index"] = 1;
-	}
-	else if(stepper === "stepper2") {
-		parameters["index"] = 2;
-	}
-	else if(stepper === "stepper3") {
-		parameters["index"] = 3;
-	}
-	else {
-		alert("Wrong stepper: " + stepper);
-		return;
-	}
-	//direction
-	if(forward == true) {
-		parameters["forward"] = true;
-	}
-	else {
-		parameters["forward"] = false;
-	}
-	parameters["steps"] = steps;
-	
-	xhr.send(JSON.stringify(parameters));
-}
+        function updatePageLocator(locator, data) {
+            var elementId = locator + "Value";
+            document.getElementById(elementId).innerHTML = data.toString();
+        }
 
-function setBdc(index, action)
-{
-	var xhr = new XMLHttpRequest();
-	xhr.responseType = "json";
-	xhr.open('POST', 'bdc');
-	
-	xhr.onreadystatechange = function () {
-		var DONE = 4; // readyState 4 means the request is done.
-		var OK = 200; // status 200 is a successful return.
-		if (xhr.readyState === DONE) {
-			console.log("response is available");
-			console.log("response type: " + xhr.responseType);
+        function updatePageBdc(bdc, data) {
+            var elementId;
 
-			if (xhr.status === OK) 
-			{
-				var jsonObj = xhr.response;
-				console.log(JSON.stringify(jsonObj)); // 'This is the output.'
-				updatePage(jsonObj);
-			} else {
-				console.log('Error: ' + xhr.status); // An error occurred during the request.
-			}
-		}
-	};
-	
-	var parameters = {};
-	parameters["index"] = index;
-	parameters["action"] = action;
-	
-	xhr.send(JSON.stringify(parameters));}
+            if (data == 0) {
+                //forward
+                elementId = bdc + "Forward";
+                document.getElementById(elementId).checked = true;
+            } else if (data == 1) {
+                //reverse
+                elementId = bdc + "Reverse";
+                document.getElementById(elementId).checked = true;
+            } else if (data == 2) {
+                //release
+                elementId = bdc + "Release";
+                document.getElementById(elementId).checked = true;
+            } else {
+                console.log("Error: wrong bdc status: " + bdc + " " + data.toString());
+            }
+        }
 
-function queryDevice()
-{
-	var xhr = new XMLHttpRequest();
-	xhr.responseType = "json";
-	xhr.open('POST', 'query');	
+        function updatePageDeviceConnected(bConnected) {
+            document.getElementById("deviceConnected").checked = bConnected;
+        }
 
-	xhr.onreadystatechange = function () {
-		var DONE = 4; // readyState 4 means the request is done.
-		var OK = 200; // status 200 is a successful return.
-		if (xhr.readyState === DONE) {
-			console.log("response is available");
-			console.log("response type: " + xhr.responseType);
+        function updatePageDevicePowered(bPowered) {
+            document.getElementById("devicePowered").checked = bPowered;
+        }
 
-			if (xhr.status === OK) 
-			{
-				var jsonObj = xhr.response;
-				console.log(JSON.stringify(jsonObj)); // 'This is the output.'
-				updatePage(jsonObj);
-			} else {
-				console.log('Error: ' + xhr.status); // An error occurred during the request.
-			}
-		}
-	};
-	
-	xhr.send();
-}
+        function updatePageDeviceFuseOk(bOk) {
+            document.getElementById("deviceFuseOk").checked = bOk;
+        }
+
+        function updatePageOptPowered(bPowered) {
+            document.getElementById("optPowered").checked = bPowered;
+        }
+
+        function updatePageBdcPowered(bPowered) {
+            document.getElementById("bdcsPowered").checked = bPowered;
+        }
+
+        function updatePageStepperPowered(bPowered) {
+            document.getElementById("steppersPowered").checked = bPowered;
+        }
 
 
-function onStepperDecrease(stepper) 
-{
-	var stepsId = stepper + "Steps";
-	var steps = document.getElementById(stepsId).value;
-	moveStepper(stepper, false, steps);
-}
+        function updatePage(serverResponse) {
+            for (key in serverResponse) {
+                if (key === "stepper0") {
+                    updatePageStepper(key, serverResponse[key]);
+                } else if (key === "stepper1") {
+                    updatePageStepper(key, serverResponse[key]);
+                } else if (key === "stepper2") {
+                    updatePageStepper(key, serverResponse[key]);
+                } else if (key === "stepper3") {
+                    updatePageStepper(key, serverResponse[key]);
+                } else if (key === "stepper4") {
+                    updatePageStepper(key, serverResponse[key]);
+                } else if (key === "locator0") {
+                    updatePageLocator(key, serverResponse[key]);
+                } else if (key === "locator1") {
+                    updatePageLocator(key, serverResponse[key]);
+                } else if (key === "locator2") {
+                    updatePageLocator(key, serverResponse[key]);
+                } else if (key === "locator3") {
+                    updatePageLocator(key, serverResponse[key]);
+                } else if (key === "locator4") {
+                    updatePageLocator(key, serverResponse[key]);
+                } else if (key === "locator5") {
+                    updatePageLocator(key, serverResponse[key]);
+                } else if (key === "locator6") {
+                    updatePageLocator(key, serverResponse[key]);
+                } else if (key === "locator7") {
+                    updatePageLocator(key, serverResponse[key]);
+                } else if (key === "bdc0") {
+                    updatePageBdc("bdc_0_", serverResponse[key]);
+                } else if (key === "bdc1") {
+                    updatePageBdc("bdc_1_", serverResponse[key]);
+                } else if (key === "bdc2") {
+                    updatePageBdc("bdc_2_", serverResponse[key]);
+                } else if (key === "bdc3") {
+                    updatePageBdc("bdc_3_", serverResponse[key]);
+                } else if (key === "bdc4") {
+                    updatePageBdc("bdc_4_", serverResponse[key]);
+                } else if (key === "bdc5") {
+                    updatePageBdc("bdc_5_", serverResponse[key]);
+                } else if (key === "deviceConnected") {
+                    updatePageDeviceConnected(serverResponse[key]);
+                } else if (key === "devicePowered") {
+                    updatePageDevicePowered(serverResponse[key]);
+                } else if (key === "deviceFuseOk") {
+                    updatePageDeviceFuseOk(serverResponse[key]);
+                } else if (key === "optPowered") {
+                    updatePageOptPowered(serverResponse[key]);
+                } else if (key === "bdcPowered") {
+                    updatePageBdcPowered(serverResponse[key]);
+                } else if (key === "stepperPowered") {
+                    updatePageStepperPowered(serverResponse[key]);
+                } else {
+                    console.log('Error: ' + "unexpected item in server response: " + key);
+                }
+            }
+        }
 
-function onStepperIncrease(stepper) 
-{
-	var stepsId = stepper + "Steps";
-	var steps = document.getElementById(stepsId).value;
-	moveStepper(stepper, true, steps);
-}
+        function moveStepper(stepper, forward, steps) {
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = "json";
+            xhr.open('POST', 'stepperMove');
 
-function onStepperConfigMovement(index) 
-{
-	var lowClks = document.getElementById("stepper" + index + "LowClks").value;
-	var highClks = document.getElementById("stepper" + index + "HighClks").value;
-	var accelerationBuffer = document.getElementById("stepper" + index + "AccelerationBuffer").value;
-	var accelerationBufferDecrement = document.getElementById("stepper" + index + "AccelerationBufferDecrement").value;
-	var decelerationBuffer = document.getElementById("stepper" + index + "DecelerationBuffer").value;
-	var decelerationBufferIncrement = document.getElementById("stepper" + index + "DecelerationBufferIncrement").value;
+            xhr.onreadystatechange = function() {
+                var DONE = 4; // readyState 4 means the request is done.
+                var OK = 200; // status 200 is a successful return.
+                if (xhr.readyState === DONE) {
+                    console.log("response is available");
+                    console.log("response type: " + xhr.responseType);
 
-	var xhr = new XMLHttpRequest();
-	xhr.responseType = "json";
-	xhr.open('POST', 'stepperConfigMovement');
-	
-	xhr.onreadystatechange = function () {
-		var DONE = 4; // readyState 4 means the request is done.
-		var OK = 200; // status 200 is a successful return.
-		if (xhr.readyState === DONE) {
-			console.log("response is available");
-			console.log("response type: " + xhr.responseType);
+                    if (xhr.status === OK) {
+                        var jsonObj = xhr.response;
+                        console.log(JSON.stringify(jsonObj)); // 'This is the output.'
+                        updatePage(jsonObj);
+                    } else {
+                        console.log('Error: ' + xhr.status); // An error occurred during the request.
+                    }
+                }
+            };
 
-			if (xhr.status === OK) 
-			{
-				var jsonObj = xhr.response;
-				console.log(JSON.stringify(jsonObj)); // 'This is the output.'
-				updatePage(jsonObj);
-			} else {
-				console.log('Error: ' + xhr.status); // An error occurred during the request.
-			}
-		}
-	};
-	
-	var parameters = {};
-	parameters["index"] = parseInt(index);
-	parameters["lowClks"] = lowClks;
-	parameters["highClks"] = highClks;
-	parameters["accelerationBuffer"] = accelerationBuffer;
-	parameters["accelerationBufferDecrement"] = accelerationBufferDecrement;
-	parameters["decelerationBuffer"] = decelerationBuffer;
-	parameters["decelerationBufferIncrement"] = decelerationBufferIncrement;
+            var parameters = {};
+            //stepper index
+            if (stepper === "stepper0") {
+                parameters["index"] = 0;
+            } else if (stepper === "stepper1") {
+                parameters["index"] = 1;
+            } else if (stepper === "stepper2") {
+                parameters["index"] = 2;
+            } else if (stepper === "stepper3") {
+                parameters["index"] = 3;
+            } else {
+                alert("Wrong stepper: " + stepper);
+                return;
+            }
+            //direction
+            if (forward == true) {
+                parameters["forward"] = true;
+            } else {
+                parameters["forward"] = false;
+            }
+            parameters["steps"] = steps;
 
-	xhr.send(JSON.stringify(parameters));
-}
+            xhr.send(JSON.stringify(parameters));
+        }
 
-function saveCoordinate()
-{
-	console.log(">>saveCoordinate()");
-	//find out which coordinate radio is selected
-	var radioId = {};
-	var selectedRadio = {};
-	var elements = document.getElementsByName("coordinate");
-	for(var i=0; i<elements.length; i++) {
-		if(elements[i].checked == true) {
-			radioId = elements[i].id;
-			break;
-		}
-	}
-	if(radioId.length < 1) {
-		alert("a coordinate type has to be selected");
-		return;
-	}
-	console.log(radioId + " is selected");
-	{
-		var items = radioId.split("_");
-		selectedRadio["signature"] = items[0];
-		selectedRadio["coordinateType"] = items[1];
-		selectedRadio["index"] = parseInt(items[2]);
-	}
+        function setBdc(index, action) {
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = "json";
+            xhr.open('POST', 'bdc');
 
-	if(selectedRadio.signature !== "coordinate") {
-		console.log("Error: wrong radio Id");
-		return;
-	}
+            xhr.onreadystatechange = function() {
+                var DONE = 4; // readyState 4 means the request is done.
+                var OK = 200; // status 200 is a successful return.
+                if (xhr.readyState === DONE) {
+                    console.log("response is available");
+                    console.log("response type: " + xhr.responseType);
 
-	//set command
-	var command = {};
-	command["coordinateType"] = selectedRadio.coordinateType;
-	switch(selectedRadio.coordinateType) 
-	{
-		case "safe":
-		case "smartCardGate":
-		case "smartCardReader":
-		case "smartCardReaderGate":
-		case "pedKeyGate":
-		case "softKeyGate":
-		case "touchScreenGate":
-		case "assistKeyGate":
-		case "contactlessReader":
-		case "contactlessReaderGate":
-		case "smartCard":
-		case "pedKey":
-		case "softKey":
-		case "assistKey":
-		case "touchScreenKey:":	
-			command["data"] = selectedRadio.index;
-			break;
+                    if (xhr.status === OK) {
+                        var jsonObj = xhr.response;
+                        console.log(JSON.stringify(jsonObj)); // 'This is the output.'
+                        updatePage(jsonObj);
+                    } else {
+                        console.log('Error: ' + xhr.status); // An error occurred during the request.
+                    }
+                }
+            };
 
-		case "smartCardPlaceStartZ":
-		case "smartCardFetchOffset":
-		case "smartCardReleaseOffsetZ":
-		case "smartCardInsertExtra":
-		case "smartCardReaderSlowInsertEndY":
-			command["data"] = parseInt(document.getElementById(selectedRadio.coordinateType).value);
-			break;
+            var parameters = {};
+            parameters["index"] = index;
+            parameters["action"] = action;
 
-		default:
-			alert("unknown coordinate type");
-			console.log("Error: unknown coordinate type");
-			return;
-	}
+            xhr.send(JSON.stringify(parameters));
+        }
+
+        function queryDevice() {
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = "json";
+            xhr.open('POST', 'query');
+
+            xhr.onreadystatechange = function() {
+                var DONE = 4; // readyState 4 means the request is done.
+                var OK = 200; // status 200 is a successful return.
+                if (xhr.readyState === DONE) {
+                    console.log("response is available");
+                    console.log("response type: " + xhr.responseType);
+
+                    if (xhr.status === OK) {
+                        var jsonObj = xhr.response;
+                        console.log(JSON.stringify(jsonObj)); // 'This is the output.'
+                        updatePage(jsonObj);
+                    } else {
+                        console.log('Error: ' + xhr.status); // An error occurred during the request.
+                        alert("Query failed: " + xhr.status);
+                    }
+                }
+            };
+
+            xhr.send();
+        }
 
 
-	var xhr = new XMLHttpRequest();
-	xhr.responseType = "json";
-	xhr.open('POST', 'saveCoordinate');
-	
-	xhr.onreadystatechange = function () {
-		var DONE = 4; // readyState 4 means the request is done.
-		var OK = 200; // status 200 is a successful return.
-		if (xhr.readyState === DONE) {
-			console.log("response is available");
-			console.log("response type: " + xhr.responseType);
+        function onStepperDecrease(stepper) {
+            var stepsId = stepper + "Steps";
+            var steps = document.getElementById(stepsId).value;
+            moveStepper(stepper, false, steps);
+        }
 
-			if (xhr.status === OK) 
-			{
-				console.log("saveCoordinate succeeded");
-			} else {
-				console.log('Error: ' + xhr.status); // An error occurred during the request.
-			}
-		}
-	};
-	xhr.send(JSON.stringify(command));
-}
+        function onStepperIncrease(stepper) {
+            var stepsId = stepper + "Steps";
+            var steps = document.getElementById(stepsId).value;
+            moveStepper(stepper, true, steps);
+        }
 
-function onElementClicked()
-{
-	var elementId = document.activeElement.id;
-	var paraArray = elementId.split("_");
+        function onStepperConfigMovement(index) {
+            var lowClks = document.getElementById("stepper" + index + "LowClks").value;
+            var highClks = document.getElementById("stepper" + index + "HighClks").value;
+            var accelerationBuffer = document.getElementById("stepper" + index + "AccelerationBuffer").value;
+            var accelerationBufferDecrement = document.getElementById("stepper" + index + "AccelerationBufferDecrement").value;
+            var decelerationBuffer = document.getElementById("stepper" + index + "DecelerationBuffer").value;
+            var decelerationBufferIncrement = document.getElementById("stepper" + index + "DecelerationBufferIncrement").value;
 
-	var device = paraArray[0];
-	if(device === "stepper") 
-	{
-		var index = paraArray[1];
-		var action = paraArray[2];
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = "json";
+            xhr.open('POST', 'stepperConfigMovement');
 
-		if(action === "decrease") {
-			onStepperDecrease(device + index);
-		}
-		else if(action === "decrease32") {
-			moveStepper(device + index, false, 32);
-		}
-		else if(action === "decrease16") {
-			moveStepper(device + index, false, 16);
-		}
-		else if(action === "decrease8") {
-			moveStepper(device + index, false, 8);
-		}
-		else if(action === "decrease1") {
-			moveStepper(device + index, false, 1);
-		}
-		else if(action === "increase") {
-			onStepperIncrease(device + index);
-		}
-		else if(action === "increase32") {
-			moveStepper(device + index, true, 32);
-		}
-		else if(action === "increase16") {
-			moveStepper(device + index, true, 16);
-		}
-		else if(action === "increase8") {
-			moveStepper(device + index, true, 8);
-		}
-		else if(action === "increase1") {
-			moveStepper(device + index, true, 1);
-		}
-		else if(action === "configMovement") {
-			onStepperConfigMovement(index);
-		}
-	}
-	else if(device === "bdc")
-	{
-		var index = parseInt(paraArray[1]);
-		var action = paraArray[2];
+            xhr.onreadystatechange = function() {
+                var DONE = 4; // readyState 4 means the request is done.
+                var OK = 200; // status 200 is a successful return.
+                if (xhr.readyState === DONE) {
+                    console.log("response is available");
+                    console.log("response type: " + xhr.responseType);
 
-		if(action === "Forward") {
-			setBdc(index, 0);
-		}
-		else if (action === "Reverse") {
-			setBdc(index, 1);
-		}
-		else if (action === "Release") {
-			setBdc(index, 2);
-		}
-		else {
-			console.log("Error: wrong bdc action: " + action);
-		}
-	}
-	else if(elementId === "coordinate_save") 
-	{
-		saveCoordinate();
-	}
-	else if(elementId === "deviceQuery") {
-		queryDevice();
-	}
-	
-}
+                    if (xhr.status === OK) {
+                        var jsonObj = xhr.response;
+                        console.log(JSON.stringify(jsonObj)); // 'This is the output.'
+                        updatePage(jsonObj);
+                    } else {
+                        console.log('Error: ' + xhr.status); // An error occurred during the request.
+                    }
+                }
+            };
 
-</script>
+            var parameters = {};
+            parameters["index"] = parseInt(index);
+            parameters["lowClks"] = lowClks;
+            parameters["highClks"] = highClks;
+            parameters["accelerationBuffer"] = accelerationBuffer;
+            parameters["accelerationBufferDecrement"] = accelerationBufferDecrement;
+            parameters["decelerationBuffer"] = decelerationBuffer;
+            parameters["decelerationBufferIncrement"] = decelerationBufferIncrement;
+
+            xhr.send(JSON.stringify(parameters));
+        }
+
+        function saveCoordinate() {
+            console.log(">>saveCoordinate()");
+            //find out which coordinate radio is selected
+            var radioId = {};
+            var selectedRadio = {};
+            var elements = document.getElementsByName("coordinate");
+            for (var i = 0; i < elements.length; i++) {
+                if (elements[i].checked == true) {
+                    radioId = elements[i].id;
+                    break;
+                }
+            }
+            if (radioId.length < 1) {
+                alert("a coordinate type has to be selected");
+                return;
+            }
+            console.log(radioId + " is selected"); {
+                var items = radioId.split("_");
+                selectedRadio["signature"] = items[0];
+                selectedRadio["coordinateType"] = items[1];
+                selectedRadio["index"] = parseInt(items[2]);
+            }
+
+            if (selectedRadio.signature !== "coordinate") {
+                console.log("Error: wrong radio Id");
+                return;
+            }
+
+            //set command
+            var command = {};
+            command["coordinateType"] = selectedRadio.coordinateType;
+            command["data"] = 0;
+            switch (selectedRadio.coordinateType) {
+                case "safe":
+                case "smartCardGate":
+                case "smartCardReader":
+                case "smartCardReaderGate":
+                case "pedKeyGate":
+                case "softKeyGate":
+                case "touchScreenGate":
+                case "assistKeyGate":
+                case "contactlessReader":
+                case "contactlessReaderGate":
+                case "smartCard":
+                    break;
+
+                case "pedKey":
+                case "softKey":
+                case "assistKey":
+                case "touchScreenKey:":
+                    {
+                        var keyUp = document.getElementById("coordinate_keyState_0").checked;
+                        var keyDown = document.getElementById("coordinate_keyState_1").checked;
+
+                        if (!keyUp && !keyDown) {
+                            alert("UP or DOWN has to be selected");
+                            return;
+                        }
+                        //update coordinate type
+                        if (keyDown) {
+                            command["coordinateType"] = command["coordinateType"] + "Pressed";
+                        }
+                        command["data"] = selectedRadio.index;
+                        break;
+                    }
+
+                case "smartCardPlaceStartZ":
+                case "smartCardFetchOffset":
+                case "smartCardReleaseOffsetZ":
+                case "smartCardInsertExtra":
+                case "smartCardReaderSlowInsertEndY":
+                    command["data"] = parseInt(document.getElementById(selectedRadio.coordinateType).value);
+                    break;
+
+                default:
+                    alert("unknown coordinate type");
+                    console.log("Error: unknown coordinate type");
+                    return;
+            }
+
+
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = "json";
+            xhr.open('POST', 'saveCoordinate');
+
+            xhr.onreadystatechange = function() {
+                var DONE = 4; // readyState 4 means the request is done.
+                var OK = 200; // status 200 is a successful return.
+                if (xhr.readyState === DONE) {
+                    console.log("response is available");
+                    console.log("response type: " + xhr.responseType);
+
+                    if (xhr.status === OK) {
+                        console.log("saveCoordinate succeeded");
+                    } else {
+                        console.log('Error: ' + xhr.status); // An error occurred during the request.
+                    }
+                }
+            };
+            xhr.send(JSON.stringify(command));
+        }
+
+        function onElementClicked() {
+            var elementId = document.activeElement.id;
+            var paraArray = elementId.split("_");
+
+            var device = paraArray[0];
+            if (device === "stepper") {
+                var index = paraArray[1];
+                var action = paraArray[2];
+
+                if (action === "decrease") {
+                    onStepperDecrease(device + index);
+                } else if (action === "decrease32") {
+                    moveStepper(device + index, false, 32);
+                } else if (action === "decrease16") {
+                    moveStepper(device + index, false, 16);
+                } else if (action === "decrease8") {
+                    moveStepper(device + index, false, 8);
+                } else if (action === "decrease1") {
+                    moveStepper(device + index, false, 1);
+                } else if (action === "increase") {
+                    onStepperIncrease(device + index);
+                } else if (action === "increase32") {
+                    moveStepper(device + index, true, 32);
+                } else if (action === "increase16") {
+                    moveStepper(device + index, true, 16);
+                } else if (action === "increase8") {
+                    moveStepper(device + index, true, 8);
+                } else if (action === "increase1") {
+                    moveStepper(device + index, true, 1);
+                } else if (action === "configMovement") {
+                    onStepperConfigMovement(index);
+                }
+            } else if (device === "bdc") {
+                var index = parseInt(paraArray[1]);
+                var action = paraArray[2];
+
+                if (action === "Forward") {
+                    setBdc(index, 0);
+                } else if (action === "Reverse") {
+                    setBdc(index, 1);
+                } else if (action === "Release") {
+                    setBdc(index, 2);
+                } else {
+                    console.log("Error: wrong bdc action: " + action);
+                }
+            } else if (elementId === "coordinate_save") {
+                saveCoordinate();
+            } else if (elementId === "deviceQuery") {
+                queryDevice();
+            }
+
+        }
+    </script>
 
 </body>
+
 </html>

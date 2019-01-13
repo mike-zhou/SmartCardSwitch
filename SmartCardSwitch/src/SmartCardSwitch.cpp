@@ -218,9 +218,15 @@ protected:
 			tm.start(pCommandRunner);
 			tm.start(pDeviceAccessor);
 			tm.start(pConsoleOperator);
-			tm.start(pUserCommandRunner);
-			tm.start(pUserProxy);
-			tm.start(pUserListener);
+			if(config().getBool("user_proxy_enable", true))
+			{
+				tm.start(pUserCommandRunner);
+				tm.start(pUserProxy);
+				tm.start(pUserListener);
+			}
+			else {
+				pLogger->LogInfo("main user proxy is not enabled");
+			}
 			tm.start(pWebServer);
 		}
 		catch(Poco::Exception& e)

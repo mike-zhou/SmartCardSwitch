@@ -119,13 +119,27 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 				long x, y, z, w;
 				long index;
 
-				index = ds["pedKeys"]["cards"][i]["index"];
+				index = ds["pedKeys"]["keys"][i]["index"];
 				x = ds["pedKeys"]["keys"][i]["value"]["x"];
 				y = ds["pedKeys"]["keys"][i]["value"]["y"];
 				z = ds["pedKeys"]["keys"][i]["value"]["z"];
 				w = ds["pedKeys"]["keys"][i]["value"]["w"];
 
 				SetCoordinate(Type::PedKey, x, y, z, w, index);
+			}
+			auto pedKeysPressedAmount = ds["pedKeys"]["keysPressed"].size();
+			for(unsigned int i=0; i<pedKeysPressedAmount; i++)
+			{
+				long x, y, z, w;
+				long index;
+
+				index = ds["pedKeys"]["keysPressed"][i]["index"];
+				x = ds["pedKeys"]["keysPressed"][i]["value"]["x"];
+				y = ds["pedKeys"]["keysPressed"][i]["value"]["y"];
+				z = ds["pedKeys"]["keysPressed"][i]["value"]["z"];
+				w = ds["pedKeys"]["keysPressed"][i]["value"]["w"];
+
+				SetCoordinate(Type::PedKeyPressed, x, y, z, w, index);
 			}
 
 			//soft keys
@@ -139,13 +153,27 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 				long x, y, z, w;
 				long index;
 
-				index = ds["softKeys"]["cards"][i]["index"];
+				index = ds["softKeys"]["keys"][i]["index"];
 				x = ds["softKeys"]["keys"][i]["value"]["x"];
 				y = ds["softKeys"]["keys"][i]["value"]["y"];
 				z = ds["softKeys"]["keys"][i]["value"]["z"];
 				w = ds["softKeys"]["keys"][i]["value"]["w"];
 
 				SetCoordinate(Type::SoftKey, x, y, z, w, index);
+			}
+			auto softKeysPressedAmount = ds["softKeys"]["keysPressed"].size();
+			for(unsigned int i=0; i<softKeysPressedAmount; i++)
+			{
+				long x, y, z, w;
+				long index;
+
+				index = ds["softKeys"]["keysPressed"][i]["index"];
+				x = ds["softKeys"]["keysPressed"][i]["value"]["x"];
+				y = ds["softKeys"]["keysPressed"][i]["value"]["y"];
+				z = ds["softKeys"]["keysPressed"][i]["value"]["z"];
+				w = ds["softKeys"]["keysPressed"][i]["value"]["w"];
+
+				SetCoordinate(Type::SoftKeyPressed, x, y, z, w, index);
 			}
 
 			//touch screen keys
@@ -159,13 +187,27 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 				long x, y, z, w;
 				long index;
 
-				index = ds["touchScreenKeys"]["cards"][i]["index"];
+				index = ds["touchScreenKeys"]["keys"][i]["index"];
 				x = ds["touchScreenKeys"]["keys"][i]["value"]["x"];
 				y = ds["touchScreenKeys"]["keys"][i]["value"]["y"];
 				z = ds["touchScreenKeys"]["keys"][i]["value"]["z"];
 				w = ds["touchScreenKeys"]["keys"][i]["value"]["w"];
 
 				SetCoordinate(Type::TouchScreenKey, x, y, z, w, index);
+			}
+			auto touchScreenKeysPressedAmount = ds["touchScreenKeys"]["keysPressed"].size();
+			for(unsigned int i=0; i<touchScreenKeysPressedAmount; i++)
+			{
+				long x, y, z, w;
+				long index;
+
+				index = ds["touchScreenKeys"]["keysPressed"][i]["index"];
+				x = ds["touchScreenKeys"]["keysPressed"][i]["value"]["x"];
+				y = ds["touchScreenKeys"]["keysPressed"][i]["value"]["y"];
+				z = ds["touchScreenKeys"]["keysPressed"][i]["value"]["z"];
+				w = ds["touchScreenKeys"]["keysPressed"][i]["value"]["w"];
+
+				SetCoordinate(Type::TouchScreenKeyPressed, x, y, z, w, index);
 			}
 
 			//assist keys
@@ -179,13 +221,27 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 				long x, y, z, w;
 				long index;
 
-				index = ds["assistKeys"]["cards"][i]["index"];
+				index = ds["assistKeys"]["keys"][i]["index"];
 				x = ds["assistKeys"]["keys"][i]["value"]["x"];
 				y = ds["assistKeys"]["keys"][i]["value"]["y"];
 				z = ds["assistKeys"]["keys"][i]["value"]["z"];
 				w = ds["assistKeys"]["keys"][i]["value"]["w"];
 
 				SetCoordinate(Type::AssistKey, x, y, z, w, index);
+			}
+			auto assistKeysPressedAmount = ds["assistKeys"]["keysPressed"].size();
+			for(unsigned int i=0; i<assistKeysPressedAmount; i++)
+			{
+				long x, y, z, w;
+				long index;
+
+				index = ds["assistKeys"]["keysPressed"][i]["index"];
+				x = ds["assistKeys"]["keysPressed"][i]["value"]["x"];
+				y = ds["assistKeys"]["keysPressed"][i]["value"]["y"];
+				z = ds["assistKeys"]["keysPressed"][i]["value"]["z"];
+				w = ds["assistKeys"]["keysPressed"][i]["value"]["w"];
+
+				SetCoordinate(Type::AssistKeyPressed, x, y, z, w, index);
 			}
 
 			//smart card reader
@@ -219,23 +275,23 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			_barCodeReader.w = ds["barCodeReader"]["reader"]["w"];
 
 			//safe
-			_safe.x = ds["safe"]["x"];
-			_safe.y = ds["safe"]["y"];
-			_safe.z = ds["safe"]["z"];
-			_safe.w = ds["safe"]["w"];
+//			_safe.x = ds["safe"]["x"];
+//			_safe.y = ds["safe"]["y"];
+//			_safe.z = ds["safe"]["z"];
+//			_safe.w = ds["safe"]["w"];
 
 			//offset
 			_smartCardPlaceStart = ds["smartCardPlaceStart"];
 			_smartCardFetchOffset = ds["smartCardFetchOffset"];
 			_smartCardReaderSlowInsertEnd = ds["smartCardReaderSlowInsertEnd"];
 			_smartCardReleaseOffset = ds["smartCardReleaseOffset"];
-			_smartCardInsertExtra = ds["smartCardInsertExtra"];
-
-			//maximum
-			_maximumX = ds["maximumX"];
-			_maximumY = ds["maximumY"];
-			_maximumZ = ds["maximumZ"];
-			_maximumW = ds["maximumW"];
+//			_smartCardInsertExtra = ds["smartCardInsertExtra"];
+//
+//			//maximum
+//			_maximumX = ds["maximumX"];
+//			_maximumY = ds["maximumY"];
+//			_maximumZ = ds["maximumZ"];
+//			_maximumW = ds["maximumW"];
 
 			pLogger->LogInfo("CoordinateStorage::CoordinateStorage storage file is parsed successfully");
 		}
@@ -283,7 +339,17 @@ bool CoordinateStorage::PersistToFile()
 	if(!_pedKeys.empty()) {
 		json.pop_back(); //delete the extra ','
 	}
+	json = json + "],";//end of keys
+	json = json + "\"keysPressed\":["; //start of keysOressed
+	for(unsigned int i=0; i<_pedKeysPressed.size(); i++)
+	{
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _pedKeysPressed[i].ToJsonObj() + "},";
+	}
+	if(!_pedKeysPressed.empty()) {
+		json.pop_back(); //delete the extra ','
+	}
 	json = json + "]";//end of keys
+
 	json = json + "}";//end of pedKeys.
 
 	//soft keys
@@ -295,6 +361,15 @@ bool CoordinateStorage::PersistToFile()
 		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _softKeys[i].ToJsonObj() + "},";
 	}
 	if(!_softKeys.empty()) {
+		json.pop_back(); //delete the extra ','
+	}
+	json = json + "],";//end of keys
+	json = json + "\"keysPressed\":["; //start of keys
+	for(unsigned int i=0; i<_softKeysPressed.size(); i++)
+	{
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _softKeysPressed[i].ToJsonObj() + "},";
+	}
+	if(!_softKeysPressed.empty()) {
 		json.pop_back(); //delete the extra ','
 	}
 	json = json + "]";//end of keys
@@ -311,6 +386,15 @@ bool CoordinateStorage::PersistToFile()
 	if(!_touchScreenKeys.empty()) {
 		json.pop_back(); //delete the extra ','
 	}
+	json = json + "],";//end of keys
+	json = json + "\"keysPressed\":["; //start of keys
+	for(unsigned int i=0; i<_touchScreenKeysPressed.size(); i++)
+	{
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _touchScreenKeysPressed[i].ToJsonObj() + "},";
+	}
+	if(!_touchScreenKeysPressed.empty()) {
+		json.pop_back(); //delete the extra ','
+	}
 	json = json + "]";//end of keys
 	json = json + "}";//end of touchScreenKeys.
 
@@ -323,6 +407,15 @@ bool CoordinateStorage::PersistToFile()
 		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _assistKeys[i].ToJsonObj() + "},";
 	}
 	if(!_assistKeys.empty()) {
+		json.pop_back(); //delete the extra ','
+	}
+	json = json + "],";//end of keys
+	json = json + "\"keysPressed\":["; //start of keys
+	for(unsigned int i=0; i<_assistKeysPressed.size(); i++)
+	{
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _assistKeysPressed[i].ToJsonObj() + "},";
+	}
+	if(!_assistKeysPressed.empty()) {
 		json.pop_back(); //delete the extra ','
 	}
 	json = json + "]";//end of keys
@@ -477,6 +570,27 @@ bool CoordinateStorage::SetCoordinate(Type type,
 	}
 	break;
 
+	case Type::PedKeyPressed:
+	{
+		if(index < PED_KEYS_AMOUNT)
+		{
+			if(index >= _pedKeysPressed.size())
+			{
+				Coordinate tmp;
+				// fill _pedKeys
+				for(; index >= _pedKeysPressed.size(); ) {
+					_pedKeysPressed.push_back(tmp);
+				}
+			}
+			_pedKeysPressed[index] = value;
+			rc = true;
+		}
+		else {
+			pLogger->LogError("CoordinateStorage::SetCoordinate PED key index out of range: " + std::to_string(index));
+		}
+	}
+	break;
+
 	case Type::SoftKeyGate:
 	{
 		_softKeyGate = value;
@@ -497,6 +611,27 @@ bool CoordinateStorage::SetCoordinate(Type type,
 				}
 			}
 			_softKeys[index] = value;
+			rc = true;
+		}
+		else {
+			pLogger->LogError("CoordinateStorage::SetCoordinate soft key index out of range: " + std::to_string(index));
+		}
+	}
+	break;
+
+	case Type::SoftKeyPressed:
+	{
+		if(index < SOFT_KEYS_AMOUNT)
+		{
+			if(index >= _softKeysPressed.size())
+			{
+				Coordinate tmp;
+				// fill _softKeys
+				for(; index >= _softKeysPressed.size(); ) {
+					_softKeysPressed.push_back(tmp);
+				}
+			}
+			_softKeysPressed[index] = value;
 			rc = true;
 		}
 		else {
@@ -533,6 +668,27 @@ bool CoordinateStorage::SetCoordinate(Type type,
 	}
 	break;
 
+	case Type::TouchScreenKeyPressed:
+	{
+		if(index < TOUCH_SCREEN_KEYS_AMOUNT)
+		{
+			if(index >= _touchScreenKeysPressed.size())
+			{
+				Coordinate tmp;
+				// fill _touchScreenKeys
+				for(; index >= _touchScreenKeysPressed.size(); ) {
+					_touchScreenKeysPressed.push_back(tmp);
+				}
+			}
+			_touchScreenKeysPressed[index] = value;
+			rc = true;
+		}
+		else {
+			pLogger->LogError("CoordinateStorage::SetCoordinate touch screen key index out of range: " + std::to_string(index));
+		}
+	}
+	break;
+
 	case Type::AssistKeyGate:
 	{
 		_assistKeyGate = value;
@@ -553,6 +709,27 @@ bool CoordinateStorage::SetCoordinate(Type type,
 				}
 			}
 			_assistKeys[index] = value;
+			rc = true;
+		}
+		else {
+			pLogger->LogError("CoordinateStorage::SetCoordinate assist key index out of range: " + std::to_string(index));
+		}
+	}
+	break;
+
+	case Type::AssistKeyPressed:
+	{
+		if(index < ASSIST_KEYS_AMOUNT)
+		{
+			if(index >= _assistKeysPressed.size())
+			{
+				Coordinate tmp;
+				// fill _assistKeys
+				for(; index >= _assistKeysPressed.size(); ) {
+					_assistKeysPressed.push_back(tmp);
+				}
+			}
+			_assistKeysPressed[index] = value;
 			rc = true;
 		}
 		else {
@@ -592,6 +769,13 @@ bool CoordinateStorage::SetCoordinate(Type type,
 	case Type::Home:
 	{
 		_home = value;
+		rc = true;
+	}
+	break;
+
+	case Type::Safe:
+	{
+		_safe = value;
 		rc = true;
 	}
 	break;

@@ -128,10 +128,19 @@ void ScsRequestHandler::onStepperMove(Poco::Net::HTTPServerRequest& request, Poc
 				pLogger->LogError("ScsRequestHandler::onStepperMove failed to move stepper: " + errorInfo);
 			}
 
-			response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
-			response.setContentType("application/json");
-			auto& oStream = response.send();
-			oStream << _pWebServer->DeviceStatus();
+			if(errorInfo.empty())
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				auto& oStream = response.send();
+				oStream << _pWebServer->DeviceStatus();
+			}
+			else
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
 		}
 	}
 
@@ -144,6 +153,10 @@ void ScsRequestHandler::onQuery(Poco::Net::HTTPServerRequest& request, Poco::Net
 
 	if(!_pWebServer->Query(errorInfo)) {
 		pLogger->LogError("ScsRequestHandler::onQuery failed: " + errorInfo);
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+		response.setReason(errorInfo);
+		response.send();
+		return;
 	}
 
 	response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
@@ -244,15 +257,25 @@ void ScsRequestHandler::onBdc(Poco::Net::HTTPServerRequest& request, Poco::Net::
 
 				default:
 				{
+					errorInfo = "wrong bdc action: " + std::to_string(action);
 					pLogger->LogError("ScsRequestHandler::onBdc wrong bdc action: " + std::to_string(action));
 				}
 				break;
 			}
 
-			response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
-			response.setContentType("application/json");
-			auto& oStream = response.send();
-			oStream << _pWebServer->DeviceStatus();
+			if(errorInfo.empty())
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				auto& oStream = response.send();
+				oStream << _pWebServer->DeviceStatus();
+			}
+			else
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
 		}
 	}
 
@@ -424,13 +447,22 @@ void ScsRequestHandler::onSaveCoordinate(Poco::Net::HTTPServerRequest& request, 
 		{
 			std::string errorInfo;
 
-			if(_pWebServer->SaveCoordinate(coordinateType, data, errorInfo)) {
+			if(!_pWebServer->SaveCoordinate(coordinateType, data, errorInfo)) {
 				pLogger->LogError("ScsRequestHandler::onSaveCoordinate failed: " + errorInfo);
 			}
 
-			response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
-			response.setContentType("application/json");
-			response.send();
+			if(errorInfo.empty())
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				response.send();
+			}
+			else
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
 		}
 	}
 
