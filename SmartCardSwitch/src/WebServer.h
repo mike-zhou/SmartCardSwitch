@@ -51,6 +51,7 @@ private:
 	//	uri: /
 	//	body: empty
 	void onDefaultHtml(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
 	//request:
 	//	uri: /stepper
 	//	body:
@@ -60,10 +61,12 @@ private:
 	//		"steps":1
 	//	 }
 	void onStepperMove(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
 	//request:
 	//	uri: /query
 	//	body: empty
 	void onQuery(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
 	//request:
 	//	uri: /bdc
 	//	body:
@@ -72,6 +75,7 @@ private:
 	//		"action":0 //0: forward; 1: reverse; 2: deactivate
 	//	 }
 	void onBdc(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
 	//request:
 	//	uri: /saveCoordinate
 	//	body:
@@ -81,7 +85,20 @@ private:
 	//		}
 	void onSaveCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 
+	//request:
+	//	uri: /stepperConfigMovement
+	// 	body:
+	//	{
+	//		"index":1,
+	//		"lowClks":1,
+	//		"highClks":1,
+	//		"accelerationBuffer":1,
+	//		"accelerationBufferDecrement":1,
+	//		"decelerationBuffer":1,
+	//		"decelerationBufferIncrement":1
+	//	}
 	void onStepperConfigMovement(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
 	void onStepperConfigHome(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
 
@@ -123,6 +140,8 @@ public:
 						std::string & errorInfo);
 	bool StepperConfigMovement(
 						unsigned int index,
+						unsigned int lowClks,
+						unsigned int highClks,
 						unsigned int accelerationBuffer,
 						unsigned int accelerationBufferDecrement,
 						unsigned int decelerationBuffer,
@@ -220,6 +239,7 @@ private:
 		unsigned int stepperIndex;
 		unsigned int steps;
 		bool stepperForward;
+		unsigned int lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement;
 		unsigned int locatorIndex;
 		unsigned int bdcIndex;
 		BdcStatus bdcStatus;

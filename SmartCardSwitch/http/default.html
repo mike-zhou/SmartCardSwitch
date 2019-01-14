@@ -878,12 +878,12 @@
 
             var parameters = {};
             parameters["index"] = parseInt(index);
-            parameters["lowClks"] = lowClks;
-            parameters["highClks"] = highClks;
-            parameters["accelerationBuffer"] = accelerationBuffer;
-            parameters["accelerationBufferDecrement"] = accelerationBufferDecrement;
-            parameters["decelerationBuffer"] = decelerationBuffer;
-            parameters["decelerationBufferIncrement"] = decelerationBufferIncrement;
+            parameters["lowClks"] = parseInt(lowClks);
+            parameters["highClks"] = parseInt(highClks);
+            parameters["accelerationBuffer"] = parseInt(accelerationBuffer);
+            parameters["accelerationBufferDecrement"] = parseInt(accelerationBufferDecrement);
+            parameters["decelerationBuffer"] = parseInt(decelerationBuffer);
+            parameters["decelerationBufferIncrement"] = parseInt(decelerationBufferIncrement);
 
             xhr.send(JSON.stringify(parameters));
         }

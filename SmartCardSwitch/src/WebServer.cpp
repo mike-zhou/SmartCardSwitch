@@ -298,8 +298,8 @@ void ScsRequestHandler::onStepperConfigMovement(Poco::Net::HTTPServerRequest& re
 	else
 	{
 		pLogger->LogInfo("ScsRequestHandler::onStepperConfigMovement command: " + command);
-		unsigned int bdcIndex;
-		unsigned int action;
+		unsigned int index;
+		unsigned int lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement;
 		bool exceptionOccurred = true;
 
 		try
@@ -309,8 +309,14 @@ void ScsRequestHandler::onStepperConfigMovement(Poco::Net::HTTPServerRequest& re
 			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
-			bdcIndex = ds["index"];
-			action = ds["action"];
+			index = ds["index"];
+			lowClks = ds["lowClks"];
+			highClks = ds["highClks"];
+			accelerationBuffer = ds["accelerationBuffer"];
+			accelerationBufferDecrement = ds["accelerationBufferDecrement"];
+			decelerationBuffer = ds["decelerationBuffer"];
+			decelerationBufferIncrement = ds["decelerationBufferIncrement"];
+
 			exceptionOccurred = false;
 		}
 		catch(Poco::Exception &e)
@@ -333,7 +339,23 @@ void ScsRequestHandler::onStepperConfigMovement(Poco::Net::HTTPServerRequest& re
 		}
 		else
 		{
+			std::string errorInfo;
+			if(!_pWebServer->StepperConfigMovement(index, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement, errorInfo))
+			{
+				pLogger->LogError("ScsRequestHandler::onStepperConfigMovement failed to configure stepper movement: " + errorInfo);
+			}
 
+			if(errorInfo.empty()) {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				auto& oStream = response.send();
+				oStream << _pWebServer->DeviceStatus();
+			}
+			else {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
 		}
 	}
 }
@@ -884,27 +906,125 @@ void WebServer::OnStepperQueryResolution(CommandId key, bool bSuccess, unsigned 
 
 void WebServer::OnStepperConfigStep(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		auto& data = _consoleCommand.resultSteppers[_consoleCommand.stepperIndex];
+
+		data.lowClks = _consoleCommand.lowClks;
+		data.highClks = _consoleCommand.highClks;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnStepperAccelerationBuffer(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].accelerationBuffer = _consoleCommand.accelerationBuffer;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnStepperAccelerationBufferDecrement(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].accelerationBufferDecrement = _consoleCommand.accelerationBufferDecrement;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnStepperDecelerationBuffer(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].decelerationBuffer = _consoleCommand.decelerationBuffer;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnStepperDecelerationBufferIncrement(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].decelerationBufferIncrement = _consoleCommand.decelerationBufferIncrement;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnStepperEnable(CommandId key, bool bSuccess)
@@ -1173,6 +1293,8 @@ bool WebServer::StepperConfigBoundary(
 
 bool WebServer::StepperConfigMovement(
 					unsigned int index,
+					unsigned int lowClks,
+					unsigned int highClks,
 					unsigned int accelerationBuffer,
 					unsigned int accelerationBufferDecrement,
 					unsigned int decelerationBuffer,
@@ -1180,6 +1302,65 @@ bool WebServer::StepperConfigMovement(
 					std::string & errorInfo)
 {
 
+	errorInfo.clear();
+
+	if(index >= STEPPER_AMOUNT) {
+		errorInfo = "stepper index is out of range: " + std::to_string(index);
+	}
+	if((accelerationBufferDecrement == 0) || (decelerationBufferIncrement == 0)) {
+		errorInfo = "invalid parameter value";
+	}
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperConfigMovement " + errorInfo);
+		return false;
+	}
+
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
+
+	_consoleCommand.stepperIndex = index;
+	_consoleCommand.lowClks = lowClks;
+	_consoleCommand.highClks = highClks;
+	_consoleCommand.accelerationBuffer = accelerationBuffer;
+	_consoleCommand.accelerationBufferDecrement = accelerationBufferDecrement;
+	_consoleCommand.decelerationBuffer = decelerationBuffer;
+	_consoleCommand.decelerationBufferIncrement = decelerationBufferIncrement;
+
+	std::string command = ConsoleCommandFactory::CmdStepperConfigStep(index, lowClks, highClks);
+	runConsoleCommand(command, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperConfigMovement failed to configure steps : " + errorInfo);
+		return false;
+	}
+
+	command = ConsoleCommandFactory::CmdStepperAccelerationBuffer(index, accelerationBuffer);
+	runConsoleCommand(command, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperConfigMovement failed to configure accelerationBuffer : " + errorInfo);
+		return false;
+	}
+
+	command = ConsoleCommandFactory::CmdStepperAccelerationBufferDecrement(index, accelerationBufferDecrement);
+	runConsoleCommand(command, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperConfigMovement failed to configure accelerationBufferDecrement : " + errorInfo);
+		return false;
+	}
+
+	command = ConsoleCommandFactory::CmdStepperDecelerationBuffer(index, decelerationBuffer);
+	runConsoleCommand(command, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperConfigMovement failed to configure decelerationBuffer : " + errorInfo);
+		return false;
+	}
+
+	command = ConsoleCommandFactory::CmdStepperDecelerationBufferIncrement(index, decelerationBufferIncrement);
+	runConsoleCommand(command, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperConfigMovement failed to configure decelerationBufferIncrement : " + errorInfo);
+		return false;
+	}
+
+	return true;
 }
 
 bool WebServer::BdcForward(unsigned int index, std::string & errorInfo)
