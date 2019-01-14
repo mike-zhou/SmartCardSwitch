@@ -582,7 +582,7 @@
         </div>
     </div>
 
-   <div>
+    <div>
         Device is connected: <input type="checkbox" id="deviceConnected">
     </div>
     <div>
@@ -622,6 +622,12 @@
             document.getElementById(elementId).value = data["decelerationBuffer"].toString();
             elementId = stepper + "DecelerationBufferIncrement";
             document.getElementById(elementId).value = data["decelerationBufferIncrement"].toString();
+            elementId = stepper + "Locator";
+            document.getElementById(elementId).selectedIndex = data["locatorIndex"];
+            elementId = stepper + "LocatorLineNumberStart";
+            document.getElementById(elementId).selectedIndex = data["locatorLineNumberStart"];
+            elementId = stepper + "LocatorLineNumberTerminal";
+            document.getElementById(elementId).selectedIndex = data["locatorLineNumberTerminal"];
         }
 
         function updatePageLocator(locator, data) {
@@ -749,7 +755,7 @@
                         console.log(JSON.stringify(jsonObj)); // 'This is the output.'
                         updatePage(jsonObj);
                     } else {
-                        console.log('Error: ' + xhr.status); // An error occurred during the request.
+                        alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
                     }
                 }
             };
@@ -796,7 +802,7 @@
                         console.log(JSON.stringify(jsonObj)); // 'This is the output.'
                         updatePage(jsonObj);
                     } else {
-                        console.log('Error: ' + xhr.status); // An error occurred during the request.
+                        alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
                     }
                 }
             };
@@ -826,7 +832,7 @@
                         updatePage(jsonObj);
                     } else {
                         console.log('Error: ' + xhr.status); // An error occurred during the request.
-                        alert("Query failed: " + xhr.status);
+                        alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
                     }
                 }
             };
@@ -999,7 +1005,7 @@
 
                 default:
                     alert("unknown coordinate type");
-                    console.log("Error: unknown coordinate type");
+                    alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
                     return;
             }
 
