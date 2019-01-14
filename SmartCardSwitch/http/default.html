@@ -916,9 +916,9 @@
 
             var parameters = {};
             parameters["index"] = parseInt(index);
-            parameters["locator"] = locatorIndex.toString();
-            parameters["locatorLineNumberStart"] = locatorLineNumberStart.toString();
-            parameters["locatorLineNumberTerminal"] = locatorLineNumberTerminal.toString();
+            parameters["locator"] = locatorIndex;
+            parameters["locatorLineNumberStart"] = locatorLineNumberStart;
+            parameters["locatorLineNumberTerminal"] = locatorLineNumberTerminal;
 
             xhr.send(JSON.stringify(parameters));
         }

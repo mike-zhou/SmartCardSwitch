@@ -376,8 +376,8 @@ void ScsRequestHandler::onStepperConfigHome(Poco::Net::HTTPServerRequest& reques
 	else
 	{
 		pLogger->LogInfo("ScsRequestHandler::onStepperConfigHome command: " + command);
-		unsigned int bdcIndex;
-		unsigned int action;
+		unsigned int index;
+		unsigned int locator, locatorLineNumberStart, locatorLineNumberTerminal;
 		bool exceptionOccurred = true;
 
 		try
@@ -387,8 +387,10 @@ void ScsRequestHandler::onStepperConfigHome(Poco::Net::HTTPServerRequest& reques
 			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
-			bdcIndex = ds["index"];
-			action = ds["action"];
+			index = ds["index"];
+			locator = ds["locator"];
+			locatorLineNumberStart = ds["locatorLineNumberStart"];
+			locatorLineNumberTerminal = ds["locatorLineNumberTerminal"];
 			exceptionOccurred = false;
 		}
 		catch(Poco::Exception &e)
@@ -411,7 +413,23 @@ void ScsRequestHandler::onStepperConfigHome(Poco::Net::HTTPServerRequest& reques
 		}
 		else
 		{
+			std::string errorInfo;
+			if(!_pWebServer->StepperConfigHome(index, locator, locatorLineNumberStart, locatorLineNumberTerminal, errorInfo))
+			{
+				pLogger->LogError("ScsRequestHandler::onStepperConfigHome failed to configure stepper movement: " + errorInfo);
+			}
 
+			if(errorInfo.empty()) {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				auto& oStream = response.send();
+				oStream << _pWebServer->DeviceStatus();
+			}
+			else {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
 		}
 	}
 }
@@ -1116,7 +1134,31 @@ void WebServer::OnStepperRun(CommandId key, bool bSuccess)
 
 void WebServer::OnStepperConfigHome(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		//update result
+		auto& data = _consoleCommand.resultSteppers[_consoleCommand.stepperIndex];
+
+		data.forward = false;
+		data.homeOffset = 0;
+		data.maximum = 0;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnStepperMove(CommandId key, bool bSuccess)
@@ -1281,14 +1323,55 @@ bool WebServer::StepperMove(unsigned int index, bool forward, unsigned int steps
 	return true;
 }
 
-bool WebServer::StepperConfigBoundary(
+bool WebServer::StepperConfigHome(
 					unsigned int stepperIndex,
 					unsigned int locatorIndex,
 					unsigned int locatorLineNumberStart,
 					unsigned int locatorLineNumberTerminal,
 					std::string & errorInfo)
 {
+	errorInfo.clear();
 
+	if(stepperIndex >= STEPPER_AMOUNT) {
+		errorInfo = "stepper index is out of range: " + std::to_string(stepperIndex);
+	}
+	if(locatorIndex >= LOCATOR_AMOUNT) {
+		errorInfo = "locator index is out of range: " + std::to_string(locatorIndex);
+	}
+	if((locatorLineNumberStart < 1) || (locatorLineNumberStart > 8)) {
+		errorInfo = "invalid parameter value";
+	}
+	if((locatorLineNumberTerminal < 1) || (locatorLineNumberTerminal > 8)) {
+		errorInfo = "invalid parameter value";
+	}
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperConfigMovement " + errorInfo);
+		return false;
+	}
+
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
+
+	_consoleCommand.stepperIndex = stepperIndex;
+	_consoleCommand.locatorIndex = locatorIndex;
+	_consoleCommand.locatorLineNumberStart = locatorLineNumberStart;
+	_consoleCommand.locatorLineNumberTerminal = locatorLineNumberTerminal;
+	_consoleCommand.steps = 0;
+
+	std::string command = ConsoleCommandFactory::CmdStepperConfigHome(stepperIndex, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
+	runConsoleCommand(command, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperConfigHome failed to configure home : " + errorInfo);
+		return false;
+	}
+
+	command = ConsoleCommandFactory::CmdStepperRun(stepperIndex, 0, 0);
+	runConsoleCommand(command, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperConfigHome failed run stepper : " + errorInfo);
+		return false;
+	}
+
+	return true;
 }
 
 bool WebServer::StepperConfigMovement(
@@ -1301,7 +1384,6 @@ bool WebServer::StepperConfigMovement(
 					unsigned int decelerationBufferIncrement,
 					std::string & errorInfo)
 {
-
 	errorInfo.clear();
 
 	if(index >= STEPPER_AMOUNT) {

@@ -99,6 +99,15 @@ private:
 	//	}
 	void onStepperConfigMovement(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 
+	//request:
+	//	uri: /stepperConfigHome
+	// 	body:
+	//	{
+	//		"index":1,
+	//		"locator":0,
+	//		"locatorLineNumberStart":1,
+	//		"locatorLineNumberTerminal":1
+	//	}
 	void onStepperConfigHome(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
 
@@ -132,7 +141,7 @@ public:
 	const std::string& GetDefaultPageContent();
 	//move stepper. return true with empty errorInfo if succeed, false with detailed error if fail.
 	bool StepperMove(unsigned int index, bool forward, unsigned int steps, std::string & errorInfo);
-	bool StepperConfigBoundary(
+	bool StepperConfigHome(
 						unsigned int stepperIndex,
 						unsigned int locatorIndex,
 						unsigned int locatorLineNumberStart,
@@ -240,6 +249,7 @@ private:
 		unsigned int steps;
 		bool stepperForward;
 		unsigned int lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement;
+		unsigned int locatorLineNumberStart, locatorLineNumberTerminal;
 		unsigned int locatorIndex;
 		unsigned int bdcIndex;
 		BdcStatus bdcStatus;
