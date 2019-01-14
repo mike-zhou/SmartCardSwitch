@@ -2014,6 +2014,37 @@ std::string WebServer::DeviceStatus()
 		//bdc i
 		json += "\"bdc" + std::to_string(i) + "\":" + std::to_string(action) + ",";
 	}
+	//offsets
+	{
+		long smartCardPlaceStartZ = 0;
+		long smartCardFetchOffset = 0;
+		long smartCardReleaseOffset = 0;
+		long smartCardInsertExtra = 0;
+		long smartCardReaderSlowInsertEndY = 0;
+
+		if(!pCoordinateStorage->GetSmartCardPlaceStartZ(smartCardPlaceStartZ)) {
+			pLogger->LogError("WebServer::DeviceStatus failed to retrieve smartCardPlaceStartZ");
+		}
+		if(!pCoordinateStorage->GetSmartCardFetchOffset(smartCardFetchOffset)) {
+			pLogger->LogError("WebServer::DeviceStatus failed to retrieve smartCardFetchOffset");
+		}
+		if(!pCoordinateStorage->GetSmartCardReleaseOffset(smartCardReleaseOffset)) {
+			pLogger->LogError("WebServer::DeviceStatus failed to retrieve smartCardReleaseOffset");
+		}
+		if(!pCoordinateStorage->GetSmartCardInsertExtra(smartCardInsertExtra)) {
+			pLogger->LogError("WebServer::DeviceStatus failed to retrieve smartCardInsertExtra");
+		}
+		if(!pCoordinateStorage->GetSmartCardReaderSlowInsertEndY(smartCardReaderSlowInsertEndY)) {
+			pLogger->LogError("WebServer::DeviceStatus failed to retrieve smartCardReaderSlowInsertEndY");
+		}
+
+		json += "\"smartCardPlaceStartZ\":" + std::to_string(smartCardPlaceStartZ) + ",";
+		json += "\"smartCardFetchOffset\":" + std::to_string(smartCardFetchOffset) + ",";
+		json += "\"smartCardReleaseOffset\":" + std::to_string(smartCardReleaseOffset) + ",";
+		json += "\"smartCardInsertExtra\":" + std::to_string(smartCardInsertExtra) + ",";
+		json += "\"smartCardReaderSlowInsertEndY\":" + std::to_string(smartCardReaderSlowInsertEndY) + ",";
+
+	}
 	//others
 	json += "\"deviceConnected\":" + std::string(_consoleCommand.resultDeviceConnected?"true":"false") + ",";
 	json += "\"devicePowered\":" + std::string(_consoleCommand.resultDevicePowered?"true":"false") + ",";

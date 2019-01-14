@@ -679,6 +679,22 @@
             document.getElementById("steppersPowered").checked = bPowered;
         }
 
+        function updatePageSmartCardPlaceStartZ(offset) {
+            document.getElementById("smartCardPlaceStartZ").value = offset.toString();
+        }
+        function updatePageSmartCardFetchOffset(offset) {
+            document.getElementById("smartCardFetchOffset").value = offset.toString();
+        }
+        function updatePageSmartCardReleaseOffsetZ(offset) {
+            document.getElementById("smartCardReleaseOffsetZ").value = offset.toString();
+        }
+        function updatePageSmartCardInsertExtra(offset) {
+            document.getElementById("smartCardInsertExtra").value = offset.toString();
+        }
+        function updatePageSmartCardReaderSlowInsertEndY(offset) {
+            document.getElementById("smartCardReaderSlowInsertEndY").value = offset.toString();
+        }
+
 
         function updatePage(serverResponse) {
             for (key in serverResponse) {
@@ -732,6 +748,16 @@
                     updatePageBdcPowered(serverResponse[key]);
                 } else if (key === "stepperPowered") {
                     updatePageStepperPowered(serverResponse[key]);
+                } else if (key === "smartCardPlaceStartZ") {
+                    updatePageSmartCardPlaceStartZ(serverResponse[key]);
+                } else if (key === "smartCardFetchOffset") {
+                    updatePageSmartCardFetchOffset(serverResponse[key]);
+                } else if (key === "smartCardReleaseOffset") {
+                    updatePageSmartCardReleaseOffsetZ(serverResponse[key]);
+                } else if (key === "smartCardInsertExtra") {
+                    updatePageSmartCardInsertExtra(serverResponse[key]);
+                } else if (key === "smartCardReaderSlowInsertEndY") {
+                    updatePageSmartCardReaderSlowInsertEndY(serverResponse[key]);
                 } else {
                     console.log('Error: ' + "unexpected item in server response: " + key);
                 }
