@@ -2039,14 +2039,6 @@ bool WebServer::SaveCoordinate(const std::string & coordinateType, unsigned int 
 
 bool WebServer::ToCoordinate(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo)
 {
-	long maxY;
-
-	if(!pCoordinateStorage->GetMaximumY(maxY)) {
-		errorInfo = "maximum Y hasn't been set";
-		pLogger->LogError("WebServer::ToCoordinate " + errorInfo);
-		return false;
-	}
-
 	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex);
 
 	unsigned int curX = _consoleCommand.resultSteppers[STEPPER_X].homeOffset;
@@ -2059,13 +2051,7 @@ bool WebServer::ToCoordinate(const unsigned int x, const unsigned int y, const u
 		//move up, starting from Z
 		StepperMove(STEPPER_Z, true, z-curZ, errorInfo);
 		if(!errorInfo.empty()) {
-			pLogger->LogError("WebServer::ToCoordinate fail to move up stepper Z: " + errorInfo);
-			return false;
-		}
-
-		StepperMove(STEPPER_Y, true, maxY - curY, errorInfo);
-		if(!errorInfo.empty()) {
-			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y to maximum: " + errorInfo);
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Z: " + errorInfo);
 			return false;
 		}
 
@@ -2079,7 +2065,9 @@ bool WebServer::ToCoordinate(const unsigned int x, const unsigned int y, const u
 		}
 
 		//move Y
-		StepperMove(STEPPER_Y, false, maxY - y, errorInfo);
+		bool yForward = (y > curY);
+		unsigned int ySteps = yForward?(y-curY):(curY-y);
+		StepperMove(STEPPER_Y, yForward, ySteps, errorInfo);
 		if(!errorInfo.empty()) {
 			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y: " + errorInfo);
 			return false;
@@ -2097,9 +2085,20 @@ bool WebServer::ToCoordinate(const unsigned int x, const unsigned int y, const u
 	else
 	{
 		//move down, starting from Y
-		StepperMove(STEPPER_Y, true, maxY-curY, errorInfo);
+		bool yForward = (y > curY);
+		unsigned int ySteps = yForward?(y-curY):(curY-y);
+		StepperMove(STEPPER_Y, yForward, ySteps, errorInfo);
 		if(!errorInfo.empty()) {
-			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y to maximum: " + errorInfo);
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y: " + errorInfo);
+			return false;
+		}
+
+		//move W
+		bool wForward = (w > curW);
+		unsigned int wSteps = wForward?(w-curW):(curW-w);
+		StepperMove(STEPPER_W, wForward, wSteps, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper W: " + errorInfo);
 			return false;
 		}
 
@@ -2116,21 +2115,6 @@ bool WebServer::ToCoordinate(const unsigned int x, const unsigned int y, const u
 		StepperMove(STEPPER_X, xForward, xSteps, errorInfo);
 		if(!errorInfo.empty()) {
 			pLogger->LogError("WebServer::ToCoordinate fail to move stepper X: " + errorInfo);
-			return false;
-		}
-
-		//move W
-		bool wForward = (w > curW);
-		unsigned int wSteps = wForward?(w-curW):(curW-w);
-		StepperMove(STEPPER_W, wForward, wSteps, errorInfo);
-		if(!errorInfo.empty()) {
-			pLogger->LogError("WebServer::ToCoordinate fail to move stepper W: " + errorInfo);
-			return false;
-		}
-
-		StepperMove(STEPPER_Y, false, maxY-y, errorInfo);
-		if(!errorInfo.empty()) {
-			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y: " + errorInfo);
 			return false;
 		}
 	}
