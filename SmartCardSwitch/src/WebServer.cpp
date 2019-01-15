@@ -4,7 +4,6 @@
  *  Created on: Jan 3, 2019
  *      Author: mikez
  */
-
 #include "Poco/ThreadPool.h"
 #include "Poco/Net/HTTPServerParams.h"
 #include "Poco/Net/ServerSocket.h"
@@ -434,6 +433,79 @@ void ScsRequestHandler::onStepperConfigHome(Poco::Net::HTTPServerRequest& reques
 	}
 }
 
+void ScsRequestHandler::onToCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onToCoordinate no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onToCoordinate command: " + command);
+		unsigned int x, y, z, w;
+		bool exceptionOccurred = true;
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			x = ds["x"];
+			y = ds["y"];
+			z = ds["z"];
+			w = ds["w"];
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onToCoordinate exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onToCoordinate unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onToCoordinate reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else
+		{
+			std::string errorInfo;
+			if(!_pWebServer->ToCoordinate(x, y, z, w, errorInfo))
+			{
+				pLogger->LogError("ScsRequestHandler::onToCoordinate failed: " + errorInfo);
+			}
+
+			if(errorInfo.empty()) {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				auto& oStream = response.send();
+				oStream << _pWebServer->DeviceStatus();
+			}
+			else {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
+		}
+	}
+}
+
 void ScsRequestHandler::onSaveCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	std::string command = getJsonCommand(request);
@@ -534,6 +606,9 @@ void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poc
 	}
 	else if(uri == "/saveCoordinate") {
 		onSaveCoordinate(request, response);
+	}
+	else if(uri == "/toCoordinate") {
+		onToCoordinate(request, response);
 	}
 	else
 	{
@@ -1263,6 +1338,10 @@ bool WebServer::StepperMove(unsigned int index, bool forward, unsigned int steps
 		pLogger->LogError("WebServer::StepperMove " + errorInfo);
 		return false;
 	}
+	if(steps == 0) {
+		pLogger->LogInfo("WebServer::StepperMove stepper needn't move");
+		return true;
+	}
 
 	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
 
@@ -1956,6 +2035,107 @@ bool WebServer::SaveCoordinate(const std::string & coordinateType, unsigned int 
 	else {
 		return false;
 	}
+}
+
+bool WebServer::ToCoordinate(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo)
+{
+	long maxY;
+
+	if(!pCoordinateStorage->GetMaximumY(maxY)) {
+		errorInfo = "maximum Y hasn't been set";
+		pLogger->LogError("WebServer::ToCoordinate " + errorInfo);
+		return false;
+	}
+
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex);
+
+	unsigned int curX = _consoleCommand.resultSteppers[STEPPER_X].homeOffset;
+	unsigned int curY = _consoleCommand.resultSteppers[STEPPER_Y].homeOffset;
+	unsigned int curZ = _consoleCommand.resultSteppers[STEPPER_Z].homeOffset;
+	unsigned int curW = _consoleCommand.resultSteppers[STEPPER_W].homeOffset;
+
+	if(curZ < z)
+	{
+		//move up, starting from Z
+		StepperMove(STEPPER_Z, true, z-curZ, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move up stepper Z: " + errorInfo);
+			return false;
+		}
+
+		StepperMove(STEPPER_Y, true, maxY - curY, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y to maximum: " + errorInfo);
+			return false;
+		}
+
+		//move W
+		bool wForward = (w > curW);
+		unsigned int wSteps = wForward?(w-curW):(curW-w);
+		StepperMove(STEPPER_W, wForward, wSteps, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper W: " + errorInfo);
+			return false;
+		}
+
+		//move Y
+		StepperMove(STEPPER_Y, false, maxY - y, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y: " + errorInfo);
+			return false;
+		}
+
+		//move X
+		bool xForward = (x > curX);
+		unsigned int xSteps = xForward?(x-curX):(curX-x);
+		StepperMove(STEPPER_X, xForward, xSteps, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper X: " + errorInfo);
+			return false;
+		}
+	}
+	else
+	{
+		//move down, starting from Y
+		StepperMove(STEPPER_Y, true, maxY-curY, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y to maximum: " + errorInfo);
+			return false;
+		}
+
+		//move Z
+		StepperMove(STEPPER_Z, false, curZ-z, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Z: " + errorInfo);
+			return false;
+		}
+
+		//move X
+		bool xForward = (x > curX);
+		unsigned int xSteps = xForward?(x-curX):(curX-x);
+		StepperMove(STEPPER_X, xForward, xSteps, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper X: " + errorInfo);
+			return false;
+		}
+
+		//move W
+		bool wForward = (w > curW);
+		unsigned int wSteps = wForward?(w-curW):(curW-w);
+		StepperMove(STEPPER_W, wForward, wSteps, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper W: " + errorInfo);
+			return false;
+		}
+
+		StepperMove(STEPPER_Y, false, maxY-y, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y: " + errorInfo);
+			return false;
+		}
+	}
+
+	return true;
 }
 
 std::string WebServer::DeviceStatus()

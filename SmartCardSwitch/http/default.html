@@ -22,10 +22,10 @@
         </div>
         <div>
             <label>X: </label><label id="destCoordinateX"></label>
-            <label> Y: </label><label id="destCoordinateX"></label>
-            <label> Z: </label><label id="destCoordinateX"></label>
-            <label> W: </label><label id="destCoordinateX"></label>
-            <button type="button" id="coordinate_to"> To </button>
+            <label> Y: </label><label id="destCoordinateY"></label>
+            <label> Z: </label><label id="destCoordinateZ"></label>
+            <label> W: </label><label id="destCoordinateW"></label>
+            <button type="button" id="coordinateItem_to"> To </button>
         </div>
     </div>
 
@@ -712,7 +712,7 @@
 
         function createCoordinateLineWithIndex(type, x, y, z, w, index) {
             var html;
-            var radioId = "coordinate_" + type + "_" + index.toString();
+            var radioId = "coordinateItem_" + type + "_" + index.toString();
 
             html = "<input name=\"coordinateSelection\" id=\"" + radioId + "\" type=\"radio\"></input>";
             html += "<label class=\"coordinateItem\" for=\"" + radioId + "\">" + type + "</label>";
@@ -727,7 +727,7 @@
 
         function createCoordinateLine(type, x, y, z, w) {
             var html;
-            var radioId = "coordinate_" + type;
+            var radioId = "coordinateItem_" + type;
 
             html = "<input name=\"coordinateSelection\" id=\"" + radioId + "\" type=\"radio\"></input>";
             html += "<label class=\"coordinateItem\" for=\"" + radioId + "\">" + radioId + "</label>";
@@ -1238,6 +1238,83 @@
             xhr.send(JSON.stringify(command));
         }
 
+        function onCoordinateItem(type, index) {
+            var updateDest = true;
+            var x, y, z, w;
+
+            if((type === "SmartCardGate")   ||
+                (type === "PedKeyGate")     ||
+                (type === "SoftKeyGate")    ||
+                (type === "AssistKeyGate")  ||
+                (type === "TouchScreenKeyGate") ||
+                (type === "SmartCardReaderGate")||
+                (type === "SmartCardReader")    ||
+                (type === "BarcodeReaderGate")  ||
+                (type === "BarcodeReader")      ||
+                (type === "ContactlessReaderGate")||
+                (type === "ContactlessReader")  ||
+                (type === "Safe"))
+            {
+                x = document.getElementById("coordinateItem_" + type + "_x").innerText;
+                y = document.getElementById("coordinateItem_" + type + "_y").innerText;
+                z = document.getElementById("coordinateItem_" + type + "_z").innerText;
+                w = document.getElementById("coordinateItem_" + type + "_w").innerText;
+            }
+            else if((type === "SmartCard") ||
+                (type === "PedKey") ||
+                (type === "PedKeyPressed") ||
+                (type === "SoftKey") ||
+                (type === "SoftKeyPressed") ||
+                (type === "AssistKey") ||
+                (type === "AssistKeyPressed") ||
+                (type === "TouchScreenKey") ||
+                (type === "TouchScreenKeyPressed")) 
+            {
+                x = document.getElementById("coordinateItem_" + type + "_" + index.toString() + "_x").innerText;
+                y = document.getElementById("coordinateItem_" + type + "_" + index.toString() + "_y").innerText;
+                z = document.getElementById("coordinateItem_" + type + "_" + index.toString() + "_z").innerText;
+                w = document.getElementById("coordinateItem_" + type + "_" + index.toString() + "_w").innerText;
+            }
+            else if(type === "to") {
+                var command = {};
+                command["x"] = document.getElementById("destCoordinateX").innerText;
+                command["y"] = document.getElementById("destCoordinateY").innerText;
+                command["z"] = document.getElementById("destCoordinateZ").innerText;
+                command["w"] = document.getElementById("destCoordinateW").innerText;
+
+                var xhr = new XMLHttpRequest();
+                xhr.responseType = "json";
+                xhr.open('POST', 'toCoordinate');
+
+                xhr.onreadystatechange = function() {
+                    var DONE = 4; // readyState 4 means the request is done.
+                    var OK = 200; // status 200 is a successful return.
+                    if (xhr.readyState === DONE) {
+                        console.log("response is available");
+                        console.log("response type: " + xhr.responseType);
+
+                        if (xhr.status === OK) {
+                            console.log("toCoordinate succeeded");
+                        } else {
+                            console.log('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                        }
+                    }
+                };
+                xhr.send(JSON.stringify(command));
+            }
+            else {
+                console.log("Error: unknown coordinateItem type: " + type);
+                updateDest = false;
+            }
+
+            if(updateDest) {
+                document.getElementById("destCoordinateX").innerText = x;
+                document.getElementById("destCoordinateY").innerText = y;
+                document.getElementById("destCoordinateZ").innerText = z;
+                document.getElementById("destCoordinateW").innerText = w;
+            }
+        }
+
         function onElementClicked() {
             var elementId = document.activeElement.id;
             var paraArray = elementId.split("_");
@@ -1289,6 +1366,10 @@
                 } else {
                     console.log("Error: wrong bdc action: " + action);
                 }
+            } else if(device === "coordinateItem") {
+                var type = paraArray[1];
+                var index = parseInt(paraArray[2]);
+                onCoordinateItem(type, index);
             } else if (elementId === "coordinate_save") {
                 saveCoordinate();
             } else if (elementId === "deviceQuery") {

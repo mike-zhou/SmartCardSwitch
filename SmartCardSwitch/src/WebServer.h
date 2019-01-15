@@ -109,6 +109,17 @@ private:
 	//		"locatorLineNumberTerminal":1
 	//	}
 	void onStepperConfigHome(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
+	//request:
+	//	uri: /toCoordinate
+	// 	body:
+	//	{
+	//		"x":1,
+	//		"y":0,
+	//		"z":1,
+	//		"w":1
+	//	}
+	void onToCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
 
 
@@ -163,6 +174,7 @@ public:
 	bool OptPowerOff(std::string & errorInfo);
 	bool Query(std::string & errorInfo);
 	bool SaveCoordinate(const std::string & coordinateType, unsigned int data, std::string & errorInfo);
+	bool ToCoordinate(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo);
 	//return a JSON string representing current device status.
 	std::string DeviceStatus();
 
@@ -227,6 +239,11 @@ private:
 	static const int STEPPER_AMOUNT = 4;
 	static const int LOCATOR_AMOUNT = 8;
 	static const int BDC_AMOUNT = 6;
+	static const int STEPPER_X = 0;
+	static const int STEPPER_Y = 1;
+	static const int STEPPER_Z = 2;
+	static const int STEPPER_W = 3;
+
 
 	Poco::Mutex _webServerMutex;
 	Poco::Mutex _replyMutex;
