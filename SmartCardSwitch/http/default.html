@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>SmartCardSwitch</title>
+    <style type="text/css">
+        .coordinateItem {width: 200px; text-align:left}
+    </style>
 </head>
 
 <body onclick="onElementClicked()">
@@ -12,6 +15,18 @@
 
     <div>
         <button type="button" id="deviceQuery">Query</button>
+    </div>
+
+    <div>
+        <div id="coordinateList">
+        </div>
+        <div>
+            <label>X: </label><label id="destCoordinateX"></label>
+            <label> Y: </label><label id="destCoordinateX"></label>
+            <label> Z: </label><label id="destCoordinateX"></label>
+            <label> W: </label><label id="destCoordinateX"></label>
+            <button type="button" id="coordinate_to"> To </button>
+        </div>
     </div>
 
     <div>
@@ -695,6 +710,172 @@
             document.getElementById("smartCardReaderSlowInsertEndY").value = offset.toString();
         }
 
+        function createCoordinateLineWithIndex(type, x, y, z, w, index) {
+            var html;
+            var radioId = "coordinate_" + type + "_" + index.toString();
+
+            html = "<input name=\"coordinateSelection\" id=\"" + radioId + "\" type=\"radio\"></input>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\">" + type + "</label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_x\"> " + x.toString() + ", </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_y\"> " + y.toString() + ", </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_z\"> " + z.toString() + ", </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_w\"> " + w.toString() + "</label>";
+            html += "<br>";
+
+            return html;
+        }
+
+        function createCoordinateLine(type, x, y, z, w) {
+            var html;
+            var radioId = "coordinate_" + type;
+
+            html = "<input name=\"coordinateSelection\" id=\"" + radioId + "\" type=\"radio\"></input>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\">" + radioId + "</label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_x\"> " + x.toString() + ", </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_y\"> " + y.toString() + ", </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_z\"> " + z.toString() + ", </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_w\"> " + w.toString() + "</label>";
+            html += "<br>";
+
+            return html;
+        }
+
+        function updatePageCoordinates(serverResponse) {
+            var html = "";
+            var i;
+
+            var coorSmartCardGate = serverResponse["coordinateSmartCardGate"];
+            html = createCoordinateLine("SmartCardGate", coorSmartCardGate.x, coorSmartCardGate.y, coorSmartCardGate.z, coorSmartCardGate.w);
+
+            var coorSmartCards = serverResponse["coordinateSmartCards"];
+            for(i=0; i<coorSmartCards.length; i++) {
+                var index = coorSmartCards[i].index;
+                var x = coorSmartCards[i].x;
+                var y = coorSmartCards[i].y;
+                var z = coorSmartCards[i].z;
+                var w = coorSmartCards[i].w;
+                html += createCoordinateLineWithIndex("SmartCard", x, y, z, w, index);
+            }
+
+            var coorPedKeyGate = serverResponse["coordinatePedKeyGate"];
+            html += createCoordinateLine("PedKeyGate", coorPedKeyGate.x, coorPedKeyGate.y, coorPedKeyGate.z, coorPedKeyGate.w);
+            
+            var coorPedKeys = serverResponse["coordinatePedKeys"];
+            var coorPedKeysPressed = serverResponse["coordinatePedKeysPressed"];
+            for(i=0; (i<coorPedKeys.length) || (i<coorPedKeysPressed.length); i++) {
+                if(i<coorPedKeys.length) {
+                    var index = coorPedKeys[i].index;
+                    var x = coorPedKeys[i].x;
+                    var y = coorPedKeys[i].y;
+                    var z = coorPedKeys[i].z;
+                    var w = coorPedKeys[i].w;
+                    html += createCoordinateLineWithIndex("PedKey", x, y, z, w, index);
+                }
+                if(i<coorPedKeysPressed.length) {
+                    var index = coorPedKeysPressed[i].index;
+                    var x = coorPedKeysPressed[i].x;
+                    var y = coorPedKeysPressed[i].y;
+                    var z = coorPedKeysPressed[i].z;
+                    var w = coorPedKeysPressed[i].w;
+                    html += createCoordinateLineWithIndex("PedKeyPressed", x, y, z, w, index);
+                }
+            }
+
+            var coorSoftKeyGate = serverResponse["coordinateSoftKeyGate"];
+            html += createCoordinateLine("SoftKeyGate", coorSoftKeyGate.x, coorSoftKeyGate.y, coorSoftKeyGate.z, coorSoftKeyGate.w);
+            
+            var coorSoftKeys = serverResponse["coordinateSoftKeys"];
+            var coorSoftKeysPressed = serverResponse["coordinateSoftKeysPressed"];
+            for(i=0; (i<coorSoftKeys.length) || (i<coorSoftKeysPressed.length); i++) {
+                if(i<coorSoftKeys.length) {
+                    var index = coorSoftKeys[i].index;
+                    var x = coorSoftKeys[i].x;
+                    var y = coorSoftKeys[i].y;
+                    var z = coorSoftKeys[i].z;
+                    var w = coorSoftKeys[i].w;
+                    html += createCoordinateLineWithIndex("SoftKey", x, y, z, w, index);
+                }
+                if(i<coorSoftKeysPressed.length) {
+                    var index = coorSoftKeysPressed[i].index;
+                    var x = coorSoftKeysPressed[i].x;
+                    var y = coorSoftKeysPressed[i].y;
+                    var z = coorSoftKeysPressed[i].z;
+                    var w = coorSoftKeysPressed[i].w;
+                    html += createCoordinateLineWithIndex("SoftKeyPressed", x, y, z, w, index);
+                }
+            }
+
+            var coorAssistKeyGate = serverResponse["coordinateAssistKeyGate"];
+            html += createCoordinateLine("AssistKeyGate", coorAssistKeyGate.x, coorAssistKeyGate.y, coorAssistKeyGate.z, coorAssistKeyGate.w);
+            
+            var coorAssistKeys = serverResponse["coordinateAssistKeys"];
+            var coorAssistKeysPressed = serverResponse["coordinateAssistKeysPressed"];
+            for(i=0; (i<coorAssistKeys.length) || (i<coorAssistKeysPressed.length); i++) {
+                if(i<coorAssistKeys.length) {
+                    var index = coorAssistKeys[i].index;
+                    var x = coorAssistKeys[i].x;
+                    var y = coorAssistKeys[i].y;
+                    var z = coorAssistKeys[i].z;
+                    var w = coorAssistKeys[i].w;
+                    html += createCoordinateLineWithIndex("AssistKey", x, y, z, w, index);
+                }
+                if(i<coorAssistKeysPressed.length) {
+                    var index = coorAssistKeysPressed[i].index;
+                    var x = coorAssistKeysPressed[i].x;
+                    var y = coorAssistKeysPressed[i].y;
+                    var z = coorAssistKeysPressed[i].z;
+                    var w = coorAssistKeysPressed[i].w;
+                    html += createCoordinateLineWithIndex("AssistKeyPressed", x, y, z, w, index);
+                }
+            }
+
+            var coorTouchScreenKeyGate = serverResponse["coordinateTouchScreenKeyGate"];
+            html += createCoordinateLine("TouchScreenKeyGate", coorTouchScreenKeyGate.x, coorTouchScreenKeyGate.y, coorTouchScreenKeyGate.z, coorTouchScreenKeyGate.w);
+            
+            var coorTouchScreenKeys = serverResponse["coordinateTouchScreenKeys"];
+            var coorTouchScreenKeysPressed = serverResponse["coordinateTouchScreenKeysPressed"];
+            for(i=0; (i<coorTouchScreenKeys.length) || (i<coorTouchScreenKeysPressed.length); i++) {
+                if(i<coorTouchScreenKeys.length) {
+                    var index = coorTouchScreenKeys[i].index;
+                    var x = coorTouchScreenKeys[i].x;
+                    var y = coorTouchScreenKeys[i].y;
+                    var z = coorTouchScreenKeys[i].z;
+                    var w = coorTouchScreenKeys[i].w;
+                    html += createCoordinateLineWithIndex("TouchScreenKey", x, y, z, w, index);
+                }
+                if(i<coorAssistKeysPressed.length) {
+                    var index = coorAssistKeysPressed[i].index;
+                    var x = coorAssistKeysPressed[i].x;
+                    var y = coorAssistKeysPressed[i].y;
+                    var z = coorAssistKeysPressed[i].z;
+                    var w = coorAssistKeysPressed[i].w;
+                    html += createCoordinateLineWithIndex("coorTouchScreenKeysPressed", x, y, z, w, index);
+                }
+            }
+
+            var coorSmartCardReaderGate = serverResponse["coordinateSmartCardReaderGate"];
+            html += createCoordinateLine("SmartCardReaderGate", coorSmartCardReaderGate.x, coorSmartCardReaderGate.y, coorSmartCardReaderGate.z, coorSmartCardReaderGate.w);
+
+            var coorSmartCardReader = serverResponse["coordinateSmartCardReader"];
+            html += createCoordinateLine("SmartCardReader", coorSmartCardReader.x, coorSmartCardReader.y, coorSmartCardReader.z, coorSmartCardReader.w);
+
+            var coorBarCodeReaderGate = serverResponse["coordinateBarCodeReaderGate"];
+            html += createCoordinateLine("BarcodeReaderGate", coorBarCodeReaderGate.x, coorBarCodeReaderGate.y, coorBarCodeReaderGate.z, coorBarCodeReaderGate.w);
+
+            var coorBarCodeReader = serverResponse["coordinateBarCodeReader"];
+            html += createCoordinateLine("BarCodeReader", coorBarCodeReader.x, coorBarCodeReader.y, coorBarCodeReader.z, coorBarCodeReader.w);
+
+            var coorContactlessReaderGate = serverResponse["coordinateBarCodeReaderGate"];
+            html += createCoordinateLine("ContactlessReaderGate", coorContactlessReaderGate.x, coorContactlessReaderGate.y, coorContactlessReaderGate.z, coorContactlessReaderGate.w);
+
+            var coorContactlessReader = serverResponse["coordinateContactlessReader"];
+            html += createCoordinateLine("ContactlessReader", coorContactlessReader.x, coorContactlessReader.y, coorContactlessReader.z, coorContactlessReader.w);
+
+            var coorSafe = serverResponse["coordinateSafe"];
+            html += createCoordinateLine("Safe", coorSafe.x, coorSafe.y, coorSafe.z, coorSafe.w);
+
+            document.getElementById("coordinateList").innerHTML = html;
+        }
 
         function updatePage(serverResponse) {
             for (key in serverResponse) {
@@ -758,10 +939,10 @@
                     updatePageSmartCardInsertExtra(serverResponse[key]);
                 } else if (key === "smartCardReaderSlowInsertEndY") {
                     updatePageSmartCardReaderSlowInsertEndY(serverResponse[key]);
-                } else {
-                    console.log('Error: ' + "unexpected item in server response: " + key);
-                }
+                } 
             }
+
+            updatePageCoordinates(serverResponse);
         }
 
         function moveStepper(stepper, forward, steps) {
