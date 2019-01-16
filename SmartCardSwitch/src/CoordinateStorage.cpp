@@ -1064,7 +1064,7 @@ void CoordinateStorage::SetMaximumX(long value)
 	_maximumX = value;
 }
 
-void CoordinateStorage::setMaximumY(long value)
+void CoordinateStorage::SetMaximumY(long value)
 {
 	_maximumY = value;
 }
@@ -1074,7 +1074,7 @@ void CoordinateStorage::SetMaximumZ(long value)
 	_maximumZ = value;
 }
 
-void CoordinateStorage::setMaximumW(long value)
+void CoordinateStorage::SetMaximumW(long value)
 {
 	_maximumW = value;
 }

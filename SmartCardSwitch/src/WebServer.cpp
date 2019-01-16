@@ -450,6 +450,7 @@ void ScsRequestHandler::onToCoordinate(Poco::Net::HTTPServerRequest& request, Po
 	{
 		pLogger->LogInfo("ScsRequestHandler::onToCoordinate command: " + command);
 		unsigned int x, y, z, w;
+		bool direct;
 		bool exceptionOccurred = true;
 
 		try
@@ -463,6 +464,7 @@ void ScsRequestHandler::onToCoordinate(Poco::Net::HTTPServerRequest& request, Po
 			y = ds["y"];
 			z = ds["z"];
 			w = ds["w"];
+			direct = ds["direct"];
 			exceptionOccurred = false;
 		}
 		catch(Poco::Exception &e)
@@ -486,9 +488,15 @@ void ScsRequestHandler::onToCoordinate(Poco::Net::HTTPServerRequest& request, Po
 		else
 		{
 			std::string errorInfo;
-			if(!_pWebServer->ToCoordinate(x, y, z, w, errorInfo))
-			{
-				pLogger->LogError("ScsRequestHandler::onToCoordinate failed: " + errorInfo);
+			if(direct) {
+				if(!_pWebServer->ToCoordinate(x, y, z, w, errorInfo)) {
+					pLogger->LogError("ScsRequestHandler::onToCoordinate failed: " + errorInfo);
+				}
+			}
+			else {
+				if(!_pWebServer->ToCoordinateIndirect(x, y, z, w, errorInfo)) {
+					pLogger->LogError("ScsRequestHandler::onToCoordinate failed: " + errorInfo);
+				}
 			}
 
 			if(errorInfo.empty()) {
@@ -2016,6 +2024,32 @@ bool WebServer::SaveCoordinate(const std::string & coordinateType, unsigned int 
 	else if(coordinateType == "smartCardReaderSlowInsertEndY") {
 		pCoordinateStorage->SetSmartCardReaderSlowInsertEndY(data);
 	}
+	else if(coordinateType == "maximum")
+	{
+		switch(data)
+		{
+			case 0:
+				pCoordinateStorage->SetMaximumX(_consoleCommand.resultSteppers[STEPPER_X].homeOffset);
+				break;
+
+			case 1:
+				pCoordinateStorage->SetMaximumY(_consoleCommand.resultSteppers[STEPPER_Y].homeOffset);
+				break;
+
+			case 2:
+				pCoordinateStorage->SetMaximumZ(_consoleCommand.resultSteppers[STEPPER_Z].homeOffset);
+				break;
+
+			case 3:
+				pCoordinateStorage->SetMaximumW(_consoleCommand.resultSteppers[STEPPER_W].homeOffset);
+				break;
+
+			default:
+				errorInfo = "unknown stepper index: " + std::to_string(data);
+				pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+				break;
+		}
+	}
 	else {
 		errorInfo = "unknown coordinate type: " + coordinateType;
 		pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
@@ -2039,6 +2073,7 @@ bool WebServer::SaveCoordinate(const std::string & coordinateType, unsigned int 
 
 bool WebServer::ToCoordinate(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo)
 {
+	errorInfo.clear();
 	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex);
 
 	unsigned int curX = _consoleCommand.resultSteppers[STEPPER_X].homeOffset;
@@ -2115,6 +2150,110 @@ bool WebServer::ToCoordinate(const unsigned int x, const unsigned int y, const u
 		StepperMove(STEPPER_X, xForward, xSteps, errorInfo);
 		if(!errorInfo.empty()) {
 			pLogger->LogError("WebServer::ToCoordinate fail to move stepper X: " + errorInfo);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool WebServer::ToCoordinateIndirect(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo)
+{
+	errorInfo.clear();
+
+	long maxY;
+	if(!pCoordinateStorage->GetMaximumY(maxY))
+	{
+		errorInfo = "failed to retrieve maximum Y";
+		pLogger->LogError("WebServer::ToCoordinateIndirect " + errorInfo);
+		return false;
+	}
+
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex);
+
+	unsigned int curX = _consoleCommand.resultSteppers[STEPPER_X].homeOffset;
+	unsigned int curY = _consoleCommand.resultSteppers[STEPPER_Y].homeOffset;
+	unsigned int curZ = _consoleCommand.resultSteppers[STEPPER_Z].homeOffset;
+	unsigned int curW = _consoleCommand.resultSteppers[STEPPER_W].homeOffset;
+
+	if(curZ < z)
+	{
+		//move up, starting from Z
+		StepperMove(STEPPER_Z, true, z-curZ, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Z: " + errorInfo);
+			return false;
+		}
+
+		//move Y
+		StepperMove(STEPPER_Y, true, maxY-curY, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y: " + errorInfo);
+			return false;
+		}
+
+		//move W
+		bool wForward = (w > curW);
+		unsigned int wSteps = wForward?(w-curW):(curW-w);
+		StepperMove(STEPPER_W, wForward, wSteps, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper W: " + errorInfo);
+			return false;
+		}
+
+		//move X
+		bool xForward = (x > curX);
+		unsigned int xSteps = xForward?(x-curX):(curX-x);
+		StepperMove(STEPPER_X, xForward, xSteps, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper X: " + errorInfo);
+			return false;
+		}
+
+		//move Y
+		StepperMove(STEPPER_Y, false, maxY-y, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y: " + errorInfo);
+			return false;
+		}
+	}
+	else
+	{
+		//move down, starting from Y
+		StepperMove(STEPPER_Y, true, maxY-curY, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y: " + errorInfo);
+			return false;
+		}
+
+		//move W
+		bool wForward = (w > curW);
+		unsigned int wSteps = wForward?(w-curW):(curW-w);
+		StepperMove(STEPPER_W, wForward, wSteps, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper W: " + errorInfo);
+			return false;
+		}
+
+		//move Z
+		StepperMove(STEPPER_Z, false, curZ-z, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Z: " + errorInfo);
+			return false;
+		}
+
+		//move X
+		bool xForward = (x > curX);
+		unsigned int xSteps = xForward?(x-curX):(curX-x);
+		StepperMove(STEPPER_X, xForward, xSteps, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper X: " + errorInfo);
+			return false;
+		}
+
+		StepperMove(STEPPER_Y, false, maxY-y, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y: " + errorInfo);
 			return false;
 		}
 	}

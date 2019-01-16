@@ -75,9 +75,9 @@ public:
 	bool GetSmartCardReaderSlowInsertEndY(long & yPosition);
 
 	void SetMaximumX(long value);
-	void setMaximumY(long value);
+	void SetMaximumY(long value);
 	void SetMaximumZ(long value);
-	void setMaximumW(long value);
+	void SetMaximumW(long value);
 	bool GetMaximumX(long & value);
 	bool GetMaximumY(long & value);
 	bool GetMaximumZ(long & value);

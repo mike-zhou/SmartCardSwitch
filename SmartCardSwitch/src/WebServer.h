@@ -117,7 +117,8 @@ private:
 	//		"x":1,
 	//		"y":0,
 	//		"z":1,
-	//		"w":1
+	//		"w":1,
+	//		"direct":true
 	//	}
 	void onToCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
@@ -175,6 +176,7 @@ public:
 	bool Query(std::string & errorInfo);
 	bool SaveCoordinate(const std::string & coordinateType, unsigned int data, std::string & errorInfo);
 	bool ToCoordinate(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo);
+	bool ToCoordinateIndirect(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo);
 	//return a JSON string representing current device status.
 	std::string DeviceStatus();
 

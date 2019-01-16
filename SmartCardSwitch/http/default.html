@@ -26,6 +26,7 @@
             <label> Z: </label><label id="destCoordinateZ"></label>
             <label> W: </label><label id="destCoordinateW"></label>
             <button type="button" id="coordinateItem_to"> To </button>
+            <button type="button" id="coordinateItem_indirectTo"> Indirect To </button>
         </div>
     </div>
 
@@ -524,6 +525,13 @@
                 <input type="number" id="smartCardInsertExtra" min="0" max="65535" size="5"></input><br>
                 <input name="coordinate" id="coordinate_smartCardReaderSlowInsertEndY" type="radio"><label for="coordinate_smartCardReaderSlowInsertEndY">SmartCardReaderSlowInsertEndY</label>
                 <input type="number" id="smartCardReaderSlowInsertEndY" min="0" max="65535" size="5"></input><br>
+            </div>
+            <div>
+                <label>Maximum:</label><br>
+                <input name="coordinate" id="coordinate_maximum_0" type="radio"><label for="coordinate_maximum_0">Maximum-0 </label>
+                <input name="coordinate" id="coordinate_maximum_1" type="radio"><label for="coordinate_maximum_1">Maximum-1 </label>
+                <input name="coordinate" id="coordinate_maximum_2" type="radio"><label for="coordinate_maximum_2">Maximum-2 </label>
+                <input name="coordinate" id="coordinate_maximum_3" type="radio"><label for="coordinate_maximum_3">Maximum-3 </label>
             </div>
         </div>
         <div>
@@ -1210,12 +1218,14 @@
                     command["data"] = parseInt(document.getElementById(selectedRadio.coordinateType).value);
                     break;
 
+                case "maximum":
+                    command["data"] = selectedRadio.index;
+                    break;
+
                 default:
                     alert("unknown coordinate type");
-                    alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
                     return;
             }
-
 
             var xhr = new XMLHttpRequest();
             xhr.responseType = "json";
@@ -1231,7 +1241,7 @@
                     if (xhr.status === OK) {
                         console.log("saveCoordinate succeeded");
                     } else {
-                        console.log('Error: ' + xhr.status); // An error occurred during the request.
+                        alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
                     }
                 }
             };
@@ -1275,12 +1285,16 @@
                 z = document.getElementById("coordinateItem_" + type + "_" + index.toString() + "_z").innerText;
                 w = document.getElementById("coordinateItem_" + type + "_" + index.toString() + "_w").innerText;
             }
-            else if(type === "to") {
+            else if(type === "to") 
+            {
+                updateDest = false;
+                
                 var command = {};
                 command["x"] = document.getElementById("destCoordinateX").innerText;
                 command["y"] = document.getElementById("destCoordinateY").innerText;
                 command["z"] = document.getElementById("destCoordinateZ").innerText;
                 command["w"] = document.getElementById("destCoordinateW").innerText;
+                command["direct"] = true;
 
                 var xhr = new XMLHttpRequest();
                 xhr.responseType = "json";
@@ -1296,7 +1310,38 @@
                         if (xhr.status === OK) {
                             console.log("toCoordinate succeeded");
                         } else {
-                            console.log('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                            alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                        }
+                    }
+                };
+                xhr.send(JSON.stringify(command));
+            }
+            else if(type === "indirectTo") 
+            {
+                updateDest = false;
+
+                var command = {};
+                command["x"] = document.getElementById("destCoordinateX").innerText;
+                command["y"] = document.getElementById("destCoordinateY").innerText;
+                command["z"] = document.getElementById("destCoordinateZ").innerText;
+                command["w"] = document.getElementById("destCoordinateW").innerText;
+                command["direct"] = false;
+
+                var xhr = new XMLHttpRequest();
+                xhr.responseType = "json";
+                xhr.open('POST', 'toCoordinate');
+
+                xhr.onreadystatechange = function() {
+                    var DONE = 4; // readyState 4 means the request is done.
+                    var OK = 200; // status 200 is a successful return.
+                    if (xhr.readyState === DONE) {
+                        console.log("response is available");
+                        console.log("response type: " + xhr.responseType);
+
+                        if (xhr.status === OK) {
+                            console.log("toCoordinate succeeded");
+                        } else {
+                            alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
                         }
                     }
                 };
