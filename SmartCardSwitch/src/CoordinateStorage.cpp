@@ -942,9 +942,23 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	}
 	break;
 
+	case Type::ContactlessReader:
+	{
+		value = _contactlessReader;
+		rc = true;
+	}
+	break;
+
 	case Type::Home:
 	{
 		value = _home;
+		rc = true;
+	}
+	break;
+
+	case Type::Safe:
+	{
+		value = _safe;
 		rc = true;
 	}
 	break;

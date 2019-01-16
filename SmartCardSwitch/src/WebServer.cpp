@@ -1573,7 +1573,7 @@ bool WebServer::BdcReverse(unsigned int index, std::string & errorInfo)
 	}
 
 	pMovementConfiguration->GetBdcConfig(lowClks, highClks, cycles);
-	command = ConsoleCommandFactory::CmdBdcForward(index, lowClks, highClks, cycles);
+	command = ConsoleCommandFactory::CmdBdcReverse(index, lowClks, highClks, cycles);
 
 	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
 
@@ -1590,7 +1590,6 @@ bool WebServer::BdcReverse(unsigned int index, std::string & errorInfo)
 
 bool WebServer::BdcDeactivate(unsigned int index, std::string & errorInfo)
 {
-	unsigned long lowClks, highClks, cycles;
 	std::string command;
 
 	errorInfo.clear();
@@ -1600,8 +1599,7 @@ bool WebServer::BdcDeactivate(unsigned int index, std::string & errorInfo)
 		return false;
 	}
 
-	pMovementConfiguration->GetBdcConfig(lowClks, highClks, cycles);
-	command = ConsoleCommandFactory::CmdBdcForward(index, lowClks, highClks, cycles);
+	command = ConsoleCommandFactory::CmdBdcBreak(index);
 
 	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
 
@@ -2354,7 +2352,7 @@ std::string WebServer::DeviceStatus()
 	json += "\"deviceFuseOk\":" + std::string(_consoleCommand.resultDeviceFuseOk?"true":"false") + ",";
 	json += "\"optPowered\":" + std::string(_consoleCommand.resultOptPowered?"true":"false") + ",";
 	json += "\"bdcPowered\":" + std::string(_consoleCommand.resultBdcsPowered?"true":"false") + ",";
-	json += "\"stepperPowered\":" + std::string(_consoleCommand.resultSteppersPowered?"true":"false");
+	json += "\"stepperPowered\":" + std::string(_consoleCommand.resultSteppersPowered?"true":"false") + ",";
 
 	//coordinateSmartCardGate
 	json += "\"coordinateSmartCardGate\":{";
@@ -2365,7 +2363,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w) ;
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of smart card gate");
@@ -2384,7 +2382,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of smart card: " + std::to_string(i));
@@ -2404,7 +2402,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of ped key gate");
@@ -2423,7 +2421,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of ped key: " + std::to_string(i));
@@ -2446,7 +2444,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of ped key pressed: " + std::to_string(i));
@@ -2466,7 +2464,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of soft key gate");
@@ -2485,7 +2483,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of soft key: " + std::to_string(i));
@@ -2508,7 +2506,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of soft key pressed: " + std::to_string(i));
@@ -2528,7 +2526,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of assist key gate");
@@ -2547,7 +2545,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of assist key: " + std::to_string(i));
@@ -2570,7 +2568,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of assist key pressed: " + std::to_string(i));
@@ -2590,7 +2588,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of touch screen key gate");
@@ -2609,7 +2607,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of touch screen key: " + std::to_string(i));
@@ -2632,7 +2630,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of touch screen key pressed: " + std::to_string(i));
@@ -2652,7 +2650,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w) ;
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of smart card reader gate");
@@ -2668,7 +2666,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of smart card reader");
@@ -2684,7 +2682,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of bar code reader gate");
@@ -2700,7 +2698,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of bar code reader");
@@ -2716,7 +2714,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of contactless reader gate");
@@ -2732,7 +2730,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of contactless reader");
@@ -2748,7 +2746,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"x\":" + std::to_string(x) + ",";
 			json += "\"y\":" + std::to_string(y) + ",";
 			json += "\"z\":" + std::to_string(z) + ",";
-			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"w\":" + std::to_string(w);
 		}
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of safe");
@@ -2801,8 +2799,13 @@ void WebServer::runConsoleCommand(const std::string & cmd, std::string & errorIn
 	//wait for result
 	for(;;)
 	{
-		Poco::ScopedLock<Poco::Mutex> lock(_replyMutex);
-		if(_consoleCommand.state == CommandState::OnGoing) {
+		CommandState tmpState;
+		{
+			Poco::ScopedLock<Poco::Mutex> lock(_replyMutex);
+			tmpState = _consoleCommand.state;
+		}
+
+		if(tmpState == CommandState::OnGoing) {
 			sleep(10);
 		}
 		else {
