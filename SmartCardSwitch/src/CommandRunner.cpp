@@ -1390,6 +1390,9 @@ void CommandRunner::onFeedbackStepperQuery(std::shared_ptr<ReplyTranslator::Repl
 		else if(_userCommand.resultStepperStatus[replyPtr->index].state == StepperStateGoingHome) {
 			stepperState = IResponseReceiver::StepperState::GoingHome;
 		}
+		else if(_userCommand.resultStepperStatus[replyPtr->index].state == StepperStateKnownPosition) {
+			stepperState = IResponseReceiver::StepperState::KnownPosition;
+		}
 		else if(_userCommand.resultStepperStatus[replyPtr->index].state == StepperStateAccelerating) {
 			stepperState = IResponseReceiver::StepperState::Accelerating;
 		}
@@ -1400,6 +1403,7 @@ void CommandRunner::onFeedbackStepperQuery(std::shared_ptr<ReplyTranslator::Repl
 			stepperState = IResponseReceiver::StepperState::Decelerating;
 		}
 		else {
+			pLogger->LogError("CommandRunner::onFeedbackStepperQuery unknown state string: " + _userCommand.resultStepperStatus[replyPtr->index].state);
 			stepperState = IResponseReceiver::StepperState::Unknown;
 		}
 	}

@@ -121,6 +121,15 @@ private:
 	//		"direct":true
 	//	}
 	void onToCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
+	//request:
+	//	uri: /power
+	// 	body:
+	//	{
+	//		"target":"stepper",
+	//		"on":true
+	//	}
+	void onPower(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
 
 
@@ -171,8 +180,7 @@ public:
 	bool BdcForward(unsigned int index, std::string & errorInfo);
 	bool BdcReverse(unsigned int index, std::string & errorInfo);
 	bool BdcDeactivate(unsigned int index, std::string & errorInfo);
-	bool OptPowerOn(std::string & errorInfo);
-	bool OptPowerOff(std::string & errorInfo);
+	bool PowerOn(const std::string& target, bool on, std::string & errorInfo);
 	bool Query(std::string & errorInfo);
 	bool SaveCoordinate(const std::string & coordinateType, unsigned int data, std::string & errorInfo);
 	bool ToCoordinate(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo);

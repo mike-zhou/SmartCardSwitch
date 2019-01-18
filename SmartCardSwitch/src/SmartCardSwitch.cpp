@@ -225,9 +225,14 @@ protected:
 				tm.start(pUserListener);
 			}
 			else {
-				pLogger->LogInfo("main user proxy is not enabled");
+				pLogger->LogInfo("main user proxy is disabled");
 			}
-			tm.start(pWebServer);
+			if(config().getBool("web_server_enable", true)) {
+				tm.start(pWebServer);
+			}
+			else {
+				pLogger->LogInfo("web server is disabled");
+			}
 		}
 		catch(Poco::Exception& e)
 		{

@@ -92,12 +92,12 @@ private:
 	static const unsigned int LOCATOR_LINE_NUMBER_MAX = 8;
 
 	const std::string StepperStateApproachingHomeLocator = "approaching home locator";
-	const std::string StepperStateLeavingHomeLocator = "Leaving Home";
-	const std::string StepperStateGoingHome = "Going home";
-	const std::string StepperStateKnownPosition = "Known position";
-	const std::string StepperStateAccelerating = "Accelerating";
-	const std::string StepperStateCruising = "Cruising";
-	const std::string StepperStateDecelerating = "Decelerating";
+	const std::string StepperStateLeavingHomeLocator = "leaving Home";
+	const std::string StepperStateGoingHome = "going home";
+	const std::string StepperStateKnownPosition = "known position";
+	const std::string StepperStateAccelerating = "accelerating";
+	const std::string StepperStateCruising = "cruising";
+	const std::string StepperStateDecelerating = "decelerating";
 
 
 	Poco::Mutex _mutex;

@@ -589,6 +589,79 @@ void ScsRequestHandler::onSaveCoordinate(Poco::Net::HTTPServerRequest& request, 
 	pLogger->LogInfo("ScsRequestHandler::onSaveCoordinate request has been processed");
 }
 
+void ScsRequestHandler::onPower(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onPower no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onPower command: " + command);
+		std::string target;
+		bool on;
+		bool exceptionOccurred = true;
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			target = ds["target"].toString();
+			on = ds["on"];
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onPower exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onPower unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onPower reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else
+		{
+			std::string errorInfo;
+
+			if(!_pWebServer->PowerOn(target, on, errorInfo)) {
+				pLogger->LogError("ScsRequestHandler::onPower failed: " + errorInfo);
+			}
+
+			if(errorInfo.empty())
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				response.send();
+			}
+			else
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
+		}
+	}
+}
+
 void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	const std::string& uri = request.getURI();
@@ -617,6 +690,9 @@ void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poc
 	}
 	else if(uri == "/toCoordinate") {
 		onToCoordinate(request, response);
+	}
+	else if(uri == "/power") {
+		onPower(request, response);
 	}
 	else
 	{
@@ -766,12 +842,50 @@ void WebServer::OnDeviceDelay(CommandId key, bool bSuccess)
 
 void WebServer::OnOptPowerOn(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultSteppersPowered = true;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnOptPowerOff(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultSteppersPowered = false;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnOptQueryPower(CommandId key, bool bSuccess, bool bPowered)
@@ -833,12 +947,50 @@ void WebServer::OnDcmQueryPower(CommandId key, bool bSuccess, bool bPowered)
 
 void WebServer::OnBdcsPowerOn(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultBdcsPowered = true;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnBdcsPowerOff(CommandId key, bool bSuccess)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultBdcsPowered = false;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnBdcsQueryPower(CommandId key, bool bSuccess, bool bPowered)
@@ -997,7 +1149,26 @@ void WebServer::OnSteppersPowerOff(CommandId key, bool bSuccess)
 
 void WebServer::OnSteppersQueryPower(CommandId key, bool bSuccess, bool bPowered)
 {
+	if(key == InvalidCommandId) {
+		return;
+	}
 
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		_consoleCommand.resultSteppersPowered = bPowered;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnStepperQueryResolution(CommandId key, bool bSuccess, unsigned long resolutionUs)
@@ -1614,14 +1785,63 @@ bool WebServer::BdcDeactivate(unsigned int index, std::string & errorInfo)
 	return true;
 }
 
-bool WebServer::OptPowerOn(std::string & errorInfo)
+bool WebServer::PowerOn(const std::string& target, bool on, std::string & errorInfo)
 {
+	errorInfo.clear();
+	std::string cmd;
 
-}
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
 
-bool WebServer::OptPowerOff(std::string & errorInfo)
-{
+	if(target == "steppers") {
+		if(on) {
+			cmd = ConsoleCommandFactory::CmdSteppersPowerOn();
+		}
+		else {
+			cmd = ConsoleCommandFactory::CmdSteppersPowerOff();
+		}
 
+		runConsoleCommand(cmd, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::PowerOn failed to set stepper power: " + errorInfo);
+			return false;
+		}
+	}
+	else if(target == "bdcs") {
+		if(on) {
+			cmd = ConsoleCommandFactory::CmdBdcsPowerOn();
+		}
+		else {
+			cmd = ConsoleCommandFactory::CmdBdcsPowerOff();
+		}
+
+		runConsoleCommand(cmd, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::PowerOn failed to set bdc power: " + errorInfo);
+			return false;
+		}
+	}
+	else if(target == "opt") {
+		if(on) {
+			cmd = ConsoleCommandFactory::CmdOptPowerOn();
+		}
+		else {
+			cmd = ConsoleCommandFactory::CmdOptPowerOff();
+		}
+
+		runConsoleCommand(cmd, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::PowerOn failed to set opt power: " + errorInfo);
+			return false;
+		}
+	}
+	else
+	{
+		errorInfo = "wrong target: " + target;
+		pLogger->LogError("WebServer::PowerOn " + errorInfo);
+		return false;
+	}
+
+	return true;
 }
 
 bool WebServer::Query(std::string & errorInfo)
@@ -1645,12 +1865,12 @@ bool WebServer::Query(std::string & errorInfo)
 		return false;
 	}
 
-	cmd = ConsoleCommandFactory::CmdOptQueryPower();
-	runConsoleCommand(cmd, errorInfo);
-	if(!errorInfo.empty()) {
-		pLogger->LogError("WebServer::Query failed in opt query power: " + errorInfo);
-		return false;
-	}
+//	cmd = ConsoleCommandFactory::CmdOptQueryPower();
+//	runConsoleCommand(cmd, errorInfo);
+//	if(!errorInfo.empty()) {
+//		pLogger->LogError("WebServer::Query failed in opt query power: " + errorInfo);
+//		return false;
+//	}
 
 	cmd = ConsoleCommandFactory::CmdBdcsQueryPower();
 	runConsoleCommand(cmd, errorInfo);
@@ -1659,12 +1879,12 @@ bool WebServer::Query(std::string & errorInfo)
 		return false;
 	}
 
-	cmd = ConsoleCommandFactory::CmdDcmQueryPower();
-	runConsoleCommand(cmd, errorInfo);
-	if(!errorInfo.empty()) {
-		pLogger->LogError("WebServer::Query failed in dcm query power: " + errorInfo);
-		return false;
-	}
+//	cmd = ConsoleCommandFactory::CmdDcmQueryPower();
+//	runConsoleCommand(cmd, errorInfo);
+//	if(!errorInfo.empty()) {
+//		pLogger->LogError("WebServer::Query failed in dcm query power: " + errorInfo);
+//		return false;
+//	}
 
 	cmd = ConsoleCommandFactory::CmdSteppersQueryPower();
 	runConsoleCommand(cmd, errorInfo);
