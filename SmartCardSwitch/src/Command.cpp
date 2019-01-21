@@ -199,7 +199,7 @@ std::string CommandBdcsPowerOn::ToJsonCommandUndoString()
 ///////////////////////////////////////////////////////
 std::string CommandBdcsPowerOff::CommandKey()
 {
-	return std::string("bdc power off");
+	return std::string("bdcs power off");
 }
 
 std::string CommandBdcsPowerOff::GetUndoState()
