@@ -202,6 +202,273 @@ ScsClient::ScsResult ScsClientImp::InsertSmartCard(const unsigned int smartCardN
 	return ScsResult::Succeess;
 }
 
+ScsClient::ScsResult ScsClientImp::RemoveSmartCard(const unsigned int smartCardNumber)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	_pLogger->LogInfo("ScsClientImp::RemoveSmartCard smart card number: " + std::to_string(smartCardNumber));
+
+	std::string command;
+	std::string reply;
+	std::string commandId;
+	std::string replyId;
+	std::string result;
+
+	bool exceptionOccurred = false;
+
+	command = CommandFactory::CmdRemoveSmartCard(smartCardNumber);
+	try
+	{
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			commandId = ds["commandId"].toString();
+		}
+
+		reply = sendCommand(command);
+
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			replyId = ds["commandId"].toString();
+			result = ds["result"].toString();
+		}
+
+	}
+	catch(Poco::Exception & e)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::RemoveSmartCard exception: " + e.displayText());
+	}
+	catch(...)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::RemoveSmartCard unknown exception occurred");
+	}
+
+	if(exceptionOccurred) {
+		return ScsResult::Failure;
+	}
+	else
+	{
+		if(replyId != commandId) {
+			_pLogger->LogError("ScsClientImp::RemoveSmartCard Error: reply mismatch");
+			return ScsResult::Failure;
+		}
+		else if(result != "succeeded") {
+			_pLogger->LogError("ScsClientImp::RemoveSmartCard Error: failed to run command");
+			return ScsResult::Failure;
+		}
+	}
+
+	return ScsResult::Succeess;
+}
+
+ScsClient::ScsResult ScsClientImp::SwipeSmartCard(const unsigned int smartCardNumber, const unsigned int pauseMs)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	_pLogger->LogInfo("ScsClientImp::SwipeSmartCard smart card number: " + std::to_string(smartCardNumber));
+
+	std::string command;
+	std::string reply;
+	std::string commandId;
+	std::string replyId;
+	std::string result;
+
+	bool exceptionOccurred = false;
+
+	command = CommandFactory::CmdSwipeSmartCard(smartCardNumber, pauseMs);
+	try
+	{
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			commandId = ds["commandId"].toString();
+		}
+
+		reply = sendCommand(command);
+
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			replyId = ds["commandId"].toString();
+			result = ds["result"].toString();
+		}
+
+	}
+	catch(Poco::Exception & e)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::SwipeSmartCard exception: " + e.displayText());
+	}
+	catch(...)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::SwipeSmartCard unknown exception occurred");
+	}
+
+	if(exceptionOccurred) {
+		return ScsResult::Failure;
+	}
+	else
+	{
+		if(replyId != commandId) {
+			_pLogger->LogError("ScsClientImp::SwipeSmartCard Error: reply mismatch");
+			return ScsResult::Failure;
+		}
+		else if(result != "succeeded") {
+			_pLogger->LogError("ScsClientImp::SwipeSmartCard Error: failed to run command");
+			return ScsResult::Failure;
+		}
+	}
+
+	return ScsResult::Succeess;
+}
+
+ScsClient::ScsResult ScsClientImp::TapSmartCard(const unsigned int smartCardNumber, const unsigned int pauseMs)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	_pLogger->LogInfo("ScsClientImp::TapSmartCard smart card number: " + std::to_string(smartCardNumber));
+
+	std::string command;
+	std::string reply;
+	std::string commandId;
+	std::string replyId;
+	std::string result;
+
+	bool exceptionOccurred = false;
+
+	command = CommandFactory::CmdTapSmartCard(smartCardNumber, pauseMs);
+	try
+	{
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			commandId = ds["commandId"].toString();
+		}
+
+		reply = sendCommand(command);
+
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			replyId = ds["commandId"].toString();
+			result = ds["result"].toString();
+		}
+
+	}
+	catch(Poco::Exception & e)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::TapSmartCard exception: " + e.displayText());
+	}
+	catch(...)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::TapSmartCard unknown exception occurred");
+	}
+
+	if(exceptionOccurred) {
+		return ScsResult::Failure;
+	}
+	else
+	{
+		if(replyId != commandId) {
+			_pLogger->LogError("ScsClientImp::TapSmartCard Error: reply mismatch");
+			return ScsResult::Failure;
+		}
+		else if(result != "succeeded") {
+			_pLogger->LogError("ScsClientImp::TapSmartCard Error: failed to run command");
+			return ScsResult::Failure;
+		}
+	}
+
+	return ScsResult::Succeess;
+}
+
+ScsClient::ScsResult ScsClientImp::TapBarcode(const unsigned int smartCardNumber, const unsigned int pauseMs)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	_pLogger->LogInfo("ScsClientImp::TapBarcode smart card number: " + std::to_string(smartCardNumber));
+
+	std::string command;
+	std::string reply;
+	std::string commandId;
+	std::string replyId;
+	std::string result;
+
+	bool exceptionOccurred = false;
+
+	command = CommandFactory::CmdShowBarCode(smartCardNumber, pauseMs);
+	try
+	{
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			commandId = ds["commandId"].toString();
+		}
+
+		reply = sendCommand(command);
+
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			replyId = ds["commandId"].toString();
+			result = ds["result"].toString();
+		}
+
+	}
+	catch(Poco::Exception & e)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::TapBarcode exception: " + e.displayText());
+	}
+	catch(...)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::TapBarcode unknown exception occurred");
+	}
+
+	if(exceptionOccurred) {
+		return ScsResult::Failure;
+	}
+	else
+	{
+		if(replyId != commandId) {
+			_pLogger->LogError("ScsClientImp::TapBarcode Error: reply mismatch");
+			return ScsResult::Failure;
+		}
+		else if(result != "succeeded") {
+			_pLogger->LogError("ScsClientImp::TapBarcode Error: failed to run command");
+			return ScsResult::Failure;
+		}
+	}
+
+	return ScsResult::Succeess;
+}
 
 ScsClient * GetScsClientInstance()
 {
