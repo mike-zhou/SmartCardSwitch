@@ -199,6 +199,8 @@ ScsClient::ScsResult ScsClientImp::InsertSmartCard(const unsigned int smartCardN
 		}
 	}
 
+	_pLogger->LogInfo("ScsClientImp::InsertSmartCard finished");
+
 	return ScsResult::Succeess;
 }
 
@@ -266,13 +268,15 @@ ScsClient::ScsResult ScsClientImp::RemoveSmartCard(const unsigned int smartCardN
 		}
 	}
 
+	_pLogger->LogInfo("ScsClientImp::RemoveSmartCard finished");
+
 	return ScsResult::Succeess;
 }
 
 ScsClient::ScsResult ScsClientImp::SwipeSmartCard(const unsigned int smartCardNumber, const unsigned int pauseMs)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-	_pLogger->LogInfo("ScsClientImp::SwipeSmartCard smart card number: " + std::to_string(smartCardNumber));
+	_pLogger->LogInfo("ScsClientImp::SwipeSmartCard smart card number: " + std::to_string(smartCardNumber) + ", " + std::to_string(pauseMs));
 
 	std::string command;
 	std::string reply;
@@ -333,13 +337,15 @@ ScsClient::ScsResult ScsClientImp::SwipeSmartCard(const unsigned int smartCardNu
 		}
 	}
 
+	_pLogger->LogInfo("ScsClientImp::SwipeSmartCard finished");
+
 	return ScsResult::Succeess;
 }
 
 ScsClient::ScsResult ScsClientImp::TapSmartCard(const unsigned int smartCardNumber, const unsigned int pauseMs)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-	_pLogger->LogInfo("ScsClientImp::TapSmartCard smart card number: " + std::to_string(smartCardNumber));
+	_pLogger->LogInfo("ScsClientImp::TapSmartCard smart card number: " + std::to_string(smartCardNumber) + ", " + std::to_string(pauseMs));
 
 	std::string command;
 	std::string reply;
@@ -400,13 +406,15 @@ ScsClient::ScsResult ScsClientImp::TapSmartCard(const unsigned int smartCardNumb
 		}
 	}
 
+	_pLogger->LogInfo("ScsClientImp::TapSmartCard finished");
+
 	return ScsResult::Succeess;
 }
 
 ScsClient::ScsResult ScsClientImp::TapBarcode(const unsigned int smartCardNumber, const unsigned int pauseMs)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-	_pLogger->LogInfo("ScsClientImp::TapBarcode smart card number: " + std::to_string(smartCardNumber));
+	_pLogger->LogInfo("ScsClientImp::TapBarcode smart card number: " + std::to_string(smartCardNumber) + ", " + std::to_string(pauseMs));
 
 	std::string command;
 	std::string reply;
@@ -466,6 +474,285 @@ ScsClient::ScsResult ScsClientImp::TapBarcode(const unsigned int smartCardNumber
 			return ScsResult::Failure;
 		}
 	}
+
+	_pLogger->LogInfo("ScsClientImp::TapBarcode finished");
+
+	return ScsResult::Succeess;
+}
+
+ScsClient::ScsResult ScsClientImp::PressPedKeys(const std::vector<unsigned int> pedNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	_pLogger->LogInfo("ScsClientImp::PressPedKeys key amount: " + std::to_string(pedNumbers.size()) + ", " + std::to_string(upPeriodMs) + ", " + std::to_string(downPeriodMs));
+
+	std::string command;
+	std::string reply;
+	std::string commandId;
+	std::string replyId;
+	std::string result;
+
+	bool exceptionOccurred = false;
+
+	command = CommandFactory::CmdPressPedKey(downPeriodMs, upPeriodMs, pedNumbers);
+	try
+	{
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			commandId = ds["commandId"].toString();
+		}
+
+		reply = sendCommand(command);
+
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			replyId = ds["commandId"].toString();
+			result = ds["result"].toString();
+		}
+
+	}
+	catch(Poco::Exception & e)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::PressPedKeys exception: " + e.displayText());
+	}
+	catch(...)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::PressPedKeys unknown exception occurred");
+	}
+
+	if(exceptionOccurred) {
+		return ScsResult::Failure;
+	}
+	else
+	{
+		if(replyId != commandId) {
+			_pLogger->LogError("ScsClientImp::PressPedKeys Error: reply mismatch");
+			return ScsResult::Failure;
+		}
+		else if(result != "succeeded") {
+			_pLogger->LogError("ScsClientImp::PressPedKeys Error: failed to run command");
+			return ScsResult::Failure;
+		}
+	}
+
+	_pLogger->LogInfo("ScsClientImp::PressPedKeys finished");
+
+	return ScsResult::Succeess;
+}
+
+
+ScsClient::ScsResult ScsClientImp::PressSoftKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	_pLogger->LogInfo("ScsClientImp::PressSoftKeys key amount: " + std::to_string(keyNumbers.size()) + ", " + std::to_string(upPeriodMs) + ", " + std::to_string(downPeriodMs));
+
+	std::string command;
+	std::string reply;
+	std::string commandId;
+	std::string replyId;
+	std::string result;
+
+	bool exceptionOccurred = false;
+
+	command = CommandFactory::CmdPressSoftKey(downPeriodMs, upPeriodMs, keyNumbers);
+	try
+	{
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			commandId = ds["commandId"].toString();
+		}
+
+		reply = sendCommand(command);
+
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			replyId = ds["commandId"].toString();
+			result = ds["result"].toString();
+		}
+
+	}
+	catch(Poco::Exception & e)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::PressSoftKeys exception: " + e.displayText());
+	}
+	catch(...)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::PressSoftKeys unknown exception occurred");
+	}
+
+	if(exceptionOccurred) {
+		return ScsResult::Failure;
+	}
+	else
+	{
+		if(replyId != commandId) {
+			_pLogger->LogError("ScsClientImp::PressSoftKeys Error: reply mismatch");
+			return ScsResult::Failure;
+		}
+		else if(result != "succeeded") {
+			_pLogger->LogError("ScsClientImp::PressSoftKeys Error: failed to run command");
+			return ScsResult::Failure;
+		}
+	}
+
+	_pLogger->LogInfo("ScsClientImp::PressSoftKeys finished");
+
+	return ScsResult::Succeess;
+}
+
+ScsClient::ScsResult ScsClientImp::PressAssistKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	_pLogger->LogInfo("ScsClientImp::PressAssistKeys key amount: " + std::to_string(keyNumbers.size()) + ", " + std::to_string(upPeriodMs) + ", " + std::to_string(downPeriodMs));
+
+	std::string command;
+	std::string reply;
+	std::string commandId;
+	std::string replyId;
+	std::string result;
+
+	bool exceptionOccurred = false;
+
+	command = CommandFactory::CmdPressAssistKey(downPeriodMs, upPeriodMs, keyNumbers);
+	try
+	{
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			commandId = ds["commandId"].toString();
+		}
+
+		reply = sendCommand(command);
+
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			replyId = ds["commandId"].toString();
+			result = ds["result"].toString();
+		}
+
+	}
+	catch(Poco::Exception & e)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::PressAssistKeys exception: " + e.displayText());
+	}
+	catch(...)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::PressAssistKeys unknown exception occurred");
+	}
+
+	if(exceptionOccurred) {
+		return ScsResult::Failure;
+	}
+	else
+	{
+		if(replyId != commandId) {
+			_pLogger->LogError("ScsClientImp::PressAssistKeys Error: reply mismatch");
+			return ScsResult::Failure;
+		}
+		else if(result != "succeeded") {
+			_pLogger->LogError("ScsClientImp::PressAssistKeys Error: failed to run command");
+			return ScsResult::Failure;
+		}
+	}
+
+	_pLogger->LogInfo("ScsClientImp::PressAssistKeys finished");
+
+	return ScsResult::Succeess;
+}
+
+ScsClient::ScsResult ScsClientImp::PressTouchScreenKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	_pLogger->LogInfo("ScsClientImp::PressTouchScreenKeys key amount: " + std::to_string(keyNumbers.size()) + ", " + std::to_string(upPeriodMs) + ", " + std::to_string(downPeriodMs));
+
+	std::string command;
+	std::string reply;
+	std::string commandId;
+	std::string replyId;
+	std::string result;
+
+	bool exceptionOccurred = false;
+
+	command = CommandFactory::CmdTouchScreenKey(downPeriodMs, upPeriodMs, keyNumbers);
+	try
+	{
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			commandId = ds["commandId"].toString();
+		}
+
+		reply = sendCommand(command);
+
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			replyId = ds["commandId"].toString();
+			result = ds["result"].toString();
+		}
+
+	}
+	catch(Poco::Exception & e)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::PressTouchScreenKeys exception: " + e.displayText());
+	}
+	catch(...)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::PressTouchScreenKeys unknown exception occurred");
+	}
+
+	if(exceptionOccurred) {
+		return ScsResult::Failure;
+	}
+	else
+	{
+		if(replyId != commandId) {
+			_pLogger->LogError("ScsClientImp::PressTouchScreenKeys Error: reply mismatch");
+			return ScsResult::Failure;
+		}
+		else if(result != "succeeded") {
+			_pLogger->LogError("ScsClientImp::PressTouchScreenKeys Error: failed to run command");
+			return ScsResult::Failure;
+		}
+	}
+
+	_pLogger->LogInfo("ScsClientImp::PressTouchScreenKeys finished");
 
 	return ScsResult::Succeess;
 }
