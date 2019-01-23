@@ -20,9 +20,6 @@
 #include "Poco/Exception.h"
 
 #include "ConsoleInput.h"
-#include "CommandRunner.h"
-#include "Logger.h"
-
 
 using namespace std;
 
@@ -35,8 +32,6 @@ using Poco::Util::HelpFormatter;
 using Poco::Task;
 using Poco::TaskManager;
 using Poco::DateTimeFormatter;
-
-Logger * pLogger;
 
 class ClientConsole: public ServerApplication
 {
@@ -96,45 +91,16 @@ protected:
 			return Application::EXIT_OK;
 		}
 
-		TaskManager tmLogger;
 		TaskManager tm;
 
 		ConsoleInput * pConsoleInput;
-		CommandRunner * pCmdRunner;
-		Poco::Net::SocketAddress address("127.0.0.1:60001");
-		std::string logPath = "./logs/clientConsole";
-		std::string logFileName = "clientConsoleLog";
-		std::string logFileSize = "1M";
-		std::string logFileAmount = "10";
+		pConsoleInput = new ConsoleInput();
 
-		pLogger = new Logger(logPath, logFileName, logFileSize, logFileAmount);
-		pLogger->CopyToConsole(true);
-		tmLogger.start(pLogger); //tmLogger takes the ownership of pLogger.
-		pLogger->LogInfo("**** SmartCardSwitch Client ****");
+		tm.start(pConsoleInput);
 
-
-		pCmdRunner = new CommandRunner;
-		pConsoleInput = new ConsoleInput(pCmdRunner);
-
-		if(pCmdRunner->Init(address))
-		{
-			tm.start(pCmdRunner);
-			tm.start(pConsoleInput);
-
-			waitForTerminationRequest();
-			tm.cancelAll();
-			tm.joinAll();
-		}
-		else
-		{
-			printf("failed to initialize CommandRunner\r\n");
-
-			delete pCmdRunner;
-			delete pConsoleInput;
-		}
-
-		tmLogger.cancelAll();
-		tmLogger.joinAll();
+		waitForTerminationRequest();
+		tm.cancelAll();
+		tm.joinAll();
 
 		return Application::EXIT_OK;
 	}

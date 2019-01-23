@@ -55,13 +55,13 @@ public:
 								const unsigned int fileSizeMB,
 								const unsigned int fileAmount,
 								const std::string & ipAddr,
-								const unsigned int portNumber);
+								const unsigned int portNumber) = 0;
 
 
 	/**
 	 * Shutdown ScsClient object
 	 */
-	virtual void Shutdown();
+	virtual void Shutdown() = 0;
 
 	/**
 	 * Insert the designated smart card
@@ -75,7 +75,7 @@ public:
 	 * 		InvalidSmartCardNumber
 	 * 		SmartCardReaderOccupied
 	 */
-	virtual ScsResult InsertSmartCard(const unsigned int smartCardNumber);
+	virtual ScsResult InsertSmartCard(const unsigned int smartCardNumber) = 0;
 
 	/**
 	 * Remove smart card from smart card reader and return it to smart card bay
@@ -89,7 +89,7 @@ public:
 	 * 		InvalidSmartCardNumber
 	 * 		SmartCardReaderEmpty
 	 */
-	virtual ScsResult RemoveSmartCard(const unsigned int smartCardNumber);
+	virtual ScsResult RemoveSmartCard(const unsigned int smartCardNumber) = 0;
 
 	/**
 	 * Swipe the designated smart card (insert and extract the smart card)
@@ -104,7 +104,7 @@ public:
 	 * 		InvalidSmartCardNumber
 	 * 		SmartCardReaderOccupied
 	 */
-	virtual ScsResult SwipeSmartCard(const unsigned int smartCardNumber, const unsigned int pauseMs);
+	virtual ScsResult SwipeSmartCard(const unsigned int smartCardNumber, const unsigned int pauseMs) = 0;
 
 
 	/**
@@ -119,7 +119,7 @@ public:
 	 * 		ScsNotConnected
 	 * 		InvalidSmartCardNumber
 	 */
-	virtual ScsResult TapSmartCard(const unsigned int smartCardNumber, const unsigned int pauseMs);
+	virtual ScsResult TapSmartCard(const unsigned int smartCardNumber, const unsigned int pauseMs) = 0;
 
 	/**
 	 * Tap the designated smart card with barcode
@@ -133,7 +133,7 @@ public:
 	 * 		ScsNotConnected
 	 * 		InvalidSmartCardNumber
 	 */
-	virtual ScsResult TapBarcode(const unsigned int smartCardNumber, const unsigned int pauseMs);
+	virtual ScsResult TapBarcode(const unsigned int smartCardNumber, const unsigned int pauseMs) = 0;
 
 	/**
 	 * Press PED keys
@@ -147,7 +147,7 @@ public:
 	 * 		Success
 	 * 		InvalidPedKeyNumber
 	 */
-	virtual ScsResult PressPedKeys(const std::vector<unsigned int> pedNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs);
+	virtual ScsResult PressPedKeys(const std::vector<unsigned int> pedNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs) = 0;
 
 	/**
 	 * Press soft keys
@@ -161,7 +161,7 @@ public:
 	 * 		Success
 	 * 		InvalidSoftKeyNumber
 	 */
-	virtual ScsResult PressSoftKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs);
+	virtual ScsResult PressSoftKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs) = 0;
 
 	/**
 	 * Press Assist keys
@@ -175,7 +175,7 @@ public:
 	 * 		Success
 	 * 		InvalidAssistKeyNumber
 	 */
-	virtual ScsResult PressAssistKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs);
+	virtual ScsResult PressAssistKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs) = 0;
 
 	/**
 	 * Press touch screen keys
@@ -189,11 +189,7 @@ public:
 	 * 		Success
 	 * 		InvalidTouchScreenKeyNumber
 	 */
-	virtual ScsResult PressTouchScreenKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs);
-
-protected:
-	ScsClient() {}
-	~ScsClient() {}
+	virtual ScsResult PressTouchScreenKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs) = 0;
 };
 
 ScsClient * GetScsClientInstance();

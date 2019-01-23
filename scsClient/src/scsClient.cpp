@@ -19,7 +19,7 @@
 ScsClientImp * ScsClientImp::_pInstance = nullptr;
 Poco::Mutex ScsClientImp::_mutex;
 
-ScsClientImp::ScsClientImp(): ScsClient()
+ScsClientImp::ScsClientImp()
 {
 	_pLogger = nullptr;
 	_portNumber = 0;

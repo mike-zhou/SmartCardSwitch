@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -lPocoZipd -lPocoNetd -lPocoUtild -lPocoXMLd -lPocoJSONd -lPocoFoundationd -lpthread -lLogger
+LIBS := -lscsClient -lPocoZipd -lPocoNetd -lPocoUtild -lPocoXMLd -lPocoJSONd -lPocoFoundationd -lpthread -lLogger
 

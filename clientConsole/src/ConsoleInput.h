@@ -12,22 +12,39 @@
 #include <iostream>
 
 #include "Poco/Task.h"
-
-#include "CommandFactory.h"
-#include "CommandRunner.h"
-#include "Logger.h"
-
-extern Logger * pLogger;
+#include "scsClient.h"
 
 class ConsoleInput: public Poco::Task
 {
 public:
-	ConsoleInput(CommandRunner * pCmdRunner): Task("ConsoleInput") { _pCmdRunner = pCmdRunner; }
+	ConsoleInput(): Task("ConsoleInput") { }
 	virtual ~ConsoleInput() { }
 
 private:
-	CommandRunner * _pCmdRunner;
 	std::deque<char> _input;
+
+	std::string help()
+	{
+		std::string str;
+
+		str += "\r\n";
+		str += "------------- HELP -------------\r\n";
+		str += "ConnectToSmartCardSwitch: 0\r\n";
+		str += "InsertSmartCard --------: 1 smartCardNumber\r\n";
+		str += "RemoveSmartCard --------: 2 smartCardNumber\r\n";
+		str += "TapSmartCard -----------: 3 smartCardNumber\r\n";
+		str += "SwipeSmartCard ---------: 4 smartCardNumber\r\n";
+		str += "ShowBarCode ------------: 5 smartCardNumber\r\n";
+		str += "PressPedKey ------------: 6 downPeriiod upPeriod key1 key2 key3\r\n";
+		str += "PressSoftKey -----------: 7 downPeriiod upPeriod key1 key2 key3\r\n";
+		str += "PressAssistKey ---------: 8 downPeriiod upPeriod key1 key2 key3\r\n";
+		str += "PressScreenKey ---------: 9 downPeriiod upPeriod key1 key2 key3\r\n";
+		str += "PowerOnOPT -------------: 10\r\n";
+		str += "PowerOffOPT ------------: 11\r\n";
+		str += "--------------------------------\r\n";
+
+		return str;
+	}
 
 	std::string getConsoleCommand()
 	{
@@ -71,8 +88,8 @@ private:
 			}
 		}
 		if(bCmdValid == false) {
-			pLogger->LogError("ConsoleInput::processInput invalid command: " + command);
-			std::cout << CommandFactory::Help();
+
+			std::cout << ("ConsoleInput::processInput invalid command: " + command) << "\r\n";
 			command.clear();
 		}
 
@@ -81,6 +98,13 @@ private:
 
 	void runTask()
 	{
+		auto pScsClient = GetScsClientInstance();
+
+		if(ScsClient::ScsResult::Succeess != pScsClient->Initialize("./logs/clientConsole/", 1, 10, "127.0.0.1", 60001))
+		{
+			std::cout << "failed to connect to Smart Card Switch" << "\r\n";
+		}
+
 		while(1)
 		{
 			if(isCancelled())
@@ -122,7 +146,7 @@ private:
 					{
 						errorOccured = true;
 						std::string e = "ConsoleInput::runTask exception in parsing input";
-						pLogger->LogError(e);
+						std::cout << e << "\r\n";
 					}
 					if(errorOccured) {
 						continue;
@@ -130,22 +154,13 @@ private:
 
 					switch(d0)
 					{
-						case 0:
-						{
-							Poco::Net::SocketAddress address("127.0.0.1:60001");
-							if(!_pCmdRunner->Init(address)) {
-								pLogger->LogError("ConsoleInput::runTask failed to connect to " + address.toString());
-							}
-						}
-						break;
-
 						case 1:
 						{
 							if(d1 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong smart card number");
+								std::cout << ("ConsoleInput::runTask wrong smart card number") << "\r\n";
 							}
 							else {
-								json = CommandFactory::CmdInsertSmartCard(d1);
+								pScsClient->InsertSmartCard(d1);
 							}
 						}
 						break;
@@ -153,10 +168,10 @@ private:
 						case 2:
 						{
 							if(d1 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong smart card number");
+								std::cout << ("ConsoleInput::runTask wrong smart card number") << "\r\n";
 							}
 							else {
-								json = CommandFactory::CmdRemoveSmartCard(d1);
+								pScsClient->RemoveSmartCard(d1);
 							}
 						}
 						break;
@@ -164,13 +179,13 @@ private:
 						case 3:
 						{
 							if(d1 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong smart card number");
+								std::cout << ("ConsoleInput::runTask wrong smart card number") << "\r\n";
 							}
 							else if(d2 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong period value");
+								std::cout << ("ConsoleInput::runTask wrong period value") << "\r\n";
 							}
 							else {
-								json = CommandFactory::CmdTapSmartCard(d1, d2);
+								pScsClient->SwipeSmartCard(d1, d2);
 							}
 						}
 						break;
@@ -178,13 +193,13 @@ private:
 						case 4:
 						{
 							if(d1 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong smart card number");
+								std::cout << ("ConsoleInput::runTask wrong smart card number") << "\r\n";
 							}
 							else if(d2 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong period value");
+								std::cout << ("ConsoleInput::runTask wrong period value") << "\r\n";
 							}
 							else {
-								json = CommandFactory::CmdSwipeSmartCard(d1, d2);
+								pScsClient->TapSmartCard(d1, d2);
 							}
 						}
 						break;
@@ -192,13 +207,13 @@ private:
 						case 5:
 						{
 							if(d1 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong smart card number");
+								std::cout << ("ConsoleInput::runTask wrong smart card number") << "\r\n";
 							}
 							else if(d2 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong period value");
+								std::cout << ("ConsoleInput::runTask wrong period value") << "\r\n";
 							}
 							else {
-								json = CommandFactory::CmdShowBarCode(d1, d2);
+								pScsClient->TapBarcode(d1, d2);
 							}
 						}
 						break;
@@ -206,19 +221,19 @@ private:
 						case 6:
 						{
 							if(d1 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong down period");
+								std::cout << ("ConsoleInput::runTask wrong down period") << "\r\n";
 							}
 							else if(d2 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong up period");
+								std::cout << ("ConsoleInput::runTask wrong up period") << "\r\n";
 							}
 							else if(d3 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong k1");
+								std::cout << ("ConsoleInput::runTask wrong k1") << "\r\n";
 							}
 							else if(d4 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong k2");
+								std::cout << ("ConsoleInput::runTask wrong k2") << "\r\n";
 							}
 							else if(d5 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong k3");
+								std::cout << ("ConsoleInput::runTask wrong k3") << "\r\n";
 							}
 							else {
 								std::vector<unsigned int> numbers;
@@ -226,7 +241,7 @@ private:
 								numbers.push_back(d3);
 								numbers.push_back(d4);
 								numbers.push_back(d5);
-								json = CommandFactory::CmdPressPedKey(d1, d2, numbers);
+								pScsClient->PressPedKeys(numbers, d2, d1);
 							}
 						}
 						break;
@@ -234,19 +249,19 @@ private:
 						case 7:
 						{
 							if(d1 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong down period");
+								std::cout << ("ConsoleInput::runTask wrong down period") << "\r\n";
 							}
 							else if(d2 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong up period");
+								std::cout << ("ConsoleInput::runTask wrong up period") << "\r\n";
 							}
 							else if(d3 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong k1");
+								std::cout << ("ConsoleInput::runTask wrong k1") << "\r\n";
 							}
 							else if(d4 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong k2");
+								std::cout << ("ConsoleInput::runTask wrong k2") << "\r\n";
 							}
 							else if(d5 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong k3");
+								std::cout << ("ConsoleInput::runTask wrong k3") << "\r\n";
 							}
 							else {
 								std::vector<unsigned int> numbers;
@@ -254,7 +269,7 @@ private:
 								numbers.push_back(d3);
 								numbers.push_back(d4);
 								numbers.push_back(d5);
-								json = CommandFactory::CmdPressSoftKey(d1, d2, numbers);
+								pScsClient->PressSoftKeys(numbers, d2, d1);
 							}
 						}
 						break;
@@ -262,19 +277,19 @@ private:
 						case 8:
 						{
 							if(d1 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong down period");
+								std::cout << ("ConsoleInput::runTask wrong down period") << "\r\n";
 							}
 							else if(d2 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong up period");
+								std::cout << ("ConsoleInput::runTask wrong up period") << "\r\n";
 							}
 							else if(d3 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong k1");
+								std::cout << ("ConsoleInput::runTask wrong k1") << "\r\n";
 							}
 							else if(d4 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong k2");
+								std::cout << ("ConsoleInput::runTask wrong k2") << "\r\n";
 							}
 							else if(d5 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong k3");
+								std::cout << ("ConsoleInput::runTask wrong k3") << "\r\n";
 							}
 							else {
 								std::vector<unsigned int> numbers;
@@ -282,7 +297,7 @@ private:
 								numbers.push_back(d3);
 								numbers.push_back(d4);
 								numbers.push_back(d5);
-								json = CommandFactory::CmdPressAssistKey(d1, d2, numbers);
+								pScsClient->PressAssistKeys(numbers, d2, d1);
 							}
 						}
 						break;
@@ -290,19 +305,19 @@ private:
 						case 9:
 						{
 							if(d1 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong down period");
+								std::cout << ("ConsoleInput::runTask wrong down period") << "\r\n";
 							}
 							else if(d2 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong up period");
+								std::cout << ("ConsoleInput::runTask wrong up period") << "\r\n";
 							}
 							else if(d3 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong k1");
+								std::cout << ("ConsoleInput::runTask wrong k1") << "\r\n";
 							}
 							else if(d4 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong k2");
+								std::cout << ("ConsoleInput::runTask wrong k2") << "\r\n";
 							}
 							else if(d5 == -1) {
-								pLogger->LogError("ConsoleInput::runTask wrong k3");
+								std::cout << ("ConsoleInput::runTask wrong k3") << "\r\n";
 							}
 							else {
 								std::vector<unsigned int> numbers;
@@ -310,40 +325,36 @@ private:
 								numbers.push_back(d3);
 								numbers.push_back(d4);
 								numbers.push_back(d5);
-								json = CommandFactory::CmdTouchScreenKey(d1, d2, numbers);
+								pScsClient->PressTouchScreenKeys(numbers, d2, d1);
 							}
 						}
 						break;
 
-						case 10:
-						{
-							json = CommandFactory::CmdPowerOnOpt();
-						}
-						break;
-
-						case 11:
-						{
-							json = CommandFactory::CmdPowerOffOpt();
-						}
-						break;
-
+//						case 10:
+//						{
+//							json = CommandFactory::CmdPowerOnOpt();
+//						}
+//						break;
+//
+//						case 11:
+//						{
+//							json = CommandFactory::CmdPowerOffOpt();
+//						}
+//						break;
+//
 						default:
 						{
-							pLogger->LogError("ConsoleInput::runTask unknown command: " + cmd);
+							std::cout << ("ConsoleInput::runTask unknown command: " + cmd) << "\r\n";
 						}
 						break;
-					}
-
-					if(!json.empty()) {
-						_pCmdRunner->RunJsonCommand(json);
 					}
 				}
 
-				pLogger->LogInfo(CommandFactory::Help());
+				std::cout << help();
 			}
 		}
 
-		pLogger->LogInfo("ConsoleInput::runTask exits");
+		std::cout << ("ConsoleInput::runTask exits") << "\r\n";
 	}
 };
 
