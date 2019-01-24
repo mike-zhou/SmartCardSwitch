@@ -9,6 +9,19 @@
             width: 200px;
             text-align: left
         }
+        .functionZone {
+            border-style: solid;
+            border-width: 1px;
+            border-color: blue;
+            border-radius: 5px;
+        }
+        .functionZone:hover {
+            border-style: solid;
+            border-width: 1px;
+            border-color: blue;
+            border-radius: 5px;
+            background-color: bisque;
+        }
     </style>
 </head>
 
@@ -16,11 +29,11 @@
 
     <h1>SmartCardSwitch Config Server</h1>
 
-    <div>
+    <div class="functionZone">
         <button type="button" id="deviceQuery">Query</button>
     </div>
 
-    <div>
+    <div class="functionZone">
         <div id="coordinateList">
         </div>
         <div>
@@ -33,7 +46,7 @@
         </div>
     </div>
 
-    <div>
+    <div class="functionZone">
         <p>Power</p>
         <input name="power_steppers" id="power_steppers_on" type="radio"><label for="power_steppers_on">PowerOnSteppers</label>
         <input name="power_steppers" id="power_steppers_off" type="radio"><label for="power_steppers_off">PowerOffSteppers</label><br>
@@ -45,7 +58,7 @@
         <input name="power_dcm1" id="power_dcm1_off" type="radio"><label for="power_dcm1_off">PowerOffdcm1</label><br>
     </div>
 
-    <div>
+    <div class="functionZone">
         <p> stepper X
             <div>
                 <div>
@@ -119,7 +132,7 @@
             </div>
     </div>
 
-    <div>
+    <div class="functionZone">
         <p> stepper Y
             <div>
                 <div>
@@ -193,7 +206,7 @@
             </div>
     </div>
 
-    <div>
+    <div class="functionZone">
         <p> stepper Z
             <div>
                 <div>
@@ -267,7 +280,7 @@
             </div>
     </div>
 
-    <div>
+    <div class="functionZone">
         <p> stepper W
             <div>
                 <div>
@@ -341,7 +354,7 @@
             </div>
     </div>
 
-    <div>
+    <div class="functionZone">
         <p> stepper4
             <div>
                 <div>
@@ -415,7 +428,7 @@
             </div>
     </div>
 
-    <div>
+    <div class="functionZone">
         <div>
             <div>
                 <input name="coordinate" id="coordinate_safe" type="radio"><label for="coordinate_safe">Safe</label>
@@ -574,7 +587,7 @@
         </div>
     </div>
 
-    <div>
+    <div class="functionZone">
         <div>
             <label>bdc0: </label>
             <input name="bdc0" id="bdc_0_Release" type="radio"><label for="bdc_0_Release">Release</label>
@@ -613,7 +626,7 @@
         </div>
     </div>
 
-    <div>
+    <div class="functionZone">
         <div>
             <label>locator0: </label><label id="locator0Value"></label>
         </div>
@@ -638,26 +651,26 @@
         <div>
             <label>locator7: </label><label id="locator7Value"></label>
         </div>
+        <div>
+            Device is connected: <input type="checkbox" id="deviceConnected">
+        </div>
+        <div>
+            Device is powered: <input type="checkbox" id="devicePowered">
+        </div>
+        <div>
+            Device fuse is ok: <input type="checkbox" id="deviceFuseOk">
+        </div>
+        <div>
+            OPT is powered: <input type="checkbox" id="optPowered">
+        </div>
+        <div>
+            BDCs are powered: <input type="checkbox" id="bdcsPowered">
+        </div>
+        <div>
+            Steppers are powered: <input type="checkbox" id="steppersPowered">
+        </div>
     </div>
 
-    <div>
-        Device is connected: <input type="checkbox" id="deviceConnected">
-    </div>
-    <div>
-        Device is powered: <input type="checkbox" id="devicePowered">
-    </div>
-    <div>
-        Device fuse is ok: <input type="checkbox" id="deviceFuseOk">
-    </div>
-    <div>
-        OPT is powered: <input type="checkbox" id="optPowered">
-    </div>
-    <div>
-        BDCs are powered: <input type="checkbox" id="bdcsPowered">
-    </div>
-    <div>
-        Steppers are powered: <input type="checkbox" id="steppersPowered">
-    </div>
 
 
     <script>
