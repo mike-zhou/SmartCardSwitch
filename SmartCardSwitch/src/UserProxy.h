@@ -44,6 +44,11 @@ private:
 private:
 	const unsigned long DeviceConnectInterval = 1000000; //1 seconds
 
+	const std::string ErrorDeviceNotConnected = "no device is connected";
+	const std::string ErrorResetConfirmNeeded = "reset confirm is needed";
+	const std::string ErrorDeviceNotInitialized = "device hasn't been initialized";
+	const std::string ErrorWrongDeviceState = "wrong device state";
+
 	Poco::Mutex _mutex;
 
 	enum class State

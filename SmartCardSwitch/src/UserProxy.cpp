@@ -142,7 +142,7 @@ void UserProxy::AddSocket(StreamSocket& socket)
 			pLogger->LogInfo("UserProxy::AddSocket user proxy state: " + std::to_string((int)_state));
 			pLogger->LogInfo("UserProxy::AddSocket device hasn't connected, refuse socket connection: " + socket.address().toString());
 
-			errorInfo = createErrorInfo("no device is connected");
+			errorInfo = createErrorInfo(ErrorDeviceNotConnected);
 
 			MsgPackager::PackageMsg(errorInfo, pkg);
 
@@ -163,7 +163,7 @@ void UserProxy::AddSocket(StreamSocket& socket)
 			pLogger->LogInfo("UserProxy::AddSocket user proxy state: " + std::to_string((int)_state));
 			pLogger->LogInfo("UserProxy::AddSocket waiting for reset confirm, refuse socket connection: " + socket.address().toString());
 
-			errorInfo = createErrorInfo("reset confirm is needed");
+			errorInfo = createErrorInfo(ErrorResetConfirmNeeded);
 
 			MsgPackager::PackageMsg(errorInfo, pkg);
 
@@ -184,7 +184,7 @@ void UserProxy::AddSocket(StreamSocket& socket)
 			pLogger->LogInfo("UserProxy::AddSocket user proxy state: " + std::to_string((int)_state));
 			pLogger->LogInfo("UserProxy::AddSocket device hasn't been initialized, refuse socket connection: " + socket.address().toString());
 
-			errorInfo = createErrorInfo("device hasn't been initialized");
+			errorInfo = createErrorInfo(ErrorDeviceNotInitialized);
 
 			MsgPackager::PackageMsg(errorInfo, pkg);
 
@@ -211,7 +211,7 @@ void UserProxy::AddSocket(StreamSocket& socket)
 			pLogger->LogError("UserProxy::AddSocket user proxy state: " + std::to_string((int)_state));
 			pLogger->LogError("UserProxy::AddSocket wrong device state, refuse socket connection: " + socket.address().toString());
 
-			errorInfo = createErrorInfo("wrong device state");
+			errorInfo = createErrorInfo(ErrorWrongDeviceState);
 
 			MsgPackager::PackageMsg(errorInfo, pkg);
 

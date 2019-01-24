@@ -43,6 +43,11 @@ private:
 	virtual ScsResult PressTouchScreenKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs) override;
 
 private:
+	const std::string ErrorDeviceNotConnected = "no device is connected";
+	const std::string ErrorResetConfirmNeeded = "reset confirm is needed";
+	const std::string ErrorDeviceNotInitialized = "device hasn't been initialized";
+	const std::string ErrorWrongDeviceState = "wrong device state";
+
 	static ScsClientImp * _pInstance;
 	static Poco::Mutex _mutex;
 
@@ -53,6 +58,7 @@ private:
 	unsigned int _portNumber;
 
 	std::string sendCommand(const std::string & command);
+	ScsResult getErrorCode(const std::string & errorInfo);
 };
 
 #endif /* SRC_SCSCLIENTIMP_H_ */

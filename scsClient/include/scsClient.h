@@ -26,6 +26,7 @@ public:
 		ScsNotAvailable, 	//no SCS device is listening to IP:port
 		ScsOccupied,		//another client has already connected to this device.
 		ScsNotConnected,	//no SCS device has been connected to.
+		ScsNotIntialized,
 		InvalidSmartCardNumber,
 		SmartCardReaderOccupied,	//a smart card has already been in the smart card reader.
 		SmartCardReaderEmpty,		//no smart card is in the smart card reader
@@ -192,6 +193,9 @@ public:
 	virtual ScsResult PressTouchScreenKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs) = 0;
 };
 
+/**
+ * Return a singleton instance of ScsClient
+ */
 ScsClient * GetScsClientInstance();
 
 #endif /* INCLUDE_SCSCLIENT_H_ */

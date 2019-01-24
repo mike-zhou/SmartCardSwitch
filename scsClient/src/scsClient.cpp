@@ -56,6 +56,7 @@ ScsClient::ScsResult ScsClientImp::Initialize(const std::string& logFolder,
 	}
 
 	_pLogger = new Logger(logFolder, "scsLog", std::to_string(fileSizeMB)+"M", std::to_string(fileAmount));
+	_pLogger->CopyToConsole(true);
 	_taskManager.start(_pLogger);
 
 	_pLogger->LogInfo("ScsClientImp::Initialize succeeded");
@@ -135,6 +136,21 @@ std::string ScsClientImp::sendCommand(const std::string & command)
 	return msgs[0];
 }
 
+ScsClient::ScsResult ScsClientImp::getErrorCode(const std::string & errorInfo)
+{
+	if(errorInfo == ErrorDeviceNotConnected) {
+		return ScsResult::ScsNotConnected;
+	}
+	else if(errorInfo == ErrorResetConfirmNeeded) {
+		return ScsResult::ScsNotIntialized;
+	}
+	else if(errorInfo == ErrorDeviceNotInitialized) {
+		return ScsResult::ScsNotIntialized;
+	}
+
+	return ScsResult::Failure;
+}
+
 ScsClient::ScsResult ScsClientImp::InsertSmartCard(const unsigned int smartCardNumber)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
@@ -145,6 +161,7 @@ ScsClient::ScsResult ScsClientImp::InsertSmartCard(const unsigned int smartCardN
 	std::string commandId;
 	std::string replyId;
 	std::string result;
+	std::string errorInfo;
 
 	bool exceptionOccurred = false;
 
@@ -170,6 +187,9 @@ ScsClient::ScsResult ScsClientImp::InsertSmartCard(const unsigned int smartCardN
 
 			replyId = ds["commandId"].toString();
 			result = ds["result"].toString();
+			if(result != "succeeded") {
+				errorInfo = ds["errorInfo"].toString();
+			}
 		}
 
 	}
@@ -193,9 +213,10 @@ ScsClient::ScsResult ScsClientImp::InsertSmartCard(const unsigned int smartCardN
 			_pLogger->LogError("ScsClientImp::InsertSmartCard Error: reply mismatch");
 			return ScsResult::Failure;
 		}
-		else if(result != "succeeded") {
-			_pLogger->LogError("ScsClientImp::InsertSmartCard Error: failed to run command");
-			return ScsResult::Failure;
+		else if(result != "succeeded")
+		{
+			_pLogger->LogError("ScsClientImp::InsertSmartCard Error: " + errorInfo);
+			return getErrorCode(errorInfo);
 		}
 	}
 
@@ -214,6 +235,7 @@ ScsClient::ScsResult ScsClientImp::RemoveSmartCard(const unsigned int smartCardN
 	std::string commandId;
 	std::string replyId;
 	std::string result;
+	std::string errorInfo;
 
 	bool exceptionOccurred = false;
 
@@ -239,6 +261,9 @@ ScsClient::ScsResult ScsClientImp::RemoveSmartCard(const unsigned int smartCardN
 
 			replyId = ds["commandId"].toString();
 			result = ds["result"].toString();
+			if(result != "succeeded") {
+				errorInfo = ds["errorInfo"].toString();
+			}
 		}
 
 	}
@@ -263,8 +288,8 @@ ScsClient::ScsResult ScsClientImp::RemoveSmartCard(const unsigned int smartCardN
 			return ScsResult::Failure;
 		}
 		else if(result != "succeeded") {
-			_pLogger->LogError("ScsClientImp::RemoveSmartCard Error: failed to run command");
-			return ScsResult::Failure;
+			_pLogger->LogError("ScsClientImp::RemoveSmartCard Error: " + errorInfo);
+			return getErrorCode(errorInfo);
 		}
 	}
 
@@ -283,6 +308,7 @@ ScsClient::ScsResult ScsClientImp::SwipeSmartCard(const unsigned int smartCardNu
 	std::string commandId;
 	std::string replyId;
 	std::string result;
+	std::string errorInfo;
 
 	bool exceptionOccurred = false;
 
@@ -308,6 +334,9 @@ ScsClient::ScsResult ScsClientImp::SwipeSmartCard(const unsigned int smartCardNu
 
 			replyId = ds["commandId"].toString();
 			result = ds["result"].toString();
+			if(result != "succeeded") {
+				errorInfo = ds["errorInfo"].toString();
+			}
 		}
 
 	}
@@ -332,8 +361,8 @@ ScsClient::ScsResult ScsClientImp::SwipeSmartCard(const unsigned int smartCardNu
 			return ScsResult::Failure;
 		}
 		else if(result != "succeeded") {
-			_pLogger->LogError("ScsClientImp::SwipeSmartCard Error: failed to run command");
-			return ScsResult::Failure;
+			_pLogger->LogError("ScsClientImp::SwipeSmartCard Error: " + errorInfo);
+			return getErrorCode(errorInfo);
 		}
 	}
 
@@ -352,6 +381,7 @@ ScsClient::ScsResult ScsClientImp::TapSmartCard(const unsigned int smartCardNumb
 	std::string commandId;
 	std::string replyId;
 	std::string result;
+	std::string errorInfo;
 
 	bool exceptionOccurred = false;
 
@@ -377,6 +407,9 @@ ScsClient::ScsResult ScsClientImp::TapSmartCard(const unsigned int smartCardNumb
 
 			replyId = ds["commandId"].toString();
 			result = ds["result"].toString();
+			if(result != "succeeded") {
+				errorInfo = ds["errorInfo"].toString();
+			}
 		}
 
 	}
@@ -401,8 +434,8 @@ ScsClient::ScsResult ScsClientImp::TapSmartCard(const unsigned int smartCardNumb
 			return ScsResult::Failure;
 		}
 		else if(result != "succeeded") {
-			_pLogger->LogError("ScsClientImp::TapSmartCard Error: failed to run command");
-			return ScsResult::Failure;
+			_pLogger->LogError("ScsClientImp::TapSmartCard Error: " + errorInfo);
+			return getErrorCode(errorInfo);
 		}
 	}
 
@@ -421,6 +454,7 @@ ScsClient::ScsResult ScsClientImp::TapBarcode(const unsigned int smartCardNumber
 	std::string commandId;
 	std::string replyId;
 	std::string result;
+	std::string errorInfo;
 
 	bool exceptionOccurred = false;
 
@@ -446,6 +480,9 @@ ScsClient::ScsResult ScsClientImp::TapBarcode(const unsigned int smartCardNumber
 
 			replyId = ds["commandId"].toString();
 			result = ds["result"].toString();
+			if(result != "succeeded") {
+				errorInfo = ds["errorInfo"].toString();
+			}
 		}
 
 	}
@@ -470,8 +507,8 @@ ScsClient::ScsResult ScsClientImp::TapBarcode(const unsigned int smartCardNumber
 			return ScsResult::Failure;
 		}
 		else if(result != "succeeded") {
-			_pLogger->LogError("ScsClientImp::TapBarcode Error: failed to run command");
-			return ScsResult::Failure;
+			_pLogger->LogError("ScsClientImp::TapBarcode Error: " + errorInfo);
+			return getErrorCode(errorInfo);
 		}
 	}
 
@@ -490,6 +527,7 @@ ScsClient::ScsResult ScsClientImp::PressPedKeys(const std::vector<unsigned int> 
 	std::string commandId;
 	std::string replyId;
 	std::string result;
+	std::string errorInfo;
 
 	bool exceptionOccurred = false;
 
@@ -515,6 +553,9 @@ ScsClient::ScsResult ScsClientImp::PressPedKeys(const std::vector<unsigned int> 
 
 			replyId = ds["commandId"].toString();
 			result = ds["result"].toString();
+			if(result != "succeeded") {
+				errorInfo = ds["errorInfo"].toString();
+			}
 		}
 
 	}
@@ -539,8 +580,8 @@ ScsClient::ScsResult ScsClientImp::PressPedKeys(const std::vector<unsigned int> 
 			return ScsResult::Failure;
 		}
 		else if(result != "succeeded") {
-			_pLogger->LogError("ScsClientImp::PressPedKeys Error: failed to run command");
-			return ScsResult::Failure;
+			_pLogger->LogError("ScsClientImp::PressPedKeys Error: " + errorInfo);
+			return getErrorCode(errorInfo);
 		}
 	}
 
@@ -560,6 +601,7 @@ ScsClient::ScsResult ScsClientImp::PressSoftKeys(const std::vector<unsigned int>
 	std::string commandId;
 	std::string replyId;
 	std::string result;
+	std::string errorInfo;
 
 	bool exceptionOccurred = false;
 
@@ -585,6 +627,9 @@ ScsClient::ScsResult ScsClientImp::PressSoftKeys(const std::vector<unsigned int>
 
 			replyId = ds["commandId"].toString();
 			result = ds["result"].toString();
+			if(result != "succeeded") {
+				errorInfo = ds["errorInfo"].toString();
+			}
 		}
 
 	}
@@ -609,8 +654,8 @@ ScsClient::ScsResult ScsClientImp::PressSoftKeys(const std::vector<unsigned int>
 			return ScsResult::Failure;
 		}
 		else if(result != "succeeded") {
-			_pLogger->LogError("ScsClientImp::PressSoftKeys Error: failed to run command");
-			return ScsResult::Failure;
+			_pLogger->LogError("ScsClientImp::PressSoftKeys Error: " + errorInfo);
+			return getErrorCode(errorInfo);
 		}
 	}
 
@@ -629,6 +674,7 @@ ScsClient::ScsResult ScsClientImp::PressAssistKeys(const std::vector<unsigned in
 	std::string commandId;
 	std::string replyId;
 	std::string result;
+	std::string errorInfo;
 
 	bool exceptionOccurred = false;
 
@@ -654,6 +700,9 @@ ScsClient::ScsResult ScsClientImp::PressAssistKeys(const std::vector<unsigned in
 
 			replyId = ds["commandId"].toString();
 			result = ds["result"].toString();
+			if(result != "succeeded") {
+				errorInfo = ds["errorInfo"].toString();
+			}
 		}
 
 	}
@@ -678,8 +727,8 @@ ScsClient::ScsResult ScsClientImp::PressAssistKeys(const std::vector<unsigned in
 			return ScsResult::Failure;
 		}
 		else if(result != "succeeded") {
-			_pLogger->LogError("ScsClientImp::PressAssistKeys Error: failed to run command");
-			return ScsResult::Failure;
+			_pLogger->LogError("ScsClientImp::PressAssistKeys Error: " + errorInfo);
+			return getErrorCode(errorInfo);
 		}
 	}
 
@@ -698,6 +747,7 @@ ScsClient::ScsResult ScsClientImp::PressTouchScreenKeys(const std::vector<unsign
 	std::string commandId;
 	std::string replyId;
 	std::string result;
+	std::string errorInfo;
 
 	bool exceptionOccurred = false;
 
@@ -723,8 +773,10 @@ ScsClient::ScsResult ScsClientImp::PressTouchScreenKeys(const std::vector<unsign
 
 			replyId = ds["commandId"].toString();
 			result = ds["result"].toString();
+			if(result != "succeeded") {
+				errorInfo = ds["errorInfo"].toString();
+			}
 		}
-
 	}
 	catch(Poco::Exception & e)
 	{
@@ -747,8 +799,8 @@ ScsClient::ScsResult ScsClientImp::PressTouchScreenKeys(const std::vector<unsign
 			return ScsResult::Failure;
 		}
 		else if(result != "succeeded") {
-			_pLogger->LogError("ScsClientImp::PressTouchScreenKeys Error: failed to run command");
-			return ScsResult::Failure;
+			_pLogger->LogError("ScsClientImp::PressTouchScreenKeys Error: " + errorInfo);
+			return getErrorCode(errorInfo);
 		}
 	}
 
