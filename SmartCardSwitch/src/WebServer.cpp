@@ -1446,6 +1446,9 @@ void WebServer::OnStepperConfigHome(CommandId key, bool bSuccess)
 		data.forward = false;
 		data.homeOffset = 0;
 		data.maximum = 0;
+		data.locatorIndex = _consoleCommand.locatorIndex;
+		data.locatorLineNumberStart = _consoleCommand.locatorLineNumberStart;
+		data.locatorLineNumberTerminal = _consoleCommand.locatorLineNumberTerminal;
 		_consoleCommand.state = CommandState::Succeeded;
 	}
 	else {
