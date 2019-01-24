@@ -63,7 +63,7 @@
         <h2>Stepper X</h2>
             <div>
                 <div>
-                    <label>MIN:</label><label id="stepper_0_minOffset">0</label>
+                    <label>State:</label><label id="stepper0State"></label>
                     <label>   Current:</label><label id="stepper0CurOffset"></label>
                     <label>   MAX:</label><label id="stepper0MaxOffset"></label><br>
                     <label>Steps:</label>
@@ -137,7 +137,7 @@
         <h2>Stepper Y</h2>
             <div>
                 <div>
-                    <label>MIN:</label><label id="stepper_1_minOffset">0</label>
+                    <label>State:</label><label id="stepper1State"></label>
                     <label>   Current:</label><label id="stepper1CurOffset"></label>
                     <label>   MAX:</label><label id="stepper1MaxOffset"></label><br>
                     <label>Steps:</label>
@@ -211,7 +211,7 @@
         <h2>Stepper Z</h2>
             <div>
                 <div>
-                    <label>MIN:</label><label id="stepper_2_minOffset">0</label>
+                    <label>State:</label><label id="stepper2State"></label>
                     <label>   Current:</label><label id="stepper2CurOffset"></label>
                     <label>   MAX:</label><label id="stepper2MaxOffset"></label><br>
                     <label>Steps:</label>
@@ -285,7 +285,7 @@
         <h2>Stepper W</h2>
             <div>
                 <div>
-                    <label>MIN:</label><label id="stepper_3_minOffset">0</label>
+                    <label>State:</label><label id="stepper3State"></label>
                     <label>   Current:</label><label id="stepper3CurOffset"></label>
                     <label>   MAX:</label><label id="stepper3MaxOffset"></label><br>
                     <label>Steps:</label>
@@ -359,7 +359,7 @@
         <h2>Stepper4</h2>
             <div>
                 <div>
-                    <label>MIN:</label><label id="stepper_4_minOffset">0</label>
+                    <label>State:</label><label id="stepper4State">0</label>
                     <label>   Current:</label><label id="stepper4CurOffset"></label>
                     <label>   MAX:</label><label id="stepper4MaxOffset"></label><br>
                     <label>Steps:</label>
@@ -681,6 +681,8 @@
         function updatePageStepper(stepper, data) {
             var elementId;
 
+            elementId = stepper + "State";
+            document.getElementById(elementId).innerHTML = data["state"].toString();
             elementId = stepper + "CurOffset";
             document.getElementById(elementId).innerHTML = data["homeOffset"].toString();
             elementId = stepper + "MaxOffset";
