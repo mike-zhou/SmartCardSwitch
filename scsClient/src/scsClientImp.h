@@ -41,6 +41,8 @@ private:
 	virtual ScsResult PressSoftKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs) override;
 	virtual ScsResult PressAssistKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs) override;
 	virtual ScsResult PressTouchScreenKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs) override;
+	virtual ScsResult PowerOnOpt(bool on) override;
+	virtual ScsResult PowerOnEthernetSwitch(bool on) override;
 
 private:
 	const std::string ErrorDeviceNotConnected = "no device is connected";

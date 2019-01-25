@@ -29,7 +29,6 @@ private:
 
 		str += "\r\n";
 		str += "------------- HELP -------------\r\n";
-		str += "ConnectToSmartCardSwitch: 0\r\n";
 		str += "InsertSmartCard --------: 1 smartCardNumber\r\n";
 		str += "RemoveSmartCard --------: 2 smartCardNumber\r\n";
 		str += "TapSmartCard -----------: 3 smartCardNumber\r\n";

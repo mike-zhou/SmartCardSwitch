@@ -191,6 +191,24 @@ public:
 	 * 		InvalidTouchScreenKeyNumber
 	 */
 	virtual ScsResult PressTouchScreenKeys(const std::vector<unsigned int> keyNumbers, const unsigned int upPeriodMs, const unsigned int downPeriodMs) = 0;
+
+	/**
+	 * Power on/off OPT
+	 *
+	 * Return value:
+	 * 		Success
+	 * 		ScsNotConnected
+	 */
+	virtual ScsResult PowerOnOpt(bool on) = 0;
+
+	/**
+	 * Power on/off ethernet switch
+	 *
+	 * Return value:
+	 * 		Success
+	 * 		ScsNotConnected
+	 */
+	virtual ScsResult PowerOnEthernetSwitch(bool on) = 0;
 };
 
 /**
