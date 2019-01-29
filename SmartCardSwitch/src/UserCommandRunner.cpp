@@ -939,6 +939,7 @@ void UserCommandRunner::gate_smartCardReader_withCard()
 	long accelerationBufferDecrement;
 	long decelerationBuffer;
 	long decelerationBufferIncrement;
+	long insertExtra;
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
@@ -956,6 +957,10 @@ void UserCommandRunner::gate_smartCardReader_withCard()
 	if(rc == false) {
 		throwError("UserCommandRunner::gate_smartCardReader_withCard failed to retrieve stepper card slow insert");
 	}
+	rc = pCoordinateStorage->GetSmartCardInsertExtra(insertExtra);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_smartCardReader_withCard failed to retrieve stepper card insert extra");
+	}
 
 	//configure movement
 	configStepperMovement(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
@@ -970,7 +975,8 @@ void UserCommandRunner::gate_smartCardReader_withCard()
 	//configure movement
 	configStepperMovement(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	//insert card
-	moveStepperY(slowInsertEnd, finalY);
+	moveStepperY(slowInsertEnd, finalY + insertExtra);
+	moveStepperY(finalY + insertExtra, finalY);
 }
 
 void UserCommandRunner::smartCardReader_gate_withCard()
@@ -1368,6 +1374,31 @@ void UserCommandRunner::executeUserCmdShowBarCode()
 	releaseClamp();
 }
 
+void UserCommandRunner::pullUpKeyPressingArm()
+{
+	std::string cmd;
+	//to be made configurable
+	cmd = ConsoleCommandFactory::CmdBdcForward(1, 2, 3, 15000);
+	runConsoleCommand(cmd);
+}
+
+void UserCommandRunner::putDownKeyPressingArm()
+{
+	std::string cmd;
+	//to be made configurable
+	cmd = ConsoleCommandFactory::CmdBdcReverse(1, 2, 3, 15000);
+	runConsoleCommand(cmd);
+}
+
+void UserCommandRunner::releaseKeyPressingArm()
+{
+	std::string cmd;
+
+	//to be made configurable
+	cmd = ConsoleCommandFactory::CmdBdcCoast(1);
+	runConsoleCommand(cmd);
+}
+
 void UserCommandRunner::pedKey_gate(unsigned int keyNumber)
 {
 	int curX, curY, curZ, curW;
@@ -1494,6 +1525,7 @@ void UserCommandRunner::executeUserCmdPressPedKey()
 	}
 
 	toPedKeyGate();
+	putDownKeyPressingArm();
 
 	auto pKeys = _userCommand.keyNumbers.data();
 	unsigned int lastKeyIndex = _userCommand.keyNumbers.size() - 1;
@@ -1509,6 +1541,8 @@ void UserCommandRunner::executeUserCmdPressPedKey()
 
 	//back to gate
 	pedKey_gate(pKeys[lastKeyIndex]);
+	pullUpKeyPressingArm();
+	releaseKeyPressingArm();
 }
 
 void UserCommandRunner::softKey_gate(unsigned int keyNumber)
@@ -1637,6 +1671,7 @@ void UserCommandRunner::executeUserCmdPressSoftKey()
 	}
 
 	toSoftKeyGate();
+	putDownKeyPressingArm();
 
 	auto pKeys = _userCommand.keyNumbers.data();
 	unsigned int lastKeyIndex = _userCommand.keyNumbers.size() - 1;
@@ -1652,6 +1687,8 @@ void UserCommandRunner::executeUserCmdPressSoftKey()
 
 	//back to gate
 	softKey_gate(pKeys[lastKeyIndex]);
+	pullUpKeyPressingArm();
+	releaseKeyPressingArm();
 }
 
 void UserCommandRunner::assistKey_gate(unsigned int keyNumber)
@@ -1780,6 +1817,7 @@ void UserCommandRunner::executeUserCmdPressAssistKey()
 	}
 
 	toAssistKeyGate();
+	putDownKeyPressingArm();
 
 	auto pKeys = _userCommand.keyNumbers.data();
 	unsigned int lastKeyIndex = _userCommand.keyNumbers.size() - 1;
@@ -1795,6 +1833,8 @@ void UserCommandRunner::executeUserCmdPressAssistKey()
 
 	//back to gate
 	assistKey_gate(pKeys[lastKeyIndex]);
+	pullUpKeyPressingArm();
+	releaseKeyPressingArm();
 }
 
 void UserCommandRunner::touchScreenKey_gate(unsigned int keyNumber)
@@ -1924,6 +1964,7 @@ void UserCommandRunner::executeUserCmdTouchScreen()
 	}
 
 	toTouchScreenGate();
+	putDownKeyPressingArm();
 
 	auto pKeys = _userCommand.keyNumbers.data();
 	unsigned int lastKeyIndex = _userCommand.keyNumbers.size() - 1;
@@ -1939,6 +1980,8 @@ void UserCommandRunner::executeUserCmdTouchScreen()
 
 	//back to gate
 	touchScreenKey_gate(pKeys[lastKeyIndex]);
+	pullUpKeyPressingArm();
+	releaseKeyPressingArm();
 }
 
 void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& errorInfo)

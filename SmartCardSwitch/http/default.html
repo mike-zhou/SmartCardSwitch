@@ -9,12 +9,14 @@
             width: 200px;
             text-align: left
         }
+        
         .functionZone {
             border-style: solid;
             border-width: 1px;
             border-color: blue;
             border-radius: 5px;
         }
+        
         .functionZone:hover {
             border-style: solid;
             border-width: 1px;
@@ -61,42 +63,42 @@
 
     <div class="functionZone">
         <h2>Stepper X</h2>
+        <div>
             <div>
-                <div>
-                    <label>State:</label><label id="stepper0State"></label>
-                    <label>   Current:</label><label id="stepper0CurOffset"></label>
-                    <label>   MAX:</label><label id="stepper0MaxOffset"></label><br>
-                    <label>Steps:</label>
-                    <input type="number" id="stepper0Steps"></input>
-                    <button type="button" id="stepper_0_decrease">-</button>
-                    <button type="button" id="stepper_0_increase">+</button>
-                </div>
-                <div>
-                    <button type="button" id="stepper_0_decrease128">-128</button>
-                    <button type="button" id="stepper_0_decrease64">-64</button>
-                    <button type="button" id="stepper_0_decrease32">-32</button>
-                    <button type="button" id="stepper_0_decrease16">-16</button>
-                    <button type="button" id="stepper_0_decrease8">-8</button>
-                    <button type="button" id="stepper_0_decrease4">-4</button>
-                    <button type="button" id="stepper_0_decrease1">-1</button>
-                    <button type="button" id="stepper_0_increase1">+1</button>
-                    <button type="button" id="stepper_0_increase4">+4</button>
-                    <button type="button" id="stepper_0_increase8">+8</button>
-                    <button type="button" id="stepper_0_increase16">+16</button>
-                    <button type="button" id="stepper_0_increase32">+32</button>
-                    <button type="button" id="stepper_0_increase64">+64</button>
-                    <button type="button" id="stepper_0_increase128">+128</button>
-                </div>
-                <div>
-                    lowClks:<input type="number" id="stepper0LowClks" min="0" max="65535" size="5"></input>
-                    highClks:<input type="number" id="stepper0HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
-                    <input type="number" id="stepper0AccelerationBuffer" min="0" max="65535" size="5"></input>
-                    accelerationBufferDecrement:<input type="number" id="stepper0AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
-                    <input type="number" id="stepper0DecelerationBuffer" min="0" max="65535" size="5"></input>
-                    decelerationBufferIncrement:<input type="number" id="stepper0DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
-                    <button type="button" id="stepper_0_configMovement">Config Movement</button><br>
-                    <label id="stepper0LocatorLabel">Locator:</label>
-                    <select id="stepper0Locator">
+                <label>State:</label><label id="stepper0State"></label>
+                <label>   Current:</label><label id="stepper0CurOffset"></label>
+                <label>   MAX:</label><label id="stepper0MaxOffset"></label><br>
+                <label>Steps:</label>
+                <input type="number" id="stepper0Steps"></input>
+                <button type="button" id="stepper_0_decrease">-</button>
+                <button type="button" id="stepper_0_increase">+</button>
+            </div>
+            <div>
+                <button type="button" id="stepper_0_decrease128">-128</button>
+                <button type="button" id="stepper_0_decrease64">-64</button>
+                <button type="button" id="stepper_0_decrease32">-32</button>
+                <button type="button" id="stepper_0_decrease16">-16</button>
+                <button type="button" id="stepper_0_decrease8">-8</button>
+                <button type="button" id="stepper_0_decrease4">-4</button>
+                <button type="button" id="stepper_0_decrease1">-1</button>
+                <button type="button" id="stepper_0_increase1">+1</button>
+                <button type="button" id="stepper_0_increase4">+4</button>
+                <button type="button" id="stepper_0_increase8">+8</button>
+                <button type="button" id="stepper_0_increase16">+16</button>
+                <button type="button" id="stepper_0_increase32">+32</button>
+                <button type="button" id="stepper_0_increase64">+64</button>
+                <button type="button" id="stepper_0_increase128">+128</button>
+            </div>
+            <div>
+                lowClks:<input type="number" id="stepper0LowClks" min="0" max="65535" size="5"></input>
+                highClks:<input type="number" id="stepper0HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
+                <input type="number" id="stepper0AccelerationBuffer" min="0" max="65535" size="5"></input>
+                accelerationBufferDecrement:<input type="number" id="stepper0AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
+                <input type="number" id="stepper0DecelerationBuffer" min="0" max="65535" size="5"></input>
+                decelerationBufferIncrement:<input type="number" id="stepper0DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
+                <button type="button" id="stepper_0_configMovement">Config Movement</button><br>
+                <label id="stepper0LocatorLabel">Locator:</label>
+                <select id="stepper0Locator">
                     <option value="0">0</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -106,8 +108,8 @@
                     <option value="6">6</option>
                     <option value="7">7</option>
                 </select>
-                    <label id="stepper0LocatorLineNumberStartLabel">LocatorLineNumberStart:</label>
-                    <select id="stepper0LocatorLineNumberStart">
+                <label id="stepper0LocatorLineNumberStartLabel">LocatorLineNumberStart:</label>
+                <select id="stepper0LocatorLineNumberStart">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -117,8 +119,8 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                 </select>
-                    <label id="stepper0LocatorLineNumberTerminalLabel">LocatorLineNumberTerminal:</label>
-                    <select id="stepper0LocatorLineNumberTerminal">
+                <label id="stepper0LocatorLineNumberTerminalLabel">LocatorLineNumberTerminal:</label>
+                <select id="stepper0LocatorLineNumberTerminal">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -128,49 +130,49 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                 </select><br>
-                    <button type="button" id="stepper_0_configHome">Config Home</button><br>
-                </div>
+                <button type="button" id="stepper_0_configHome">Config Home</button><br>
             </div>
+        </div>
     </div>
 
     <div class="functionZone">
         <h2>Stepper Y</h2>
+        <div>
             <div>
-                <div>
-                    <label>State:</label><label id="stepper1State"></label>
-                    <label>   Current:</label><label id="stepper1CurOffset"></label>
-                    <label>   MAX:</label><label id="stepper1MaxOffset"></label><br>
-                    <label>Steps:</label>
-                    <input type="number" id="stepper1Steps"></input>
-                    <button type="button" id="stepper_1_decrease">-</button>
-                    <button type="button" id="stepper_1_increase">+</button>
-                </div>
-                <div>
-                    <button type="button" id="stepper_1_decrease128">-128</button>
-                    <button type="button" id="stepper_1_decrease64">-64</button>
-                    <button type="button" id="stepper_1_decrease32">-32</button>
-                    <button type="button" id="stepper_1_decrease16">-16</button>
-                    <button type="button" id="stepper_1_decrease8">-8</button>
-                    <button type="button" id="stepper_1_decrease4">-4</button>
-                    <button type="button" id="stepper_1_decrease1">-1</button>
-                    <button type="button" id="stepper_1_increase1">+1</button>
-                    <button type="button" id="stepper_1_increase4">+4</button>
-                    <button type="button" id="stepper_1_increase8">+8</button>
-                    <button type="button" id="stepper_1_increase16">+16</button>
-                    <button type="button" id="stepper_1_increase32">+32</button>
-                    <button type="button" id="stepper_1_increase64">+64</button>
-                    <button type="button" id="stepper_1_increase128">+128</button>
-                </div>
-                <div>
-                    lowClks:<input type="number" id="stepper1LowClks" min="0" max="65535" size="5"></input>
-                    highClks:<input type="number" id="stepper1HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
-                    <input type="number" id="stepper1AccelerationBuffer" min="0" max="65535" size="5"></input>
-                    accelerationBufferDecrement:<input type="number" id="stepper1AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
-                    <input type="number" id="stepper1DecelerationBuffer" min="0" max="65535" size="5"></input>
-                    decelerationBufferIncrement:<input type="number" id="stepper1DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
-                    <button type="button" id="stepper_1_configMovement">Config Movement</button><br>
-                    <label id="stepper1LocatorLabel">Locator:</label>
-                    <select id="stepper1Locator">
+                <label>State:</label><label id="stepper1State"></label>
+                <label>   Current:</label><label id="stepper1CurOffset"></label>
+                <label>   MAX:</label><label id="stepper1MaxOffset"></label><br>
+                <label>Steps:</label>
+                <input type="number" id="stepper1Steps"></input>
+                <button type="button" id="stepper_1_decrease">-</button>
+                <button type="button" id="stepper_1_increase">+</button>
+            </div>
+            <div>
+                <button type="button" id="stepper_1_decrease128">-128</button>
+                <button type="button" id="stepper_1_decrease64">-64</button>
+                <button type="button" id="stepper_1_decrease32">-32</button>
+                <button type="button" id="stepper_1_decrease16">-16</button>
+                <button type="button" id="stepper_1_decrease8">-8</button>
+                <button type="button" id="stepper_1_decrease4">-4</button>
+                <button type="button" id="stepper_1_decrease1">-1</button>
+                <button type="button" id="stepper_1_increase1">+1</button>
+                <button type="button" id="stepper_1_increase4">+4</button>
+                <button type="button" id="stepper_1_increase8">+8</button>
+                <button type="button" id="stepper_1_increase16">+16</button>
+                <button type="button" id="stepper_1_increase32">+32</button>
+                <button type="button" id="stepper_1_increase64">+64</button>
+                <button type="button" id="stepper_1_increase128">+128</button>
+            </div>
+            <div>
+                lowClks:<input type="number" id="stepper1LowClks" min="0" max="65535" size="5"></input>
+                highClks:<input type="number" id="stepper1HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
+                <input type="number" id="stepper1AccelerationBuffer" min="0" max="65535" size="5"></input>
+                accelerationBufferDecrement:<input type="number" id="stepper1AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
+                <input type="number" id="stepper1DecelerationBuffer" min="0" max="65535" size="5"></input>
+                decelerationBufferIncrement:<input type="number" id="stepper1DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
+                <button type="button" id="stepper_1_configMovement">Config Movement</button><br>
+                <label id="stepper1LocatorLabel">Locator:</label>
+                <select id="stepper1Locator">
                     <option value="0">0</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -180,8 +182,8 @@
                     <option value="6">6</option>
                     <option value="7">7</option>
                 </select>
-                    <label id="stepper1LocatorLineNumberStartLabel">LocatorLineNumberStart:</label>
-                    <select id="stepper1LocatorLineNumberStart">
+                <label id="stepper1LocatorLineNumberStartLabel">LocatorLineNumberStart:</label>
+                <select id="stepper1LocatorLineNumberStart">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -191,8 +193,8 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                 </select>
-                    <label id="stepper1LocatorLineNumberTerminalLabel">LocatorLineNumberTerminal:</label>
-                    <select id="stepper1LocatorLineNumberTerminal">
+                <label id="stepper1LocatorLineNumberTerminalLabel">LocatorLineNumberTerminal:</label>
+                <select id="stepper1LocatorLineNumberTerminal">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -202,49 +204,49 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                 </select><br>
-                    <button type="button" id="stepper_1_configHome">Config Home</button><br>
-                </div>
+                <button type="button" id="stepper_1_configHome">Config Home</button><br>
             </div>
+        </div>
     </div>
 
     <div class="functionZone">
         <h2>Stepper Z</h2>
+        <div>
             <div>
-                <div>
-                    <label>State:</label><label id="stepper2State"></label>
-                    <label>   Current:</label><label id="stepper2CurOffset"></label>
-                    <label>   MAX:</label><label id="stepper2MaxOffset"></label><br>
-                    <label>Steps:</label>
-                    <input type="number" id="stepper2Steps"></input>
-                    <button type="button" id="stepper_2_decrease">-</button>
-                    <button type="button" id="stepper_2_increase">+</button>
-                </div>
-                <div>
-                    <button type="button" id="stepper_2_decrease128">-128</button>
-                    <button type="button" id="stepper_2_decrease64">-64</button>
-                    <button type="button" id="stepper_2_decrease32">-32</button>
-                    <button type="button" id="stepper_2_decrease16">-16</button>
-                    <button type="button" id="stepper_2_decrease8">-8</button>
-                    <button type="button" id="stepper_2_decrease4">-4</button>
-                    <button type="button" id="stepper_2_decrease1">-1</button>
-                    <button type="button" id="stepper_2_increase1">+1</button>
-                    <button type="button" id="stepper_2_increase4">+4</button>
-                    <button type="button" id="stepper_2_increase8">+8</button>
-                    <button type="button" id="stepper_2_increase16">+16</button>
-                    <button type="button" id="stepper_2_increase32">+32</button>
-                    <button type="button" id="stepper_2_increase64">+64</button>
-                    <button type="button" id="stepper_2_increase128">+128</button>
-                </div>
-                <div>
-                    lowClks:<input type="number" id="stepper2LowClks" min="0" max="65535" size="5"></input>
-                    highClks:<input type="number" id="stepper2HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
-                    <input type="number" id="stepper2AccelerationBuffer" min="0" max="65535" size="5"></input>
-                    accelerationBufferDecrement:<input type="number" id="stepper2AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
-                    <input type="number" id="stepper2DecelerationBuffer" min="0" max="65535" size="5"></input>
-                    decelerationBufferIncrement:<input type="number" id="stepper2DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
-                    <button type="button" id="stepper_2_configMovement">Config Movement</button><br>
-                    <label id="stepper2LocatorLabel">Locator:</label>
-                    <select id="stepper2Locator">
+                <label>State:</label><label id="stepper2State"></label>
+                <label>   Current:</label><label id="stepper2CurOffset"></label>
+                <label>   MAX:</label><label id="stepper2MaxOffset"></label><br>
+                <label>Steps:</label>
+                <input type="number" id="stepper2Steps"></input>
+                <button type="button" id="stepper_2_decrease">-</button>
+                <button type="button" id="stepper_2_increase">+</button>
+            </div>
+            <div>
+                <button type="button" id="stepper_2_decrease128">-128</button>
+                <button type="button" id="stepper_2_decrease64">-64</button>
+                <button type="button" id="stepper_2_decrease32">-32</button>
+                <button type="button" id="stepper_2_decrease16">-16</button>
+                <button type="button" id="stepper_2_decrease8">-8</button>
+                <button type="button" id="stepper_2_decrease4">-4</button>
+                <button type="button" id="stepper_2_decrease1">-1</button>
+                <button type="button" id="stepper_2_increase1">+1</button>
+                <button type="button" id="stepper_2_increase4">+4</button>
+                <button type="button" id="stepper_2_increase8">+8</button>
+                <button type="button" id="stepper_2_increase16">+16</button>
+                <button type="button" id="stepper_2_increase32">+32</button>
+                <button type="button" id="stepper_2_increase64">+64</button>
+                <button type="button" id="stepper_2_increase128">+128</button>
+            </div>
+            <div>
+                lowClks:<input type="number" id="stepper2LowClks" min="0" max="65535" size="5"></input>
+                highClks:<input type="number" id="stepper2HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
+                <input type="number" id="stepper2AccelerationBuffer" min="0" max="65535" size="5"></input>
+                accelerationBufferDecrement:<input type="number" id="stepper2AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
+                <input type="number" id="stepper2DecelerationBuffer" min="0" max="65535" size="5"></input>
+                decelerationBufferIncrement:<input type="number" id="stepper2DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
+                <button type="button" id="stepper_2_configMovement">Config Movement</button><br>
+                <label id="stepper2LocatorLabel">Locator:</label>
+                <select id="stepper2Locator">
                     <option value="0">0</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -254,8 +256,8 @@
                     <option value="6">6</option>
                     <option value="7">7</option>
                 </select>
-                    <label id="stepper2LocatorLineNumberStartLabel">LocatorLineNumberStart:</label>
-                    <select id="stepper2LocatorLineNumberStart">
+                <label id="stepper2LocatorLineNumberStartLabel">LocatorLineNumberStart:</label>
+                <select id="stepper2LocatorLineNumberStart">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -265,8 +267,8 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                 </select>
-                    <label id="stepper2LocatorLineNumberTerminalLabel">LocatorLineNumberTerminal:</label>
-                    <select id="stepper2LocatorLineNumberTerminal">
+                <label id="stepper2LocatorLineNumberTerminalLabel">LocatorLineNumberTerminal:</label>
+                <select id="stepper2LocatorLineNumberTerminal">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -276,49 +278,49 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                 </select><br>
-                    <button type="button" id="stepper_2_configHome">Config Home</button><br>
-                </div>
+                <button type="button" id="stepper_2_configHome">Config Home</button><br>
             </div>
+        </div>
     </div>
 
     <div class="functionZone">
         <h2>Stepper W</h2>
+        <div>
             <div>
-                <div>
-                    <label>State:</label><label id="stepper3State"></label>
-                    <label>   Current:</label><label id="stepper3CurOffset"></label>
-                    <label>   MAX:</label><label id="stepper3MaxOffset"></label><br>
-                    <label>Steps:</label>
-                    <input type="number" id="stepper3Steps"></input>
-                    <button type="button" id="stepper_3_decrease">-</button>
-                    <button type="button" id="stepper_3_increase">+</button>
-                </div>
-                <div>
-                    <button type="button" id="stepper_3_decrease128">-128</button>
-                    <button type="button" id="stepper_3_decrease64">-64</button>
-                    <button type="button" id="stepper_3_decrease32">-32</button>
-                    <button type="button" id="stepper_3_decrease16">-16</button>
-                    <button type="button" id="stepper_3_decrease8">-8</button>
-                    <button type="button" id="stepper_3_decrease4">-4</button>
-                    <button type="button" id="stepper_3_decrease1">-1</button>
-                    <button type="button" id="stepper_3_increase1">+1</button>
-                    <button type="button" id="stepper_3_increase4">+4</button>
-                    <button type="button" id="stepper_3_increase8">+8</button>
-                    <button type="button" id="stepper_3_increase16">+16</button>
-                    <button type="button" id="stepper_3_increase32">+32</button>
-                    <button type="button" id="stepper_3_increase64">+64</button>
-                    <button type="button" id="stepper_3_increase128">+128</button>
-                </div>
-                <div>
-                    lowClks:<input type="number" id="stepper3LowClks" min="0" max="65535" size="5"></input>
-                    highClks:<input type="number" id="stepper3HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
-                    <input type="number" id="stepper3AccelerationBuffer" min="0" max="65535" size="5"></input>
-                    accelerationBufferDecrement:<input type="number" id="stepper3AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
-                    <input type="number" id="stepper3DecelerationBuffer" min="0" max="65535" size="5"></input>
-                    decelerationBufferIncrement:<input type="number" id="stepper3DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
-                    <button type="button" id="stepper_3_configMovement">Config Movement</button><br>
-                    <label id="stepper3LocatorLabel">Locator:</label>
-                    <select id="stepper3Locator">
+                <label>State:</label><label id="stepper3State"></label>
+                <label>   Current:</label><label id="stepper3CurOffset"></label>
+                <label>   MAX:</label><label id="stepper3MaxOffset"></label><br>
+                <label>Steps:</label>
+                <input type="number" id="stepper3Steps"></input>
+                <button type="button" id="stepper_3_decrease">-</button>
+                <button type="button" id="stepper_3_increase">+</button>
+            </div>
+            <div>
+                <button type="button" id="stepper_3_decrease128">-128</button>
+                <button type="button" id="stepper_3_decrease64">-64</button>
+                <button type="button" id="stepper_3_decrease32">-32</button>
+                <button type="button" id="stepper_3_decrease16">-16</button>
+                <button type="button" id="stepper_3_decrease8">-8</button>
+                <button type="button" id="stepper_3_decrease4">-4</button>
+                <button type="button" id="stepper_3_decrease1">-1</button>
+                <button type="button" id="stepper_3_increase1">+1</button>
+                <button type="button" id="stepper_3_increase4">+4</button>
+                <button type="button" id="stepper_3_increase8">+8</button>
+                <button type="button" id="stepper_3_increase16">+16</button>
+                <button type="button" id="stepper_3_increase32">+32</button>
+                <button type="button" id="stepper_3_increase64">+64</button>
+                <button type="button" id="stepper_3_increase128">+128</button>
+            </div>
+            <div>
+                lowClks:<input type="number" id="stepper3LowClks" min="0" max="65535" size="5"></input>
+                highClks:<input type="number" id="stepper3HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
+                <input type="number" id="stepper3AccelerationBuffer" min="0" max="65535" size="5"></input>
+                accelerationBufferDecrement:<input type="number" id="stepper3AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
+                <input type="number" id="stepper3DecelerationBuffer" min="0" max="65535" size="5"></input>
+                decelerationBufferIncrement:<input type="number" id="stepper3DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
+                <button type="button" id="stepper_3_configMovement">Config Movement</button><br>
+                <label id="stepper3LocatorLabel">Locator:</label>
+                <select id="stepper3Locator">
                     <option value="0">0</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -328,8 +330,8 @@
                     <option value="6">6</option>
                     <option value="7">7</option>
                 </select>
-                    <label id="stepper3LocatorLineNumberStartLabel">LocatorLineNumberStart:</label>
-                    <select id="stepper3LocatorLineNumberStart">
+                <label id="stepper3LocatorLineNumberStartLabel">LocatorLineNumberStart:</label>
+                <select id="stepper3LocatorLineNumberStart">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -339,8 +341,8 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                 </select>
-                    <label id="stepper3LocatorLineNumberTerminalLabel">LocatorLineNumberTerminal:</label>
-                    <select id="stepper3LocatorLineNumberTerminal">
+                <label id="stepper3LocatorLineNumberTerminalLabel">LocatorLineNumberTerminal:</label>
+                <select id="stepper3LocatorLineNumberTerminal">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -350,49 +352,49 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                 </select><br>
-                    <button type="button" id="stepper_3_configHome">Config Home</button><br>
-                </div>
+                <button type="button" id="stepper_3_configHome">Config Home</button><br>
             </div>
+        </div>
     </div>
 
     <div class="functionZone">
         <h2>Stepper4</h2>
+        <div>
             <div>
-                <div>
-                    <label>State:</label><label id="stepper4State">0</label>
-                    <label>   Current:</label><label id="stepper4CurOffset"></label>
-                    <label>   MAX:</label><label id="stepper4MaxOffset"></label><br>
-                    <label>Steps:</label>
-                    <input type="number" id="stepper4Steps"></input>
-                    <button type="button" id="stepper_4_decrease">-</button>
-                    <button type="button" id="stepper_4_increase">+</button>
-                </div>
-                <div>
-                    <button type="button" id="stepper_4_decrease128">-128</button>
-                    <button type="button" id="stepper_4_decrease64">-64</button>
-                    <button type="button" id="stepper_4_decrease32">-32</button>
-                    <button type="button" id="stepper_4_decrease16">-16</button>
-                    <button type="button" id="stepper_4_decrease8">-8</button>
-                    <button type="button" id="stepper_4_decrease4">-4</button>
-                    <button type="button" id="stepper_4_decrease1">-1</button>
-                    <button type="button" id="stepper_4_increase1">+1</button>
-                    <button type="button" id="stepper_4_increase4">+4</button>
-                    <button type="button" id="stepper_4_increase8">+8</button>
-                    <button type="button" id="stepper_4_increase16">+16</button>
-                    <button type="button" id="stepper_4_increase32">+32</button>
-                    <button type="button" id="stepper_4_increase64">+64</button>
-                    <button type="button" id="stepper_4_increase128">+128</button>
-                </div>
-                <div>
-                    lowClks:<input type="number" id="stepper4LowClks" min="0" max="65535" size="5"></input>
-                    highClks:<input type="number" id="stepper4HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
-                    <input type="number" id="stepper4AccelerationBuffer" min="0" max="65535" size="5"></input>
-                    accelerationBufferDecrement:<input type="number" id="stepper4AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
-                    <input type="number" id="stepper4DecelerationBuffer" min="0" max="65535" size="5"></input>
-                    decelerationBufferIncrement:<input type="number" id="stepper4DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
-                    <button type="button" id="stepper_4_configMovement">Config Movement</button><br>
-                    <label id="stepper4LocatorLabel">Locator:</label>
-                    <select id="stepper4Locator">
+                <label>State:</label><label id="stepper4State">0</label>
+                <label>   Current:</label><label id="stepper4CurOffset"></label>
+                <label>   MAX:</label><label id="stepper4MaxOffset"></label><br>
+                <label>Steps:</label>
+                <input type="number" id="stepper4Steps"></input>
+                <button type="button" id="stepper_4_decrease">-</button>
+                <button type="button" id="stepper_4_increase">+</button>
+            </div>
+            <div>
+                <button type="button" id="stepper_4_decrease128">-128</button>
+                <button type="button" id="stepper_4_decrease64">-64</button>
+                <button type="button" id="stepper_4_decrease32">-32</button>
+                <button type="button" id="stepper_4_decrease16">-16</button>
+                <button type="button" id="stepper_4_decrease8">-8</button>
+                <button type="button" id="stepper_4_decrease4">-4</button>
+                <button type="button" id="stepper_4_decrease1">-1</button>
+                <button type="button" id="stepper_4_increase1">+1</button>
+                <button type="button" id="stepper_4_increase4">+4</button>
+                <button type="button" id="stepper_4_increase8">+8</button>
+                <button type="button" id="stepper_4_increase16">+16</button>
+                <button type="button" id="stepper_4_increase32">+32</button>
+                <button type="button" id="stepper_4_increase64">+64</button>
+                <button type="button" id="stepper_4_increase128">+128</button>
+            </div>
+            <div>
+                lowClks:<input type="number" id="stepper4LowClks" min="0" max="65535" size="5"></input>
+                highClks:<input type="number" id="stepper4HighClks" min="0" max="65535" size="5"></input><br> accelerationBuffer:
+                <input type="number" id="stepper4AccelerationBuffer" min="0" max="65535" size="5"></input>
+                accelerationBufferDecrement:<input type="number" id="stepper4AccelerationBufferDecrement" min="0" max="65535" size="5"></input><br> decelerationBuffer:
+                <input type="number" id="stepper4DecelerationBuffer" min="0" max="65535" size="5"></input>
+                decelerationBufferIncrement:<input type="number" id="stepper4DecelerationBufferIncrement" min="0" max="65535" size="5"></input><br>
+                <button type="button" id="stepper_4_configMovement">Config Movement</button><br>
+                <label id="stepper4LocatorLabel">Locator:</label>
+                <select id="stepper4Locator">
                     <option value="0">0</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -402,8 +404,8 @@
                     <option value="6">6</option>
                     <option value="7">7</option>
                 </select>
-                    <label id="stepper4LocatorLineNumberStartLabel">LocatorLineNumberStart:</label>
-                    <select id="stepper4LocatorLineNumberStart">
+                <label id="stepper4LocatorLineNumberStartLabel">LocatorLineNumberStart:</label>
+                <select id="stepper4LocatorLineNumberStart">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -413,8 +415,8 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                 </select>
-                    <label id="stepper4LocatorLineNumberTerminalLabel">LocatorLineNumberTerminal:</label>
-                    <select id="stepper4LocatorLineNumberTerminal">
+                <label id="stepper4LocatorLineNumberTerminalLabel">LocatorLineNumberTerminal:</label>
+                <select id="stepper4LocatorLineNumberTerminal">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -424,9 +426,9 @@
                     <option value="7">7</option>
                     <option value="8">8</option>
                 </select><br>
-                    <button type="button" id="stepper_4_configHome">Config Home</button><br>
-                </div>
+                <button type="button" id="stepper_4_configHome">Config Home</button><br>
             </div>
+        </div>
     </div>
 
     <div class="functionZone">
@@ -446,6 +448,7 @@
             </div>
             <div>
                 <label>SmartCards:</label><br>
+                <input name="coordinate" id="coordinate_smartCard_0" type="radio"><label for="coordinate_smartCard_0">0</label>
                 <input name="coordinate" id="coordinate_smartCard_1" type="radio"><label for="coordinate_smartCard_1">1</label>
                 <input name="coordinate" id="coordinate_smartCard_2" type="radio"><label for="coordinate_smartCard_2">2</label>
                 <input name="coordinate" id="coordinate_smartCard_3" type="radio"><label for="coordinate_smartCard_3">3</label>
@@ -508,55 +511,55 @@
             </div>
             <div>
                 <label>PED Keys:</label><br>
-                <input name="coordinate" id="coordinate_pedKey_1" type="radio"><label for="coordinate_pedKey_1">1</label>
-                <input name="coordinate" id="coordinate_pedKey_2" type="radio"><label for="coordinate_pedKey_2">2</label>
-                <input name="coordinate" id="coordinate_pedKey_3" type="radio"><label for="coordinate_pedKey_3">3</label><br>
-                <input name="coordinate" id="coordinate_pedKey_4" type="radio"><label for="coordinate_pedKey_4">4</label>
-                <input name="coordinate" id="coordinate_pedKey_5" type="radio"><label for="coordinate_pedKey_5">5</label>
-                <input name="coordinate" id="coordinate_pedKey_6" type="radio"><label for="coordinate_pedKey_6">6</label><br>
-                <input name="coordinate" id="coordinate_pedKey_7" type="radio"><label for="coordinate_pedKey_7">7</label>
-                <input name="coordinate" id="coordinate_pedKey_8" type="radio"><label for="coordinate_pedKey_8">8</label>
-                <input name="coordinate" id="coordinate_pedKey_9" type="radio"><label for="coordinate_pedKey_9">9</label><br>
-                <input name="coordinate" id="coordinate_pedKey_10" type="radio"><label for="coordinate_pedKey_10">NO</label>
-                <input name="coordinate" id="coordinate_pedKey_11" type="radio"><label for="coordinate_pedKey_11">0</label>
-                <input name="coordinate" id="coordinate_pedKey_12" type="radio"><label for="coordinate_pedKey_12">YES</label><br>
-                <input name="coordinate" id="coordinate_pedKey_13" type="radio"><label for="coordinate_pedKey_13">X</label>
-                <input name="coordinate" id="coordinate_pedKey_14" type="radio"><label for="coordinate_pedKey_14">&lt;</label>
-                <input name="coordinate" id="coordinate_pedKey_15" type="radio"><label for="coordinate_pedKey_15">O</label>
+                <input name="coordinate" id="coordinate_pedKey_0" type="radio"><label for="coordinate_pedKey_0">1</label>
+                <input name="coordinate" id="coordinate_pedKey_1" type="radio"><label for="coordinate_pedKey_1">2</label>
+                <input name="coordinate" id="coordinate_pedKey_2" type="radio"><label for="coordinate_pedKey_2">3</label><br>
+                <input name="coordinate" id="coordinate_pedKey_3" type="radio"><label for="coordinate_pedKey_3">4</label>
+                <input name="coordinate" id="coordinate_pedKey_4" type="radio"><label for="coordinate_pedKey_4">5</label>
+                <input name="coordinate" id="coordinate_pedKey_5" type="radio"><label for="coordinate_pedKey_5">6</label><br>
+                <input name="coordinate" id="coordinate_pedKey_6" type="radio"><label for="coordinate_pedKey_6">7</label>
+                <input name="coordinate" id="coordinate_pedKey_7" type="radio"><label for="coordinate_pedKey_7">8</label>
+                <input name="coordinate" id="coordinate_pedKey_8" type="radio"><label for="coordinate_pedKey_8">9</label><br>
+                <input name="coordinate" id="coordinate_pedKey_9" type="radio"><label for="coordinate_pedKey_9">NO</label>
+                <input name="coordinate" id="coordinate_pedKey_10" type="radio"><label for="coordinate_pedKey_10">0</label>
+                <input name="coordinate" id="coordinate_pedKey_11" type="radio"><label for="coordinate_pedKey_11">YES</label><br>
+                <input name="coordinate" id="coordinate_pedKey_12" type="radio"><label for="coordinate_pedKey_12">X</label>
+                <input name="coordinate" id="coordinate_pedKey_13" type="radio"><label for="coordinate_pedKey_13">&lt;</label>
+                <input name="coordinate" id="coordinate_pedKey_14" type="radio"><label for="coordinate_pedKey_14">O</label>
             </div>
             <div>
                 <label>SoftKeys:</label><br>
-                <input name="coordinate" id="coordinate_softKey_1" type="radio"><label for="coordinate_softKey_1">1</label>
-                <input name="coordinate" id="coordinate_softKey_2" type="radio"><label for="coordinate_softKey_2">2</label>
-                <input name="coordinate" id="coordinate_softKey_3" type="radio"><label for="coordinate_softKey_3">3</label>
-                <input name="coordinate" id="coordinate_softKey_4" type="radio"><label for="coordinate_softKey_4">4</label>
-                <input name="coordinate" id="coordinate_softKey_5" type="radio"><label for="coordinate_softKey_5">5</label>
-                <input name="coordinate" id="coordinate_softKey_6" type="radio"><label for="coordinate_softKey_6">6</label>
-                <input name="coordinate" id="coordinate_softKey_7" type="radio"><label for="coordinate_softKey_7">7</label>
-                <input name="coordinate" id="coordinate_softKey_8" type="radio"><label for="coordinate_softKey_8">8</label>
+                <input name="coordinate" id="coordinate_softKey_0" type="radio"><label for="coordinate_softKey_0">1</label>
+                <input name="coordinate" id="coordinate_softKey_1" type="radio"><label for="coordinate_softKey_1">2</label>
+                <input name="coordinate" id="coordinate_softKey_2" type="radio"><label for="coordinate_softKey_2">3</label>
+                <input name="coordinate" id="coordinate_softKey_3" type="radio"><label for="coordinate_softKey_3">4</label>
+                <input name="coordinate" id="coordinate_softKey_4" type="radio"><label for="coordinate_softKey_4">5</label>
+                <input name="coordinate" id="coordinate_softKey_5" type="radio"><label for="coordinate_softKey_5">6</label>
+                <input name="coordinate" id="coordinate_softKey_6" type="radio"><label for="coordinate_softKey_6">7</label>
+                <input name="coordinate" id="coordinate_softKey_7" type="radio"><label for="coordinate_softKey_7">8</label>
             </div>
             <div>
                 <label>TouchScreenKeys:</label><br>
-                <input name="coordinate" id="coordinate_touchScreenKey_1" type="radio"><label for="coordinate_touchScreenKey_1">1</label>
-                <input name="coordinate" id="coordinate_touchScreenKey_2" type="radio"><label for="coordinate_touchScreenKey_2">2</label>
-                <input name="coordinate" id="coordinate_touchScreenKey_3" type="radio"><label for="coordinate_touchScreenKey_3">3</label>
-                <input name="coordinate" id="coordinate_touchScreenKey_4" type="radio"><label for="coordinate_touchScreenKey_4">4</label>
-                <input name="coordinate" id="coordinate_touchScreenKey_5" type="radio"><label for="coordinate_touchScreenKey_5">5</label>
-                <input name="coordinate" id="coordinate_touchScreenKey_6" type="radio"><label for="coordinate_touchScreenKey_6">6</label>
-                <input name="coordinate" id="coordinate_touchScreenKey_7" type="radio"><label for="coordinate_touchScreenKey_7">7</label>
-                <input name="coordinate" id="coordinate_touchScreenKey_8" type="radio"><label for="coordinate_touchScreenKey_8">8</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_0" type="radio"><label for="coordinate_touchScreenKey_0">1</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_1" type="radio"><label for="coordinate_touchScreenKey_1">2</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_2" type="radio"><label for="coordinate_touchScreenKey_2">3</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_3" type="radio"><label for="coordinate_touchScreenKey_3">4</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_4" type="radio"><label for="coordinate_touchScreenKey_4">5</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_5" type="radio"><label for="coordinate_touchScreenKey_5">6</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_6" type="radio"><label for="coordinate_touchScreenKey_6">7</label>
+                <input name="coordinate" id="coordinate_touchScreenKey_7" type="radio"><label for="coordinate_touchScreenKey_7">8</label>
             </div>
             <div>
                 <label>SoftKeys:</label><br>
-                <input name="coordinate" id="coordinate_assistKey_1" type="radio"><label for="coordinate_assistKey_1">1</label>
-                <input name="coordinate" id="coordinate_assistKey_2" type="radio"><label for="coordinate_assistKey_2">2</label>
-                <input name="coordinate" id="coordinate_assistKey_3" type="radio"><label for="coordinate_assistKey_3">3</label>
-                <input name="coordinate" id="coordinate_assistKey_4" type="radio"><label for="coordinate_assistKey_4">4</label>
-                <input name="coordinate" id="coordinate_assistKey_5" type="radio"><label for="coordinate_assistKey_5">5</label>
-                <input name="coordinate" id="coordinate_assistKey_6" type="radio"><label for="coordinate_assistKey_6">6</label>
-                <input name="coordinate" id="coordinate_assistKey_7" type="radio"><label for="coordinate_assistKey_7">7</label>
-                <input name="coordinate" id="coordinate_assistKey_8" type="radio"><label for="coordinate_assistKey_8">8</label>
-                <input name="coordinate" id="coordinate_assistKey_9" type="radio"><label for="coordinate_assistKey_9">HELP</label>
+                <input name="coordinate" id="coordinate_assistKey_0" type="radio"><label for="coordinate_assistKey_0">1</label>
+                <input name="coordinate" id="coordinate_assistKey_1" type="radio"><label for="coordinate_assistKey_1">2</label>
+                <input name="coordinate" id="coordinate_assistKey_2" type="radio"><label for="coordinate_assistKey_2">3</label>
+                <input name="coordinate" id="coordinate_assistKey_3" type="radio"><label for="coordinate_assistKey_3">4</label>
+                <input name="coordinate" id="coordinate_assistKey_4" type="radio"><label for="coordinate_assistKey_4">5</label>
+                <input name="coordinate" id="coordinate_assistKey_5" type="radio"><label for="coordinate_assistKey_5">6</label>
+                <input name="coordinate" id="coordinate_assistKey_6" type="radio"><label for="coordinate_assistKey_6">7</label>
+                <input name="coordinate" id="coordinate_assistKey_7" type="radio"><label for="coordinate_assistKey_7">8</label>
+                <input name="coordinate" id="coordinate_assistKey_8" type="radio"><label for="coordinate_assistKey_8">HELP</label>
 
             </div>
             <div>
@@ -578,10 +581,10 @@
             </div>
             <div>
                 <label>Maximum:</label><br>
-                <input name="coordinate" id="coordinate_maximum_0" type="radio"><label for="coordinate_maximum_0">Maximum-0 </label>
-                <input name="coordinate" id="coordinate_maximum_1" type="radio"><label for="coordinate_maximum_1">Maximum-1 </label>
-                <input name="coordinate" id="coordinate_maximum_2" type="radio"><label for="coordinate_maximum_2">Maximum-2 </label>
-                <input name="coordinate" id="coordinate_maximum_3" type="radio"><label for="coordinate_maximum_3">Maximum-3 </label>
+                <input name="coordinate" id="coordinate_maximum_0" type="radio"><label for="coordinate_maximum_0">Maximum-1 </label>
+                <input name="coordinate" id="coordinate_maximum_1" type="radio"><label for="coordinate_maximum_1">Maximum-2 </label>
+                <input name="coordinate" id="coordinate_maximum_2" type="radio"><label for="coordinate_maximum_2">Maximum-3 </label>
+                <input name="coordinate" id="coordinate_maximum_3" type="radio"><label for="coordinate_maximum_3">Maximum-4 </label>
             </div>
         </div>
         <div>
@@ -592,16 +595,16 @@
     <div class="functionZone">
         <h2>BDCs</h2>
         <div>
-            <label>bdc0: </label>
+            <label>SmartCardClamp: </label>
             <input name="bdc0" id="bdc_0_Release" type="radio"><label for="bdc_0_Release">Release</label>
             <input name="bdc0" id="bdc_0_Forward" type="radio"><label for="bdc_0_Forward">Close</label>
             <input name="bdc0" id="bdc_0_Reverse" type="radio"><label for="bdc_0_Reverse">Open</label>
         </div>
         <div>
-            <label>bdc1: </label>
+            <label>KeyPressingArm: </label>
             <input name="bdc1" id="bdc_1_Release" type="radio"><label for="bdc_1_Release">Release</label>
-            <input name="bdc1" id="bdc_1_Forward" type="radio"><label for="bdc_1_Forward">Forward</label>
-            <input name="bdc1" id="bdc_1_Reverse" type="radio"><label for="bdc_1_Reverse">Reverse</label>
+            <input name="bdc1" id="bdc_1_Forward" type="radio"><label for="bdc_1_Forward">PullUp</label>
+            <input name="bdc1" id="bdc_1_Reverse" type="radio"><label for="bdc_1_Reverse">PutDown</label>
         </div>
         <div>
             <label>bdc2: </label>
@@ -782,10 +785,14 @@
 
             html = "<input name=\"coordinateSelection\" id=\"" + radioId + "\" type=\"radio\"></input>";
             html += "<label class=\"coordinateItem\" for=\"" + radioId + "\">" + type + "_" + index.toString() + "</label>";
-            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_x\"> " + x.toString() + ", </label>";
-            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_y\"> " + y.toString() + ", </label>";
-            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_z\"> " + z.toString() + ", </label>";
-            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_w\"> " + w.toString() + "</label>";
+            html += "<label>: </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_x\">" + x.toString() + "</label>";
+            html += "<label>, </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_y\">" + y.toString() + "</label>";
+            html += "<label>, </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_z\">" + z.toString() + "</label>";
+            html += "<label>, </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_w\">" + w.toString() + "</label>";
             html += "<br>";
 
             return html;
@@ -797,10 +804,14 @@
 
             html = "<input name=\"coordinateSelection\" id=\"" + radioId + "\" type=\"radio\"></input>";
             html += "<label class=\"coordinateItem\" for=\"" + radioId + "\">" + type + "</label>";
-            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_x\"> " + x.toString() + ", </label>";
-            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_y\"> " + y.toString() + ", </label>";
-            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_z\"> " + z.toString() + ", </label>";
-            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_w\"> " + w.toString() + "</label>";
+            html += "<label>: </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_x\">" + x.toString() + "</label>";
+            html += "<label>, </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_y\">" + y.toString() + "</label>";
+            html += "<label>, </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_z\">" + z.toString() + "</label>";
+            html += "<label>, </label>";
+            html += "<label class=\"coordinateItem\" for=\"" + radioId + "\" id=\"" + radioId + "_w\">" + w.toString() + "</label>";
             html += "<br>";
 
             return html;
@@ -836,7 +847,22 @@
                     var y = coorPedKeys[i].y;
                     var z = coorPedKeys[i].z;
                     var w = coorPedKeys[i].w;
-                    html += createCoordinateLineWithIndex("PedKey", x, y, z, w, index);
+                    if (typeof index === 'undefined') {
+                        continue;
+                    }
+                    if (typeof x === 'undefined') {
+                        continue;
+                    }
+                    if (typeof y === 'undefined') {
+                        continue;
+                    }
+                    if (typeof z === 'undefined') {
+                        continue;
+                    }
+                    if (typeof w === 'undefined') {
+                        continue;
+                    }
+                    html += createCoordinateLineWithIndex("PedKey", x, y, z, w, index + 1);
                 }
                 if (i < coorPedKeysPressed.length) {
                     var index = coorPedKeysPressed[i].index;
@@ -844,7 +870,22 @@
                     var y = coorPedKeysPressed[i].y;
                     var z = coorPedKeysPressed[i].z;
                     var w = coorPedKeysPressed[i].w;
-                    html += createCoordinateLineWithIndex("PedKeyPressed", x, y, z, w, index);
+                    if (typeof index === 'undefined') {
+                        continue;
+                    }
+                    if (typeof x === 'undefined') {
+                        continue;
+                    }
+                    if (typeof y === 'undefined') {
+                        continue;
+                    }
+                    if (typeof z === 'undefined') {
+                        continue;
+                    }
+                    if (typeof w === 'undefined') {
+                        continue;
+                    }
+                    html += createCoordinateLineWithIndex("PedKeyPressed", x, y, z, w, index + 1);
                 }
             }
 
@@ -1249,7 +1290,10 @@
                 case "assistKeyGate":
                 case "contactlessReader":
                 case "contactlessReaderGate":
+                    break;
+
                 case "smartCard":
+                    command["data"] = selectedRadio["index"];
                     break;
 
                 case "pedKey":

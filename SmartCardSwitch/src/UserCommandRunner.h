@@ -245,6 +245,10 @@ private:
 	void gate_smartCard_withCard(unsigned int cardNumber);
 	void smartCard_gate_withCard(unsigned int cardNumber);
 	void smartCard_gate_withoutCard(unsigned int cardNumber);
+	//keyPressingArm operation
+	void pullUpKeyPressingArm();
+	void putDownKeyPressingArm();
+	void releaseKeyPressingArm();
 	//movement between PED keys and gate
 	void pedKey_gate(unsigned int keyNumber);
 	void pedKey_pedKey(unsigned int keyNumberFrom, unsigned int keyNumberTo);

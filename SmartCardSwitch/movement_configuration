@@ -1,1 +1,101 @@
-{"steppers": [{"index":0,"value":{"lowClks":10,"highClks":10,"accelerationBuffer":100,"accelerationBufferDecrement":1,"decelerationBuffer":100,"decelerationBufferIncrement":1,"locatorIndex":1,"locatorLineNumberStart":1,"locatorLineNumberTerminal":2}},{"index":1,"value":{"lowClks":10,"highClks":10,"accelerationBuffer":100,"accelerationBufferDecrement":1,"decelerationBuffer":100,"decelerationBufferIncrement":1,"locatorIndex":2,"locatorLineNumberStart":4,"locatorLineNumberTerminal":7}},{"index":2,"value":{"lowClks":10,"highClks":10,"accelerationBuffer":100,"accelerationBufferDecrement":1,"decelerationBuffer":100,"decelerationBufferIncrement":1,"locatorIndex":2,"locatorLineNumberStart":5,"locatorLineNumberTerminal":6}},{"index":3,"value":{"lowClks":10,"highClks":10,"accelerationBuffer":100,"accelerationBufferDecrement":1,"decelerationBuffer":100,"decelerationBufferIncrement":1,"locatorIndex":2,"locatorLineNumberStart":3,"locatorLineNumberTerminal":2}},{"index":4,"value":{"lowClks":10,"highClks":10,"accelerationBuffer":200,"accelerationBufferDecrement":5,"decelerationBuffer":200,"decelerationBufferIncrement":5,"locatorIndex":-1,"locatorLineNumberStart":-1,"locatorLineNumberTerminal":-1}}],"cardInsert":{"lowClks":200,"highClks":200,"accelerationBuffer":0,"accelerationBufferDecrement":1,"decelerationBuffer":0,"decelerationBufferIncrement":1,"locatorIndex":0,"locatorLineNumberStart":0,"locatorLineNumberTerminal":0},"goHome":{"lowClks":50,"highClks":5000,"accelerationBuffer":100,"accelerationBufferDecrement":1,"decelerationBuffer":100,"decelerationBufferIncrement":1,"locatorIndex":0,"locatorLineNumberStart":0,"locatorLineNumberTerminal":0},"bdc":{"lowClks":2,"highClks":3,"cycles":1000}}
+{
+	"steppers": [
+		{
+			"index": 0,
+			"value": {
+				"lowClks": 10,
+				"highClks": 10,
+				"accelerationBuffer": 100,
+				"accelerationBufferDecrement": 1,
+				"decelerationBuffer": 100,
+				"decelerationBufferIncrement": 1,
+				"locatorIndex": 1,
+				"locatorLineNumberStart": 7,
+				"locatorLineNumberTerminal": 8
+			}
+		},
+		{
+			"index": 1,
+			"value": {
+				"lowClks": 10,
+				"highClks": 10,
+				"accelerationBuffer": 100,
+				"accelerationBufferDecrement": 1,
+				"decelerationBuffer": 100,
+				"decelerationBufferIncrement": 1,
+				"locatorIndex": 2,
+				"locatorLineNumberStart": 7,
+				"locatorLineNumberTerminal": 8
+			}
+		},
+		{
+			"index": 2,
+			"value": {
+				"lowClks": 10,
+				"highClks": 10,
+				"accelerationBuffer": 100,
+				"accelerationBufferDecrement": 1,
+				"decelerationBuffer": 100,
+				"decelerationBufferIncrement": 1,
+				"locatorIndex": 3,
+				"locatorLineNumberStart": 7,
+				"locatorLineNumberTerminal": 8
+			}
+		},
+		{
+			"index": 3,
+			"value": {
+				"lowClks": 10,
+				"highClks": 10,
+				"accelerationBuffer": 100,
+				"accelerationBufferDecrement": 1,
+				"decelerationBuffer": 100,
+				"decelerationBufferIncrement": 1,
+				"locatorIndex": 3,
+				"locatorLineNumberStart": 1,
+				"locatorLineNumberTerminal": 2
+			}
+		},
+		{
+			"index": 4,
+			"value": {
+				"lowClks": 10,
+				"highClks": 10,
+				"accelerationBuffer": 200,
+				"accelerationBufferDecrement": 5,
+				"decelerationBuffer": 200,
+				"decelerationBufferIncrement": 5,
+				"locatorIndex": -1,
+				"locatorLineNumberStart": -1,
+				"locatorLineNumberTerminal": -1
+			}
+		}
+	],
+	"cardInsert": {
+		"lowClks": 200,
+		"highClks": 200,
+		"accelerationBuffer": 0,
+		"accelerationBufferDecrement": 1,
+		"decelerationBuffer": 0,
+		"decelerationBufferIncrement": 1,
+		"locatorIndex": 0,
+		"locatorLineNumberStart": 0,
+		"locatorLineNumberTerminal": 0
+	},
+	"goHome": {
+		"lowClks": 50,
+		"highClks": 500,
+		"accelerationBuffer": 100,
+		"accelerationBufferDecrement": 1,
+		"decelerationBuffer": 100,
+		"decelerationBufferIncrement": 1,
+		"locatorIndex": 0,
+		"locatorLineNumberStart": 0,
+		"locatorLineNumberTerminal": 0
+	},
+	"bdc": {
+		"lowClks": 2,
+		"highClks": 3,
+		"cycles": 2000
+	}
+}

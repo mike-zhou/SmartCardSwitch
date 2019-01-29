@@ -93,11 +93,11 @@ public:
 		json += 	"\"upPeriod\":" + std::to_string(upPeriod) + ",";
 		json += 	"\"keys\": [";
 		if(keyNumbers.size() > 0) {
-			json += 	"{\"keyIndex\":0,\"keyNumber\":" + std::to_string(keyNumbers[0]) + "}";
+			json += 	"{\"index\":0,\"keyNumber\":" + std::to_string(keyNumbers[0]) + "}";
 		}
 		for(unsigned int i=1; i<keyNumbers.size(); i++)
 		{
-			json += 	",{\"keyIndex\":" + std::to_string(i) + ",\"keyNumber\":" + std::to_string(keyNumbers[i]) + "}";
+			json += 	",{\"index\":" + std::to_string(i) + ",\"keyNumber\":" + std::to_string(keyNumbers[i]) + "}";
 		}
 		json += 	"]";
 		json += "}";
@@ -116,11 +116,11 @@ public:
 		json += 	"\"upPeriod\":" + std::to_string(upPeriod) + ",";
 		json += 	"\"keys\": [";
 		if(keyNumbers.size() > 0) {
-			json += 	"{\"keyIndex\":0,\"keyNumber\":" + std::to_string(keyNumbers[0]) + "}";
+			json += 	"{\"index\":0,\"keyNumber\":" + std::to_string(keyNumbers[0]) + "}";
 		}
 		for(unsigned int i=1; i<keyNumbers.size(); i++)
 		{
-			json += 	",{\"keyIndex\":" + std::to_string(i) + ",\"keyNumber\":" + std::to_string(keyNumbers[i]) + "}";
+			json += 	",{\"index\":" + std::to_string(i) + ",\"keyNumber\":" + std::to_string(keyNumbers[i]) + "}";
 		}
 		json += 	"]";
 		json += "}";
@@ -139,11 +139,11 @@ public:
 		json += 	"\"upPeriod\":" + std::to_string(upPeriod) + ",";
 		json += 	"\"keys\": [";
 		if(keyNumbers.size() > 0) {
-			json += 	"{\"keyIndex\":0,\"keyNumber\":" + std::to_string(keyNumbers[0]) + "}";
+			json += 	"{\"index\":0,\"keyNumber\":" + std::to_string(keyNumbers[0]) + "}";
 		}
 		for(unsigned int i=1; i<keyNumbers.size(); i++)
 		{
-			json += 	",{\"keyIndex\":" + std::to_string(i) + ",\"keyNumber\":" + std::to_string(keyNumbers[i]) + "}";
+			json += 	",{\"index\":" + std::to_string(i) + ",\"keyNumber\":" + std::to_string(keyNumbers[i]) + "}";
 		}
 		json += 	"]";
 		json += "}";
@@ -162,11 +162,11 @@ public:
 		json += 	"\"upPeriod\":" + std::to_string(upPeriod) + ",";
 		json += 	"\"keys\": [";
 		if(keyNumbers.size() > 0) {
-			json += 	"{\"keyIndex\":0,\"keyNumber\":" + std::to_string(keyNumbers[0]) + "}";
+			json += 	"{\"index\":0,\"keyNumber\":" + std::to_string(keyNumbers[0]) + "}";
 		}
 		for(unsigned int i=1; i<keyNumbers.size(); i++)
 		{
-			json += 	",{\"keyIndex\":" + std::to_string(i) + ",\"keyNumber\":" + std::to_string(keyNumbers[i]) + "}";
+			json += 	",{\"index\":" + std::to_string(i) + ",\"keyNumber\":" + std::to_string(keyNumbers[i]) + "}";
 		}
 		json += 	"]";
 		json += "}";

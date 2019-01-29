@@ -1578,7 +1578,7 @@ bool WebServer::StepperMove(unsigned int index, bool forward, unsigned int steps
 		if(!forward)
 		{
 			if(_consoleCommand.resultSteppers[index].homeOffset < steps)  {
-				errorInfo = "stepper hasn't been positioned";
+				errorInfo = "stepper cannot be moved under scope";
 			}
 		}
 		if(!errorInfo.empty()) {

@@ -285,7 +285,7 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			_smartCardFetchOffset = ds["smartCardFetchOffset"];
 			_smartCardReaderSlowInsertEnd = ds["smartCardReaderSlowInsertEnd"];
 			_smartCardReleaseOffset = ds["smartCardReleaseOffset"];
-//			_smartCardInsertExtra = ds["smartCardInsertExtra"];
+			_smartCardInsertExtra = ds["smartCardInsertExtra"];
 //
 //			//maximum
 //			_maximumX = ds["maximumX"];
@@ -844,6 +844,20 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	}
 	break;
 
+	case Type::PedKeyPressed:
+	{
+		if(index < _pedKeysPressed.size())
+		{
+			value = _pedKeysPressed[index];
+			rc = true;
+		}
+		else
+		{
+			pLogger->LogError("CoordinateStorage::GetCoordinate PED key pressed index out of range: " + std::to_string(index));
+		}
+	}
+	break;
+
 	case Type::SoftKeyGate:
 	{
 		value = _softKeyGate;
@@ -861,6 +875,20 @@ bool CoordinateStorage::GetCoordinate(Type type,
 		else
 		{
 			pLogger->LogError("CoordinateStorage::GetCoordinate soft key index out of range: " + std::to_string(index));
+		}
+	}
+	break;
+
+	case Type::SoftKeyPressed:
+	{
+		if(index < _softKeysPressed.size())
+		{
+			value = _softKeysPressed[index];
+			rc = true;
+		}
+		else
+		{
+			pLogger->LogError("CoordinateStorage::GetCoordinate soft key pressed index out of range: " + std::to_string(index));
 		}
 	}
 	break;
@@ -886,6 +914,20 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	}
 	break;
 
+	case Type::TouchScreenKeyPressed:
+	{
+		if(index < _touchScreenKeysPressed.size())
+		{
+			value = _touchScreenKeysPressed[index];
+			rc = true;
+		}
+		else
+		{
+			pLogger->LogError("CoordinateStorage::GetCoordinate touch screen pressed index out of range: " + std::to_string(index));
+		}
+	}
+	break;
+
 	case Type::AssistKeyGate:
 	{
 		value = _assistKeyGate;
@@ -903,6 +945,20 @@ bool CoordinateStorage::GetCoordinate(Type type,
 		else
 		{
 			pLogger->LogError("CoordinateStorage::GetCoordinate assist key index out of range: " + std::to_string(index));
+		}
+	}
+	break;
+
+	case Type::AssistKeyPressed:
+	{
+		if(index < _assistKeysPressed.size())
+		{
+			value = _assistKeysPressed[index];
+			rc = true;
+		}
+		else
+		{
+			pLogger->LogError("CoordinateStorage::GetCoordinate assist key pressed index out of range: " + std::to_string(index));
 		}
 	}
 	break;
