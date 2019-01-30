@@ -1875,6 +1875,12 @@ bool WebServer::PowerOn(const std::string& target, bool on, std::string & errorI
 			return false;
 		}
 	}
+//	else if(target == "dcm0") {
+//
+//	}
+//	else if(target == "dcm1") {
+//
+//	}
 	else
 	{
 		errorInfo = "wrong target: " + target;
