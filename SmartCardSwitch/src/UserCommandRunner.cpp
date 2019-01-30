@@ -988,8 +988,8 @@ void UserCommandRunner::gate_smartCardReader_withCard()
 	//configure movement
 	configStepperMovement(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	//insert card
-	moveStepperY(slowInsertEnd, finalY + insertExtra);
-	moveStepperY(finalY + insertExtra, finalY);
+	moveStepperY(slowInsertEnd, finalY - insertExtra);
+	moveStepperY(finalY - insertExtra, finalY);
 }
 
 void UserCommandRunner::smartCardReader_gate_withCard()
