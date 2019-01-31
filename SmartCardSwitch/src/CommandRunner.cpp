@@ -1916,6 +1916,15 @@ ICommandReception::CommandId CommandRunner::OptPowerOn()
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::OptPowerOn hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::OptPowerOn();
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::OptPowerOn empty ptr returned from CommandFactory::OptPowerOn");
+		}
+	}
 
 	ICommandReception::CommandId cmdId ;
 	cmdId = sendCmdToDevice(cmdPtr);
@@ -1927,6 +1936,15 @@ ICommandReception::CommandId CommandRunner::OptPowerOff()
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::OptPowerOff hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::OptPowerOff();
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::OptPowerOff empty ptr returned from CommandFactory::OptPowerOff");
+		}
+	}
 
 	ICommandReception::CommandId cmdId ;
 	cmdId = sendCmdToDevice(cmdPtr);
@@ -1938,6 +1956,15 @@ ICommandReception::CommandId CommandRunner::OptQueryPower()
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::OptQueryPower hasn't connected to any device");
+	}
+	else {
+		cmdPtr = CommandFactory::OptQueryPower();
+		if(cmdPtr == nullptr) {
+			pLogger->LogError("CommandRunner::OptQueryPower empty ptr returned from CommandFactory::OptQueryPower");
+		}
+	}
 
 	ICommandReception::CommandId cmdId ;
 	cmdId = sendCmdToDevice(cmdPtr);

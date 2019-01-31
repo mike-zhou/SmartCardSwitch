@@ -50,6 +50,12 @@ public:
 	static std::shared_ptr<DeviceCommand> StepperSetState(unsigned int stepperIndex, unsigned int state);
 	static std::shared_ptr<DeviceCommand> StepperMove(unsigned int stepperIndex, unsigned long position, bool forward, unsigned long steps);
 	static std::shared_ptr<DeviceCommand> LocatorQuery(unsigned int locatorIndex);
+	static std::shared_ptr<DeviceCommand> OptPowerOn();
+	static std::shared_ptr<DeviceCommand> OptPowerOff();
+	static std::shared_ptr<DeviceCommand> OptQueryPower();
+	static std::shared_ptr<DeviceCommand> DcmPowerOn(unsigned int index);
+	static std::shared_ptr<DeviceCommand> DcmPowerOff(unsigned int index);
+	static std::shared_ptr<DeviceCommand> DcmQueryPower(unsigned int index);
 };
 
 
