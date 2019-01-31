@@ -1785,7 +1785,6 @@ unsigned long CommandRunner::sendCmdToDevice(std::shared_ptr<DeviceCommand>& cmd
 		_userCommand.jsonCommandString = cmdPtr->ToJsonCommandString();
 		_userCommand.commandKey = cmdPtr->CommandKey();
 		_userCommand.commandId = cmdPtr->CommandId();
-		_userCommand.expectedResult = cmdPtr->GetFinalState();
 
 		//send out command
 		_pDeviceAccessor->SendCommand(_userCommand.jsonCommandString);

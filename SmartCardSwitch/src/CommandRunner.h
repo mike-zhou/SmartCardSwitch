@@ -202,7 +202,6 @@ private:
 		std::string jsonCommandString;
 		std::string commandKey;
 		unsigned long commandId;
-		std::string expectedResult;
 
 		//command parameters
 		int bdcIndex;

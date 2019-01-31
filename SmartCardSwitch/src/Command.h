@@ -18,24 +18,18 @@ public:
 	DeviceCommand()
 	{
 		_commandId = _commandIdSeed++;
-		_commandUndoId = _commandIdSeed++;
 	}
 
 	virtual ~DeviceCommand() {}
 
-	virtual std::string GetFinalState() { std::string empty; return empty; }
-	virtual std::string GetUndoState() { std::string empty; return empty; }
 	virtual std::string CommandKey() = 0;
 	virtual std::string ToJsonCommandString() = 0;
 	unsigned long CommandId() { return _commandId; }
-	virtual std::string ToJsonCommandUndoString() { std::string empty; return empty; }
-	unsigned long CommandUndoId() { return _commandUndoId; }
 
 private:
 	static unsigned long _commandIdSeed;
 
 	unsigned long _commandId;
-	unsigned long _commandUndoId;
 };
 
 class CommandDevicesGet: public DeviceCommand
@@ -51,10 +45,7 @@ public:
 	CommandDeviceConnect(const std::string& deviceName);
 
 	virtual std::string CommandKey() override;
-	virtual std::string GetUndoState() override;
-	virtual std::string GetFinalState() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string ToJsonCommandUndoString() override;
 
 private:
 	std::string _deviceName;
@@ -89,20 +80,14 @@ class CommandBdcsPowerOn: public DeviceCommand
 {
 public:
 	virtual std::string CommandKey() override;
-	virtual std::string GetUndoState() override;
-	virtual std::string GetFinalState() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string ToJsonCommandUndoString() override;
 };
 
 class CommandBdcsPowerOff: public DeviceCommand
 {
 public:
 	virtual std::string CommandKey() override;
-	virtual std::string GetUndoState() override;
-	virtual std::string GetFinalState() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string ToJsonCommandUndoString() override;
 };
 
 class CommandBdcsQueryPower: public DeviceCommand
@@ -127,10 +112,7 @@ public:
 	CommandBdcOperation(unsigned int bdcIndex, BdcMode undoMode, BdcMode finalMode, unsigned int lowClks, unsigned int highClks, unsigned int cycles);
 
 	virtual std::string CommandKey() override;
-	virtual std::string GetUndoState() override;
-	virtual std::string GetFinalState() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string ToJsonCommandUndoString() override;
 
 private:
 	unsigned int _bdcIndex;
@@ -188,7 +170,6 @@ public:
 
 	virtual std::string CommandKey() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string GetFinalState() override;
 
 private:
 	unsigned int _stepperIndex;
@@ -203,7 +184,6 @@ public:
 
 	virtual std::string CommandKey() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string GetFinalState() override;
 
 private:
 	unsigned int _stepperIndex;
@@ -217,7 +197,6 @@ public:
 
 	virtual std::string CommandKey() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string GetFinalState() override;
 
 private:
 	unsigned int _stepperIndex;
@@ -231,7 +210,6 @@ public:
 
 	virtual std::string CommandKey() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string GetFinalState() override;
 
 private:
 	unsigned int _stepperIndex;
@@ -245,7 +223,6 @@ public:
 
 	virtual std::string CommandKey() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string GetFinalState() override;
 
 private:
 	unsigned int _stepperIndex;
@@ -258,10 +235,7 @@ public:
 	CommandStepperEnable(unsigned int stepperIndex, bool enable);
 
 	virtual std::string CommandKey() override;
-	virtual std::string GetUndoState() override;
-	virtual std::string GetFinalState() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string ToJsonCommandUndoString() override;
 
 private:
 	unsigned int _stepperIndex;
@@ -274,10 +248,7 @@ public:
 	CommandStepperForward(unsigned int stepperIndex, bool bForward);
 
 	virtual std::string CommandKey() override;
-	virtual std::string GetUndoState() override;
-	virtual std::string GetFinalState() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string ToJsonCommandUndoString() override;
 
 private:
 	unsigned int _stepperIndex;
@@ -290,10 +261,7 @@ public:
 	CommandStepperSteps(unsigned int stepperIndex, unsigned long steps);
 
 	virtual std::string CommandKey() override;
-	virtual std::string GetUndoState() override;
-	virtual std::string GetFinalState() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string ToJsonCommandUndoString() override;
 
 private:
 	unsigned int _stepperIndex;
@@ -306,10 +274,7 @@ public:
 	CommandStepperRun(unsigned int stepperIndex, unsigned long initialPosition, unsigned long finalPosition);
 
 	virtual std::string CommandKey() override;
-	virtual std::string GetUndoState() override;
-	virtual std::string GetFinalState() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string ToJsonCommandUndoString() override;
 
 private:
 	unsigned int _stepperIndex;
@@ -326,7 +291,6 @@ public:
 							unsigned int lineNumberTerminal);
 
 	virtual std::string CommandKey() override;
-	virtual std::string GetFinalState() override;
 	virtual std::string ToJsonCommandString() override;
 
 private:
@@ -367,10 +331,7 @@ public:
 	CommandStepperMove(unsigned int stepperIndex, unsigned long position, bool forward, unsigned long steps);
 
 	virtual std::string CommandKey() override;
-	virtual std::string GetUndoState() override;
-	virtual std::string GetFinalState() override;
 	virtual std::string ToJsonCommandString() override;
-	virtual std::string ToJsonCommandUndoString() override;
 
 private:
 	unsigned int _stepperIndex;

@@ -45,19 +45,6 @@ std::string CommandDeviceConnect::CommandKey()
 	return std::string("device connect");
 }
 
-std::string CommandDeviceConnect::GetUndoState()
-{
-	std::string state = "disconnected from " + _deviceName;
-	return state;
-}
-
-std::string CommandDeviceConnect::GetFinalState()
-{
-	std::string state;
-	state = "connected to " + _deviceName;
-	return state;
-}
-
 std::string CommandDeviceConnect::ToJsonCommandString()
 {
 	std::string cmd;
@@ -65,19 +52,6 @@ std::string CommandDeviceConnect::ToJsonCommandString()
 	cmd = "{";
 	cmd = cmd + "\"command\":\"device connect\",";
 	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
-	cmd = cmd + "\"device\":\"" + _deviceName +"\"";
-	cmd += "}";
-
-	return cmd;
-}
-
-std::string CommandDeviceConnect::ToJsonCommandUndoString()
-{
-	std::string cmd;
-
-	cmd = "{";
-	cmd = cmd + "\"command\":\"device disconnect\",";
-	cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId()) + ",";
 	cmd = cmd + "\"device\":\"" + _deviceName +"\"";
 	cmd += "}";
 
@@ -158,18 +132,6 @@ std::string CommandBdcsPowerOn::CommandKey()
 	return std::string("bdcs power on");
 }
 
-std::string CommandBdcsPowerOn::GetUndoState()
-{
-	std::string state = "bdcs is powered off";
-	return state;
-}
-
-std::string CommandBdcsPowerOn::GetFinalState()
-{
-	std::string state = "bdcs is powered on";
-	return state;
-}
-
 std::string CommandBdcsPowerOn::ToJsonCommandString()
 {
 	std::string cmd;
@@ -177,18 +139,6 @@ std::string CommandBdcsPowerOn::ToJsonCommandString()
 	cmd = "{";
 	cmd = cmd + "\"command\":\"bdcs power on\",";
 	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
-	cmd += "}";
-
-	return cmd;
-}
-
-std::string CommandBdcsPowerOn::ToJsonCommandUndoString()
-{
-	std::string cmd;
-
-	cmd = "{";
-	cmd = cmd + "\"command\":\"bdcs power off\",";
-	cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId());
 	cmd += "}";
 
 	return cmd;
@@ -202,18 +152,6 @@ std::string CommandBdcsPowerOff::CommandKey()
 	return std::string("bdcs power off");
 }
 
-std::string CommandBdcsPowerOff::GetUndoState()
-{
-	std::string state = "bdcs is powered on";
-	return state;
-}
-
-std::string CommandBdcsPowerOff::GetFinalState()
-{
-	std::string state = "bdcs is powered off";
-	return state;
-}
-
 std::string CommandBdcsPowerOff::ToJsonCommandString()
 {
 	std::string cmd;
@@ -221,18 +159,6 @@ std::string CommandBdcsPowerOff::ToJsonCommandString()
 	cmd = "{";
 	cmd = cmd + "\"command\":\"bdcs power off\",";
 	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
-	cmd += "}";
-
-	return cmd;
-}
-
-std::string CommandBdcsPowerOff::ToJsonCommandUndoString()
-{
-	std::string cmd;
-
-	cmd = "{";
-	cmd = cmd + "\"command\":\"bdcs power on\",";
-	cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId());
 	cmd += "}";
 
 	return cmd;
@@ -297,68 +223,6 @@ std::string CommandBdcOperation::CommandKey()
 	return key;
 }
 
-std::string CommandBdcOperation::GetUndoState()
-{
-	std::string state;
-	std::string mode;
-
-	switch(_undoMode)
-	{
-	case BdcMode::COAST:
-		mode = "coast";
-		break;
-
-	case BdcMode::REVERSE:
-		mode = "reverse";
-		break;
-
-	case BdcMode::FORWARD:
-		mode = "forward";
-		break;
-
-	case BdcMode::BREAK:
-		mode = "break";
-		break;
-
-	default:
-		pLogger->LogError("CommandBdcOperation::GetInitialState wrong mode: " + std::to_string(_undoMode));
-	}
-
-	state = "{\"bdcIndex\":" + std::to_string(_bdcIndex) + ",\"mode\":\"" + mode + "\"}";
-	return state;
-}
-
-std::string CommandBdcOperation::GetFinalState()
-{
-	std::string state;
-	std::string mode;
-
-	switch(_finalMode)
-	{
-	case BdcMode::COAST:
-		mode = "coast";
-		break;
-
-	case BdcMode::REVERSE:
-		mode = "reverse";
-		break;
-
-	case BdcMode::FORWARD:
-		mode = "forward";
-		break;
-
-	case BdcMode::BREAK:
-		mode = "break";
-		break;
-
-	default:
-		pLogger->LogError("CommandBdcOperation::GetFinalState wrong mode: " + std::to_string(_finalMode));
-	}
-
-	state = "{\"bdcIndex\":" + std::to_string(_bdcIndex) + ",\"mode\":\"" + mode + "\"}";
-	return state;
-}
-
 std::string CommandBdcOperation::ToJsonCommandString()
 {
 	std::string cmd;
@@ -408,45 +272,6 @@ std::string CommandBdcOperation::ToJsonCommandString()
 	}
 
 	//cmd is empty if mode is wrong.
-	return cmd;
-}
-
-std::string CommandBdcOperation::ToJsonCommandUndoString()
-{
-	std::string cmd;
-	std::string mode;
-
-	switch(_undoMode)
-	{
-	case BdcMode::COAST:
-		mode = "coast";
-		break;
-
-	case BdcMode::REVERSE:
-		mode = "reverse";
-		break;
-
-	case BdcMode::FORWARD:
-		mode = "forward";
-		break;
-
-	case BdcMode::BREAK:
-		mode = "break";
-		break;
-
-	default:
-		pLogger->LogError("CommandBdcOperation::ToCommandUndo wrong mode: " + std::to_string(_undoMode));
-	}
-
-	//cmd is empty if mode is wrong.
-	if(mode.size() > 0) {
-		cmd = "{";
-		cmd = cmd + "\"command\":\"bdc " + mode + "\",";
-		cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId());
-		cmd = cmd + ",\"index\":" + std::to_string(_bdcIndex);
-		cmd += "}";
-	}
-
 	return cmd;
 }
 
@@ -586,13 +411,6 @@ std::string CommandStepperConfigStep::ToJsonCommandString()
 	return cmd;
 }
 
-std::string CommandStepperConfigStep::GetFinalState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"lowClks\":" + std::to_string(_lowClks)+ ",\"highClks\":" + std::to_string(_highClks) + "}";
-	return state;
-}
-
-
 ///////////////////////////////////////////////////////////
 // CommandStepperAccelerationBuffer
 ///////////////////////////////////////////////////////////
@@ -620,13 +438,6 @@ std::string CommandStepperAccelerationBuffer::ToJsonCommandString()
 
 	return cmd;
 }
-
-std::string CommandStepperAccelerationBuffer::GetFinalState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"accelerationBuffer\":" + std::to_string(_value) + "}";
-	return state;
-}
-
 
 ///////////////////////////////////////////////////////////
 // CommandStepperAccelerationBufferDecrement
@@ -656,13 +467,6 @@ std::string CommandStepperAccelerationBufferDecrement::ToJsonCommandString()
 	return cmd;
 }
 
-std::string CommandStepperAccelerationBufferDecrement::GetFinalState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"accelerationBufferDecrement\":" + std::to_string(_value) + "}";
-	return state;
-}
-
-
 ///////////////////////////////////////////////////////////
 // CommandStepperDecelrationBuffer
 ///////////////////////////////////////////////////////////
@@ -689,12 +493,6 @@ std::string CommandStepperDecelerationBuffer::ToJsonCommandString()
 	cmd += "}";
 
 	return cmd;
-}
-
-std::string CommandStepperDecelerationBuffer::GetFinalState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"decelerationBuffer\":" + std::to_string(_value) + "}";
-	return state;
 }
 
 ///////////////////////////////////////////////////////////
@@ -725,12 +523,6 @@ std::string CommandStepperDecelerationBufferIncrement::ToJsonCommandString()
 	return cmd;
 }
 
-std::string CommandStepperDecelerationBufferIncrement::GetFinalState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"decelerationBufferIncrement\":" + std::to_string(_value) + "}";
-	return state;
-}
-
 ///////////////////////////////////////////////////////////
 // CommandStepperEnable
 ///////////////////////////////////////////////////////////
@@ -759,49 +551,6 @@ std::string CommandStepperEnable::ToJsonCommandString()
 	return cmd;
 }
 
-std::string CommandStepperEnable::ToJsonCommandUndoString()
-{
-	std::string cmd;
-
-	cmd = "{";
-	cmd = cmd + "\"command\":\"stepper enable\",";
-	cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId()) + ",";
-	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
-	cmd = cmd + "\"enable\":" + std::string(_enable?"false":"true");
-	cmd += "}";
-
-	return cmd;
-}
-
-std::string CommandStepperEnable::GetUndoState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"enabled\":";
-	if(_enable) {
-		state = state + "false";
-	}
-	else {
-		state = state + "true";
-	}
-	state = state + "}";
-
-	return state;
-}
-
-std::string CommandStepperEnable::GetFinalState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"enabled\":";
-	if(_enable) {
-		state = state + "true";
-	}
-	else {
-		state = state + "false";
-	}
-	state = state + "}";
-
-	return state;
-}
-
-
 ///////////////////////////////////////////////
 // CommandStepperForward
 ///////////////////////////////////////////////
@@ -816,34 +565,6 @@ std::string CommandStepperForward::CommandKey()
 	return std::string("stepper forward");
 }
 
-std::string CommandStepperForward::GetUndoState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"forward\":";
-	if(_bForward) {
-		state = state + "false";
-	}
-	else {
-		state = state + "true";
-	}
-	state = state + "}";
-
-	return state;
-}
-
-std::string CommandStepperForward::GetFinalState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"forward\":";
-	if(_bForward) {
-		state = state + "true";
-	}
-	else {
-		state = state + "false";
-	}
-	state = state + "}";
-
-	return state;
-}
-
 std::string CommandStepperForward::ToJsonCommandString()
 {
 	std::string cmd;
@@ -853,20 +574,6 @@ std::string CommandStepperForward::ToJsonCommandString()
 	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
 	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
 	cmd = cmd + "\"forward\":" + std::string(_bForward?"true":"false");
-	cmd += "}";
-
-	return cmd;
-}
-
-std::string CommandStepperForward::ToJsonCommandUndoString()
-{
-	std::string cmd;
-
-	cmd = "{";
-	cmd = cmd + "\"command\":\"stepper forward\",";
-	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
-	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
-	cmd = cmd + "\"forward\":" + std::string(_bForward?"false":"true");
 	cmd += "}";
 
 	return cmd;
@@ -886,18 +593,6 @@ std::string CommandStepperSteps::CommandKey()
 	return std::string("stepper steps");
 }
 
-std::string CommandStepperSteps::GetUndoState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"steps\":" + std::to_string(_steps) + "}";
-	return state;
-}
-
-std::string CommandStepperSteps::GetFinalState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"steps\":" + std::to_string(_steps) + "}";
-	return state;
-}
-
 std::string CommandStepperSteps::ToJsonCommandString()
 {
 	std::string cmd;
@@ -911,21 +606,6 @@ std::string CommandStepperSteps::ToJsonCommandString()
 
 	return cmd;
 }
-
-std::string CommandStepperSteps::ToJsonCommandUndoString()
-{
-	std::string cmd;
-
-	cmd = "{";
-	cmd = cmd + "\"command\":\"stepper steps\",";
-	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
-	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
-	cmd = cmd + "\"value\":" + std::to_string(_steps);
-	cmd += "}";
-
-	return cmd;
-}
-
 
 ///////////////////////////////////////////
 // CommandStepperRun
@@ -942,18 +622,6 @@ std::string CommandStepperRun::CommandKey()
 	return std::string("stepper run");
 }
 
-std::string CommandStepperRun::GetUndoState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":" + std::to_string(_initialPosition) + "}";
-	return state;
-}
-
-std::string CommandStepperRun::GetFinalState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":" + std::to_string(_finalPosition) + "}";
-	return state;
-}
-
 std::string CommandStepperRun::ToJsonCommandString()
 {
 	std::string cmd;
@@ -966,20 +634,6 @@ std::string CommandStepperRun::ToJsonCommandString()
 
 	return cmd;
 }
-
-std::string CommandStepperRun::ToJsonCommandUndoString()
-{
-	std::string cmd;
-
-	cmd = "{";
-	cmd = cmd + "\"command\":\"stepper run\",";
-	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
-	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex);
-	cmd += "}";
-
-	return cmd;
-}
-
 
 ///////////////////////////////////////////////////////////
 // CommandStepperConfigHome
@@ -1014,12 +668,6 @@ std::string CommandStepperConfigHome::ToJsonCommandString()
 	cmd += "}";
 
 	return cmd;
-}
-
-std::string CommandStepperConfigHome::GetFinalState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":0}";
-	return state;
 }
 
 ///////////////////////////////////////////////////////////
@@ -1105,41 +753,6 @@ std::string CommandStepperMove::ToJsonCommandString()
 	cmd += "}";
 
 	return cmd;
-}
-
-std::string CommandStepperMove::ToJsonCommandUndoString()
-{
-	std::string cmd;
-
-	cmd = "{";
-	cmd = cmd + "\"command\":\"stepper move\",";
-	cmd = cmd + "\"commandId\":" + std::to_string(CommandUndoId()) + ",";
-	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
-	cmd = cmd + "\"forward\":" + std::string(_forward?"false":"true") + ",";
-	cmd = cmd + "\"steps\":" + std::to_string(_steps);
-	cmd += "}";
-
-	return cmd;
-}
-
-std::string CommandStepperMove::GetUndoState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":" + std::to_string(_position) + "}";
-	return state;
-}
-
-std::string CommandStepperMove::GetFinalState()
-{
-	std::string state = "{\"stepperIndex\":" + std::to_string(_stepperIndex) + ",\"position\":";
-	if(_forward) {
-		state = state + std::to_string(_position + _steps);
-	}
-	else {
-		state = state + std::to_string(_position - _steps);
-	}
-	state = state + "}";
-
-	return state;
 }
 
 /////////////////////////////////////////////
