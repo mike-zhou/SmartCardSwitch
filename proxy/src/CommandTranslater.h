@@ -928,6 +928,142 @@ public:
 	}
 };
 
+//{
+//	"command":"opt power on"
+//}
+class CommandOptPowerOn
+{
+public:
+	CommandOptPowerOn(unsigned long commandId)
+	{
+		_commandId = commandId;
+	}
+
+	CommandType Type() { return CommandType::OptPowerOn; }
+
+	std::string ToString()
+	{
+	}
+
+private:
+	unsigned long _commandId;
+};
+
+//{
+//	"command":"opt power off"
+//}
+class CommandOptPowerOff
+{
+public:
+	CommandOptPowerOff(unsigned long commandId)
+	{
+		_commandId = commandId;
+	}
+
+	CommandType Type() { return CommandType::OptPowerOff; }
+
+	std::string ToString()
+	{
+	}
+
+private:
+	unsigned long _commandId;
+};
+
+//{
+//	"command":"opt query power"
+//}
+class CommandOptQueryPower
+{
+public:
+	CommandOptQueryPower(unsigned long commandId)
+	{
+		_commandId = commandId;
+	}
+
+	CommandType Type() { return CommandType::OptQueryPower; }
+
+	std::string ToString()
+	{
+	}
+
+private:
+	unsigned long _commandId;
+};
+
+//{
+//	"command":"dcm power on",
+//	"index":0
+//}
+class CommandDcmPowerOn
+{
+public:
+	CommandDcmPowerOn(unsigned int index, unsigned long commandId)
+	{
+		_index = index;
+		_commandId = commandId;
+	}
+
+	CommandType Type() { return CommandType::DcmPowerOn; }
+
+	std::string ToString()
+	{
+	}
+
+private:
+	unsigned long _commandId;
+	unsigned int _index;
+};
+
+//{
+//	"command":"dcm power off",
+//	"index":0
+//}
+class CommandDcmPowerOff
+{
+public:
+	CommandDcmPowerOff(unsigned int index, unsigned long commandId)
+	{
+		_index = index;
+		_commandId = commandId;
+	}
+
+	CommandType Type() { return CommandType::DcmPowerOff; }
+
+	std::string ToString()
+	{
+	}
+
+private:
+	unsigned long _commandId;
+	unsigned int _index;
+};
+
+//{
+//	"command":"dcm query power",
+//	"index":0
+//}
+class CommandDcmQueryPower
+{
+public:
+	CommandDcmQueryPower(unsigned int index, unsigned long commandId)
+	{
+		_index = index;
+		_commandId = commandId;
+	}
+
+	CommandType Type() { return CommandType::DcmQueryPower; }
+
+	std::string ToString()
+	{
+	}
+
+private:
+	unsigned long _commandId;
+	unsigned int _index;
+};
+
+
 // translate JSON command to device command
 class CommandTranslator
 {
@@ -967,6 +1103,12 @@ public:
 	std::shared_ptr<CommandStepperQuery> GetCommandStepperQuery();
 	std::shared_ptr<CommandStepperSetState> GetCommandStepperSetState();
 	std::shared_ptr<CommandLocatorQuery> GetCommandLocatorQuery();
+	std::shared_ptr<CommandOptPowerOn> GetCommandOptPowerOn();
+	std::shared_ptr<CommandOptPowerOff> GetCommandOptPowerOff();
+	std::shared_ptr<CommandOptQueryPower> GetCommandOptQueryPower();
+	std::shared_ptr<CommandDcmPowerOn> GetCommandDcmPowerOn();
+	std::shared_ptr<CommandDcmPowerOff> GetCommandDcmPowerOff();
+	std::shared_ptr<CommandDcmQueryPower> GetCommandDcmQueryPower();
 
 private:
 	std::string _jsonCmd;
@@ -1002,6 +1144,12 @@ private:
 	const std::string strCommandStepperQuery = "stepper query";
 	const std::string strCommandStepperSetState = "stepper set state";
 	const std::string strCommandLocatorQuery = "locator query";
+	const std::string strCommandOptPowerOn = "opt power on";
+	const std::string strCommandOptPowerOff = "opt power off";
+	const std::string strCommandOptQueryPower = "opt query power";
+	const std::string strCommandDcmPowerOn = "dcm power on";
+	const std::string strCommandDcmPowerOff = "dcm power off";
+	const std::string strCommandDcmQueryPower = "dcm query power";
 };
 
 #endif /* COMMANDPARSER_H_ */

@@ -781,3 +781,112 @@ std::string CommandLocatorQuery::ToJsonCommandString()
 	return cmd;
 }
 
+
+//////////////////////////////////////////
+// CommandOptPowerOn
+//////////////////////////////////////////
+CommandOptPowerOn::CommandOptPowerOn()
+{
+
+}
+
+std::string CommandOptPowerOn::CommandKey()
+{
+
+}
+
+std::string CommandOptPowerOn::ToJsonCommandString()
+{
+
+}
+
+//////////////////////////////////////////
+// CommandOptPowerOff
+//////////////////////////////////////////
+CommandOptPowerOff::CommandOptPowerOff()
+{
+
+}
+
+std::string CommandOptPowerOff::CommandKey()
+{
+
+}
+
+std::string CommandOptPowerOff::ToJsonCommandString()
+{
+
+}
+
+//////////////////////////////////////////
+// CommandOptQueryPower
+//////////////////////////////////////////
+CommandOptQueryPower::CommandOptQueryPower()
+{
+
+}
+
+std::string CommandOptQueryPower::CommandKey()
+{
+
+}
+
+std::string CommandOptQueryPower::ToJsonCommandString()
+{
+
+}
+
+//////////////////////////////////////////
+// CommandDcmPowerOn
+//////////////////////////////////////////
+CommandDcmPowerOn::CommandDcmPowerOn(unsigned int index)
+{
+
+}
+
+std::string CommandDcmPowerOn::CommandKey()
+{
+
+}
+
+std::string CommandDcmPowerOn::ToJsonCommandString()
+{
+
+}
+
+//////////////////////////////////////////
+// CommandDcmPowerOff
+//////////////////////////////////////////
+CommandDcmPowerOff::CommandDcmPowerOff(unsigned int index)
+{
+
+}
+
+std::string CommandDcmPowerOff::CommandKey()
+{
+
+}
+
+std::string CommandDcmPowerOff::ToJsonCommandString()
+{
+
+}
+
+//////////////////////////////////////////
+// CommandDcmQueryPower
+//////////////////////////////////////////
+CommandDcmQueryPower::CommandDcmQueryPower(unsigned int index)
+{
+
+}
+
+std::string CommandDcmQueryPower::CommandKey()
+{
+
+}
+
+std::string CommandDcmQueryPower::ToJsonCommandString()
+{
+
+}
+

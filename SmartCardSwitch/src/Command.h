@@ -351,4 +351,61 @@ private:
 	unsigned int _locatorIndex;
 };
 
+class CommandOptPowerOn: public DeviceCommand
+{
+public:
+	CommandOptPowerOn();
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+};
+
+class CommandOptPowerOff: public DeviceCommand
+{
+public:
+	CommandOptPowerOff();
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+};
+
+class CommandOptQueryPower: public DeviceCommand
+{
+public:
+	CommandOptQueryPower();
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+};
+
+class CommandDcmPowerOn: public DeviceCommand
+{
+public:
+	CommandDcmPowerOn(unsigned int index);
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+
+private:
+	unsigned int _index;
+};
+
+class CommandDcmPowerOff: public DeviceCommand
+{
+public:
+	CommandDcmPowerOff(unsigned int index);
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+
+private:
+	unsigned int _index;
+};
+
+class CommandDcmQueryPower: public DeviceCommand
+{
+public:
+	CommandDcmQueryPower(unsigned int index);
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+
+private:
+	unsigned int _index;
+};
+
 #endif /* COMMAND_H_ */

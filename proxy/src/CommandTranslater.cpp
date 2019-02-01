@@ -151,6 +151,24 @@ CommandType CommandTranslator::Type()
 		else if(command == strCommandLocatorQuery) {
 			_type = CommandType::LocatorQuery;
 		}
+		else if(command == strCommandOptPowerOn) {
+			_type = CommandType::OptPowerOn;
+		}
+		else if(command == strCommandOptPowerOff) {
+			_type = CommandType::OptPowerOff;
+		}
+		else if(command == strCommandOptQueryPower) {
+			_type = CommandType::OptQueryPower;
+		}
+		else if(command == strCommandDcmPowerOn) {
+			_type = CommandType::DcmPowerOn;
+		}
+		else if(command == strCommandDcmPowerOff) {
+			_type = CommandType::DcmPowerOff;
+		}
+		else if(command == strCommandDcmQueryPower) {
+			_type = CommandType::DcmQueryPower;
+		}
 		else {
 			pLogger->LogError("CommandTranslator::CommandType unknown command in " + _jsonCmd);
 			_type = CommandType::Invalid;
@@ -1468,6 +1486,264 @@ std::shared_ptr<CommandLocatorQuery> CommandTranslator::GetCommandLocatorQuery()
 	catch(...)
 	{
 		pLogger->LogError("CommandTranslator::GetCommandLocatorQuery unknown exception in " + _jsonCmd);
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<CommandOptPowerOn> CommandTranslator::GetCommandOptPowerOn()
+{
+	try
+	{
+		Poco::JSON::Parser parser;
+		Poco::Dynamic::Var result = parser.parse(_jsonCmd);
+		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+
+		if(objectPtr->has(std::string("command")))
+		{
+			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
+
+			if(command.size() < 1) {
+				pLogger->LogError("CommandTranslator::GetCommandOptPowerOn invalid command in " + _jsonCmd);
+			}
+			else if(command != strCommandOptPowerOn) {
+				pLogger->LogError("CommandTranslator::GetCommandOptPowerOn wrong command in " + _jsonCmd);
+			}
+			else
+			{
+				std::shared_ptr<CommandOptPowerOn> p(new CommandOptPowerOn(commandId));
+				return p;
+			}
+		}
+		else
+		{
+			pLogger->LogError("CommandTranslator::GetCommandOptPowerOn no command in " + _jsonCmd);
+		}
+	}
+	catch(Poco::Exception& e)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandOptPowerOn exception occurs: " + e.displayText() + " in " + _jsonCmd);
+	}
+	catch(...)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandOptPowerOn unknown exception in " + _jsonCmd);
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<CommandOptPowerOff> CommandTranslator::GetCommandOptPowerOff()
+{
+	try
+	{
+		Poco::JSON::Parser parser;
+		Poco::Dynamic::Var result = parser.parse(_jsonCmd);
+		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+
+		if(objectPtr->has(std::string("command")))
+		{
+			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
+
+			if(command.size() < 1) {
+				pLogger->LogError("CommandTranslator::GetCommandOptPowerOff invalid command in " + _jsonCmd);
+			}
+			else if(command != strCommandOptPowerOff) {
+				pLogger->LogError("CommandTranslator::GetCommandOptPowerOff wrong command in " + _jsonCmd);
+			}
+			else
+			{
+				std::shared_ptr<CommandOptPowerOff> p(new CommandOptPowerOff(commandId));
+				return p;
+			}
+		}
+		else
+		{
+			pLogger->LogError("CommandTranslator::GetCommandOptPowerOff no command in " + _jsonCmd);
+		}
+	}
+	catch(Poco::Exception& e)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandOptPowerOff exception occurs: " + e.displayText() + " in " + _jsonCmd);
+	}
+	catch(...)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandOptPowerOff unknown exception in " + _jsonCmd);
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<CommandOptQueryPower> CommandTranslator::GetCommandOptQueryPower()
+{
+	try
+	{
+		Poco::JSON::Parser parser;
+		Poco::Dynamic::Var result = parser.parse(_jsonCmd);
+		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+
+		if(objectPtr->has(std::string("command")))
+		{
+			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
+
+			if(command.size() < 1) {
+				pLogger->LogError("CommandTranslator::GetCommandOptQueryPower invalid command in " + _jsonCmd);
+			}
+			else if(command != strCommandOptQueryPower) {
+				pLogger->LogError("CommandTranslator::GetCommandOptQueryPower wrong command in " + _jsonCmd);
+			}
+			else
+			{
+				std::shared_ptr<CommandOptQueryPower> p(new CommandOptQueryPower(commandId));
+				return p;
+			}
+		}
+		else
+		{
+			pLogger->LogError("CommandTranslator::GetCommandOptQueryPower no command in " + _jsonCmd);
+		}
+	}
+	catch(Poco::Exception& e)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandOptQueryPower exception occurs: " + e.displayText() + " in " + _jsonCmd);
+	}
+	catch(...)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandOptQueryPower unknown exception in " + _jsonCmd);
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<CommandDcmPowerOn> CommandTranslator::GetCommandDcmPowerOn()
+{
+	try
+	{
+		Poco::JSON::Parser parser;
+		Poco::Dynamic::Var result = parser.parse(_jsonCmd);
+		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+
+		if(objectPtr->has(std::string("command")))
+		{
+			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
+
+			if(command.size() < 1) {
+				pLogger->LogError("CommandTranslator::GetCommandDcmPowerOn invalid command in " + _jsonCmd);
+			}
+			else if(command != strCommandDcmPowerOn) {
+				pLogger->LogError("CommandTranslator::GetCommandDcmPowerOn wrong command in " + _jsonCmd);
+			}
+			else
+			{
+				int index = objectPtr->getValue<int>("index");
+
+				std::shared_ptr<CommandDcmPowerOn> p(new CommandDcmPowerOn(index, commandId));
+				return p;
+			}
+		}
+		else
+		{
+			pLogger->LogError("CommandTranslator::GetCommandDcmPowerOn no command in " + _jsonCmd);
+		}
+	}
+	catch(Poco::Exception& e)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandDcmPowerOn exception occurs: " + e.displayText() + " in " + _jsonCmd);
+	}
+	catch(...)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandDcmPowerOn unknown exception in " + _jsonCmd);
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<CommandDcmPowerOff> CommandTranslator::GetCommandDcmPowerOff()
+{
+	try
+	{
+		Poco::JSON::Parser parser;
+		Poco::Dynamic::Var result = parser.parse(_jsonCmd);
+		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+
+		if(objectPtr->has(std::string("command")))
+		{
+			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
+
+			if(command.size() < 1) {
+				pLogger->LogError("CommandTranslator::GetCommandDcmPowerOff invalid command in " + _jsonCmd);
+			}
+			else if(command != strCommandDcmPowerOff) {
+				pLogger->LogError("CommandTranslator::GetCommandDcmPowerOff wrong command in " + _jsonCmd);
+			}
+			else
+			{
+				int index = objectPtr->getValue<int>("index");
+
+				std::shared_ptr<CommandDcmPowerOff> p(new CommandDcmPowerOff(index, commandId));
+				return p;
+			}
+		}
+		else
+		{
+			pLogger->LogError("CommandTranslator::GetCommandDcmPowerOff no command in " + _jsonCmd);
+		}
+	}
+	catch(Poco::Exception& e)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandDcmPowerOff exception occurs: " + e.displayText() + " in " + _jsonCmd);
+	}
+	catch(...)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandDcmPowerOff unknown exception in " + _jsonCmd);
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<CommandDcmQueryPower> CommandTranslator::GetCommandDcmQueryPower()
+{
+	try
+	{
+		Poco::JSON::Parser parser;
+		Poco::Dynamic::Var result = parser.parse(_jsonCmd);
+		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+
+		if(objectPtr->has(std::string("command")))
+		{
+			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
+
+			if(command.size() < 1) {
+				pLogger->LogError("CommandTranslator::GetCommandDcmQueryPower invalid command in " + _jsonCmd);
+			}
+			else if(command != strCommandDcmQueryPower) {
+				pLogger->LogError("CommandTranslator::GetCommandDcmQueryPower wrong command in " + _jsonCmd);
+			}
+			else
+			{
+				int index = objectPtr->getValue<int>("index");
+
+				std::shared_ptr<CommandDcmQueryPower> p(new CommandDcmQueryPower(index, commandId));
+				return p;
+			}
+		}
+		else
+		{
+			pLogger->LogError("CommandTranslator::GetCommandDcmQueryPower no command in " + _jsonCmd);
+		}
+	}
+	catch(Poco::Exception& e)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandDcmQueryPower exception occurs: " + e.displayText() + " in " + _jsonCmd);
+	}
+	catch(...)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandDcmQueryPower unknown exception in " + _jsonCmd);
 	}
 
 	return nullptr;

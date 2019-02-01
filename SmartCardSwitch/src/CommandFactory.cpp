@@ -214,3 +214,45 @@ std::shared_ptr<DeviceCommand> CommandFactory::LocatorQuery(unsigned int locator
 	return ptr;
 }
 
+std::shared_ptr<DeviceCommand> CommandFactory::OptPowerOn()
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandOptPowerOn());
+
+	return ptr;
+}
+
+std::shared_ptr<DeviceCommand> CommandFactory::OptPowerOff()
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandOptPowerOff());
+
+	return ptr;
+}
+
+std::shared_ptr<DeviceCommand> CommandFactory::OptQueryPower()
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandOptQueryPower());
+
+	return ptr;
+}
+
+std::shared_ptr<DeviceCommand> CommandFactory::DcmPowerOn(unsigned int index)
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandDcmPowerOn(index));
+
+	return ptr;
+}
+
+std::shared_ptr<DeviceCommand> CommandFactory::DcmPowerOff(unsigned int index)
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandDcmPowerOff(index));
+
+	return ptr;
+}
+
+std::shared_ptr<DeviceCommand> CommandFactory::DcmQueryPower(unsigned int index)
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandDcmQueryPower(index));
+
+	return ptr;
+}
+
