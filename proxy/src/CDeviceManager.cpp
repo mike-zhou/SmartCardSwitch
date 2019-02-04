@@ -275,10 +275,10 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 
 	//read data from device
 	amount =  read(device.fd, buffer, BUFFER_SIZE);
-	pLogger->LogDebug("CDeviceManager::onDeviceInput " + std::to_string(amount) + " from " + device.fileName);
+	pLogger->LogDebug("CDeviceManager::onDeviceCanBeRead " + std::to_string(amount) + " bytes from " + device.fileName);
 
 	if(device.state < DeviceState::RECEIVING_NAME) {
-		pLogger->LogInfo("CDeviceManager::onDeviceInput clearing buffer, discard bytes: " + std::to_string(amount));
+		pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead clearing buffer, discard bytes: " + std::to_string(amount));
 		return;
 	}
 
@@ -293,8 +293,8 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 
 		device.incoming.push_back(buffer[i]);
 	}
-	pLogger->LogInfo("CDeviceManager::onDeviceInput binary content:" + binaryLog);
-	pLogger->LogInfo("CDeviceManager::onDeviceInput char content: " + charLog);
+	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead binary content:" + binaryLog);
+	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead char content: " + charLog);
 
 	//notify mapping of complete replies
 	for(;;)
@@ -303,7 +303,8 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 
 		//check if there is a complete reply
 		for(auto it = device.incoming.begin(); it!=device.incoming.end(); it++) {
-			if(*it == 0x0D) {
+			if((*it == 0x0D) || (*it == 0x0A)) {
+				//0x0D is changed to 0x0A in raspberry pi
 				replyReady = true; //a reply is found.
 				break;
 			}
@@ -326,17 +327,14 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 				if((c >= ' ') && (c <= '~')) {
 					reply.push_back(c);
 				}
-				else if(c == 0x0A) {
-					//ignore the line feed.
-					continue;
-				}
-				else if(c == 0x0D) {
+				else if((c == 0x0D) || (c == 0x0A)) {
 					// a carriage return means that a complete reply is found
+					//0x0D is changed to 0x0A in raspberry pi.
 					if(illegal) {
-						pLogger->LogError("CDeviceManager::onDeviceInput illegal reply from: " + device.fileName + " : " + reply.data());
+						pLogger->LogError("CDeviceManager::onDeviceCanBeRead illegal reply from: " + device.fileName + " : " + reply.data());
 					}
-					else {
-						pLogger->LogDebug("CDeviceManager::onDeviceInput rely: " + device.fileName + ":" + std::string(reply.data()));
+					else if(!reply.empty()) {
+						pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead rely: " + device.fileName + ":" + std::string(reply.data()));
 						onReply(device, reply);
 					}
 					break;
@@ -345,7 +343,7 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 					//illegal character
 					if(illegal == false) {
 						char tmpBuffer[512];
-						sprintf(tmpBuffer, "CDeviceManager::onDeviceInput illegal character 0x%02x from: %s", c, device.fileName.c_str());
+						sprintf(tmpBuffer, "CDeviceManager::onDeviceCanBeRead illegal character 0x%02x from: %s", c, device.fileName.c_str());
 						pLogger->LogError(tmpBuffer);
 						illegal = true;
 					}
@@ -398,7 +396,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 			//make device to spit out rubbish in receiving buffer.
 			command.push_back(COMMAND_TERMINATER);
 			enqueueCommand(device, command);
-			pLogger->LogInfo("CDeviceManager::onDeviceOutput clearing device buffer: " + device.fileName);
+			pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten clearing device buffer: " + device.fileName);
 			device.state = DeviceState::CLEARING_BUFFER;
 			device.timeStamp.update();
 		}
@@ -409,7 +407,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 			if(device.timeStamp.elapsed() > 1000000) {
 				//1 second is enough for device to spit out rubbish in receiving buffer.
 				device.state = DeviceState::BUFFER_CLEARED;
-				pLogger->LogInfo("CDeviceManager::onDeviceOutput cleared device buffer: " + device.fileName);
+				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten cleared device buffer: " + device.fileName);
 			}
 		}
 		break;
@@ -420,7 +418,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 			std::string command(COMMAND_QUERY_NAME);
 			enqueueCommand(device, command);
 			device.state = DeviceState::RECEIVING_NAME;
-			pLogger->LogInfo("CDeviceManager::onDeviceOutput querying device name: " + device.fileName);
+			pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten querying device name: " + device.fileName);
 		}
 		break;
 
@@ -437,7 +435,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 		std::string binaryLog;
 		std::string charLog;
 
-		sprintf(buffer, "CDeviceManager::onDeviceOutput write %ld bytes to device file: %s", device.outgoing.size(), device.fileName.c_str());
+		sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten write %ld bytes to device file: %s", device.outgoing.size(), device.fileName.c_str());
 		pLogger->LogDebug(buffer);
 
 		//send command to device
@@ -463,8 +461,8 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 				break;
 			}
 		}
-		pLogger->LogInfo("CDeviceManager::onDeviceOutput binary content:" + binaryLog);
-		pLogger->LogInfo("CDeviceManager::onDeviceOutput char content: " + charLog);
+		pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten binary content:" + binaryLog);
+		pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten char content: " + charLog);
 	}
 }
 

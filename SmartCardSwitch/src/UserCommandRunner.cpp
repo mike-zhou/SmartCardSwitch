@@ -1362,7 +1362,6 @@ void UserCommandRunner::executeUserCmdShowBarCode()
 	gate_smartCard_withoutCard(_userCommand.smartCardNumber);
 	closeClamp();
 	smartCard_gate_withCard(_userCommand.smartCardNumber);
-	toSmartCardReaderGate();
 	toBarcodeReaderGate();
 	gate_barcodeReader();
 	deviceDelay(_userCommand.downPeriod);

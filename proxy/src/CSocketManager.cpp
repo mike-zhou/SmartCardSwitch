@@ -730,19 +730,25 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 			try
 			{
 				dataRead = socketWrapper.socket.receiveBytes(buffer, bufferSize, 0);
-				if(dataRead == 0) {
-					//if socket can be read but has not data, then peer socket is closed.
-					pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketReadable socket closed: %s, socketId: %Ld"),
+				if(dataRead == 0)
+				{
+					char buf[256];
+					sprintf(buf, "CSocketManager::onSocketReadable socket closed: %s, socketId: %Ld",
 							socketWrapper.socket.peerAddress().toString(),
-							socketWrapper.socketId));
+							socketWrapper.socketId);
+					pLogger->LogInfo(buf);
 
+					//if socket can be read but has not data, then peer socket is closed.
 					socketWrapper.state = SocketState::TO_BE_CLOSED;
 				}
-				else {
-					pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketReadable %d bytes from %s, socketId: %Ld"),
+				else
+				{
+					char buf[256];
+					sprintf(buf, "CSocketManager::onSocketReadable %d bytes from %s, socketId: %Ld",
 							dataRead,
 							socketWrapper.socket.peerAddress().toString(),
-							socketWrapper.socketId));
+							socketWrapper.socketId);
+					pLogger->LogInfo(buf);
 
 					receivingError = false;
 					for(int i=0; i<dataRead; i++) {
@@ -752,19 +758,23 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 			}
 			catch(Poco::TimeoutException& e)
 			{
-				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketReadable timeout in socket: %Ld"),
-						socketWrapper.socketId));
+				char buf[256];
+				sprintf(buf, "CSocketManager::onSocketReadable timeout in socket: %Ld", socketWrapper.socketId);
+				pLogger->LogError(buf);
 			}
 			catch(Poco::Net::NetException& e)
 			{
-				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketReadable NetException in socket: %Ld: %s"),
+				char buf[256];
+				sprintf(buf, "CSocketManager::onSocketReadable NetException in socket: %Ld: %s",
 						socketWrapper.socketId,
-						e.displayText()));
+						e.displayText());
+				pLogger->LogError(buf);
 			}
 			catch(...)
 			{
-				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketReadable unknown exception in socket: %Ld"),
-						socketWrapper.socketId));
+				char buf[256];
+				sprintf(buf, "CSocketManager::onSocketReadable unknown exception in socket: %Ld", socketWrapper.socketId);
+				pLogger->LogError(buf);
 			}
 		}
 		else
@@ -821,7 +831,9 @@ void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 			//write to socket
 			dataSent = 0;
 			if(dataSize > 0) {
-				pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketWritable writing %d bytes to socket %Ld"), dataSize, socketWrapper.socketId));
+				char buf[256];
+				sprintf(buf, "CSocketManager::onSocketWritable writing %d bytes to socket %Ld", dataSize, socketWrapper.socketId);
+				pLogger->LogInfo(buf);
 				dataSent = socketWrapper.socket.sendBytes(buffer, dataSize, 0);
 			}
 			else {
@@ -829,13 +841,17 @@ void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 			}
 			//remove the sent data from the sending stage.
 			if(dataSent > 0) {
-				pLogger->LogInfo(Poco::format(std::string("CSocketManager::onSocketWritable wrote %d bytes to socket %Ld"), dataSize, socketWrapper.socketId));
+				char buf[256];
+				sprintf(buf, "CSocketManager::onSocketWritable wrote %d bytes to socket %Ld", dataSize, socketWrapper.socketId);
+				pLogger->LogInfo(buf);
 				for(;dataSent>0; dataSent--) {
 					socketWrapper.outgoing.pop_front();
 				}
 			}
 			else {
-				pLogger->LogError(Poco::format(std::string("CSocketManager::onSocketWritable wrote no byte to socket %Ld"), socketWrapper.socketId));
+				char buf[256];
+				sprintf(buf, "CSocketManager::onSocketWritable wrote no byte to socket %Ld", socketWrapper.socketId);
+				pLogger->LogError(buf);
 				break;
 			}
 		}
