@@ -418,6 +418,9 @@ void UserCommandRunner::executeUserCmdResetDevice()
 		cmd = ConsoleCommandFactory::CmdStepperQuery(i);
 		runConsoleCommand(cmd);
 	}
+
+	//go to smart card gate
+	toSmartCardGate();
 }
 
 void UserCommandRunner::parseUserCmdSmartCard(Poco::DynamicStruct& ds)
@@ -592,6 +595,44 @@ void UserCommandRunner::moveStepper(unsigned int index, unsigned int initialPos,
 	runConsoleCommand(cmd);
 }
 
+void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsigned int fromZ, unsigned int fromW,
+				unsigned int toX, unsigned int toY, unsigned int toZ, unsigned int toW)
+{
+	if(fromZ >= toZ)//from high to low
+	{
+		if(fromY >= toY)
+		{
+			moveStepperX(fromX, toX);
+			moveStepperY(fromY, toY);
+		}
+		else
+		{
+			moveStepperY(fromY, toY);
+			moveStepperX(fromX, toX);
+		}
+
+		moveStepperW(fromW, toW);
+		moveStepperZ(fromZ, toZ);//move down
+
+	}
+	else //from low to high
+	{
+		moveStepperZ(fromZ, toZ);//move up
+		moveStepperW(fromW, toW);
+
+		if(fromY >= toY)
+		{
+			moveStepperX(fromX, toX);
+			moveStepperY(fromY, toY);
+		}
+		else
+		{
+			moveStepperY(fromY, toY);
+			moveStepperX(fromX, toX);
+		}
+	}
+}
+
 void UserCommandRunner::toHome()
 {
 	auto currentPosition = getCurrentPosition();
@@ -600,16 +641,16 @@ void UserCommandRunner::toHome()
 	{
 		throwError("UserCommandRunner::toHome unknown current position");
 	}
-	else if(currentPosition != CurrentPosition::Home)
+
+	if(currentPosition != CurrentPosition::SmartCardGate) {
+		//to smart card gate firstly, then to home, so that carriage runs in safe area.
+		toSmartCardGate();
+	}
+
+	//to home
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
-		std::string cmd;
-
-		//move up
-		curZ = currentZ();
-		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
-		moveStepperZ(curZ, z);
 
 		//move to home position
 		curX = currentX();
@@ -636,20 +677,13 @@ void UserCommandRunner::toSmartCardGate()
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
-		std::string cmd;
 
-		//move up
 		curZ = currentZ();
-		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
-		moveStepperZ(curZ, z);
-
 		curX = currentX();
 		curY = currentY();
 		curW = currentW();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
-		moveStepperW(curW, w);
-		moveStepperX(curX, x);
-		moveStepperY(curY, y);
+		gateToGate(curX, curY, curZ, curW, x, y, z, w);
 	}
 }
 
@@ -661,26 +695,23 @@ void UserCommandRunner::toPedKeyGate()
 	{
 		throwError("UserCommandRunner::toPedKeyGate unknown current position");
 	}
-	else if(currentPosition != CurrentPosition::PedKeyGate)
+	if(currentPosition == CurrentPosition::Home)
+	{
+		toSmartCardGate();
+	}
+
+	if(currentPosition != CurrentPosition::PedKeyGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
-		std::string cmd;
-
-		//move up
-		curZ = currentZ();
-		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
-		moveStepperZ(curZ, z);
 
 		curX = currentX();
 		curY = currentY();
 		curZ = currentZ();
 		curW = currentW();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKeyGate, x, y, z, w);
-		moveStepperW(curW, w);
-		moveStepperY(curY, y);
-		moveStepperX(curX, x);
-		moveStepperZ(curZ, z);
+
+		gateToGate(curX, curY, curZ, curW, x, y, z, w);
 	}
 }
 
@@ -692,26 +723,23 @@ void UserCommandRunner::toSoftKeyGate()
 	{
 		throwError("UserCommandRunner::toSoftKeyGate unknown current position");
 	}
-	else if(currentPosition != CurrentPosition::SoftKeyGate)
+	if(currentPosition == CurrentPosition::Home)
+	{
+		toSmartCardGate();
+	}
+
+	if(currentPosition != CurrentPosition::SoftKeyGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
-		std::string cmd;
-
-		//move up
-		curZ = currentZ();
-		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
-		moveStepperZ(curZ, z);
 
 		curX = currentX();
 		curY = currentY();
 		curZ = currentZ();
 		curW = currentW();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SoftKeyGate, x, y, z, w);
-		moveStepperW(curW, w);
-		moveStepperY(curY, y);
-		moveStepperX(curX, x);
-		moveStepperZ(curZ, z);
+
+		gateToGate(curX, curY, curZ, curW, x, y, z, w);
 	}
 }
 
@@ -723,26 +751,23 @@ void UserCommandRunner::toAssistKeyGate()
 	{
 		throwError("UserCommandRunner::toAssistKeyGate unknown current position");
 	}
-	else if(currentPosition != CurrentPosition::AssistKeyGate)
+	if(currentPosition == CurrentPosition::Home)
+	{
+		toSmartCardGate();
+	}
+
+	if(currentPosition != CurrentPosition::AssistKeyGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
-		std::string cmd;
-
-		//move up
-		curZ = currentZ();
-		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
-		moveStepperZ(curZ, z);
 
 		curX = currentX();
 		curY = currentY();
 		curZ = currentZ();
 		curW = currentW();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKeyGate, x, y, z, w);
-		moveStepperW(curW, w);
-		moveStepperY(curY, y);
-		moveStepperX(curX, x);
-		moveStepperZ(curZ, z);
+
+		gateToGate(curX, curY, curZ, curW, x, y, z, w);
 	}
 }
 
@@ -754,26 +779,23 @@ void UserCommandRunner::toTouchScreenGate()
 	{
 		throwError("UserCommandRunner::toTouchScreenGate unknown current position");
 	}
-	else if(currentPosition != CurrentPosition::TouchScreenGate)
+	if(currentPosition == CurrentPosition::Home)
+	{
+		toSmartCardGate();
+	}
+
+	if(currentPosition != CurrentPosition::TouchScreenGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
-		std::string cmd;
-
-		//move up
-		curZ = currentZ();
-		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
-		moveStepperZ(curZ, z);
 
 		curX = currentX();
 		curY = currentY();
 		curZ = currentZ();
 		curW = currentW();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::TouchScreenKeyGate, x, y, z, w);
-		moveStepperW(curW, w);
-		moveStepperY(curY, y);
-		moveStepperX(curX, x);
-		moveStepperZ(curZ, z);
+
+		gateToGate(curX, curY, curZ, curW, x, y, z, w);
 	}
 }
 
@@ -785,26 +807,23 @@ void UserCommandRunner::toSmartCardReaderGate()
 	{
 		throwError("UserCommandRunner::toSmartCardReaderGate unknown current position");
 	}
-	else if(currentPosition != CurrentPosition::SmartCardReaderGate)
+	if(currentPosition == CurrentPosition::Home)
+	{
+		toSmartCardGate();
+	}
+
+	if(currentPosition != CurrentPosition::SmartCardReaderGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
-		std::string cmd;
-
-		//move up to cruise height
-		curZ = currentZ();
-		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
-		moveStepperZ(curZ, z);
 
 		curX = currentX();
 		curY = currentY();
 		curZ = currentZ();
 		curW = currentW();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, x, y, z, w);
-		moveStepperY(curY, y);
-		moveStepperX(curX, x);
-		moveStepperW(curW, w);
-		moveStepperZ(curZ, z);
+
+		gateToGate(curX, curY, curZ, curW, x, y, z, w);
 	}
 }
 
@@ -816,26 +835,23 @@ void UserCommandRunner::toContactlessReaderGate()
 	{
 		throwError("UserCommandRunner::toContactlessReaderGate unknown current position");
 	}
-	else if(currentPosition != CurrentPosition::ContactlessReaderGate)
+	if(currentPosition == CurrentPosition::Home)
+	{
+		toSmartCardGate();
+	}
+
+	if(currentPosition != CurrentPosition::ContactlessReaderGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
-		std::string cmd;
-
-		//move up
-		curZ = currentZ();
-		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
-		moveStepperZ(curZ, z);
 
 		curX = currentX();
 		curY = currentY();
 		curZ = currentZ();
 		curW = currentW();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::ContactlessReaderGate, x, y, z, w);
-		moveStepperW(curW, w);
-		moveStepperY(curY, y);
-		moveStepperX(curX, x);
-		moveStepperZ(curZ, z);
+
+		gateToGate(curX, curY, curZ, curW, x, y, z, w);
 	}
 }
 
@@ -847,26 +863,23 @@ void UserCommandRunner::toBarcodeReaderGate()
 	{
 		throwError("UserCommandRunner::toBarcodeReaderGate unknown current position");
 	}
-	else if(currentPosition != CurrentPosition::BarCodeReaderGate)
+	if(currentPosition == CurrentPosition::Home)
+	{
+		toSmartCardGate();
+	}
+
+	if(currentPosition != CurrentPosition::BarCodeReaderGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
-		std::string cmd;
-
-		//move up
-		curZ = currentZ();
-		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
-		moveStepperZ(curZ, z);
 
 		curX = currentX();
 		curY = currentY();
 		curZ = currentZ();
 		curW = currentW();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReaderGate, x, y, z, w);
-		moveStepperW(curW, w);
-		moveStepperY(curY, y);
-		moveStepperX(curX, x);
-		moveStepperZ(curZ, z);
+
+		gateToGate(curX, curY, curZ, curW, x, y, z, w);
 	}
 }
 
@@ -975,8 +988,8 @@ void UserCommandRunner::gate_smartCardReader_withCard()
 	//configure movement
 	configStepperMovement(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	//insert card
-	moveStepperY(slowInsertEnd, finalY + insertExtra);
-	moveStepperY(finalY + insertExtra, finalY);
+	moveStepperY(slowInsertEnd, finalY - insertExtra);
+	moveStepperY(finalY - insertExtra, finalY);
 }
 
 void UserCommandRunner::smartCardReader_gate_withCard()

@@ -1277,7 +1277,8 @@ std::string ReplyTranslater::stepperSetState(Poco::JSON::Object::Ptr& replyPtr)
 	}
 	reply += "}";
 
-	return reply;}
+	return reply;
+}
 
 std::string ReplyTranslater::locatorQuery(Poco::JSON::Object::Ptr& replyPtr)
 {

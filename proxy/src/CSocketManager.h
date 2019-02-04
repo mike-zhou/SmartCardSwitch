@@ -128,6 +128,12 @@ private:
 	void onCommandStepperQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperQuery> cmdPtr);
 	void onCommandStepperSetState(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperSetState> cmdPtr);
 	void onCommandLocatorQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandLocatorQuery> cmdPtr);
+	void onCommandOptPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandOptPowerOn> cmdPtr);
+	void onCommandOptPowerOff(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandOptPowerOff> cmdPtr);
+	void onCommandOptQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandOptQueryPower> cmdPtr);
+	void onCommandDcmPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDcmPowerOn> cmdPtr);
+	void onCommandDcmPowerOff(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDcmPowerOff> cmdPtr);
+	void onCommandDcmQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDcmQueryPower> cmdPtr);
 	void sendTranslatedCommandToDevice(long long socketId, const std::string& cmdString);
 
 	long long newSocketId() { return ++_lastSocketId; }

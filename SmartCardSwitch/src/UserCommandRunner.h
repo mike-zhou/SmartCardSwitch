@@ -277,6 +277,8 @@ private:
 	void barcodeReader_gate();
 	void gate_barcodeReader();
 	//from Gate to Gate
+	void gateToGate(unsigned int fromX, unsigned int fromY, unsigned int fromZ, unsigned int fromW,
+					unsigned int toX, unsigned int toY, unsigned int toZ, unsigned int toW);
 	void toHome();
 	void toSmartCardGate();
 	void toPedKeyGate();
