@@ -20,6 +20,10 @@
 #include <poll.h>
 #include <stddef.h>
 #include <unistd.h>
+#include <termios.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <errno.h>
 
 using Poco::DirectoryIterator;
 using Poco::File;
@@ -131,6 +135,35 @@ void CDeviceManager::checkDevices()
 				}
 
 				{
+					struct termios tios;
+					int rc;
+					//change settings of device.
+					rc = tcgetattr(fd, &tios);
+					if(0 != rc)
+					{
+						auto e = errno;
+						pLogger->LogError("CDeviceManager::checkDevices tcgetattr errno: " + std::to_string(e));
+						close(fd);
+						continue;
+					}
+					rc = cfsetspeed(&tios, B115200);
+					if(0 != rc)
+					{
+						auto e = errno;
+						pLogger->LogError("CDeviceManager::checkDevices cfsetspeed errno: " + std::to_string(e));
+						close(fd);
+						continue;
+					}
+					tios.c_lflag &= ~ECHO;
+					rc = tcsetattr(fd, TCSANOW, &tios);
+					if(0 != rc)
+					{
+						auto e = errno;
+						pLogger->LogError("CDeviceManager::checkDevices tcsetattr errno: " + std::to_string(e));
+						close(fd);
+						continue;
+					}
+
 					//remember this new device.
 					Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 					struct Device device;
