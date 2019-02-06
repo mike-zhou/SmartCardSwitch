@@ -7,6 +7,8 @@
 #include "Poco/DateTimeFormatter.h"
 #include "Poco/Net/SocketAddress.h"
 #include "Poco/Exception.h"
+#include "Poco/Path.h"
+#include "Poco/File.h"
 #include <iostream>
 
 #include "CDeviceManager.h"
@@ -91,6 +93,21 @@ protected:
 			std::string logFileSize;
 			std::string logFileAmount;
 
+			//use the designated configuration if it exist
+			if(args.size() > 0)
+			{
+				std::string configFile = args[0];
+				Poco::Path path(configFile);
+
+				if(path.isFile())
+				{
+					Poco::File file(path);
+
+					if(file.exists() && file.canRead()) {
+						loadConfiguration(configFile);
+					}
+				}
+			}
 
 			try
 			{
