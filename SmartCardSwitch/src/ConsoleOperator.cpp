@@ -505,7 +505,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 	}
 
 	//run command
-	bool bKnownCmd = true;
+	bool bValidCmd = true;
+	bool bCompositeCmd = false;
 	switch((ConsoleCommandFactory::Type)d0)
 	{
 		case ConsoleCommandFactory::Type::DevicesGet:
@@ -837,7 +838,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 
 		case ConsoleCommandFactory::Type::StepperMove:
 		{
-			bKnownCmd = false;
+			bCompositeCmd = true;
+			bValidCmd = false;
 
 			if((d1 < 0) || (d1 >= STEPPER_AMOUNT)) {
 				pLogger->LogError("ConsoleOperator::runConsoleCommand stepper index out of range: " + std::to_string(d1));
@@ -856,7 +858,7 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 
 				stepperMove(index, forward, steps);
 				_cmdKey = InvalidCommandId;
-				bKnownCmd = true;
+				bValidCmd = true;
 			}
 		}
 		break;
@@ -865,6 +867,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 		{
 			unsigned int index = d1;
 			int state = d2;
+
+			bCompositeCmd = true;
 
 			stepperSetState(index, state);
 			_cmdKey = InvalidCommandId;
@@ -896,6 +900,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 			MovementType type = (MovementType)d1;
 			int index = d2;
 
+			bCompositeCmd = true;
+
 			saveMovementConfig(type, index);
 			_cmdKey = InvalidCommandId;
 		}
@@ -905,6 +911,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 		{
 			MovementType type = MovementType::StepperBoundary;
 			int index = d1;
+
+			bCompositeCmd = true;
 
 			saveMovementConfig(type, index);
 			_cmdKey = InvalidCommandId;
@@ -916,6 +924,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 			MovementType type = MovementType::StepperGeneral;
 			int index = d1;
 
+			bCompositeCmd = true;
+
 			saveMovementConfig(type, index);
 			_cmdKey = InvalidCommandId;
 		}
@@ -925,6 +935,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 		{
 			MovementType type = MovementType::StepperCardInsert;
 			int index = d1;
+
+			bCompositeCmd = true;
 
 			saveMovementConfig(type, index);
 			_cmdKey = InvalidCommandId;
@@ -936,6 +948,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 			MovementType type = MovementType::StepperGoHome;
 			int index = d1;
 
+			bCompositeCmd = true;
+
 			saveMovementConfig(type, index);
 			_cmdKey = InvalidCommandId;
 		}
@@ -946,6 +960,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 			MovementType type = MovementType::Bdc;
 			int index = d1;
 
+			bCompositeCmd = true;
+
 			saveMovementConfig(type, index);
 			_cmdKey = InvalidCommandId;
 		}
@@ -953,6 +969,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 
 		case ConsoleCommandFactory::Type::LoadMovementConfigStepper:
 		{
+			bCompositeCmd = true;
+
 			loadMovementConfig();
 			_cmdKey = InvalidCommandId;
 		}
@@ -963,6 +981,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 			int type = d1;
 			unsigned int index = d2;
 
+			bCompositeCmd = true;
+
 			saveCoordinates(type, index);
 			_cmdKey = InvalidCommandId;
 		}
@@ -971,6 +991,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 		case ConsoleCommandFactory::Type::SaveCoordinateSmartCardPlaceStartZ:
 		{
 			int value = d1;
+
+			bCompositeCmd = true;
 
 			pCoordinateStorage->SetSmartCardPlaceStartZ(value);
 			pCoordinateStorage->PersistToFile();
@@ -982,6 +1004,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 		{
 			int value = d1;
 
+			bCompositeCmd = true;
+
 			pCoordinateStorage->SetSmartCardFetchOffset(value);
 			pCoordinateStorage->PersistToFile();
 			_cmdKey = InvalidCommandId;
@@ -991,6 +1015,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 		case ConsoleCommandFactory::Type::SaveCoordinateSmartCardReleaseOffsetZ:
 		{
 			int value = d1;
+
+			bCompositeCmd = true;
 
 			pCoordinateStorage->SetSmartCardReleaseOffsetZ(value);
 			pCoordinateStorage->PersistToFile();
@@ -1002,6 +1028,8 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 		{
 			int value = d1;
 
+			bCompositeCmd = true;
+
 			pCoordinateStorage->SetSmartCardReaderSlowInsertEndY(value);
 			pCoordinateStorage->PersistToFile();
 			_cmdKey = InvalidCommandId;
@@ -1010,22 +1038,27 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 
 		default:
 		{
-			bKnownCmd = false;
+			bValidCmd = false;
 			pLogger->LogError("ConsoleOperator::runConsoleCommand unknown command: " + command);
 			showHelp();
 		}
 		break;
 	}
 
-	if(bKnownCmd)
+	if(bValidCmd)
 	{
-		if (cmdId == InvalidCommandId) {
-			pLogger->LogInfo("ConsoleOperator::runConsoleCommand no reply will be returned");
-		}
-		else {
+		if(!bCompositeCmd)
+		{
+			if (cmdId == InvalidCommandId) {
+				pLogger->LogInfo("ConsoleOperator::runConsoleCommand failed to run command");
+				return false;
+			}
+
 			pLogger->LogInfo("ConsoleOperator::runConsoleCommand reply will be returned for cmdId: " + std::to_string(cmdId));
+			return true;
 		}
 
+		pLogger->LogInfo("ConsoleOperator::runConsoleCommand no reply will be returned");
 		return true;
 	}
 	else {

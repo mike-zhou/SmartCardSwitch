@@ -2935,20 +2935,17 @@ void UserCommandRunner::runConsoleCommand(const std::string& cmd)
 
 	pLogger->LogInfo("UserCommandRunner::runConsoleCommand ------ " + cmdToLog);
 
-	//run a console command
 	{
 		Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+		//check console state
 		consoleCmdState = _consoleCommand.state;
-	}
-	if(consoleCmdState != CommandState::Idle) {
-		//throw exception to terminate the current USER command
-		throw Poco::Exception("UserCommandRunner::runConsoleCommand wrong console command state: " + std::to_string((int)consoleCmdState));
-	}
+		if(consoleCmdState != CommandState::Idle) {
+			//throw exception to terminate the current USER command
+			throw Poco::Exception("UserCommandRunner::runConsoleCommand wrong console command state: " + std::to_string((int)consoleCmdState));
+		}
 
-	//start console command
-	{
-		Poco::ScopedLock<Poco::Mutex> consoleLock(_consoleCommandMutex); //lock console cmd mutex
-
+		//start console command
 		_consoleCommand.state = CommandState::OnGoing; //change state here to give a correct state if callback comes instantly.
 		setConsoleCommandParameter(cmd);
 		_consoleCommand.cmdId = _pConsoleOperator->RunConsoleCommand(cmd);

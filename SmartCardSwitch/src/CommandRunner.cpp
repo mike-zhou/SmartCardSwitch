@@ -1787,10 +1787,13 @@ unsigned long CommandRunner::sendCmdToDevice(std::shared_ptr<DeviceCommand>& cmd
 		_userCommand.commandId = cmdPtr->CommandId();
 
 		//send out command
-		_pDeviceAccessor->SendCommand(_userCommand.jsonCommandString);
-		_userCommand.state = UserCommand::CommandState::COMMAND_SENT;
-
-		cmdId = _userCommand.commandId;
+		if(_pDeviceAccessor->SendCommand(_userCommand.jsonCommandString)) {
+			_userCommand.state = UserCommand::CommandState::COMMAND_SENT;
+			cmdId = _userCommand.commandId;
+		}
+		else {
+			pLogger->LogError("CommandRunner::sendCmdToDevice failed to send out command");
+		}
 	}
 
 	return cmdId;

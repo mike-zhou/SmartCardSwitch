@@ -794,7 +794,7 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 				{
 					char buf[256];
 					sprintf(buf, "CSocketManager::onSocketReadable socket closed: %s, socketId: %Ld",
-							socketWrapper.socket.peerAddress().toString(),
+							socketWrapper.socket.peerAddress().toString().c_str(),
 							socketWrapper.socketId);
 					pLogger->LogInfo(buf);
 
@@ -806,7 +806,7 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 					char buf[256];
 					sprintf(buf, "CSocketManager::onSocketReadable %d bytes from %s, socketId: %Ld",
 							dataRead,
-							socketWrapper.socket.peerAddress().toString(),
+							socketWrapper.socket.peerAddress().toString().c_str(),
 							socketWrapper.socketId);
 					pLogger->LogInfo(buf);
 
@@ -827,7 +827,7 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 				char buf[256];
 				sprintf(buf, "CSocketManager::onSocketReadable NetException in socket: %Ld: %s",
 						socketWrapper.socketId,
-						e.displayText());
+						e.displayText().c_str());
 				pLogger->LogError(buf);
 			}
 			catch(...)

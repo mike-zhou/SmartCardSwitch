@@ -75,6 +75,7 @@ bool DeviceAccessor::SendCommand(const std::string& cmd)
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	if(!_connected) {
+		pLogger->LogError("DeviceAccessor::SendCommand not connected to device proxy");
 		return false;
 	}
 
