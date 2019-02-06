@@ -141,9 +141,12 @@ void DeviceAccessor::runTask()
 		}
 		else
 		{
-			if(!_connected) {
-				sleep(10);
-				continue;
+			if(!_connected)
+			{
+				sleep(1000);
+				if(!ReConnect()) {
+					continue;
+				}
 			}
 
 			//send out _outgoing to device
