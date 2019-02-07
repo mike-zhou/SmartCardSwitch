@@ -792,12 +792,19 @@ CommandOptPowerOn::CommandOptPowerOn()
 
 std::string CommandOptPowerOn::CommandKey()
 {
-
+	return std::string("opt power on");
 }
 
 std::string CommandOptPowerOn::ToJsonCommandString()
 {
+	std::string cmd;
 
+	cmd = "{";
+	cmd = cmd + "\"command\":\"opt power on\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+	cmd += "}";
+
+	return cmd;
 }
 
 //////////////////////////////////////////
@@ -810,12 +817,19 @@ CommandOptPowerOff::CommandOptPowerOff()
 
 std::string CommandOptPowerOff::CommandKey()
 {
-
+	return std::string("opt power off");
 }
 
 std::string CommandOptPowerOff::ToJsonCommandString()
 {
+	std::string cmd;
 
+	cmd = "{";
+	cmd = cmd + "\"command\":\"opt power off\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+	cmd += "}";
+
+	return cmd;
 }
 
 //////////////////////////////////////////
@@ -828,12 +842,19 @@ CommandOptQueryPower::CommandOptQueryPower()
 
 std::string CommandOptQueryPower::CommandKey()
 {
-
+	return std::string("opt query power");
 }
 
 std::string CommandOptQueryPower::ToJsonCommandString()
 {
+	std::string cmd;
 
+	cmd = "{";
+	cmd = cmd + "\"command\":\"opt query power\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId());
+	cmd += "}";
+
+	return cmd;
 }
 
 //////////////////////////////////////////
@@ -841,17 +862,25 @@ std::string CommandOptQueryPower::ToJsonCommandString()
 //////////////////////////////////////////
 CommandDcmPowerOn::CommandDcmPowerOn(unsigned int index)
 {
-
+	_index = index;
 }
 
 std::string CommandDcmPowerOn::CommandKey()
 {
-
+	return std::string("dcm power on");
 }
 
 std::string CommandDcmPowerOn::ToJsonCommandString()
 {
+	std::string cmd;
 
+	cmd = "{";
+	cmd = cmd + "\"command\":\"dcm power on\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_index);
+	cmd += "}";
+
+	return cmd;
 }
 
 //////////////////////////////////////////
@@ -859,17 +888,25 @@ std::string CommandDcmPowerOn::ToJsonCommandString()
 //////////////////////////////////////////
 CommandDcmPowerOff::CommandDcmPowerOff(unsigned int index)
 {
-
+	_index = index;
 }
 
 std::string CommandDcmPowerOff::CommandKey()
 {
-
+	return std::string("dcm power off");
 }
 
 std::string CommandDcmPowerOff::ToJsonCommandString()
 {
+	std::string cmd;
 
+	cmd = "{";
+	cmd = cmd + "\"command\":\"dcm power off\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_index);
+	cmd += "}";
+
+	return cmd;
 }
 
 //////////////////////////////////////////
@@ -877,16 +914,24 @@ std::string CommandDcmPowerOff::ToJsonCommandString()
 //////////////////////////////////////////
 CommandDcmQueryPower::CommandDcmQueryPower(unsigned int index)
 {
-
+	_index = index;
 }
 
 std::string CommandDcmQueryPower::CommandKey()
 {
-
+	return std::string("dcm query power");
 }
 
 std::string CommandDcmQueryPower::ToJsonCommandString()
 {
+	std::string cmd;
 
+	cmd = "{";
+	cmd = cmd + "\"command\":\"dcm query power\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_index);
+	cmd += "}";
+
+	return cmd;
 }
 

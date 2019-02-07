@@ -559,6 +559,64 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 		}
 		break;
 
+		case ConsoleCommandFactory::Type::OptPowerOn:
+		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
+			_cmdKey = _pCommandReception->OptPowerOn();
+			cmdId = _cmdKey;
+		}
+		break;
+
+		case ConsoleCommandFactory::Type::OptPowerOff:
+		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
+			_cmdKey = _pCommandReception->OptPowerOff();
+			cmdId = _cmdKey;
+		}
+		break;
+
+		case ConsoleCommandFactory::Type::OptQueryPower:
+		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
+			_cmdKey = _pCommandReception->OptQueryPower();
+			cmdId = _cmdKey;
+		}
+		break;
+
+		case ConsoleCommandFactory::Type::DcmPowerOn:
+		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+			unsigned int index = d1;
+
+			_cmdKey = _pCommandReception->DcmPowerOn(index);
+			cmdId = _cmdKey;
+		}
+		break;
+
+		case ConsoleCommandFactory::Type::DcmPowerOff:
+		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+			unsigned int index = d1;
+
+			_cmdKey = _pCommandReception->DcmPowerOff(index);
+			cmdId = _cmdKey;
+		}
+		break;
+
+		case ConsoleCommandFactory::Type::DcmQueryPower:
+		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+			unsigned int index = d1;
+
+			_cmdKey = _pCommandReception->DcmQueryPower(index);
+			cmdId = _cmdKey;
+		}
+		break;
+
+
 		case ConsoleCommandFactory::Type::BdcsPowerOn:
 		{
 			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);

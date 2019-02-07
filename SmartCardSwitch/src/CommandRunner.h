@@ -52,9 +52,9 @@ private:
 	virtual CommandId OptPowerOn() override;
 	virtual CommandId OptPowerOff() override;
 	virtual CommandId OptQueryPower() override;
-	virtual CommandId DcmPowerOn() override;
-	virtual CommandId DcmPowerOff() override;
-	virtual CommandId DcmQueryPower() override;
+	virtual CommandId DcmPowerOn(unsigned int index) override;
+	virtual CommandId DcmPowerOff(unsigned int index) override;
+	virtual CommandId DcmQueryPower(unsigned int index) override;
 	virtual CommandId BdcsPowerOn() override;
 	virtual CommandId BdcsPowerOff() override;
 	virtual CommandId BdcsQueryPower() override;
@@ -90,6 +90,7 @@ private:
 	static const unsigned int LOCATOR_LINE_NUMBER_INVALID = 0;
 	static const unsigned int LOCATOR_LINE_NUMBER_MIN = 1;
 	static const unsigned int LOCATOR_LINE_NUMBER_MAX = 8;
+	static const unsigned int DCM_AMOUNT = 2;
 
 	const std::string StepperStateApproachingHomeLocator = "approaching home locator";
 	const std::string StepperStateLeavingHomeLocator = "leaving Home";

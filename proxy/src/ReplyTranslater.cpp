@@ -197,6 +197,36 @@ std::string ReplyTranslater::deviceDelay(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
+std::string ReplyTranslater::optPowerOn(Poco::JSON::Object::Ptr& replyPtr)
+{
+
+}
+
+std::string ReplyTranslater::optPowerOff(Poco::JSON::Object::Ptr& replyPtr)
+{
+
+}
+
+std::string ReplyTranslater::optQueryPower(Poco::JSON::Object::Ptr& replyPtr)
+{
+
+}
+
+std::string ReplyTranslater::dcmPowerOn(Poco::JSON::Object::Ptr& replyPtr)
+{
+
+}
+
+std::string ReplyTranslater::dcmPowerOff(Poco::JSON::Object::Ptr& replyPtr)
+{
+
+}
+
+std::string ReplyTranslater::dcmQueryPower(Poco::JSON::Object::Ptr& replyPtr)
+{
+
+}
+
 std::string ReplyTranslater::bdcsPowerOn(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;

@@ -19,9 +19,9 @@ std::string ConsoleCommandFactory::GetHelp()
 	help = help + "OptPowerOn:------------------------ " + "20" + "\r\n";
 	help = help + "OptPowerOff:----------------------- " + "21" + "\r\n";
 	help = help + "OptQueryPower:--------------------- " + "22" + "\r\n";
-	help = help + "DcmPowerOn:------------------------ " + "30" + "\r\n";
-	help = help + "DcmPowerOff:----------------------- " + "31" + "\r\n";
-	help = help + "DcmQueryPower:--------------------- " + "32" + "\r\n";
+	help = help + "DcmPowerOn:------------------------ " + "30 dcmIndex" + "\r\n";
+	help = help + "DcmPowerOff:----------------------- " + "31 dcmIndex" + "\r\n";
+	help = help + "DcmQueryPower:--------------------- " + "32 dcmIndex" + "\r\n";
 	help = help + "BdcsPowerOn:----------------------- " + "40" + "\r\n";
 	help = help + "BdcsPowerOff:---------------------- " + "41" + "\r\n";
 	help = help + "BdcsQueryPower:-------------------- " + "42" + "\r\n";

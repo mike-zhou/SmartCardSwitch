@@ -119,9 +119,9 @@ public:
 	virtual CommandId OptPowerOn() = 0;
 	virtual CommandId OptPowerOff() = 0;
 	virtual CommandId OptQueryPower() = 0;
-	virtual CommandId DcmPowerOn() = 0;
-	virtual CommandId DcmPowerOff() = 0;
-	virtual CommandId DcmQueryPower() = 0;
+	virtual CommandId DcmPowerOn(unsigned int index) = 0;
+	virtual CommandId DcmPowerOff(unsigned int index) = 0;
+	virtual CommandId DcmQueryPower(unsigned int index) = 0;
 	virtual CommandId BdcsPowerOn() = 0;
 	virtual CommandId BdcsPowerOff() = 0;
 	virtual CommandId BdcsQueryPower() = 0;

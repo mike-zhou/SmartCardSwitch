@@ -236,6 +236,30 @@ void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::s
 		onCommandDeviceQueryFuse(socketWrapper, translator.GetCommandDeviceQueryFuse());
 		break;
 
+	case CommandType::OptPowerOn:
+		onCommandOptPowerOn(socketWrapper, translator.GetCommandOptPowerOn());
+		break;
+
+	case CommandType::OptPowerOff:
+		onCommandOptPowerOff(socketWrapper, translator.GetCommandOptPowerOff());
+		break;
+
+	case CommandType::OptQueryPower:
+		onCommandOptQueryPower(socketWrapper, translator.GetCommandOptQueryPower());
+		break;
+
+	case CommandType::DcmPowerOn:
+		onCommandDcmPowerOn(socketWrapper, translator.GetCommandDcmPowerOn());
+		break;
+
+	case CommandType::DcmPowerOff:
+		onCommandDcmPowerOff(socketWrapper, translator.GetCommandDcmPowerOff());
+		break;
+
+	case CommandType::DcmQueryPower:
+		onCommandDcmQueryPower(socketWrapper, translator.GetCommandDcmQueryPower());
+		break;
+
 	case CommandType::BdcsPowerOn:
 		onCommandBdcsPowerOn(socketWrapper, translator.GetCommandBdcsPowerOn());
 		break;

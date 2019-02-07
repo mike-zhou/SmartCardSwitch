@@ -1973,33 +1973,81 @@ ICommandReception::CommandId CommandRunner::OptQueryPower()
 	return cmdId;
 }
 
-ICommandReception::CommandId CommandRunner::DcmPowerOn()
+ICommandReception::CommandId CommandRunner::DcmPowerOn(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::DcmPowerOn hasn't connected to any device");
+	}
+	else
+	{
+		if(index >= DCM_AMOUNT) {
+			pLogger->LogError("CommandRunner::DcmPowerOn index out of range: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::DcmPowerOn(index);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::DcmPowerOn empty ptr returned from CommandFactory::DcmPowerOn");
+			}
+		}
+	}
 
 	ICommandReception::CommandId cmdId ;
 	cmdId = sendCmdToDevice(cmdPtr);
 	return cmdId;
 }
 
-ICommandReception::CommandId CommandRunner::DcmPowerOff()
+ICommandReception::CommandId CommandRunner::DcmPowerOff(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::DcmPowerOff hasn't connected to any device");
+	}
+	else
+	{
+		if(index >= DCM_AMOUNT) {
+			pLogger->LogError("CommandRunner::DcmPowerOff index out of range: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::DcmPowerOff(index);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::DcmPowerOff empty ptr returned from CommandFactory::DcmPowerOff");
+			}
+		}
+	}
 
 	ICommandReception::CommandId cmdId ;
 	cmdId = sendCmdToDevice(cmdPtr);
 	return cmdId;
 }
 
-ICommandReception::CommandId CommandRunner::DcmQueryPower()
+ICommandReception::CommandId CommandRunner::DcmQueryPower(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::DcmQueryPower hasn't connected to any device");
+	}
+	else
+	{
+		if(index >= DCM_AMOUNT) {
+			pLogger->LogError("CommandRunner::DcmQueryPower index out of range: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::DcmQueryPower(index);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::DcmQueryPower empty ptr returned from CommandFactory::DcmQueryPower");
+			}
+		}
+	}
 
 	ICommandReception::CommandId cmdId ;
 	cmdId = sendCmdToDevice(cmdPtr);

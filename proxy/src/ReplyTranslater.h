@@ -30,6 +30,12 @@ private:
 	const std::string strCommandDeviceQueryPower = "device query power";
 	const std::string strCommandDeviceQueryFuse = "device query fuse";
 	const std::string strCommandDeviceDelay = "device delay";
+	const std::string strCommandOptPowerOn = "opt power on";
+	const std::string strCommandOptPowerOff = "opt power off";
+	const std::string strCommandOptQueryPower = "opt query power";
+	const std::string strCommandDcmPowerOn = "dcm power on";
+	const std::string strCommandDcmPowerOff = "dcm power off";
+	const std::string strCommandDcmQueryPower = "dcm query power";
 	const std::string strCommandBdcsPowerOn = "bdcs power on";
 	const std::string strCommandBdcsPowerOff = "bdcs power off";
 	const std::string strCommandBdcsQueryPower = "bdcs query power";
@@ -94,6 +100,12 @@ private:
 	std::string deviceQueryPower(Poco::JSON::Object::Ptr& replyPtr);
 	std::string deviceQueryFuse(Poco::JSON::Object::Ptr& replyPtr);
 	std::string deviceDelay(Poco::JSON::Object::Ptr& replyPtr);
+	std::string optPowerOn(Poco::JSON::Object::Ptr& replyPtr);
+	std::string optPowerOff(Poco::JSON::Object::Ptr& replyPtr);
+	std::string optQueryPower(Poco::JSON::Object::Ptr& replyPtr);
+	std::string dcmPowerOn(Poco::JSON::Object::Ptr& replyPtr);
+	std::string dcmPowerOff(Poco::JSON::Object::Ptr& replyPtr);
+	std::string dcmQueryPower(Poco::JSON::Object::Ptr& replyPtr);
 	std::string bdcsPowerOn(Poco::JSON::Object::Ptr& replyPtr);
 	std::string bdcsPowerOff(Poco::JSON::Object::Ptr& replyPtr);
 	std::string bdcsQueryPower(Poco::JSON::Object::Ptr& replyPtr);
