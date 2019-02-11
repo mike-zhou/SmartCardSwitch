@@ -514,274 +514,292 @@ bool CoordinateStorage::SetCoordinate(Type type,
 
 	switch(type)
 	{
-	case Type::SmartCardGate:
-	{
-		_smartCardGate = value;
-		rc = true;
-	}
-	break;
-
-	case Type::SmartCard:
-	{
-		if(index < SMART_CARDS_AMOUNT)
+		case Type::SmartCardGate:
 		{
-			if(index >= _smartCards.size())
-			{
-				Coordinate tmp;
-				// fill smartCards
-				for(; index >= _smartCards.size(); ) {
-					_smartCards.push_back(tmp);
-				}
-			}
-			_smartCards[index] = value;
+			_smartCardGate = value;
 			rc = true;
 		}
-		else {
-			pLogger->LogError("CoordinateStorage::SetCoordinate smart card index out of range: " + std::to_string(index));
-		}
-	}
-	break;
+		break;
 
-	case Type::PedKeyGate:
-	{
-		_pedKeyGate = value;
-		rc = true;
-	}
-	break;
-
-	case Type::PedKey:
-	{
-		if(index < PED_KEYS_AMOUNT)
+		case Type::SmartCard:
 		{
-			if(index >= _pedKeys.size())
+			if(index < SMART_CARDS_AMOUNT)
 			{
-				Coordinate tmp;
-				// fill _pedKeys
-				for(; index >= _pedKeys.size(); ) {
-					_pedKeys.push_back(tmp);
+				if(index >= _smartCards.size())
+				{
+					Coordinate tmp;
+					// fill smartCards
+					for(; index >= _smartCards.size(); ) {
+						_smartCards.push_back(tmp);
+					}
 				}
+				_smartCards[index] = value;
+				rc = true;
 			}
-			_pedKeys[index] = value;
+			else {
+				pLogger->LogError("CoordinateStorage::SetCoordinate smart card index out of range: " + std::to_string(index));
+			}
+		}
+		break;
+
+		case Type::PedKeyGate:
+		{
+			_pedKeyGate = value;
 			rc = true;
 		}
-		else {
-			pLogger->LogError("CoordinateStorage::SetCoordinate PED key index out of range: " + std::to_string(index));
-		}
-	}
-	break;
+		break;
 
-	case Type::PedKeyPressed:
-	{
-		if(index < PED_KEYS_AMOUNT)
+		case Type::PedKey:
 		{
-			if(index >= _pedKeysPressed.size())
+			if(index < PED_KEYS_AMOUNT)
 			{
-				Coordinate tmp;
-				// fill _pedKeys
-				for(; index >= _pedKeysPressed.size(); ) {
-					_pedKeysPressed.push_back(tmp);
+				if(index >= _pedKeys.size())
+				{
+					Coordinate tmp;
+					// fill _pedKeys
+					for(; index >= _pedKeys.size(); ) {
+						_pedKeys.push_back(tmp);
+					}
 				}
+				_pedKeys[index] = value;
+				rc = true;
 			}
-			_pedKeysPressed[index] = value;
+			else {
+				pLogger->LogError("CoordinateStorage::SetCoordinate PED key index out of range: " + std::to_string(index));
+			}
+		}
+		break;
+
+		case Type::PedKeyPressed:
+		{
+			if(index < PED_KEYS_AMOUNT)
+			{
+				if(index >= _pedKeysPressed.size())
+				{
+					Coordinate tmp;
+					// fill _pedKeys
+					for(; index >= _pedKeysPressed.size(); ) {
+						_pedKeysPressed.push_back(tmp);
+					}
+				}
+				_pedKeysPressed[index] = value;
+				rc = true;
+			}
+			else {
+				pLogger->LogError("CoordinateStorage::SetCoordinate PED key index out of range: " + std::to_string(index));
+			}
+		}
+		break;
+
+		case Type::SoftKeyGate:
+		{
+			_softKeyGate = value;
 			rc = true;
 		}
-		else {
-			pLogger->LogError("CoordinateStorage::SetCoordinate PED key index out of range: " + std::to_string(index));
-		}
-	}
-	break;
+		break;
 
-	case Type::SoftKeyGate:
-	{
-		_softKeyGate = value;
-		rc = true;
-	}
-	break;
-
-	case Type::SoftKey:
-	{
-		if(index < SOFT_KEYS_AMOUNT)
+		case Type::SoftKey:
 		{
-			if(index >= _softKeys.size())
+			if(index < SOFT_KEYS_AMOUNT)
 			{
-				Coordinate tmp;
-				// fill _softKeys
-				for(; index >= _softKeys.size(); ) {
-					_softKeys.push_back(tmp);
+				if(index >= _softKeys.size())
+				{
+					Coordinate tmp;
+					// fill _softKeys
+					for(; index >= _softKeys.size(); ) {
+						_softKeys.push_back(tmp);
+					}
 				}
+				_softKeys[index] = value;
+				rc = true;
 			}
-			_softKeys[index] = value;
+			else {
+				pLogger->LogError("CoordinateStorage::SetCoordinate soft key index out of range: " + std::to_string(index));
+			}
+		}
+		break;
+
+		case Type::SoftKeyPressed:
+		{
+			if(index < SOFT_KEYS_AMOUNT)
+			{
+				if(index >= _softKeysPressed.size())
+				{
+					Coordinate tmp;
+					// fill _softKeys
+					for(; index >= _softKeysPressed.size(); ) {
+						_softKeysPressed.push_back(tmp);
+					}
+				}
+				_softKeysPressed[index] = value;
+				rc = true;
+			}
+			else {
+				pLogger->LogError("CoordinateStorage::SetCoordinate soft key index out of range: " + std::to_string(index));
+			}
+		}
+		break;
+
+		case Type::TouchScreenKeyGate:
+		{
+			_touchScreenKeyGate = value;
 			rc = true;
 		}
-		else {
-			pLogger->LogError("CoordinateStorage::SetCoordinate soft key index out of range: " + std::to_string(index));
-		}
-	}
-	break;
+		break;
 
-	case Type::SoftKeyPressed:
-	{
-		if(index < SOFT_KEYS_AMOUNT)
+		case Type::TouchScreenKey:
 		{
-			if(index >= _softKeysPressed.size())
+			if(index < TOUCH_SCREEN_KEYS_AMOUNT)
 			{
-				Coordinate tmp;
-				// fill _softKeys
-				for(; index >= _softKeysPressed.size(); ) {
-					_softKeysPressed.push_back(tmp);
+				if(index >= _touchScreenKeys.size())
+				{
+					Coordinate tmp;
+					// fill _touchScreenKeys
+					for(; index >= _touchScreenKeys.size(); ) {
+						_touchScreenKeys.push_back(tmp);
+					}
 				}
+				_touchScreenKeys[index] = value;
+				rc = true;
 			}
-			_softKeysPressed[index] = value;
+			else {
+				pLogger->LogError("CoordinateStorage::SetCoordinate touch screen key index out of range: " + std::to_string(index));
+			}
+		}
+		break;
+
+		case Type::TouchScreenKeyPressed:
+		{
+			if(index < TOUCH_SCREEN_KEYS_AMOUNT)
+			{
+				if(index >= _touchScreenKeysPressed.size())
+				{
+					Coordinate tmp;
+					// fill _touchScreenKeys
+					for(; index >= _touchScreenKeysPressed.size(); ) {
+						_touchScreenKeysPressed.push_back(tmp);
+					}
+				}
+				_touchScreenKeysPressed[index] = value;
+				rc = true;
+			}
+			else {
+				pLogger->LogError("CoordinateStorage::SetCoordinate touch screen key index out of range: " + std::to_string(index));
+			}
+		}
+		break;
+
+		case Type::AssistKeyGate:
+		{
+			_assistKeyGate = value;
 			rc = true;
 		}
-		else {
-			pLogger->LogError("CoordinateStorage::SetCoordinate soft key index out of range: " + std::to_string(index));
-		}
-	}
-	break;
+		break;
 
-	case Type::TouchScreenKeyGate:
-	{
-		_touchScreenKeyGate = value;
-		rc = true;
-	}
-	break;
-
-	case Type::TouchScreenKey:
-	{
-		if(index < TOUCH_SCREEN_KEYS_AMOUNT)
+		case Type::AssistKey:
 		{
-			if(index >= _touchScreenKeys.size())
+			if(index < ASSIST_KEYS_AMOUNT)
 			{
-				Coordinate tmp;
-				// fill _touchScreenKeys
-				for(; index >= _touchScreenKeys.size(); ) {
-					_touchScreenKeys.push_back(tmp);
+				if(index >= _assistKeys.size())
+				{
+					Coordinate tmp;
+					// fill _assistKeys
+					for(; index >= _assistKeys.size(); ) {
+						_assistKeys.push_back(tmp);
+					}
 				}
+				_assistKeys[index] = value;
+				rc = true;
 			}
-			_touchScreenKeys[index] = value;
+			else {
+				pLogger->LogError("CoordinateStorage::SetCoordinate assist key index out of range: " + std::to_string(index));
+			}
+		}
+		break;
+
+		case Type::AssistKeyPressed:
+		{
+			if(index < ASSIST_KEYS_AMOUNT)
+			{
+				if(index >= _assistKeysPressed.size())
+				{
+					Coordinate tmp;
+					// fill _assistKeys
+					for(; index >= _assistKeysPressed.size(); ) {
+						_assistKeysPressed.push_back(tmp);
+					}
+				}
+				_assistKeysPressed[index] = value;
+				rc = true;
+			}
+			else {
+				pLogger->LogError("CoordinateStorage::SetCoordinate assist key index out of range: " + std::to_string(index));
+			}
+		}
+		break;
+
+		case Type::SmartCardReaderGate:
+		{
+			_smartCardReaderGate = value;
 			rc = true;
 		}
-		else {
-			pLogger->LogError("CoordinateStorage::SetCoordinate touch screen key index out of range: " + std::to_string(index));
-		}
-	}
-	break;
+		break;
 
-	case Type::TouchScreenKeyPressed:
-	{
-		if(index < TOUCH_SCREEN_KEYS_AMOUNT)
+		case Type::SmartCardReader:
 		{
-			if(index >= _touchScreenKeysPressed.size())
-			{
-				Coordinate tmp;
-				// fill _touchScreenKeys
-				for(; index >= _touchScreenKeysPressed.size(); ) {
-					_touchScreenKeysPressed.push_back(tmp);
-				}
-			}
-			_touchScreenKeysPressed[index] = value;
+			_smartCardReader = value;
 			rc = true;
 		}
-		else {
-			pLogger->LogError("CoordinateStorage::SetCoordinate touch screen key index out of range: " + std::to_string(index));
-		}
-	}
-	break;
+		break;
 
-	case Type::AssistKeyGate:
-	{
-		_assistKeyGate = value;
-		rc = true;
-	}
-	break;
-
-	case Type::AssistKey:
-	{
-		if(index < ASSIST_KEYS_AMOUNT)
+		case Type::BarCodeReaderGate:
 		{
-			if(index >= _assistKeys.size())
-			{
-				Coordinate tmp;
-				// fill _assistKeys
-				for(; index >= _assistKeys.size(); ) {
-					_assistKeys.push_back(tmp);
-				}
-			}
-			_assistKeys[index] = value;
+			_barCodeReaderGate = value;
 			rc = true;
 		}
-		else {
-			pLogger->LogError("CoordinateStorage::SetCoordinate assist key index out of range: " + std::to_string(index));
-		}
-	}
-	break;
+		break;
 
-	case Type::AssistKeyPressed:
-	{
-		if(index < ASSIST_KEYS_AMOUNT)
+		case Type::BarCodeReader:
 		{
-			if(index >= _assistKeysPressed.size())
-			{
-				Coordinate tmp;
-				// fill _assistKeys
-				for(; index >= _assistKeysPressed.size(); ) {
-					_assistKeysPressed.push_back(tmp);
-				}
-			}
-			_assistKeysPressed[index] = value;
+			_barCodeReader = value;
 			rc = true;
 		}
-		else {
-			pLogger->LogError("CoordinateStorage::SetCoordinate assist key index out of range: " + std::to_string(index));
+		break;
+
+
+
+		case Type::Home:
+		{
+			_home = value;
+			rc = true;
 		}
-	}
-	break;
+		break;
 
-	case Type::SmartCardReaderGate:
-	{
-		_smartCardReaderGate = value;
-		rc = true;
-	}
-	break;
+		case Type::ContactlessReaderGate:
+		{
+			_contactlessReaderGate = value;
+			rc = true;
+		}
+		break;
 
-	case Type::SmartCardReader:
-	{
-		_smartCardReader = value;
-		rc = true;
-	}
-	break;
+		case Type::ContactlessReader:
+		{
+			_contactlessReader = value;
+			rc = true;
+		}
+		break;
 
-	case Type::BarCodeReaderGate:
-	{
-		_barCodeReaderGate = value;
-		rc = true;
-	}
-	break;
+		case Type::Safe:
+		{
+			_safe = value;
+			rc = true;
+		}
+		break;
 
-	case Type::BarCodeReader:
-	{
-		_barCodeReader = value;
-		rc = true;
-	}
-	break;
-
-	case Type::Home:
-	{
-		_home = value;
-		rc = true;
-	}
-	break;
-
-	case Type::Safe:
-	{
-		_safe = value;
-		rc = true;
-	}
-	break;
-
-	default:
-		pLogger->LogError("CoordinateStorage::SetCoordinate unknown type: " + std::to_string(type));
+		default:
+		{
+			pLogger->LogError("CoordinateStorage::SetCoordinate unknown type: " + std::to_string(type));
+		}
 		break;
 	}
 

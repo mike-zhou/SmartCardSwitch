@@ -2825,7 +2825,7 @@ std::string WebServer::DeviceStatus()
 	json += "],";
 	//assistKeysPressed
 	json += "\"coordinateAssistKeysPressed\":[";
-	for(unsigned int i=0; i<pCoordinateStorage->SoftKeysAmount(); i++)
+	for(unsigned int i=0; i<pCoordinateStorage->AssistKeysAmount(); i++)
 	{
 		int x, y, z, w;
 
@@ -2864,7 +2864,7 @@ std::string WebServer::DeviceStatus()
 	json += "},";
 	//touchScreenKeys
 	json += "\"coordinateTouchScreenKeys\":[";
-	for(unsigned int i=0; i<pCoordinateStorage->AssistKeysAmount(); i++)
+	for(unsigned int i=0; i<pCoordinateStorage->TouchScreenKeysAmount(); i++)
 	{
 		int x, y, z, w;
 
@@ -2881,13 +2881,13 @@ std::string WebServer::DeviceStatus()
 		}
 		json += "},";
 	}
-	if(pCoordinateStorage->AssistKeysAmount()) {
+	if(pCoordinateStorage->TouchScreenKeysAmount()) {
 		json.pop_back();//remove the last ','
 	}
 	json += "],";
 	//touchScreenKeysPressed
 	json += "\"coordinateTouchScreenKeysPressed\":[";
-	for(unsigned int i=0; i<pCoordinateStorage->SoftKeysAmount(); i++)
+	for(unsigned int i=0; i<pCoordinateStorage->TouchScreenKeysAmount(); i++)
 	{
 		int x, y, z, w;
 
@@ -2904,7 +2904,7 @@ std::string WebServer::DeviceStatus()
 		}
 		json += "},";
 	}
-	if(pCoordinateStorage->AssistKeysAmount()) {
+	if(pCoordinateStorage->TouchScreenKeysAmount()) {
 		json.pop_back();//remove the last ','
 	}
 	json += "],";
@@ -2956,7 +2956,7 @@ std::string WebServer::DeviceStatus()
 		}
 	}
 	json += "},";
-	//smartCardReader
+	//barCodeReader
 	json += "\"coordinateBarCodeReader\":{";
 	{
 		int x, y, z, w;
@@ -2973,7 +2973,7 @@ std::string WebServer::DeviceStatus()
 	}
 	json += "},";
 	//contactlessReaderGate
-	json += "\"coordinateBarCodeReaderGate\":{";
+	json += "\"coordinateContactlessReaderGate\":{";
 	{
 		int x, y, z, w;
 
@@ -3024,6 +3024,7 @@ std::string WebServer::DeviceStatus()
 	//end of json
 	json += "}";
 
+	pLogger->LogInfo("WebServer::DeviceStatus content: " + json);
 	return json;
 }
 

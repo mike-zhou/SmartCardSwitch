@@ -146,7 +146,7 @@ void CDeviceManager::checkDevices()
 						close(fd);
 						continue;
 					}
-					rc = cfsetspeed(&tios, B115200);
+					rc = cfsetspeed(&tios, B1152000);
 					if(0 != rc)
 					{
 						auto e = errno;
@@ -154,7 +154,20 @@ void CDeviceManager::checkDevices()
 						close(fd);
 						continue;
 					}
+					//c_iflag
+					tios.c_iflag &= ~ICRNL;
+					tios.c_iflag &= ~IXON;
+					//c_oflag
+					tios.c_oflag &= ~ONLCR;
+					//c_lflag
+					tios.c_lflag &= ~ISIG;
+					tios.c_lflag &= ~ICANON;
+					tios.c_lflag &= ~IEXTEN;
 					tios.c_lflag &= ~ECHO;
+					tios.c_lflag &= ~ECHOE;
+					tios.c_lflag &= ~ECHOK;
+					tios.c_lflag &= ~ECHOCTL;
+					tios.c_lflag &= ~ECHOKE;
 					rc = tcsetattr(fd, TCSANOW, &tios);
 					if(0 != rc)
 					{

@@ -554,7 +554,7 @@
                 <input name="coordinate" id="coordinate_touchScreenKey_7" type="radio"><label for="coordinate_touchScreenKey_7">8</label>
             </div>
             <div>
-                <label>SoftKeys:</label><br>
+                <label>AssistKeys:</label><br>
                 <input name="coordinate" id="coordinate_assistKey_0" type="radio"><label for="coordinate_assistKey_0">1</label>
                 <input name="coordinate" id="coordinate_assistKey_1" type="radio"><label for="coordinate_assistKey_1">2</label>
                 <input name="coordinate" id="coordinate_assistKey_2" type="radio"><label for="coordinate_assistKey_2">3</label>
@@ -975,12 +975,12 @@
             html += createCoordinateLine("SmartCardReader", coorSmartCardReader.x, coorSmartCardReader.y, coorSmartCardReader.z, coorSmartCardReader.w);
 
             var coorBarCodeReaderGate = serverResponse["coordinateBarCodeReaderGate"];
-            html += createCoordinateLine("BarcodeReaderGate", coorBarCodeReaderGate.x, coorBarCodeReaderGate.y, coorBarCodeReaderGate.z, coorBarCodeReaderGate.w);
+            html += createCoordinateLine("BarCodeReaderGate", coorBarCodeReaderGate.x, coorBarCodeReaderGate.y, coorBarCodeReaderGate.z, coorBarCodeReaderGate.w);
 
             var coorBarCodeReader = serverResponse["coordinateBarCodeReader"];
             html += createCoordinateLine("BarCodeReader", coorBarCodeReader.x, coorBarCodeReader.y, coorBarCodeReader.z, coorBarCodeReader.w);
 
-            var coorContactlessReaderGate = serverResponse["coordinateBarCodeReaderGate"];
+            var coorContactlessReaderGate = serverResponse["coordinateContactlessReaderGate"];
             html += createCoordinateLine("ContactlessReaderGate", coorContactlessReaderGate.x, coorContactlessReaderGate.y, coorContactlessReaderGate.z, coorContactlessReaderGate.w);
 
             var coorContactlessReader = serverResponse["coordinateContactlessReader"];
@@ -1371,8 +1371,8 @@
                 (type === "TouchScreenKeyGate") ||
                 (type === "SmartCardReaderGate") ||
                 (type === "SmartCardReader") ||
-                (type === "BarcodeReaderGate") ||
-                (type === "BarcodeReader") ||
+                (type === "BarCodeReaderGate") ||
+                (type === "BarCodeReader") ||
                 (type === "ContactlessReaderGate") ||
                 (type === "ContactlessReader") ||
                 (type === "Safe")) {

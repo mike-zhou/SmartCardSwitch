@@ -418,9 +418,6 @@ void UserCommandRunner::executeUserCmdResetDevice()
 		cmd = ConsoleCommandFactory::CmdStepperQuery(i);
 		runConsoleCommand(cmd);
 	}
-
-	//go to smart card gate
-	toSmartCardGate();
 }
 
 void UserCommandRunner::parseUserCmdSmartCard(Poco::DynamicStruct& ds)
