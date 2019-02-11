@@ -1826,7 +1826,7 @@ void UserCommandRunner::executeUserCmdPressAssistKey()
 	}
 
 	toAssistKeyGate();
-	putDownKeyPressingArm();
+	//putDownKeyPressingArm();
 
 	auto pKeys = _userCommand.keyNumbers.data();
 	unsigned int lastKeyIndex = _userCommand.keyNumbers.size() - 1;
@@ -1842,8 +1842,8 @@ void UserCommandRunner::executeUserCmdPressAssistKey()
 
 	//back to gate
 	assistKey_gate(pKeys[lastKeyIndex]);
-	pullUpKeyPressingArm();
-	releaseKeyPressingArm();
+	//pullUpKeyPressingArm();
+	//releaseKeyPressingArm();
 }
 
 void UserCommandRunner::touchScreenKey_gate(unsigned int keyNumber)
