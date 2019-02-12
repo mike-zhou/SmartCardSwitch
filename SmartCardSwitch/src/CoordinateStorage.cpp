@@ -25,7 +25,8 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 {
 	_filePathName = filePathName;
 
-	_smartCardPlaceStart = -1;
+	_smartCardSlowlyPlaceStart = -1;
+	_smartCardSlowlyPlaceEnd = -1;
 	_smartCardFetchOffset = -1;
 	_smartCardReaderSlowInsertEnd = -1;
 	_smartCardReleaseOffset = -1;
@@ -281,7 +282,8 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 //			_safe.w = ds["safe"]["w"];
 
 			//offset
-			_smartCardPlaceStart = ds["smartCardPlaceStart"];
+			_smartCardSlowlyPlaceStart = ds["smartCardSlowlyPlaceStart"];
+			_smartCardSlowlyPlaceEnd = ds["smartCardSlowlyPlaceEnd"];
 			_smartCardFetchOffset = ds["smartCardFetchOffset"];
 			_smartCardReaderSlowInsertEnd = ds["smartCardReaderSlowInsertEnd"];
 			_smartCardReleaseOffset = ds["smartCardReleaseOffset"];
@@ -443,7 +445,8 @@ bool CoordinateStorage::PersistToFile()
 	json = json + ",\"safe\":" + _safe.ToJsonObj();
 
 	//offset
-	json = json + ", \"smartCardPlaceStart\":" + std::to_string(_smartCardPlaceStart);
+	json = json + ", \"smartCardSlowlyPlaceStart\":" + std::to_string(_smartCardSlowlyPlaceStart);
+	json = json + ", \"smartCardSlowlyPlaceEnd\":" + std::to_string(_smartCardSlowlyPlaceEnd);
 	json = json + ", \"smartCardFetchOffset\":" + std::to_string(_smartCardFetchOffset);
 	json = json + ",\"smartCardReleaseOffset\":" + std::to_string(_smartCardReleaseOffset);
 	json = json + ", \"smartCardReaderSlowInsertEnd\":" + std::to_string(_smartCardReaderSlowInsertEnd);
@@ -1072,9 +1075,14 @@ std::string CoordinateStorage::Coordinate::ToJsonObj()
 	return json;
 }
 
-void CoordinateStorage::SetSmartCardPlaceStartZ(long zPosition)
+void CoordinateStorage::SetSmartCardSlowlyPlaceStartZ(long zPosition)
 {
-	_smartCardPlaceStart = zPosition;
+	_smartCardSlowlyPlaceStart = zPosition;
+}
+
+void CoordinateStorage::SetSmartCardSlowlyPlaceEndZ(long zPosition)
+{
+	_smartCardSlowlyPlaceEnd = zPosition;
 }
 
 void CoordinateStorage::SetSmartCardFetchOffset(long offset)
@@ -1092,13 +1100,23 @@ void CoordinateStorage::SetSmartCardInsertExtra(long offset)
 	_smartCardInsertExtra = offset;
 }
 
-bool CoordinateStorage::GetSmartCardPlaceStartZ(long & zPosition)
+bool CoordinateStorage::GetSmartCardSlowlyPlaceStartZ(long & zPosition)
 {
-	if(_smartCardPlaceStart < 0) {
+	if(_smartCardSlowlyPlaceStart < 0) {
 		return false;
 	}
 
-	zPosition = _smartCardPlaceStart;
+	zPosition = _smartCardSlowlyPlaceStart;
+	return true;
+}
+
+bool CoordinateStorage::GetSmartCardSlowlyPlaceEndZ(long & zPosition)
+{
+	if(_smartCardSlowlyPlaceEnd < 0) {
+		return false;
+	}
+
+	zPosition = _smartCardSlowlyPlaceEnd;
 	return true;
 }
 

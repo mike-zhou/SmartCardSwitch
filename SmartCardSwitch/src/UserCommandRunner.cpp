@@ -1108,7 +1108,8 @@ void UserCommandRunner::gate_smartCard_withCard(unsigned int cardNumber)
 {
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
-	long placeStart;
+	long slowlyPlaceStart;
+	long slowlyPlaceEnd;
 	long releaseOffset;
 
 
@@ -1127,9 +1128,13 @@ void UserCommandRunner::gate_smartCard_withCard(unsigned int cardNumber)
 	if(rc == false) {
 		throwError("UserCommandRunner::gate_smartCard_withCard failed to retrieve smart card gate");
 	}
-	rc = pCoordinateStorage->GetSmartCardPlaceStartZ(placeStart);
+	rc = pCoordinateStorage->GetSmartCardSlowlyPlaceStartZ(slowlyPlaceStart);
 	if(rc == false) {
 		throwError("UserCommandRunner::gate_smartCard_withCard failed to retrieve smart card place start");
+	}
+	rc = pCoordinateStorage->GetSmartCardSlowlyPlaceEndZ(slowlyPlaceEnd);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_smartCard_withCard failed to retrieve smart card place End");
 	}
 	rc = pMovementConfiguration->GetStepperCardInsert(lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	if(rc == false) {
@@ -1142,10 +1147,10 @@ void UserCommandRunner::gate_smartCard_withCard(unsigned int cardNumber)
 
 	moveStepperX(curX, finalX);
 	moveStepperY(curY, finalY);
-	moveStepperZ(curZ, placeStart);
+	moveStepperZ(curZ, slowlyPlaceStart);
 	//slow insertion
 	configStepperMovement(STEPPER_Z, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
-	moveStepperZ(placeStart, finalZ + releaseOffset);
+	moveStepperZ(slowlyPlaceStart, slowlyPlaceEnd);
 
 	//restore to normal speed
 	rc = pMovementConfiguration->GetStepperGeneral(STEPPER_Z, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
@@ -1153,6 +1158,8 @@ void UserCommandRunner::gate_smartCard_withCard(unsigned int cardNumber)
 		throwError("UserCommandRunner::gate_smartCard_withCard failed to retrieve stepper card slow insert");
 	}
 	configStepperMovement(STEPPER_Z, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+
+	moveStepperZ(slowlyPlaceEnd, finalZ + releaseOffset);
 }
 
 void UserCommandRunner::smartCard_gate_withoutCard(unsigned int cardNumber)

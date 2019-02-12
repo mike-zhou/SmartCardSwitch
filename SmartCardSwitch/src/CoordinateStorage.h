@@ -62,11 +62,13 @@ public:
 					int& w,
 					unsigned int index = 0);
 
-	void SetSmartCardPlaceStartZ(long zPosition);
+	void SetSmartCardSlowlyPlaceStartZ(long zPosition);
+	void SetSmartCardSlowlyPlaceEndZ(long zPosition);
 	void SetSmartCardFetchOffset(long offset);
 	void SetSmartCardReleaseOffsetZ(long offset);
 	void SetSmartCardInsertExtra(long offset);
-	bool GetSmartCardPlaceStartZ(long & zPosition);
+	bool GetSmartCardSlowlyPlaceStartZ(long & zPosition);
+	bool GetSmartCardSlowlyPlaceEndZ(long & zPosition);
 	bool GetSmartCardFetchOffset(long & offset);
 	bool GetSmartCardReleaseOffset(long & offset);
 	bool GetSmartCardInsertExtra(long & offset);
@@ -110,7 +112,8 @@ private:
 	//smart cards
 	Coordinate _smartCardGate;
 	std::vector<Coordinate> _smartCards;
-	long _smartCardPlaceStart;
+	long _smartCardSlowlyPlaceStart;
+	long _smartCardSlowlyPlaceEnd;
 	long _smartCardFetchOffset; //shared with card removal from smart card reader
 	long _smartCardReleaseOffset;
 	long _smartCardInsertExtra;

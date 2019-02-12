@@ -572,8 +572,10 @@
             </div>
             <div>
                 <label>Offsets:</label><br>
-                <input name="coordinate" id="coordinate_smartCardPlaceStartZ" type="radio"><label for="coordinate_smartCardPlaceStartZ">SmartCardPlaceStartZ</label>
-                <input type="number" id="smartCardPlaceStartZ" min="0" max="65535" size="5"></input><br>
+                <input name="coordinate" id="coordinate_smartCardSlowlyPlaceStartZ" type="radio"><label for="coordinate_smartCardSlowlyPlaceStartZ">SmartCardSlowlyPlaceStartZ</label>
+                <input type="number" id="smartCardSlowlyPlaceStartZ" min="0" max="65535" size="5"></input><br>
+                <input name="coordinate" id="coordinate_smartCardSlowlyPlaceEndZ" type="radio"><label for="coordinate_smartCardSlowlyPlaceEndZ">SmartCardSlowlyPlaceEndZ</label>
+                <input type="number" id="smartCardSlowlyPlaceEndZ" min="0" max="65535" size="5"></input><br>
                 <input name="coordinate" id="coordinate_smartCardFetchOffset" type="radio"><label for="coordinate_smartCardFetchOffset">SmartCardFetchOffset</label>
                 <input type="number" id="smartCardFetchOffset" min="0" max="65535" size="5"></input><br>
                 <input name="coordinate" id="coordinate_smartCardReleaseOffsetZ" type="radio"><label for="coordinate_smartCardReleaseOffsetZ">SmartCardReleaseOffsetZ</label>
@@ -763,8 +765,12 @@
             document.getElementById("steppersPowered").checked = bPowered;
         }
 
-        function updatePageSmartCardPlaceStartZ(offset) {
-            document.getElementById("smartCardPlaceStartZ").value = offset.toString();
+        function updatePageSmartCardSlowlyPlaceStartZ(offset) {
+            document.getElementById("smartCardSlowlyPlaceStartZ").value = offset.toString();
+        }
+
+        function updatePageSmartCardSlowlyPlaceEndZ(offset) {
+            document.getElementById("smartCardSlowlyPlaceEndZ").value = offset.toString();
         }
 
         function updatePageSmartCardFetchOffset(offset) {
@@ -1044,8 +1050,10 @@
                     updatePageBdcPowered(serverResponse[key]);
                 } else if (key === "stepperPowered") {
                     updatePageStepperPowered(serverResponse[key]);
-                } else if (key === "smartCardPlaceStartZ") {
-                    updatePageSmartCardPlaceStartZ(serverResponse[key]);
+                } else if (key === "smartCardSlowlyPlaceStartZ") {
+                    updatePageSmartCardSlowlyPlaceStartZ(serverResponse[key]);
+                } else if (key === "smartCardSlowlyPlaceEndZ") {
+                    updatePageSmartCardSlowlyPlaceEndZ(serverResponse[key]);
                 } else if (key === "smartCardFetchOffset") {
                     updatePageSmartCardFetchOffset(serverResponse[key]);
                 } else if (key === "smartCardReleaseOffset") {
@@ -1322,7 +1330,8 @@
                         break;
                     }
 
-                case "smartCardPlaceStartZ":
+                case "smartCardSlowlyPlaceStartZ":
+                case "smartCardSlowlyPlaceEndZ":
                 case "smartCardFetchOffset":
                 case "smartCardReleaseOffsetZ":
                 case "smartCardInsertExtra":

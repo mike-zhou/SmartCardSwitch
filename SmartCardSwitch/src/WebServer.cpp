@@ -2274,8 +2274,11 @@ bool WebServer::SaveCoordinate(const std::string & coordinateType, unsigned int 
 			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
 		}
 	}
-	else if(coordinateType == "smartCardPlaceStartZ") {
-		pCoordinateStorage->SetSmartCardPlaceStartZ(data);
+	else if(coordinateType == "smartCardSlowlyPlaceStartZ") {
+		pCoordinateStorage->SetSmartCardSlowlyPlaceStartZ(data);
+	}
+	else if(coordinateType == "smartCardSlowlyPlaceEndZ") {
+		pCoordinateStorage->SetSmartCardSlowlyPlaceEndZ(data);
 	}
 	else if(coordinateType == "smartCardFetchOffset") {
 		pCoordinateStorage->SetSmartCardFetchOffset(data);
@@ -2584,14 +2587,18 @@ std::string WebServer::DeviceStatus()
 	}
 	//offsets
 	{
-		long smartCardPlaceStartZ = 0;
+		long smartCardSlowlyPlaceStartZ = 0;
+		long smartCardSlowlyPlaceEndZ = 0;
 		long smartCardFetchOffset = 0;
 		long smartCardReleaseOffset = 0;
 		long smartCardInsertExtra = 0;
 		long smartCardReaderSlowInsertEndY = 0;
 
-		if(!pCoordinateStorage->GetSmartCardPlaceStartZ(smartCardPlaceStartZ)) {
+		if(!pCoordinateStorage->GetSmartCardSlowlyPlaceStartZ(smartCardSlowlyPlaceStartZ)) {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve smartCardPlaceStartZ");
+		}
+		if(!pCoordinateStorage->GetSmartCardSlowlyPlaceEndZ(smartCardSlowlyPlaceEndZ)) {
+			pLogger->LogError("WebServer::DeviceStatus failed to retrieve smartCardPlaceEndZ");
 		}
 		if(!pCoordinateStorage->GetSmartCardFetchOffset(smartCardFetchOffset)) {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve smartCardFetchOffset");
@@ -2606,7 +2613,8 @@ std::string WebServer::DeviceStatus()
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve smartCardReaderSlowInsertEndY");
 		}
 
-		json += "\"smartCardPlaceStartZ\":" + std::to_string(smartCardPlaceStartZ) + ",";
+		json += "\"smartCardSlowlyPlaceStartZ\":" + std::to_string(smartCardSlowlyPlaceStartZ) + ",";
+		json += "\"smartCardSlowlyPlaceEndZ\":" + std::to_string(smartCardSlowlyPlaceEndZ) + ",";
 		json += "\"smartCardFetchOffset\":" + std::to_string(smartCardFetchOffset) + ",";
 		json += "\"smartCardReleaseOffset\":" + std::to_string(smartCardReleaseOffset) + ",";
 		json += "\"smartCardInsertExtra\":" + std::to_string(smartCardInsertExtra) + ",";

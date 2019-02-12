@@ -1052,7 +1052,7 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 
 			bCompositeCmd = true;
 
-			pCoordinateStorage->SetSmartCardPlaceStartZ(value);
+			pCoordinateStorage->SetSmartCardSlowlyPlaceStartZ(value);
 			pCoordinateStorage->PersistToFile();
 			_cmdKey = InvalidCommandId;
 		}
