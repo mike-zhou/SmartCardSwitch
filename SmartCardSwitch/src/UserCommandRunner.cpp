@@ -1256,7 +1256,7 @@ void UserCommandRunner::gate_contactlessReader()
 		throwError("UserCommandRunner::gate_contactlessReader failed to retrieve contactless reader gate");
 	}
 
-	moveStepperZ(curZ, finalZ);
+	moveStepperY(curY, finalY);
 }
 
 void UserCommandRunner::contactlessReader_gate()
@@ -1273,20 +1273,26 @@ void UserCommandRunner::contactlessReader_gate()
 		throwError("UserCommandRunner::contactlessReader_gate failed to retrieve contactless reader");
 	}
 
-	moveStepperZ(curZ, finalZ);
+	moveStepperY(curY, finalY);
 }
 
 void UserCommandRunner::executeUserCmdTapSmartCard()
 {
+	pLogger->LogInfo("UserCommandRunner::executeUserCmdTapSmartCard ######");
 	toSmartCardGate();
 	openClamp();
 	gate_smartCard_withoutCard(_userCommand.smartCardNumber);
 	closeClamp();
 	smartCard_gate_withCard(_userCommand.smartCardNumber);
+	pLogger->LogInfo("UserCommandRunner::executeUserCmdTapSmartCard ###### toContactlessReaderGate");
 	toContactlessReaderGate();
+	pLogger->LogInfo("UserCommandRunner::executeUserCmdTapSmartCard ###### gate_contactlessReader");
 	gate_contactlessReader();
+	pLogger->LogInfo("UserCommandRunner::executeUserCmdTapSmartCard ###### deviceDelay");
 	deviceDelay(_userCommand.downPeriod);
+	pLogger->LogInfo("UserCommandRunner::executeUserCmdTapSmartCard ###### contactlessReader_gate");
 	contactlessReader_gate();
+	pLogger->LogInfo("UserCommandRunner::executeUserCmdTapSmartCard ###### toSmartCardGate");
 	toSmartCardGate();
 	gate_smartCard_withCard(_userCommand.smartCardNumber);
 	openClamp();
@@ -1721,8 +1727,8 @@ void UserCommandRunner::assistKey_gate(unsigned int keyNumber)
 		throwError("UserCommandRunner::assistKey_gate failed to retrieve assist key:" + std::to_string(keyNumber));
 	}
 
-	moveStepperX(curX, finalX);
 	moveStepperY(curY, finalY);
+	moveStepperX(curX, finalX);
 	moveStepperZ(curZ, finalZ);
 }
 
@@ -1741,8 +1747,8 @@ void UserCommandRunner::assistKey_assistKey(unsigned int keyNumberFrom, unsigned
 	}
 
 	//to key
-	moveStepperX(curX, finalX);
 	moveStepperY(curY, finalY);
+	moveStepperX(curX, finalX);
 	moveStepperZ(curZ, finalZ);
 
 	//press key
@@ -1754,8 +1760,8 @@ void UserCommandRunner::assistKey_assistKey(unsigned int keyNumberFrom, unsigned
 		throwError("UserCommandRunner::assistKey_assistKey failed to retrieve assist key pressed: " + std::to_string(keyNumberTo));
 	}
 	moveStepperX(curX, finalX);
-	moveStepperY(curY, finalY);
 	moveStepperZ(curZ, finalZ);
+	moveStepperY(curY, finalY);
 
 	//delay
 	deviceDelay(_userCommand.downPeriod);
@@ -1768,8 +1774,8 @@ void UserCommandRunner::assistKey_assistKey(unsigned int keyNumberFrom, unsigned
 	if(rc == false) {
 		throwError("UserCommandRunner::assistKey_assistKey failed to retrieve assist key: " + std::to_string(keyNumberTo));
 	}
-	moveStepperZ(curZ, finalZ);
 	moveStepperY(curY, finalY);
+	moveStepperZ(curZ, finalZ);
 	moveStepperX(curX, finalX);
 
 	//delay
@@ -1791,8 +1797,8 @@ void UserCommandRunner::gate_assistKey(unsigned int keyNumber)
 	}
 
 	//to key
-	moveStepperX(curX, finalX);
 	moveStepperY(curY, finalY);
+	moveStepperX(curX, finalX);
 	moveStepperZ(curZ, finalZ);
 
 	//press key
@@ -1804,8 +1810,8 @@ void UserCommandRunner::gate_assistKey(unsigned int keyNumber)
 		throwError("UserCommandRunner::gate_assistKey failed to retrieve assist key pressed: " + std::to_string(keyNumber));
 	}
 	moveStepperX(curX, finalX);
-	moveStepperY(curY, finalY);
 	moveStepperZ(curZ, finalZ);
+	moveStepperY(curY, finalY);
 
 	//delay
 	deviceDelay(_userCommand.downPeriod);
@@ -1818,8 +1824,8 @@ void UserCommandRunner::gate_assistKey(unsigned int keyNumber)
 	if(rc == false) {
 		throwError("UserCommandRunner::gate_assistKey failed to retrieve assist key: " + std::to_string(keyNumber));
 	}
-	moveStepperZ(curZ, finalZ);
 	moveStepperY(curY, finalY);
+	moveStepperZ(curZ, finalZ);
 	moveStepperX(curX, finalX);
 
 	//delay

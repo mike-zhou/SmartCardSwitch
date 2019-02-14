@@ -31,8 +31,8 @@ private:
 		str += "------------- HELP -------------\r\n";
 		str += "InsertSmartCard --------: 1 smartCardNumber\r\n";
 		str += "RemoveSmartCard --------: 2 smartCardNumber\r\n";
-		str += "TapSmartCard -----------: 3 smartCardNumber period\r\n";
-		str += "SwipeSmartCard ---------: 4 smartCardNumber period\r\n";
+		str += "SwipeSmartCard ---------: 3 smartCardNumber period\r\n";
+		str += "TapSmartCard -----------: 4 smartCardNumber period\r\n";
 		str += "ShowBarCode ------------: 5 smartCardNumber period\r\n";
 		str += "PressPedKey ------------: 6 downPeriiod upPeriod key1 key2 key3\r\n";
 		str += "PressSoftKey -----------: 7 downPeriiod upPeriod key1 key2 key3\r\n";
