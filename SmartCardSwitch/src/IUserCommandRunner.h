@@ -26,6 +26,7 @@ public:
 	const std::string UserCmdPressSoftKey = "press soft key";
 	const std::string UserCmdPressAssistKey = "press assist key";
 	const std::string UserCmdTouchScreen = "touch screen";
+	const std::string UserCmdBackToHome = "back to home";
 
 	const std::string ErrorDeviceNotAvailable = "device hans't been connected";
 	const std::string ErrorDeviceNotPowered = "device is not powered";
@@ -168,42 +169,10 @@ public:
  * }
  *
  * {
- * 	"userCommand":"cancel command",
+ * 	"userCommand":"back to home",
  * 	"commandId":"uniqueCommandId"
  * }
  *
- * ======== Compound command ====
- * [
- * 	{
- * 		"index"=0,
- * 		"command"={
- * 			"userCommand":"insert smart card",
- * 			"commandId":"uniqueCommandId",
- * 			"smartCardNumber":0
- * 		}
- * 	},
- * 	{
- * 		"index"=1,
- * 		"command"={
- * 			"userCommand":"press PED key",
- * 			"keys":[
- * 				{"index":0, "keyNumber":9},
- * 				{"index":1, "keyNumber":7}
- * 			],
- * 			"downPeriod":1000,
- * 			"commandId":"uniqueCommandId",
- * 			"upPeriod":1000
- * 		}
- * 	},
- * 	{
- * 		"index"=2,
- * 		"command"={
- * 			"userCommand":"remove smart card",
- * 			"commandId":"uniqueCommandId",
- * 			"smartCardNumber":0
- * 		}
- * 	}
- * ]
  */
 
 class IUserCommandRunner: public IUserCommandDataType

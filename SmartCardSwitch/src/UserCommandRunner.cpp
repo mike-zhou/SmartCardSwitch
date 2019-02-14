@@ -632,6 +632,8 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 
 void UserCommandRunner::toHome()
 {
+	pLogger->LogInfo("UserCommandRunner::toHome");
+
 	auto currentPosition = getCurrentPosition();
 
 	if(currentPosition == CurrentPosition::Unknown)
@@ -2077,6 +2079,9 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		else if(_userCommand.command == UserCmdTouchScreen) {
 			parseUserCmdKeys(ds);
 		}
+		else if(_userCommand.command == UserCmdBackToHome) {
+			//no further parameters to parsed
+		}
 		else {
 			errorInfo = ErrorUnSupportedCommand;
 			pLogger->LogError("UserCommandRunner::RunCommand unsupported command, denied: " + jsonCmd);
@@ -3106,6 +3111,9 @@ void UserCommandRunner::runTask()
 				}
 				else if(_userCommand.command == UserCmdTouchScreen) {
 					executeUserCmdTouchScreen();
+				}
+				else if(_userCommand.command == UserCmdBackToHome) {
+					toHome();
 				}
 			}
 			catch(Poco::Exception & e)
