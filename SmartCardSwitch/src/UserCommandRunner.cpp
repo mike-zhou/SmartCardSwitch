@@ -656,8 +656,8 @@ void UserCommandRunner::toHome()
 		curW = currentW();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::Home, x, y, z, w);
 		moveStepperW(curW, w);
-		moveStepperY(curY, y);
 		moveStepperX(curX, x);
+		moveStepperY(curY, y);
 		moveStepperZ(curZ, z);
 	}
 }
