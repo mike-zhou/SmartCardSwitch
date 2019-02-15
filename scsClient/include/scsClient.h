@@ -209,6 +209,11 @@ public:
 	 * 		ScsNotConnected
 	 */
 	virtual ScsResult PowerOnEthernetSwitch(bool on) = 0;
+
+	/**
+	 * Move the carriage to Home position.
+	 */
+	virtual ScsResult BackToHome() = 0;
 };
 
 /**

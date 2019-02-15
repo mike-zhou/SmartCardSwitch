@@ -198,27 +198,16 @@ public:
 		return json;
 	}
 
-	static std::string Help()
+	static std::string CmdBackToHome()
 	{
-		std::string str;
+		std::string json;
 
-		str += "\r\n";
-		str += "------------- HELP -------------\r\n";
-		str += "ConnectToSmartCardSwitch: 0\r\n";
-		str += "InsertSmartCard --------: 1 smartCardNumber\r\n";
-		str += "RemoveSmartCard --------: 2 smartCardNumber\r\n";
-		str += "TapSmartCard -----------: 3 smartCardNumber\r\n";
-		str += "SwipeSmartCard ---------: 4 smartCardNumber\r\n";
-		str += "ShowBarCode ------------: 5 smartCardNumber\r\n";
-		str += "PressPedKey ------------: 6 downPeriiod upPeriod key1 key2 key3\r\n";
-		str += "PressSoftKey -----------: 7 downPeriiod upPeriod key1 key2 key3\r\n";
-		str += "PressAssistKey ---------: 8 downPeriiod upPeriod key1 key2 key3\r\n";
-		str += "PressScreenKey ---------: 9 downPeriiod upPeriod key1 key2 key3\r\n";
-		str += "PowerOnOPT -------------: 10\r\n";
-		str += "PowerOffOPT ------------: 11\r\n";
-		str += "--------------------------------\r\n";
+		json = "{";
+		json += 	"\"userCommand\":\"back to home\",";
+		json += 	"\"commandId\":\"" + getUniqueId() + "\"";
+		json += "}";
 
-		return str;
+		return json;
 	}
 
 private:

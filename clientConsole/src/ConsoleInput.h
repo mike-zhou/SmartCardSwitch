@@ -40,6 +40,7 @@ private:
 		str += "PressScreenKey ---------: 9 downPeriiod upPeriod key1 key2 key3\r\n";
 		str += "PowerOnOPT -------------: 10\r\n";
 		str += "PowerOffOPT ------------: 11\r\n";
+		str += "BackToHome -------------: 12\r\n";
 		str += "--------------------------------\r\n";
 
 		return str;
@@ -341,6 +342,12 @@ private:
 //						}
 //						break;
 //
+						case 12:
+						{
+							pScsClient->BackToHome();
+						}
+						break;
+
 						default:
 						{
 							std::cout << ("ConsoleInput::runTask unknown command: " + cmd) << "\r\n";

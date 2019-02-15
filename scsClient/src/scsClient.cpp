@@ -899,3 +899,76 @@ ScsClient * GetScsClientInstance()
 	return ScsClientImp::GetInstance();
 }
 
+ScsClient::ScsResult ScsClientImp::BackToHome()
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	_pLogger->LogInfo("ScsClientImp::BackToHome");
+
+	std::string command;
+	std::string reply;
+	std::string commandId;
+	std::string replyId;
+	std::string result;
+	std::string errorInfo;
+	bool exceptionOccurred = false;
+
+	command = CommandFactory::CmdBackToHome();
+
+	try
+	{
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			commandId = ds["commandId"].toString();
+		}
+
+		reply = sendCommand(command);
+
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			replyId = ds["commandId"].toString();
+			result = ds["result"].toString();
+			if(result != "succeeded") {
+				errorInfo = ds["errorInfo"].toString();
+			}
+		}
+
+	}
+	catch(Poco::Exception & e)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::BackToHome exception: " + e.displayText());
+	}
+	catch(...)
+	{
+		exceptionOccurred = true;
+		_pLogger->LogError("ScsClientImp::BackToHome unknown exception occurred");
+	}
+
+	if(exceptionOccurred) {
+		return ScsResult::Failure;
+	}
+	else
+	{
+		if(replyId != commandId) {
+			_pLogger->LogError("ScsClientImp::BackToHome Error: reply mismatch");
+			return ScsResult::Failure;
+		}
+		else if(result != "succeeded")
+		{
+			_pLogger->LogError("ScsClientImp::BackToHome Error: " + errorInfo);
+			return getErrorCode(errorInfo);
+		}
+	}
+
+	_pLogger->LogInfo("ScsClientImp::BackToHome finished");
+
+	return ScsResult::Succeess;
+}
