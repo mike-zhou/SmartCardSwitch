@@ -27,7 +27,7 @@
 class UserProxy: public Poco::Task, public IUserPool, public IUserCommandRunnerObserver
 {
 public:
-	UserProxy(const std::string & deviceName, unsigned int locatorNumber, unsigned int lineNumber);
+	UserProxy(const std::string & deviceName, unsigned int locatorNumber, unsigned int lineNumber, bool autoBackToHome, unsigned int autoBackToHomeSeconds);
 
 	void SetUserCommandRunner(IUserCommandRunner * pRunner);
 
@@ -71,6 +71,8 @@ private:
 
 	unsigned int _locatorNumberForReset;
 	unsigned int _lineNumberForReset;
+	bool _autoBackToHomeEnabled;
+	unsigned int _autoBackToHomeSeconds;
 	std::string _deviceName;
 	std::string _commandId;
 	std::string _commandState;
@@ -86,6 +88,7 @@ private:
 	std::deque<unsigned char> _output;
 
 	std::string createErrorInfo(const std::string& info);
+	std::string createAutoBackToHomeCmd();
 };
 
 #endif /* USERPROXY_H_ */

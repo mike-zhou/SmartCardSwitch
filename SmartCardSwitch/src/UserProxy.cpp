@@ -12,6 +12,7 @@
 #include "Poco/JSON/Parser.h"
 #include "Poco/JSON/Object.h"
 #include "Poco/JSON/JSONException.h"
+#include "Poco/UUIDGenerator.h"
 
 #include "UserProxy.h"
 #include "MsgPackager.h"
@@ -19,12 +20,14 @@
 
 extern Logger * pLogger;
 
-UserProxy::UserProxy(const std::string & deviceName, unsigned int locatorNumber, unsigned int lineNumber): Task("UserProxy")
+UserProxy::UserProxy(const std::string & deviceName, unsigned int locatorNumber, unsigned int lineNumber, bool autoBackToHome, unsigned int autoBackToHomeSeconds): Task("UserProxy")
 {
 	_deviceName = deviceName;
 	_locatorNumberForReset = locatorNumber;
 	_lineNumberForReset = lineNumber;
 
+	_autoBackToHomeEnabled = autoBackToHome;
+	_autoBackToHomeSeconds = autoBackToHomeSeconds;
 	_pUserCmdRunner = nullptr;
 	_state = State::ConnectDevice;
 }
@@ -125,6 +128,21 @@ void UserProxy::OnCommandStatus(const std::string& jsonStatus)
 std::string UserProxy::createErrorInfo(const std::string& info)
 {
 	return "{\"commandId\":\"invalid\", \"result\":\"failed\",\"errorInfo\":\"" + info + "\"}";
+}
+
+std::string UserProxy::createAutoBackToHomeCmd()
+{
+	std::string cmd;
+
+	Poco::UUIDGenerator uuidGenerator;
+	auto uuid = uuidGenerator.create();
+
+	cmd = "{";
+	cmd += "\"userCommand\":\"back to home\",";
+	cmd += "\"commandId\":\"" + uuid.toString() + "\"";
+	cmd += "}";
+
+	return cmd;
 }
 
 void UserProxy::AddSocket(StreamSocket& socket)
@@ -326,7 +344,7 @@ void UserProxy::runTask()
 	Poco::Timespan timeSpan(10000); //10 ms
 	Poco::Timestamp currentTime;
 	Poco::Timestamp::TimeDiff deviceConnectInterval(DeviceConnectInterval);
-
+	Poco::Timestamp autoBackToHomeStamp;
 
 	while(1)
 	{
@@ -596,6 +614,8 @@ void UserProxy::runTask()
 								}
 							}
 						}
+
+						autoBackToHomeStamp.update();
 					}
 				}
 
@@ -633,10 +653,30 @@ void UserProxy::runTask()
 						}
 					}
 				}
+
+				if(_autoBackToHomeEnabled)
+				{
+					if(autoBackToHomeStamp.elapsed() >= Poco::Timestamp::TimeDiff(_autoBackToHomeSeconds * 1000000))
+					{
+						autoBackToHomeStamp.update();
+
+						if(_pUserCmdRunner != nullptr)
+						{
+							std::string errorInfo;
+							std::string cmd = createAutoBackToHomeCmd();
+
+							_pUserCmdRunner->RunCommand(cmd, errorInfo);
+							if(!errorInfo.empty())
+							{
+								pLogger->LogError("UserProxy::runTask internal auto back to home error: " + errorInfo);
+							}
+						}
+					}
+				}
 			}
 			catch(Poco::Exception& e)
 			{
-				pLogger->LogError("UserProxy::runTask exception occured: " + e.displayText());
+				pLogger->LogError("UserProxy::runTask exception occurred: " + e.displayText());
 				exceptionOccured = true;
 			}
 			catch(...)

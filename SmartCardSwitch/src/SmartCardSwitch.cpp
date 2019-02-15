@@ -203,8 +203,10 @@ protected:
 			std::string deviceToConnect = config().getString("device_name", "Mixed_Motor_Drivers_HV1.0_SV1.0");
 			unsigned int locatorNumberForReset = config().getInt("locator_number_for_reset", 2);
 			unsigned int lineNumberForReset = config().getInt("line_number_for_reset", 8);
+			bool autoBackToHome = config().getBool("auto_back_to_home_enabled", true);
+			unsigned int autoBackToHomeSeconds = config().getUInt("auto_back_to_home_seconds", 300);
 			Poco::Net::SocketAddress userListenerAddress(userProxyListenerIp + ":" + userPorxyListenerPort);
-			pUserProxy = new UserProxy(deviceToConnect, locatorNumberForReset, lineNumberForReset);
+			pUserProxy = new UserProxy(deviceToConnect, locatorNumberForReset, lineNumberForReset, autoBackToHome, autoBackToHomeSeconds);
 			pUserCommandRunner = new UserCommandRunner;
 			pUserListener = new UserListener(pUserProxy);
 			pUserListener->Bind(userListenerAddress);
