@@ -198,6 +198,32 @@ public:
 		return json;
 	}
 
+	static std::string CmdPowerOnDcm(unsigned int index)
+	{
+		std::string json;
+
+		json += "{";
+		json +=  	"\"userCommand\":\"power on dcm\",";
+		json +=  	"\"commandId\":\"" + getUniqueId() + "\",";
+		json += 	"\"index\":" + std::to_string(index);
+		json += "}";
+
+		return json;
+	}
+
+	static std::string CmdPowerOffDcm(unsigned int index)
+	{
+		std::string json;
+
+		json += "{";
+		json +=  	"\"userCommand\":\"power off dcm\",";
+		json +=  	"\"commandId\":\"" + getUniqueId() + "\",";
+		json += 	"\"index\":" + std::to_string(index);
+		json += "}";
+
+		return json;
+	}
+
 	static std::string CmdBackToHome()
 	{
 		std::string json;

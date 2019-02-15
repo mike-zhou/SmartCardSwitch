@@ -1056,10 +1056,35 @@ void UserCommandRunner::closeClamp()
 
 void UserCommandRunner::releaseClamp()
 {
-	std::vector<std::string> result;
 	std::string cmd;
 
 	cmd = ConsoleCommandFactory::CmdBdcCoast(0);
+	runConsoleCommand(cmd);
+}
+
+void UserCommandRunner::powerOnOpt(bool on)
+{
+	std::string cmd;
+
+	if(on) {
+		cmd = ConsoleCommandFactory::CmdOptPowerOn();
+	}
+	else {
+		cmd = ConsoleCommandFactory::CmdOptPowerOff();
+	}
+	runConsoleCommand(cmd);
+}
+
+void UserCommandRunner::powerOnDcm(bool on, unsigned int index)
+{
+	std::string cmd;
+
+	if(on) {
+		cmd = ConsoleCommandFactory::CmdDcmPowerOn(index);
+	}
+	else {
+		cmd = ConsoleCommandFactory::CmdDcmPowerOff(index);
+	}
 	runConsoleCommand(cmd);
 }
 
@@ -1345,6 +1370,11 @@ void UserCommandRunner::parseUserCmdKeys(Poco::DynamicStruct& ds)
 			throwError("UserCommandRunner::parseUserCmdKeys index out of range: " + std::to_string(index));
 		}
 	}
+}
+
+void UserCommandRunner::parseUserCmdDcm(Poco::DynamicStruct& ds)
+{
+	_userCommand.dcmIndex = ds["index"];
 }
 
 void UserCommandRunner::barcodeReader_gate()
@@ -2080,7 +2110,19 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			parseUserCmdKeys(ds);
 		}
 		else if(_userCommand.command == UserCmdBackToHome) {
-			//no further parameters to parsed
+			//no further parameters to parse
+		}
+		else if(_userCommand.command == UserCmdPowerOnOpt) {
+			//no further parameters to parse
+		}
+		else if(_userCommand.command == UserCmdPowerOffOpt) {
+			//no further parameters to parse
+		}
+		else if(_userCommand.command == UserCmdPowerOnDcm) {
+			parseUserCmdDcm(ds);
+		}
+		else if(_userCommand.command == UserCmdPowerOffDcm) {
+			parseUserCmdDcm(ds);
 		}
 		else {
 			errorInfo = ErrorUnSupportedCommand;
@@ -3114,6 +3156,22 @@ void UserCommandRunner::runTask()
 				}
 				else if(_userCommand.command == UserCmdBackToHome) {
 					toHome();
+				}
+				else if(_userCommand.command == UserCmdPowerOnOpt) {
+					powerOnOpt(true);
+				}
+				else if(_userCommand.command == UserCmdPowerOffOpt) {
+					powerOnOpt(false);
+				}
+				else if(_userCommand.command == UserCmdPowerOnDcm) {
+					powerOnDcm(true, _userCommand.dcmIndex);
+				}
+				else if(_userCommand.command == UserCmdPowerOffDcm) {
+					powerOnDcm(false, _userCommand.dcmIndex);
+				}
+				else {
+					errorInfo = "UserCommandRunner::runTask unknown user command: " + _userCommand.command;
+					pLogger->LogError(errorInfo);
 				}
 			}
 			catch(Poco::Exception & e)

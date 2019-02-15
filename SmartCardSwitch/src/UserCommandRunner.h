@@ -145,6 +145,8 @@ private:
 		unsigned int downPeriod;
 		unsigned int upPeriod;
 		std::vector<unsigned int> keyNumbers;
+		//dcm
+		unsigned int dcmIndex;
 
 		//---- user command result ----
 		bool smartCardReaderSlotOccupied;
@@ -181,6 +183,7 @@ private:
 	void parseUserCmdTapSmartCard(Poco::DynamicStruct& ds);
 	void parseUserCmdBarCode(Poco::DynamicStruct& ds);
 	void parseUserCmdKeys(Poco::DynamicStruct& ds);
+	void parseUserCmdDcm(Poco::DynamicStruct& ds);
 
 	//fulfill user command with console commands
 	void executeUserCmdConnectDevice();
@@ -288,6 +291,9 @@ private:
 	void toSmartCardReaderGate();
 	void toContactlessReaderGate();
 	void toBarcodeReaderGate();
+
+	void powerOnOpt(bool on);
+	void powerOnDcm(bool on, unsigned int index);
 
 	std::vector<IUserCommandRunnerObserver *> _observerPtrArray;
 

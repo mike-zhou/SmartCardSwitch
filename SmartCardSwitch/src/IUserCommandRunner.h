@@ -27,6 +27,10 @@ public:
 	const std::string UserCmdPressAssistKey = "press assist key";
 	const std::string UserCmdTouchScreen = "touch screen";
 	const std::string UserCmdBackToHome = "back to home";
+	const std::string UserCmdPowerOnOpt = "power on opt";
+	const std::string UserCmdPowerOffOpt = "power off opt";
+	const std::string UserCmdPowerOnDcm = "power on dcm";
+	const std::string UserCmdPowerOffDcm = "power off dcm";
 
 	const std::string ErrorDeviceNotAvailable = "device hans't been connected";
 	const std::string ErrorDeviceNotPowered = "device is not powered";
@@ -90,6 +94,18 @@ public:
  * {
  * 	"userCommand":"power off opt",
  * 	"commandId":"uniqueCommandId"
+ * }
+ *
+ * {
+ * 	"userCommand":"power on dcm",
+ * 	"commandId":"uniqueCommandId",
+ * 	"index":0
+ * }
+ *
+ * {
+ * 	"userCommand":"power off dcm",
+ * 	"commandId":"uniqueCommandId",
+ * 	"index":0
  * }
  *
  * {

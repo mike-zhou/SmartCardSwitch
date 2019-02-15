@@ -78,8 +78,8 @@ public:
 	static std::string CmdOptPowerOn() 						{ return std::string("20 \r\n"); }
 	static std::string CmdOptPowerOff() 					{ return std::string("21 \r\n"); }
 	static std::string CmdOptQueryPower() 					{ return std::string("22 \r\n"); }
-	static std::string CmdDcmPowerOn() 						{ return std::string("30 \r\n"); } //todo: dcm index might be needed
-	static std::string CmdDcmPowerOff() 					{ return std::string("31 \r\n"); } //todo: dcm index might be needed
+	static std::string CmdDcmPowerOn(unsigned int index) 	{ return std::string("30 ") + std::to_string(index) + "\r\n"; }
+	static std::string CmdDcmPowerOff(unsigned int index) 	{ return std::string("31 ") + std::to_string(index) + "\r\n"; }
 	static std::string CmdDcmQueryPower() 					{ return std::string("32 \r\n"); }
 	static std::string CmdBdcsPowerOn() 					{ return std::string("40 \r\n"); }
 	static std::string CmdBdcsPowerOff() 					{ return std::string("41 \r\n"); }
