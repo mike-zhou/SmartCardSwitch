@@ -247,6 +247,86 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 
 		_deviceQueryFusePtr = ptr;
 	}
+	else if(command == strCommandOptPowerOn)
+	{
+		_type = ReplyType::OptPowerOn;
+
+		std::string errorInfo;
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+
+		std::shared_ptr<ReplyOptPowerOn> ptr (new ReplyOptPowerOn);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+
+		_optPowerOnPtr = ptr;
+	}
+	else if(command == strCommandOptPowerOff)
+	{
+		_type = ReplyType::OptPowerOff;
+
+		std::string errorInfo;
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+
+		std::shared_ptr<ReplyOptPowerOff> ptr (new ReplyOptPowerOff);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+
+		_optPowerOffPtr = ptr;
+	}
+	else if(command == strCommandDcmPowerOn)
+	{
+		_type = ReplyType::DcmPowerOn;
+
+		unsigned int index = ds["index"];
+
+		std::string errorInfo;
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+
+		std::shared_ptr<ReplyDcmPowerOn> ptr (new ReplyDcmPowerOn);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attribute
+		ptr->index = index;
+
+		_dcmPowerOnPtr = ptr;
+	}
+	else if(command == strCommandDcmPowerOff)
+	{
+		_type = ReplyType::DcmPowerOff;
+
+		unsigned int index = ds["index"];
+
+		std::string errorInfo;
+		if(objectPtr->has("error")) {
+			errorInfo = ds["error"].toString();
+		}
+
+		std::shared_ptr<ReplyDcmPowerOff> ptr (new ReplyDcmPowerOff);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attribute
+		ptr->index = index;
+
+		_dcmPowerOffPtr = ptr;
+	}
 	else if(command == strCommandBdcsPowerOn)
 	{
 		_type = ReplyType::BdcsPowerOn;
@@ -810,6 +890,26 @@ std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> ReplyTranslator::ToDevic
 std::shared_ptr<ReplyTranslator::ReplyDeviceQueryFuse> ReplyTranslator::ToDeviceQueryFuse()
 {
 	return _deviceQueryFusePtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplyOptPowerOn> ReplyTranslator::ToOptPowerOn()
+{
+	return _optPowerOnPtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplyOptPowerOff> ReplyTranslator::ToOptPowerOff()
+{
+	return _optPowerOffPtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplyDcmPowerOn> ReplyTranslator::ToDcmPowerOn()
+{
+	return _dcmPowerOnPtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplyDcmPowerOff> ReplyTranslator::ToDcmPowerOff()
+{
+	return _dcmPowerOffPtr;
 }
 
 std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOn> ReplyTranslator::ToBdcsPowerOn()

@@ -943,6 +943,10 @@ public:
 
 	std::string ToString()
 	{
+		char buf[256];
+		sprintf(buf, "C 10 %d", _commandId & 0xffff);
+		std::string cmd(buf);
+		return cmd;
 	}
 
 private:
@@ -964,6 +968,10 @@ public:
 
 	std::string ToString()
 	{
+		char buf[256];
+		sprintf(buf, "C 11 %d", _commandId & 0xffff);
+		std::string cmd(buf);
+		return cmd;
 	}
 
 private:
@@ -985,6 +993,10 @@ public:
 
 	std::string ToString()
 	{
+		char buf[256];
+		sprintf(buf, "C 12 %d", _commandId & 0xffff);
+		std::string cmd(buf);
+		return cmd;
 	}
 
 private:
@@ -1008,6 +1020,10 @@ public:
 
 	std::string ToString()
 	{
+		char buf[256];
+		sprintf(buf, "C 30 %d %d", _index, _commandId & 0xffff);
+		std::string cmd(buf);
+		return cmd;
 	}
 
 private:
@@ -1032,6 +1048,10 @@ public:
 
 	std::string ToString()
 	{
+		char buf[256];
+		sprintf(buf, "C 31 %d %d", _index, _commandId & 0xffff);
+		std::string cmd(buf);
+		return cmd;
 	}
 
 private:
@@ -1056,6 +1076,10 @@ public:
 
 	std::string ToString()
 	{
+		char buf[256];
+		sprintf(buf, "C 32 %d %d", _index, _commandId & 0xffff);
+		std::string cmd(buf);
+		return cmd;
 	}
 
 private:

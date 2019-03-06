@@ -170,8 +170,8 @@ ScsClient::ScsResult ScsClientImp::InsertSmartCard(const unsigned int smartCardN
 	{
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(command);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			commandId = ds["commandId"].toString();
@@ -181,8 +181,8 @@ ScsClient::ScsResult ScsClientImp::InsertSmartCard(const unsigned int smartCardN
 
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(reply);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			replyId = ds["commandId"].toString();
@@ -244,8 +244,8 @@ ScsClient::ScsResult ScsClientImp::RemoveSmartCard(const unsigned int smartCardN
 	{
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(command);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			commandId = ds["commandId"].toString();
@@ -255,8 +255,8 @@ ScsClient::ScsResult ScsClientImp::RemoveSmartCard(const unsigned int smartCardN
 
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(reply);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			replyId = ds["commandId"].toString();
@@ -317,8 +317,8 @@ ScsClient::ScsResult ScsClientImp::SwipeSmartCard(const unsigned int smartCardNu
 	{
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(command);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			commandId = ds["commandId"].toString();
@@ -328,8 +328,8 @@ ScsClient::ScsResult ScsClientImp::SwipeSmartCard(const unsigned int smartCardNu
 
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(reply);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			replyId = ds["commandId"].toString();
@@ -390,8 +390,8 @@ ScsClient::ScsResult ScsClientImp::TapSmartCard(const unsigned int smartCardNumb
 	{
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(command);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			commandId = ds["commandId"].toString();
@@ -401,8 +401,8 @@ ScsClient::ScsResult ScsClientImp::TapSmartCard(const unsigned int smartCardNumb
 
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(reply);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			replyId = ds["commandId"].toString();
@@ -463,8 +463,8 @@ ScsClient::ScsResult ScsClientImp::TapBarcode(const unsigned int smartCardNumber
 	{
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(command);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			commandId = ds["commandId"].toString();
@@ -474,8 +474,8 @@ ScsClient::ScsResult ScsClientImp::TapBarcode(const unsigned int smartCardNumber
 
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(reply);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			replyId = ds["commandId"].toString();
@@ -536,8 +536,8 @@ ScsClient::ScsResult ScsClientImp::PressPedKeys(const std::vector<unsigned int> 
 	{
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(command);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			commandId = ds["commandId"].toString();
@@ -547,8 +547,8 @@ ScsClient::ScsResult ScsClientImp::PressPedKeys(const std::vector<unsigned int> 
 
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(reply);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			replyId = ds["commandId"].toString();
@@ -610,8 +610,8 @@ ScsClient::ScsResult ScsClientImp::PressSoftKeys(const std::vector<unsigned int>
 	{
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(command);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			commandId = ds["commandId"].toString();
@@ -621,8 +621,8 @@ ScsClient::ScsResult ScsClientImp::PressSoftKeys(const std::vector<unsigned int>
 
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(reply);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			replyId = ds["commandId"].toString();
@@ -683,8 +683,8 @@ ScsClient::ScsResult ScsClientImp::PressAssistKeys(const std::vector<unsigned in
 	{
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(command);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			commandId = ds["commandId"].toString();
@@ -694,8 +694,8 @@ ScsClient::ScsResult ScsClientImp::PressAssistKeys(const std::vector<unsigned in
 
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(reply);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			replyId = ds["commandId"].toString();
@@ -756,8 +756,8 @@ ScsClient::ScsResult ScsClientImp::PressTouchScreenKeys(const std::vector<unsign
 	{
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(command);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			commandId = ds["commandId"].toString();
@@ -767,8 +767,8 @@ ScsClient::ScsResult ScsClientImp::PressTouchScreenKeys(const std::vector<unsign
 
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(reply);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			replyId = ds["commandId"].toString();
@@ -834,8 +834,8 @@ ScsClient::ScsResult ScsClientImp::PowerOnOpt(bool on)
 	{
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(command);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			commandId = ds["commandId"].toString();
@@ -845,8 +845,8 @@ ScsClient::ScsResult ScsClientImp::PowerOnOpt(bool on)
 
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(reply);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			replyId = ds["commandId"].toString();
@@ -915,8 +915,8 @@ ScsClient::ScsResult ScsClientImp::PowerOnEthernetSwitch(bool on)
 	{
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(command);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			commandId = ds["commandId"].toString();
@@ -926,8 +926,8 @@ ScsClient::ScsResult ScsClientImp::PowerOnEthernetSwitch(bool on)
 
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(reply);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			replyId = ds["commandId"].toString();
@@ -994,8 +994,8 @@ ScsClient::ScsResult ScsClientImp::BackToHome()
 	{
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(command);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			commandId = ds["commandId"].toString();
@@ -1005,8 +1005,8 @@ ScsClient::ScsResult ScsClientImp::BackToHome()
 
 		{
 			Poco::JSON::Parser parser;
-			Poco::Dynamic::Var result = parser.parse(reply);
-			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::Dynamic::Var parsedCmd = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedCmd.extract<Poco::JSON::Object::Ptr>();
 			Poco::DynamicStruct ds = *objectPtr;
 
 			replyId = ds["commandId"].toString();

@@ -111,8 +111,14 @@ void UserProxy::OnCommandStatus(const std::string& jsonStatus)
 			MsgPackager::PackageMsg(jsonStatus, pkg);
 			pLogger->LogInfo("UserProxy::OnCommandStatus pkg size: " + std::to_string(pkg.size()));
 
-			for(auto it=pkg.begin(); it!=pkg.end(); it++) {
-				_output.push_back(*it);
+			if(_sockets.empty()) {
+				pLogger->LogError("UserProxy::OnCommandStatus no client connected, discard command status");
+			}
+			else
+			{
+				for(auto it=pkg.begin(); it!=pkg.end(); it++) {
+					_output.push_back(*it);
+				}
 			}
 		}
 		break;
@@ -621,7 +627,7 @@ void UserProxy::runTask()
 
 				if(!peerClosed)
 				{
-					Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+					Poco::ScopedLock<Poco::Mutex> lock(_mutex); //avoid conflict with OnCommandStatus
 
 					//send reply
 					if(!_output.empty())
@@ -687,8 +693,12 @@ void UserProxy::runTask()
 
 			if(exceptionOccured || peerClosed) {
 				pLogger->LogInfo("UserProxy::runTask close socket: " + _sockets[0].address().toString());
+
+				Poco::ScopedLock<Poco::Mutex> lock(_mutex); //avoid conflicting with AddSocket
 				_sockets[0].close();
 				_sockets.clear();
+				_output.clear();
+				_input.clear();
 			}
 		}
 	}

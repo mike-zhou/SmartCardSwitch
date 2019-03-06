@@ -54,8 +54,8 @@ private:
  	virtual void OnOptPowerOn(CommandId key, bool bSuccess)  override;
 	virtual void OnOptPowerOff(CommandId key, bool bSuccess)   override;
 	virtual void OnOptQueryPower(CommandId key, bool bSuccess, bool bPowered) override;
-	virtual void OnDcmPowerOn(CommandId key, bool bSuccess) override {}
-	virtual void OnDcmPowerOff(CommandId key, bool bSuccess) override {}
+	virtual void OnDcmPowerOn(CommandId key, bool bSuccess) override;
+	virtual void OnDcmPowerOff(CommandId key, bool bSuccess) override;
 	virtual void OnDcmQueryPower(CommandId key, bool bSuccess, bool bPowered) override {}
 	virtual void OnBdcsPowerOn(CommandId key, bool bSuccess) override;
 	virtual void OnBdcsPowerOff(CommandId key, bool bSuccess) override;
@@ -101,6 +101,7 @@ private:
 private:
 	static const int STEPPER_AMOUNT = 4;
 	static const int LOCATOR_AMOUNT = 8;
+	static const int DCM_AMOUNT = 2;
 
 	const unsigned int STEPPER_X = 0;
 	const unsigned int STEPPER_Y = 1;

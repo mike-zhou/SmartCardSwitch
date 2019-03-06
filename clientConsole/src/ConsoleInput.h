@@ -41,6 +41,10 @@ private:
 		str += "PowerOnOPT -------------: 10\r\n";
 		str += "PowerOffOPT ------------: 11\r\n";
 		str += "BackToHome -------------: 12\r\n";
+		str += "PowerOnHub -------------: 13\r\n";
+		str += "PowerOffHub ------------: 14\r\n";
+		str += "Single loop (default)---: 15\r\n";
+		str += "Infinite loops ---------: 16\r\n";
 		str += "--------------------------------\r\n";
 
 		return str;
@@ -96,6 +100,147 @@ private:
 		return command;
 	}
 
+	bool singleLoop(ScsClient * pScsClient)
+	{
+		unsigned int period = 15;
+		ScsClient::ScsResult rc;
+
+		//insert smart card 0
+		rc = pScsClient->InsertSmartCard(0);
+		if(rc != ScsClient::ScsResult::Succeess) {
+			std::cout << ("ConsoleInput::singleLoop failure in inserting smart card 0: ") << (int)rc << "\r\n";
+			return false;
+		}
+		if(isCancelled()) {
+			return false;
+		}
+
+		sleep(500);//sleep 0.5 second so that server has enough time to close socket.
+		//press PED keys
+		{
+			std::vector<unsigned int> numbers;
+
+			numbers.push_back(0);
+			numbers.push_back(5);
+			numbers.push_back(12);
+			rc = pScsClient->PressPedKeys(numbers, 100, 6000);
+			if(rc != ScsClient::ScsResult::Succeess) {
+				std::cout << ("ConsoleInput::singleLoop failure in pressing PED keys: ") << (int)rc << "\r\n";
+				return false;
+			}
+		}
+		if(isCancelled()) {
+			return false;
+		}
+
+		sleep(500);//sleep 0.5 second so that server has enough time to close socket.
+		//extract smart card 0
+		rc = pScsClient->RemoveSmartCard(0);
+		if(rc != ScsClient::ScsResult::Succeess) {
+			std::cout << ("ConsoleInput::singleLoop failure in removing smart card 0: ") << (int)rc << "\r\n";
+			return false;
+		}
+		if(isCancelled()) {
+			return false;
+		}
+
+		sleep(500);//sleep 0.5 second so that server has enough time to close socket.
+		//swipe smart card
+		rc = pScsClient->SwipeSmartCard(1, 6000);
+		if(rc != ScsClient::ScsResult::Succeess) {
+			std::cout << ("ConsoleInput::singleLoop failure in swiping smart card 1: ") << (int)rc << "\r\n";
+			return false;
+		}
+		if(isCancelled()) {
+			return false;
+		}
+
+		sleep(500);//sleep 0.5 second so that server has enough time to close socket.
+		//press soft key
+		{
+			std::vector<unsigned int> numbers;
+
+			numbers.push_back(0);
+			numbers.push_back(5);
+			numbers.push_back(3);
+			rc = pScsClient->PressSoftKeys(numbers, 100, 6000);
+			if(rc != ScsClient::ScsResult::Succeess) {
+				std::cout << ("ConsoleInput::singleLoop failure in pressing soft keys: ") << (int)rc << "\r\n";
+				return false;
+			}
+		}
+		if(isCancelled()) {
+			return false;
+		}
+
+		sleep(500);//sleep 0.5 second so that server has enough time to close socket.
+		//tap smart card
+		rc = pScsClient->TapSmartCard(2, 6000);
+		if(rc != ScsClient::ScsResult::Succeess) {
+			std::cout << ("ConsoleInput::singleLoop failure in tapping smart card 2: ") << (int)rc << "\r\n";
+			return false;
+		}
+		if(isCancelled()) {
+			return false;
+		}
+
+		sleep(500);//sleep 0.5 second so that server has enough time to close socket.
+		//press ADA keys
+		{
+			std::vector<unsigned int> numbers;
+
+			numbers.push_back(8);
+			numbers.push_back(0);
+			numbers.push_back(7);
+			rc = pScsClient->PressAssistKeys(numbers, 100, 6000);
+			if(rc != ScsClient::ScsResult::Succeess) {
+				std::cout << ("ConsoleInput::singleLoop failure in pressing Assist keys: ") << (int)rc << "\r\n";
+				return false;
+			}
+		}
+		if(isCancelled()) {
+			return false;
+		}
+
+		sleep(500);//sleep 0.5 second so that server has enough time to close socket.
+		//show bar code
+		rc = pScsClient->TapBarcode(3, 6000);
+		if(rc != ScsClient::ScsResult::Succeess) {
+			std::cout << ("ConsoleInput::singleLoop failure in tapping bar code 3: ") << (int)rc << "\r\n";
+			return false;
+		}
+		if(isCancelled()) {
+			return false;
+		}
+
+		sleep(500);//sleep 0.5 second so that server has enough time to close socket.
+		//back to home
+		rc = pScsClient->BackToHome();
+		if(rc != ScsClient::ScsResult::Succeess) {
+			std::cout << ("ConsoleInput::singleLoop failure in back to home: ") << (int)rc << "\r\n";
+			return false;
+		}
+		if(isCancelled()) {
+			return false;
+		}
+
+		sleep(500);//sleep 0.5 second so that server has enough time to close socket.
+
+		//delay and check canceling
+//		for(unsigned int i=0; i<period; i++)
+//		{
+//			sleep(1000);//sleep 1 second
+//			if(isCancelled()) {
+//				return false;
+//			}
+//		}
+		if(isCancelled()) {
+			return false;
+		}
+
+		return true;
+	}
+
 	void runTask()
 	{
 		auto pScsClient = GetScsClientInstance();
@@ -105,10 +250,13 @@ private:
 			std::cout << "failed to connect to Smart Card Switch" << "\r\n";
 		}
 
+		std::cout << help();
+
 		while(1)
 		{
 			if(isCancelled())
 			{
+				std::cout << "existing...\r\n";
 				break;
 			}
 			else
@@ -117,6 +265,9 @@ private:
 
 				char c = getchar();
 				_input.push_back(c);
+				if(c != '\n') {
+					continue;
+				}
 
 				cmd = getConsoleCommand();
 
@@ -330,21 +481,57 @@ private:
 						}
 						break;
 
-//						case 10:
-//						{
-//							json = CommandFactory::CmdPowerOnOpt();
-//						}
-//						break;
-//
-//						case 11:
-//						{
-//							json = CommandFactory::CmdPowerOffOpt();
-//						}
-//						break;
-//
+						case 10:
+						{
+							pScsClient->PowerOnOpt(true);
+						}
+						break;
+
+						case 11:
+						{
+							pScsClient->PowerOnOpt(false);
+						}
+						break;
+
 						case 12:
 						{
 							pScsClient->BackToHome();
+						}
+						break;
+
+						case 13:
+						{
+							pScsClient->PowerOnEthernetSwitch(true);
+						}
+						break;
+
+						case 14:
+						{
+							pScsClient->PowerOnEthernetSwitch(false);
+						}
+						break;
+
+						case 15:
+						{
+							singleLoop(pScsClient);
+						}
+						break;
+
+						case 16:
+						{
+							for(unsigned int counter = 0;; counter++)
+							{
+								if(!singleLoop(pScsClient)) {
+									break;
+								}
+								else {
+									std::cout << "ConsoleInput::runTask succeeded in " << counter << " loops\r\n";
+								}
+
+								if(isCancelled()) {
+									break;
+								}
+							}
 						}
 						break;
 
@@ -354,6 +541,11 @@ private:
 						}
 						break;
 					}
+				}
+				else if (c == '\n')
+				{
+					std::cout << "ConsoleInput::runTask default command\r\n";
+					singleLoop(pScsClient);
 				}
 
 				std::cout << help();

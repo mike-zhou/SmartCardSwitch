@@ -595,6 +595,13 @@ void UserCommandRunner::moveStepper(unsigned int index, unsigned int initialPos,
 void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsigned int fromZ, unsigned int fromW,
 				unsigned int toX, unsigned int toY, unsigned int toZ, unsigned int toW)
 {
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::gateToGate ++++ from (%d, %d, %d, %d) to (%d, %d, %d, %d)",
+				fromX, fromY, fromZ, fromW, toX, toY, toZ, toW);
+		pLogger->LogInfo(buf);
+	}
+
 	if(fromZ >= toZ)//from high to low
 	{
 		if(fromY >= toY)
@@ -632,7 +639,7 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 
 void UserCommandRunner::toHome()
 {
-	pLogger->LogInfo("UserCommandRunner::toHome");
+	pLogger->LogInfo("UserCommandRunner::toHome ++++");
 
 	auto currentPosition = getCurrentPosition();
 
@@ -666,6 +673,8 @@ void UserCommandRunner::toHome()
 
 void UserCommandRunner::toSmartCardGate()
 {
+	pLogger->LogInfo("UserCommandRunner::toSmartCardGate ++++");
+
 	auto currentPosition = getCurrentPosition();
 
 	if(currentPosition == CurrentPosition::Unknown)
@@ -688,6 +697,8 @@ void UserCommandRunner::toSmartCardGate()
 
 void UserCommandRunner::toPedKeyGate()
 {
+	pLogger->LogInfo("UserCommandRunner::toPedKeyGate ++++");
+
 	auto currentPosition = getCurrentPosition();
 
 	if(currentPosition == CurrentPosition::Unknown)
@@ -716,6 +727,8 @@ void UserCommandRunner::toPedKeyGate()
 
 void UserCommandRunner::toSoftKeyGate()
 {
+	pLogger->LogInfo("UserCommandRunner::toSoftKeyGate ++++");
+
 	auto currentPosition = getCurrentPosition();
 
 	if(currentPosition == CurrentPosition::Unknown)
@@ -744,6 +757,8 @@ void UserCommandRunner::toSoftKeyGate()
 
 void UserCommandRunner::toAssistKeyGate()
 {
+	pLogger->LogInfo("UserCommandRunner::toAssistKeyGate ++++");
+
 	auto currentPosition = getCurrentPosition();
 
 	if(currentPosition == CurrentPosition::Unknown)
@@ -772,6 +787,8 @@ void UserCommandRunner::toAssistKeyGate()
 
 void UserCommandRunner::toTouchScreenGate()
 {
+	pLogger->LogInfo("UserCommandRunner::toTouchScreenGate ++++");
+
 	auto currentPosition = getCurrentPosition();
 
 	if(currentPosition == CurrentPosition::Unknown)
@@ -800,6 +817,8 @@ void UserCommandRunner::toTouchScreenGate()
 
 void UserCommandRunner::toSmartCardReaderGate()
 {
+	pLogger->LogInfo("UserCommandRunner::toSmartCardReaderGate ++++");
+
 	auto currentPosition = getCurrentPosition();
 
 	if(currentPosition == CurrentPosition::Unknown)
@@ -828,6 +847,8 @@ void UserCommandRunner::toSmartCardReaderGate()
 
 void UserCommandRunner::toContactlessReaderGate()
 {
+	pLogger->LogInfo("UserCommandRunner::toContactlessReaderGate ++++");
+
 	auto currentPosition = getCurrentPosition();
 
 	if(currentPosition == CurrentPosition::Unknown)
@@ -856,6 +877,8 @@ void UserCommandRunner::toContactlessReaderGate()
 
 void UserCommandRunner::toBarcodeReaderGate()
 {
+	pLogger->LogInfo("UserCommandRunner::toBarcodeReaderGate ++++");
+
 	auto currentPosition = getCurrentPosition();
 
 	if(currentPosition == CurrentPosition::Unknown)
@@ -889,6 +912,12 @@ void UserCommandRunner::gate_smartCard_withoutCard(unsigned int cardNumber)
 	int finalX, finalY, finalZ, finalW;
 	long offset;
 
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::gate_smartCard_withoutCard ++++ cardNumber %d", cardNumber);
+		pLogger->LogInfo(buf);
+	}
+
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, curX, curY, curZ, curW);
 	if(rc == false)
 	{
@@ -921,6 +950,12 @@ void UserCommandRunner::smartCard_gate_withCard(unsigned int cardNumber)
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::smartCard_gate_withCard ++++ cardNumber %d", cardNumber);
+		pLogger->LogInfo(buf);
+	}
+
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
 		throwError("UserCommandRunner::smartCard_gate_withCard failed to retrieve smart card gate");
@@ -952,6 +987,12 @@ void UserCommandRunner::gate_smartCardReader_withCard()
 	long decelerationBuffer;
 	long decelerationBufferIncrement;
 	long insertExtra;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::gate_smartCardReader_withCard ++++ ");
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
@@ -996,6 +1037,12 @@ void UserCommandRunner::smartCardReader_gate_withCard()
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::smartCardReader_gate_withCard ++++ ");
+		pLogger->LogInfo(buf);
+	}
+
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
 		throwError("UserCommandRunner::smartCardReader_gate_withCard failed to retrieve smart card reader");
@@ -1013,6 +1060,12 @@ void UserCommandRunner::smartCardReader_gate_withoutCard()
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 	long fetchOffset;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::smartCardReader_gate_withoutCard ++++ ");
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
@@ -1113,6 +1166,12 @@ void UserCommandRunner::gate_smartCardReader_withoutCard()
 	int finalX, finalY, finalZ, finalW;
 	long offset;
 
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::gate_smartCardReader_withoutCard ++++ ");
+		pLogger->LogInfo(buf);
+	}
+
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
 		throwError("UserCommandRunner::gate_smartCardReader_withoutCard failed to retrieve smart card reader");
@@ -1139,13 +1198,18 @@ void UserCommandRunner::gate_smartCard_withCard(unsigned int cardNumber)
 	long slowlyPlaceEnd;
 	long releaseOffset;
 
-
 	long lowClks;
 	long highClks;
 	long accelerationBuffer;
 	long accelerationBufferDecrement;
 	long decelerationBuffer;
 	long decelerationBufferIncrement;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::gate_smartCard_withCard ++++ cardNumber %d", cardNumber);
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCard, finalX, finalY, finalZ, finalW, _userCommand.smartCardNumber);
 	if(rc == false) {
@@ -1195,6 +1259,12 @@ void UserCommandRunner::smartCard_gate_withoutCard(unsigned int cardNumber)
 	int finalX, finalY, finalZ, finalW;
 	long fetchOffset;
 	long releaseOffset;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::smartCard_gate_withoutCard ++++ cardNumber %d", cardNumber);
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCard, curX, curY, curZ, curW, _userCommand.smartCardNumber);
 	if(rc == false) {
@@ -1274,6 +1344,12 @@ void UserCommandRunner::gate_contactlessReader()
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::gate_contactlessReader ++++ ");
+		pLogger->LogInfo(buf);
+	}
+
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::ContactlessReader, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
 		throwError("UserCommandRunner::gate_contactlessReader failed to retrieve contactless reader");
@@ -1290,6 +1366,12 @@ void UserCommandRunner::contactlessReader_gate()
 {
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::contactlessReader_gate ++++ ");
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::ContactlessReaderGate, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
@@ -1375,12 +1457,21 @@ void UserCommandRunner::parseUserCmdKeys(Poco::DynamicStruct& ds)
 void UserCommandRunner::parseUserCmdDcm(Poco::DynamicStruct& ds)
 {
 	_userCommand.dcmIndex = ds["index"];
+	if(_userCommand.dcmIndex >= DCM_AMOUNT) {
+		throwError("UserCommandRunner::parseUserCmdDcm dcm index out of range: " + std::to_string(_userCommand.dcmIndex));
+	}
 }
 
 void UserCommandRunner::barcodeReader_gate()
 {
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::barcodeReader_gate ++++ ");
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReaderGate, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
@@ -1398,6 +1489,12 @@ void UserCommandRunner::gate_barcodeReader()
 {
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::gate_barcodeReader ++++ ");
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReader, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
@@ -1458,6 +1555,12 @@ void UserCommandRunner::pedKey_gate(unsigned int keyNumber)
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::pedKey_gate ++++ keyNumber %d", keyNumber);
+		pLogger->LogInfo(buf);
+	}
+
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKeyGate, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
 		throwError("UserCommandRunner::gate_pedKey failed to retrieve ped key gate");
@@ -1476,6 +1579,12 @@ void UserCommandRunner::pedKey_pedKey(unsigned int keyNumberFrom, unsigned int k
 {
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::pedKey_pedKey ++++ from %d to %d", keyNumberFrom, keyNumberTo);
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKey, finalX, finalY, finalZ, finalW, keyNumberTo);
 	if(rc == false) {
@@ -1525,6 +1634,12 @@ void UserCommandRunner::gate_pedKey(unsigned int keyNumber)
 {
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::gate_pedKey ++++ keyNumber %d", keyNumber);
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKey, finalX, finalY, finalZ, finalW, keyNumber);
 	if(rc == false) {
@@ -1604,6 +1719,12 @@ void UserCommandRunner::softKey_gate(unsigned int keyNumber)
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::softKey_gate ++++ keyNumber %d", keyNumber);
+		pLogger->LogInfo(buf);
+	}
+
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SoftKeyGate, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
 		throwError("UserCommandRunner::softKey_gate failed to retrieve soft key gate");
@@ -1622,6 +1743,12 @@ void UserCommandRunner::softKey_softKey(unsigned int keyNumberFrom, unsigned int
 {
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::softKey_softKey ++++ from %d to %d", keyNumberFrom, keyNumberTo);
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SoftKey, finalX, finalY, finalZ, finalW, keyNumberTo);
 	if(rc == false) {
@@ -1672,6 +1799,12 @@ void UserCommandRunner::gate_softKey(unsigned int keyNumber)
 {
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::gate_softKey ++++ keyNumber %d", keyNumber);
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SoftKey, finalX, finalY, finalZ, finalW, keyNumber);
 	if(rc == false) {
@@ -1750,6 +1883,12 @@ void UserCommandRunner::assistKey_gate(unsigned int keyNumber)
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::assistKey_gate ++++ keyNumber %d", keyNumber);
+		pLogger->LogInfo(buf);
+	}
+
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKeyGate, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
 		throwError("UserCommandRunner::assistKey_gate failed to retrieve assist key gate");
@@ -1768,6 +1907,12 @@ void UserCommandRunner::assistKey_assistKey(unsigned int keyNumberFrom, unsigned
 {
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::assistKey_assistKey ++++ from %d to %d", keyNumberFrom, keyNumberTo);
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKey, finalX, finalY, finalZ, finalW, keyNumberTo);
 	if(rc == false) {
@@ -1818,6 +1963,12 @@ void UserCommandRunner::gate_assistKey(unsigned int keyNumber)
 {
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::gate_assistKey ++++ keyNumber %d", keyNumber);
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKey, finalX, finalY, finalZ, finalW, keyNumber);
 	if(rc == false) {
@@ -1896,6 +2047,12 @@ void UserCommandRunner::touchScreenKey_gate(unsigned int keyNumber)
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
 
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::touchScreenKey_gate ++++ keyNumber %d", keyNumber);
+		pLogger->LogInfo(buf);
+	}
+
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::TouchScreenKeyGate, finalX, finalY, finalZ, finalW);
 	if(rc == false) {
 		throwError("UserCommandRunner::touchScreenKey_gate failed to retrieve touch screen key gate");
@@ -1914,6 +2071,12 @@ void UserCommandRunner::touchScreenKey_touchScreenKey(unsigned int keyNumberFrom
 {
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::touchScreenKey_touchScreenKey ++++ from %d to %d", keyNumberFrom, keyNumberTo);
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::TouchScreenKey, finalX, finalY, finalZ, finalW, keyNumberTo);
 	if(rc == false) {
@@ -1964,6 +2127,12 @@ void UserCommandRunner::gate_touchScreenKey(unsigned int keyNumber)
 {
 	int curX, curY, curZ, curW;
 	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::gate_touchScreenKey ++++ keyNumber %d", keyNumber);
+		pLogger->LogInfo(buf);
+	}
 
 	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::TouchScreenKey, finalX, finalY, finalZ, finalW, keyNumber);
 	if(rc == false) {
@@ -2353,6 +2522,50 @@ void UserCommandRunner::OnOptQueryPower(CommandId key, bool bSuccess, bool bPowe
 	else {
 		pLogger->LogError("UserCommandRunner::OnOptQueryPower failure command Id: " + std::to_string(_consoleCommand.cmdId));
 		//_consoleCommand.resultOptIsPowered = false;
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnDcmPowerOn(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnDcmPowerOn successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnDcmPowerOn failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnDcmPowerOff(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnDcmPowerOff successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnDcmPowerOff failure command Id: " + std::to_string(_consoleCommand.cmdId));
 		_consoleCommand.state = CommandState::Failed;
 	}
 }

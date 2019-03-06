@@ -99,6 +99,26 @@ public:
 		bool bFuseOn;
 	};
 
+	struct ReplyOptPowerOn: ReplyCommon
+	{
+		//empty
+	};
+
+	struct ReplyOptPowerOff: ReplyCommon
+	{
+		//empty
+	};
+
+	struct ReplyDcmPowerOn: ReplyCommon
+	{
+		unsigned int index;
+	};
+
+	struct ReplyDcmPowerOff: ReplyCommon
+	{
+		unsigned int index;
+	};
+
 	struct ReplyBdcsPowerOn: ReplyCommon
 	{
 		//empty
@@ -291,6 +311,10 @@ public:
 	std::shared_ptr<ReplyTranslator::ReplyDeviceDelay> ToDeviceDelay();
 	std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> ToDeviceQueryPower();
 	std::shared_ptr<ReplyTranslator::ReplyDeviceQueryFuse> ToDeviceQueryFuse();
+	std::shared_ptr<ReplyTranslator::ReplyOptPowerOn> ToOptPowerOn();
+	std::shared_ptr<ReplyTranslator::ReplyOptPowerOff> ToOptPowerOff();
+	std::shared_ptr<ReplyTranslator::ReplyDcmPowerOn> ToDcmPowerOn();
+	std::shared_ptr<ReplyTranslator::ReplyDcmPowerOff> ToDcmPowerOff();
 	std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOn> ToBdcsPowerOn();
 	std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOff> ToBdcsPowerOff();
 	std::shared_ptr<ReplyTranslator::ReplyBdcsQueryPower> ToBdcsQueryPower();
@@ -336,6 +360,10 @@ private:
 	const std::string strCommandDeviceDelay = "device delay";
 	const std::string strCommandDeviceQueryPower = "device query power";
 	const std::string strCommandDeviceQueryFuse = "device query fuse";
+	const std::string strCommandOptPowerOn = "opt power on";
+	const std::string strCommandOptPowerOff = "opt power off";
+	const std::string strCommandDcmPowerOn = "dcm power on";
+	const std::string strCommandDcmPowerOff = "dcm power off";
 	const std::string strCommandBdcsPowerOn = "bdcs power on";
 	const std::string strCommandBdcsPowerOff = "bdcs power off";
 	const std::string strCommandBdcsQueryPower = "bdcs query power";
@@ -373,6 +401,10 @@ private:
 	std::shared_ptr<ReplyTranslator::ReplyDeviceDelay> _deviceDelayPtr;
 	std::shared_ptr<ReplyTranslator::ReplyDeviceQueryPower> _deviceQueryPowerPtr;
 	std::shared_ptr<ReplyTranslator::ReplyDeviceQueryFuse> _deviceQueryFusePtr;
+	std::shared_ptr<ReplyTranslator::ReplyOptPowerOn> _optPowerOnPtr;
+	std::shared_ptr<ReplyTranslator::ReplyOptPowerOff> _optPowerOffPtr;
+	std::shared_ptr<ReplyTranslator::ReplyDcmPowerOn> _dcmPowerOnPtr;
+	std::shared_ptr<ReplyTranslator::ReplyDcmPowerOff> _dcmPowerOffPtr;
 	std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOn> _bdcsPowerOnPtr;
 	std::shared_ptr<ReplyTranslator::ReplyBdcsPowerOff> _bdcsPowerOffPtr;
 	std::shared_ptr<ReplyTranslator::ReplyBdcsQueryPower> _bdcsQueryPowerPtr;

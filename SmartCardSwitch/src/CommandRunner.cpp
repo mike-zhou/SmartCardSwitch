@@ -1579,6 +1579,12 @@ void CommandRunner::processFeedbacks()
 			}
 			break;
 
+			case ReplyTranslator::ReplyType::OptPowerOn:
+			{
+				auto replyPtr = translator.ToOptPowerOn();
+			}
+			break;
+
 			case ReplyTranslator::ReplyType::BdcsPowerOn:
 			{
 				auto replyPtr = translator.ToBdcsPowerOn();

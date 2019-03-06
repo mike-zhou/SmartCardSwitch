@@ -37,6 +37,8 @@ public:
 		Failure
 	};
 
+	virtual ~ScsClient() {}
+
 	/**
 	 * Initialize ScsClient object with path of log folder
 	 *

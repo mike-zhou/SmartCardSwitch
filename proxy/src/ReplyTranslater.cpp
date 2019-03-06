@@ -199,12 +199,72 @@ std::string ReplyTranslater::deviceDelay(Poco::JSON::Object::Ptr& replyPtr)
 
 std::string ReplyTranslater::optPowerOn(Poco::JSON::Object::Ptr& replyPtr)
 {
+	std::string reply;
+	std::string strCmdId;
+	Poco::DynamicStruct ds = *replyPtr;
+	long commandId;
+	std::string error;
 
+	auto size = ds["params"].size();
+	if(size != 1) {
+		throw Poco::JSON::JSONException("ReplyTranslater::optPowerOn wrong parameter amount: " + std::to_string(size));
+	}
+
+	strCmdId = ds["params"][size - 1].toString();
+	commandId = getHexValue(strCmdId);
+
+	if (replyPtr->has("error")) {
+		error = ds["error"].toString();
+	}
+
+	reply = "{";
+	reply = reply + "\"command\":\"" + strCommandOptPowerOn + "\",";
+	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	if(!error.empty()) {
+		reply = reply + ",\"error\":\"" + error + "\"";
+		//"\"error\":\"invalid command\""
+		//"\"error\":\"too many parameters\""
+		//"\"error\":\"unknown command\""
+		//"\"error\":\"wrong parameter amount\""
+	}
+	reply += "}";
+
+	return reply;
 }
 
 std::string ReplyTranslater::optPowerOff(Poco::JSON::Object::Ptr& replyPtr)
 {
+	std::string reply;
+	std::string strCmdId;
+	Poco::DynamicStruct ds = *replyPtr;
+	long commandId;
+	std::string error;
 
+	auto size = ds["params"].size();
+	if(size != 1) {
+		throw Poco::JSON::JSONException("ReplyTranslater::optPowerOff wrong parameter amount: " + std::to_string(size));
+	}
+
+	strCmdId = ds["params"][size - 1].toString();
+	commandId = getHexValue(strCmdId);
+
+	if (replyPtr->has("error")) {
+		error = ds["error"].toString();
+	}
+
+	reply = "{";
+	reply = reply + "\"command\":\"" + strCommandOptPowerOff + "\",";
+	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	if(!error.empty()) {
+		reply = reply + ",\"error\":\"" + error + "\"";
+		//"\"error\":\"invalid command\""
+		//"\"error\":\"too many parameters\""
+		//"\"error\":\"unknown command\""
+		//"\"error\":\"wrong parameter amount\""
+	}
+	reply += "}";
+
+	return reply;
 }
 
 std::string ReplyTranslater::optQueryPower(Poco::JSON::Object::Ptr& replyPtr)
@@ -214,12 +274,82 @@ std::string ReplyTranslater::optQueryPower(Poco::JSON::Object::Ptr& replyPtr)
 
 std::string ReplyTranslater::dcmPowerOn(Poco::JSON::Object::Ptr& replyPtr)
 {
+	std::string reply;
+	std::string strCmdId;
+	std::string strIndex;
+	Poco::DynamicStruct ds = *replyPtr;
+	long index;
+	long commandId;
+	std::string error;
 
+	auto size = ds["params"].size();
+	if(size != 2) {
+		throw Poco::JSON::JSONException("ReplyTranslater::dcmPowerOn wrong parameter amount: " + std::to_string(size));
+	}
+
+	strCmdId = ds["params"][size - 1].toString();
+	commandId = getHexValue(strCmdId);
+	strIndex = ds["params"][0].toString();
+	index = getHexValue(strIndex);
+
+	if (replyPtr->has("error")) {
+		error = ds["error"].toString();
+	}
+
+	reply = "{";
+	reply = reply + "\"command\":\"" + strCommandDcmPowerOn + "\",";
+	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	reply = reply + ",\"index\":" + std::to_string(index);
+	if(!error.empty()) {
+		reply = reply + ",\"error\":\"" + error + "\"";
+		//"\"error\":\"invalid command\""
+		//"\"error\":\"too many parameters\""
+		//"\"error\":\"unknown command\""
+		//"\"error\":\"wrong parameter amount\""
+	}
+	reply += "}";
+
+	return reply;
 }
 
 std::string ReplyTranslater::dcmPowerOff(Poco::JSON::Object::Ptr& replyPtr)
 {
+	std::string reply;
+	std::string strCmdId;
+	std::string strIndex;
+	Poco::DynamicStruct ds = *replyPtr;
+	long index;
+	long commandId;
+	std::string error;
 
+	auto size = ds["params"].size();
+	if(size != 2) {
+		throw Poco::JSON::JSONException("ReplyTranslater::dcmPowerOff wrong parameter amount: " + std::to_string(size));
+	}
+
+	strCmdId = ds["params"][size - 1].toString();
+	commandId = getHexValue(strCmdId);
+	strIndex = ds["params"][0].toString();
+	index = getHexValue(strIndex);
+
+	if (replyPtr->has("error")) {
+		error = ds["error"].toString();
+	}
+
+	reply = "{";
+	reply = reply + "\"command\":\"" + strCommandDcmPowerOff + "\",";
+	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	reply = reply + ",\"index\":" + std::to_string(index);
+	if(!error.empty()) {
+		reply = reply + ",\"error\":\"" + error + "\"";
+		//"\"error\":\"invalid command\""
+		//"\"error\":\"too many parameters\""
+		//"\"error\":\"unknown command\""
+		//"\"error\":\"wrong parameter amount\""
+	}
+	reply += "}";
+
+	return reply;
 }
 
 std::string ReplyTranslater::dcmQueryPower(Poco::JSON::Object::Ptr& replyPtr)
@@ -1383,6 +1513,14 @@ std::string ReplyTranslater::formatCmdReply(Poco::JSON::Object::Ptr& replyPtr)
 		reply = deviceDelay(replyPtr);
 		break;
 
+	case 10:
+		reply = optPowerOn(replyPtr);
+		break;
+
+	case 11:
+		reply = optPowerOff(replyPtr);
+		break;
+
 	case 20:
 		reply = steppersPowerOn(replyPtr);
 		break;
@@ -1393,6 +1531,14 @@ std::string ReplyTranslater::formatCmdReply(Poco::JSON::Object::Ptr& replyPtr)
 
 	case 22:
 		reply = steppersQueryPower(replyPtr);
+		break;
+
+	case 30:
+		reply = dcmPowerOn(replyPtr);
+		break;
+
+	case 31:
+		reply = dcmPowerOff(replyPtr);
 		break;
 
 	case 40:

@@ -157,8 +157,12 @@ void CDeviceManager::checkDevices()
 					//c_iflag
 					tios.c_iflag &= ~ICRNL;
 					tios.c_iflag &= ~IXON;
+					tios.c_iflag |= IGNPAR;
 					//c_oflag
 					tios.c_oflag &= ~ONLCR;
+					tios.c_oflag &= ~OPOST;
+					//c_cflag
+					tios.c_cflag &= ~CLOCAL;
 					//c_lflag
 					tios.c_lflag &= ~ISIG;
 					tios.c_lflag &= ~ICANON;
@@ -168,6 +172,9 @@ void CDeviceManager::checkDevices()
 					tios.c_lflag &= ~ECHOK;
 					tios.c_lflag &= ~ECHOCTL;
 					tios.c_lflag &= ~ECHOKE;
+					tios.c_lflag &= ~FLUSHO;
+					tios.c_lflag &= ~EXTPROC;
+
 					rc = tcsetattr(fd, TCSANOW, &tios);
 					if(0 != rc)
 					{
