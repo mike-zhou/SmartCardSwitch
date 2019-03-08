@@ -328,6 +328,13 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 
 	//read data from device
 	amount =  read(device.fd, buffer, BUFFER_SIZE);
+	auto errorNumber = errno;
+	if(amount == 0) {
+		pLogger->LogError("CDeviceManager::onDeviceCanBeRead nothing is read, errno: " + std::to_string(errorNumber));
+	}
+	else if(amount < 0) {
+		pLogger->LogError("CDeviceManager::onDeviceCanBeRead error in device, errno: " + std::to_string(errorNumber));
+	}
 	pLogger->LogDebug("CDeviceManager::onDeviceCanBeRead " + std::to_string(amount) + " bytes from " + device.fileName);
 
 	if(device.state < DeviceState::RECEIVING_NAME) {
@@ -519,9 +526,9 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 	}
 }
 
-void CDeviceManager::onDeviceError(struct Device& device)
+void CDeviceManager::onDeviceError(struct Device& device, int errorNumber)
 {
-	pLogger->LogError("CDeviceManager device error: " + device.fileName);
+	pLogger->LogError("CDeviceManager device error: " + device.fileName + ", errno: " + std::to_string(errorNumber));
 	device.state = DeviceState::ERROR;
 }
 
@@ -546,6 +553,7 @@ void CDeviceManager::pollDevices()
 		fdVector.push_back(fd);
 	}
 	auto rc = poll(fdVector.data(), fdVector.size(), 0);
+	auto errorNumber = errno;
 	if(rc > 0)
 	{
 		for(size_t i=0; i<_devices.size(); i++)
@@ -557,7 +565,7 @@ void CDeviceManager::pollDevices()
 				onDeviceCanBeWritten(_devices[i]);
 			}
 			if(events & POLLERR) {
-				onDeviceError(_devices[i]);
+				onDeviceError(_devices[i], errorNumber);
 			}
 		}
 	}
@@ -575,6 +583,7 @@ void CDeviceManager::pollDevices()
 	}
 
 	rc = poll(fdVector.data(), fdVector.size(), 10);
+	errorNumber = errno;
 	if(rc > 0)
 	{
 		for(size_t i=0; i<_devices.size(); i++)
@@ -586,7 +595,7 @@ void CDeviceManager::pollDevices()
 				onDeviceCanBeRead(_devices[i]);
 			}
 			if(events & POLLERR) {
-				onDeviceError(_devices[i]);
+				onDeviceError(_devices[i], errorNumber);
 			}
 		}
 	}

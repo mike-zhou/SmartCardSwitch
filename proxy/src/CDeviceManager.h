@@ -84,7 +84,7 @@ private:
 	void onReply(struct Device& device, const std::string& reply);
 	void onDeviceCanBeRead(struct Device& device);
 	void onDeviceCanBeWritten(struct Device& device);
-	void onDeviceError(struct Device& device);
+	void onDeviceError(struct Device& device, int errorNumber);
 	void pollDevices();
 
 	void enqueueCommand(struct Device& device, const char * pCommand);
