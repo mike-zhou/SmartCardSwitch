@@ -1,0 +1,19 @@
+.coordinateItem {
+    width: 200px;
+    text-align: left
+}
+
+.functionZone {
+    border-style: solid;
+    border-width: 1px;
+    border-color: blue;
+    border-radius: 5px;
+}
+
+.functionZone:hover {
+    border-style: solid;
+    border-width: 1px;
+    border-color: blue;
+    border-radius: 5px;
+    background-color: bisque;
+}
