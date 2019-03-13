@@ -146,7 +146,7 @@ void CDeviceManager::checkDevices()
 						close(fd);
 						continue;
 					}
-					rc = cfsetspeed(&tios, B1152000);
+					rc = cfsetspeed(&tios, B1152000); //intentionally use a larger baudrate, hoping that more buffer can be allocated
 					if(0 != rc)
 					{
 						auto e = errno;
