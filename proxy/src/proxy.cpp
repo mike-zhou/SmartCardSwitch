@@ -15,6 +15,7 @@
 #include "CSocketManager.h"
 #include "CListener.h"
 #include "ProxyLogger.h"
+#include "CDeviceMonitor.h"
 
 
 using Poco::Util::Application;
@@ -92,6 +93,7 @@ protected:
 			std::string logFile;
 			std::string logFileSize;
 			std::string logFileAmount;
+			std::string monitorFile;
 
 			//use the designated configuration if it exist
 			if(args.size() > 0)
@@ -121,6 +123,8 @@ protected:
 				logFile = config().getString("log_file_name", "proxyLog");
 				logFileSize = config().getString("log_file_size", "1M");
 				logFileAmount = config().getString("log_file_amount", "10");
+				//monitorFile
+				monitorFile = config().getString("monitor_device_file", std::string());
 			}
 			catch(Poco::NotFoundException& e)
 			{
@@ -152,9 +156,12 @@ protected:
 			CListener * pListener = new CListener(pSocketManager);
 			pListener->Bind(serverAddress);
 
+			CDeviceMonitor * pMonitor = new CDeviceMonitor(monitorFile);
+
 			tm.start(pDeviceManager);
 			tm.start(pSocketManager);
 			tm.start(pListener);
+			tm.start(pMonitor);
 
 			pDeviceManager->StartMonitoringDevices();
 

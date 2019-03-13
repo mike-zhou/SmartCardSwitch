@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/CDeviceManager.cpp \
+../src/CDeviceMonitor.cpp \
 ../src/CListener.cpp \
 ../src/CSocketManager.cpp \
 ../src/CommandTranslater.cpp \
@@ -15,6 +16,7 @@ CPP_SRCS += \
 
 OBJS += \
 ./src/CDeviceManager.o \
+./src/CDeviceMonitor.o \
 ./src/CListener.o \
 ./src/CSocketManager.o \
 ./src/CommandTranslater.o \
@@ -25,6 +27,7 @@ OBJS += \
 
 CPP_DEPS += \
 ./src/CDeviceManager.d \
+./src/CDeviceMonitor.d \
 ./src/CListener.d \
 ./src/CSocketManager.d \
 ./src/CommandTranslater.d \
