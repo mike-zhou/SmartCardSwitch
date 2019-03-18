@@ -49,7 +49,68 @@ private:
 	const char * COMMAND_QUERY_NAME = "C 1 0";
 	const char COMMAND_TERMINATER = 0x0D; //carriage return
 
+	//definitions for data exchange
+	static const int PACKET_SIZE  = 64;
+	static const unsigned char DATA_PACKET_TAG = 0xDD;
+	static const unsigned char ACK_PACKET_TAG = 0xAA;
+	const unsigned long DATA_INPUT_TIMEOUT = 20000; //20,000 microseconds
+	const unsigned long DATA_ACK_TIMEOUT = 50000; //50,000 microseconds
+	static const unsigned char INVALID_PACKET_ID = 0xFF;
+	static const unsigned char INITAL_PACKET_ID = 0; // this id is used only for the first packet after app starts.
+
 	bool _startMonitoringDevices;
+
+	enum InputStageState
+	{
+		INPUT_IDLE = 0, //ready for incoming packet
+		INPUT_RECEIVING, // is receiving a packet
+		INPUT_ACKNOWLEDGING, // the received data packet is to be acknowledged.
+		INPUT_ACKNOWLEDGING_WHILE_RECEIVING // the received data packet is to be acknowledged, and is receiving a new packet
+	};
+
+	struct DataInputStage
+	{
+		unsigned char buffer[PACKET_SIZE];
+		InputStageState state;
+		unsigned int amount;
+		Poco::Timestamp timeStamp;
+		unsigned char previousId;
+
+		DataInputStage();
+	};
+
+	enum OutputStageState
+	{
+		OUTPUT_IDLE = 0, // ready for packet sending
+		OUTPUT_SENDING, // is sending a packet
+		OUTPUT_WAITING_ACK, // is waiting for acknowledgment
+		OUTPUT_WAITING_ACK_WHILE_SENDING // is waiting for acknowledgment, and is sending an acknowledgment
+	};
+
+	struct DataOutputStage
+	{
+		DataOutputStage();
+		void IncreasePacketId();
+		void OnAcknowledgment(unsigned char packetId);
+		//return true if ACK packet can be sent
+		//return false if ACK packet cannot be sent
+		bool SendAcknowledgment(unsigned char packetId);
+		//if possible, pop data from queue and sent it.
+		void SendData(std::deque<char>& dataQueue);
+
+		unsigned char dataPacket[PACKET_SIZE];
+		unsigned char buffer[PACKET_SIZE];
+		OutputStageState state;
+		unsigned int sendingIndex;
+		Poco::Timestamp timeStamp;
+		unsigned char packetId;
+	};
+
+	struct DataExchange
+	{
+		DataInputStage inputStage;
+		DataOutputStage outputStage;
+	};
 
 	enum DeviceState
 	{
@@ -74,6 +135,8 @@ private:
 		std::string deviceName;
 		std::deque<char> outgoing;
 		std::deque<char> incoming;
+
+		DataExchange dataExchange;
 	};
 
 	std::vector<struct Device> _devices;

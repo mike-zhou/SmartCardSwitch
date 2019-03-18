@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include "checksum.h"
 
 using Poco::DirectoryIterator;
 using Poco::File;
@@ -445,6 +446,21 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 	int amount;
 	char c;
 
+	if(device.dataExchange.outputStage.state == OUTPUT_WAITING_ACK)
+	{
+		auto & stage = device.dataExchange.outputStage;
+
+		if(stage.timeStamp.elapsed() >= DATA_ACK_TIMEOUT)
+		{
+			//no acknowledgment in time, re-send this packet.
+			for(unsigned int i=0; i<PACKET_SIZE; i++) {
+				stage.buffer[i] = stage.dataPacket[i];
+			}
+			stage.state = OUTPUT_SENDING;
+			stage.sendingIndex = 0;
+		}
+	}
+
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	switch(device.state)
@@ -491,38 +507,91 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 
 	if(device.outgoing.size() > 0)
 	{
-		char buffer[512];
-		std::string binaryLog;
-		std::string charLog;
+		//something needs to be sent out
+		device.dataExchange.outputStage.SendData(device.outgoing);
+	}
 
-		sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten write %ld bytes to device file: %s", device.outgoing.size(), device.fileName.c_str());
-		pLogger->LogDebug(buffer);
-
-		//send command to device
-		for(;;)
+	// send data
+	switch(device.dataExchange.outputStage.state)
+	{
+		case OUTPUT_SENDING:
+		case OUTPUT_WAITING_ACK_WHILE_SENDING:
 		{
-			if(device.outgoing.empty()) {
-				break;
-			}
+			auto& stage = device.dataExchange.outputStage;
 
-			//write a byte to device
-			c = device.outgoing.front();
-			amount = write(device.fd, &c, 1);
+			unsigned char * pData = stage.buffer + stage.sendingIndex;
+			unsigned int length = PACKET_SIZE - stage.sendingIndex;
+
+			auto amount = write(device.fd, pData, length);
 			if(amount > 0) {
-				//byte is written
-				sprintf(buffer, " %02x" ,c);
-				binaryLog = binaryLog + buffer;
-				charLog.push_back(c);
-
-				device.outgoing.pop_front();
+				stage.sendingIndex += amount;
+				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten wrote" + std::to_string(amount) + " bytes to " + device.fileName);
 			}
 			else {
-				//nothing is written
-				break;
+				auto errorNumber = errno;
+				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten failed in writing " + device.fileName + ", errno: " + std::to_string(errorNumber));
 			}
 		}
-		pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten binary content:" + binaryLog);
-		pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten char content: " + charLog);
+		break;
+
+		default:
+			break;
+	}
+
+	//state
+	if(device.dataExchange.outputStage.state == OUTPUT_SENDING)
+	{
+		auto& stage = device.dataExchange.outputStage;
+
+		if(stage.sendingIndex == PACKET_SIZE)
+		{
+			if(stage.buffer[0] == DATA_PACKET_TAG)
+			{
+				stage.state = OUTPUT_WAITING_ACK;
+				stage.timeStamp.update();
+
+				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten data packet was sent with id: " + std::to_string(stage.buffer[1]));
+			}
+			else if(stage.buffer[0] == ACK_PACKET_TAG){
+				stage.state = OUTPUT_IDLE;
+				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten acknowledged packet id: " + std::to_string(stage.buffer[1]));
+			}
+			else {
+				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten packet of unknown type was sent");
+				stage.state = OUTPUT_IDLE;
+			}
+		}
+		else if(stage.sendingIndex > PACKET_SIZE)
+		{
+			pLogger->LogError("CDeviceManager::onDeviceCanBeWritten extra data was sent: " + std::to_string(stage.sendingIndex + 1));
+			stage.state = OUTPUT_IDLE;
+		}
+	}
+	else if(device.dataExchange.outputStage.state == OUTPUT_WAITING_ACK_WHILE_SENDING)
+	{
+		auto& stage = device.dataExchange.outputStage;
+
+		if(stage.sendingIndex == PACKET_SIZE)
+		{
+			if(stage.buffer[0] == DATA_PACKET_TAG)
+			{
+				//no data packet can be sent while waiting for acknowledgment
+				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten wrong data packet was sent to: " + device.deviceName);
+				stage.state = OUTPUT_IDLE;
+			}
+			else if(stage.buffer[0] == ACK_PACKET_TAG){
+				stage.state = OUTPUT_WAITING_ACK; //continue waiting for acknowledgment.
+			}
+			else {
+				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten packet of unknown type was sent");
+				stage.state = OUTPUT_IDLE;
+			}
+		}
+		else if(stage.sendingIndex > PACKET_SIZE)
+		{
+			pLogger->LogError("CDeviceManager::onDeviceCanBeWritten extra data was sent: " + std::to_string(stage.sendingIndex + 1));
+			stage.state = OUTPUT_IDLE;
+		}
 	}
 }
 
@@ -531,8 +600,6 @@ void CDeviceManager::onDeviceError(struct Device& device, int errorNumber)
 	pLogger->LogError("CDeviceManager device error: " + device.fileName + ", errno: " + std::to_string(errorNumber));
 	device.state = DeviceState::ERROR;
 }
-
-
 
 void CDeviceManager::pollDevices()
 {
@@ -657,3 +724,129 @@ void CDeviceManager::runTask()
 
 	pLogger->LogInfo("CDeviceManager::runTask exited");
 }
+
+CDeviceManager::DataInputStage::DataInputStage()
+{
+	state = INPUT_IDLE;
+	amount = 0;
+	previousId = INVALID_PACKET_ID;
+}
+
+CDeviceManager::DataOutputStage::DataOutputStage()
+{
+	state = OUTPUT_IDLE;
+	sendingIndex = 0;
+	packetId = INITAL_PACKET_ID;
+}
+
+void CDeviceManager::DataOutputStage::IncreasePacketId()
+{
+	packetId++;
+
+	if(packetId == INVALID_PACKET_ID) {
+		packetId++; //jump over the invalid packet id
+	}
+	if(packetId == INITAL_PACKET_ID) {
+		packetId++; //jump over the intial packet id
+	}
+}
+
+void CDeviceManager::DataOutputStage::OnAcknowledgment(unsigned char packetId)
+{
+	if(state == OUTPUT_WAITING_ACK)
+	{
+		if(dataPacket[1] == packetId) {
+			state = OUTPUT_IDLE;
+			pLogger->LogInfo("CDeviceManager::DataOutputStage::OnNotify " + std::to_string(packetId));
+		}
+	}
+	else if(state == OUTPUT_WAITING_ACK_WHILE_SENDING)
+	{
+		if(dataPacket[1] == packetId) {
+			state = OUTPUT_SENDING;
+			pLogger->LogInfo("CDeviceManager::DataOutputStage::OnNotify " + std::to_string(packetId));
+		}
+	}
+}
+
+bool CDeviceManager::DataOutputStage::SendAcknowledgment(unsigned char packetId)
+{
+	uint16_t crc;
+
+	if((state != OUTPUT_IDLE) && (state != OUTPUT_WAITING_ACK)) {
+		return false; //cannot send ack
+	}
+
+	//fill buffer with an ACK
+	buffer[0] = ACK_PACKET_TAG;
+	buffer[1] = packetId;
+	for(unsigned int i=2; i<(PACKET_SIZE -2); i++) {
+		buffer[i] = 0;
+	}
+
+	//calculate CRC
+	crc = crc_ccitt_ffff((unsigned char const*)buffer, (unsigned long)(PACKET_SIZE -2));
+
+	buffer[PACKET_SIZE -2] = crc & 0xff;
+	buffer[PACKET_SIZE -1] = (crc >> 8) & 0xff;
+
+	if(state == OUTPUT_IDLE) {
+		state = OUTPUT_SENDING;
+	}
+	else if(state == OUTPUT_WAITING_ACK) {
+		state = OUTPUT_WAITING_ACK_WHILE_SENDING;
+	}
+	sendingIndex = 0;
+
+	return true;
+}
+
+void CDeviceManager::DataOutputStage::SendData(std::deque<char>& dataQueue)
+{
+	if(state != OUTPUT_IDLE) {
+		return;
+	}
+	if(dataQueue.empty()) {
+		return;
+	}
+
+	unsigned char amount;
+	unsigned char c;
+	uint16_t crc;
+
+	//header
+	dataPacket[0] = DATA_PACKET_TAG;
+	dataPacket[1] = packetId;
+	//data
+	for(amount=0; amount<(PACKET_SIZE -5); amount++)
+	{
+		if(dataQueue.empty()) {
+			break;
+		}
+
+		c = dataQueue[0];
+		dataQueue.pop_front();
+		dataPacket[3 + amount] = c;
+	}
+	//length
+	dataPacket[2] = amount;
+	//padding
+	for(; amount<(PACKET_SIZE -5); amount++) {
+		dataPacket[3 + amount] = 0;
+	}
+	//crc
+	crc = crc_ccitt_ffff(dataPacket, PACKET_SIZE -2);
+	dataPacket[PACKET_SIZE -2] = crc & 0xff;
+	dataPacket[PACKET_SIZE -1] = (crc >> 8) & 0xff;
+
+	for(unsigned int i=0; i<PACKET_SIZE; i++) {
+		buffer[i] = dataPacket[i];
+	}
+
+	state = OUTPUT_SENDING;
+	sendingIndex = 0;
+
+	IncreasePacketId();
+}
+
+
