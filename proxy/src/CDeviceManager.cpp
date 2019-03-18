@@ -24,7 +24,6 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
-#include "checksum.h"
 
 using Poco::DirectoryIterator;
 using Poco::File;
@@ -443,9 +442,6 @@ void CDeviceManager::enqueueCommand(struct Device& device, const std::string com
 //write a command to device
 void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 {
-	int amount;
-	char c;
-
 	if(device.dataExchange.outputStage.state == OUTPUT_WAITING_ACK)
 	{
 		auto & stage = device.dataExchange.outputStage;
@@ -785,7 +781,7 @@ bool CDeviceManager::DataOutputStage::SendAcknowledgment(unsigned char packetId)
 	}
 
 	//calculate CRC
-	crc = crc_ccitt_ffff((unsigned char const*)buffer, (unsigned long)(PACKET_SIZE -2));
+	crc = _crc16.GetCRC(buffer, PACKET_SIZE -2);
 
 	buffer[PACKET_SIZE -2] = crc & 0xff;
 	buffer[PACKET_SIZE -1] = (crc >> 8) & 0xff;
@@ -835,7 +831,7 @@ void CDeviceManager::DataOutputStage::SendData(std::deque<char>& dataQueue)
 		dataPacket[3 + amount] = 0;
 	}
 	//crc
-	crc = crc_ccitt_ffff(dataPacket, PACKET_SIZE -2);
+	crc = _crc16.GetCRC(dataPacket, PACKET_SIZE -2);
 	dataPacket[PACKET_SIZE -2] = crc & 0xff;
 	dataPacket[PACKET_SIZE -1] = (crc >> 8) & 0xff;
 

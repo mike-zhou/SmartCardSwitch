@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -lInvencoCrc -lPocoZipd -lPocoNetSSLd -lPocoRedisd -lPocoNetd -lPocoUtild -lPocoCryptod -lPocoXMLd -lPocoJSONd -lPocoFoundationd -lpthread
+LIBS := -lPocoZipd -lPocoNetSSLd -lPocoRedisd -lPocoNetd -lPocoUtild -lPocoCryptod -lPocoXMLd -lPocoJSONd -lPocoFoundationd -lpthread
 

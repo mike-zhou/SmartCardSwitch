@@ -25,7 +25,6 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.834169424" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.1526466545" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="/home/mikez/Poco/poco-1.9.0/include"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/crc/include}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.dialect.std.1586730030" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.other.other.300704505" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -std=c++11" valueType="string"/>
@@ -40,10 +39,8 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1079254398" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.paths.1183772434" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
 									<listOptionValue builtIn="false" value="/home/mikez/Poco/poco-1.9.0/lib"/>
-									<listOptionValue builtIn="false" value="/home/mikez/Developments/invenco/crc/Debug"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.libs.308716313" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" useByScannerDiscovery="false" valueType="libs">
-									<listOptionValue builtIn="false" value="InvencoCrc"/>
 									<listOptionValue builtIn="false" value="PocoZipd"/>
 									<listOptionValue builtIn="false" value="PocoNetSSLd"/>
 									<listOptionValue builtIn="false" value="PocoRedisd"/>

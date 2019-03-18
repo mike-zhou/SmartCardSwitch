@@ -17,6 +17,7 @@
 #include "Poco/Timestamp.h"
 #include "IDevice.h"
 #include "IDeviceObserver.h"
+#include "CrcCcitt.h"
 
 
 /***************
@@ -75,6 +76,7 @@ private:
 		unsigned int amount;
 		Poco::Timestamp timeStamp;
 		unsigned char previousId;
+		CrcCcitt _crc16;
 
 		DataInputStage();
 	};
@@ -104,6 +106,8 @@ private:
 		unsigned int sendingIndex;
 		Poco::Timestamp timeStamp;
 		unsigned char packetId;
+
+		CrcCcitt _crc16;
 	};
 
 	struct DataExchange
