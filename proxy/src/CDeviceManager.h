@@ -76,7 +76,7 @@ private:
 		unsigned int amount;
 		Poco::Timestamp timeStamp;
 		unsigned char previousId;
-		CrcCcitt _crc16;
+		CrcCcitt crc16;
 
 		DataInputStage();
 	};
@@ -107,7 +107,7 @@ private:
 		Poco::Timestamp timeStamp;
 		unsigned char packetId;
 
-		CrcCcitt _crc16;
+		CrcCcitt crc16;
 	};
 
 	struct DataExchange

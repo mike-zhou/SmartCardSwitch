@@ -320,43 +320,344 @@ void CDeviceManager::onReply(struct Device& device, const std::string& reply)
 //read data from device
 void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 {
-	const int BUFFER_SIZE = 1024;
-	unsigned char buffer[BUFFER_SIZE];
 	ssize_t amount;
 	std::string binaryLog;
 	std::string charLog;
-
-	//read data from device
-	amount =  read(device.fd, buffer, BUFFER_SIZE);
+	std::vector<char> appData;
 	auto errorNumber = errno;
-	if(amount == 0) {
-		pLogger->LogError("CDeviceManager::onDeviceCanBeRead nothing is read, errno: " + std::to_string(errorNumber));
+
+	switch(device.dataExchange.inputStage.state)
+	{
+		case INPUT_IDLE:
+		{
+			auto & stage = device.dataExchange.inputStage;
+
+			amount = read(device.fd, stage.buffer, PACKET_SIZE);
+			errorNumber = errno;
+			if(amount == 0) {
+				pLogger->LogError("CDeviceManager::onDeviceCanBeRead nothing is read, errno: " + std::to_string(errorNumber));
+			}
+			else if(amount < 0) {
+				pLogger->LogError("CDeviceManager::onDeviceCanBeRead error in device, errno: " + std::to_string(errorNumber));
+			}
+			else if(amount < PACKET_SIZE)
+			{
+				//partial packet
+				stage.state = INPUT_RECEIVING;
+				stage.amount = amount;
+				stage.timeStamp.update();
+			}
+			else
+			{
+				//a complete packet
+				unsigned short crc;
+				unsigned char crcLow, crcHigh;
+
+				crc = stage.crc16.GetCRC(stage.buffer, PACKET_SIZE -2);
+				crcLow = crc & 0xff;
+				crcHigh = (crc >> 8) & 0xff;
+
+				if((crcLow == stage.buffer[PACKET_SIZE -2]) && (crcHigh == stage.buffer[PACKET_SIZE -1]))
+				{
+					//correct packet
+					if(stage.buffer[0] == DATA_PACKET_TAG)
+					{
+						if(stage.previousId != stage.buffer[1])
+						{
+							for(unsigned char i=0; i<stage.buffer[2]; i++) {
+								appData.push_back(stage.buffer[3 + i]); //read data in packet
+							}
+						}
+						stage.previousId = stage.buffer[1];
+						{
+							char log[256];
+							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x D %02x", stage.state, stage.previousId);
+							pLogger->LogInfo(log);
+						}
+						stage.state = INPUT_ACKNOWLEDGING;
+					}
+					else if(stage.buffer[0] == ACK_PACKET_TAG)
+					{
+						device.dataExchange.outputStage.OnAcknowledgment(stage.buffer[1]);
+						//still in INPUT_IDLE
+						{
+							char log[256];
+							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x A %02x", stage.state, stage.buffer[1]);
+							pLogger->LogInfo(log);
+						}
+					}
+					else {
+						pLogger->LogError("CDeviceManager::onDeviceCanBeRead unknown packet: " + std::to_string(stage.buffer[0]));
+					}
+				}
+				else
+				{
+					//corrupted packet
+					pLogger->LogError("CDeviceManager::onDeviceCanBeRead corrupted packet");
+				}
+			}
+		}
+		break;
+
+		case INPUT_RECEIVING:
+		{
+			auto & stage = device.dataExchange.inputStage;
+
+			if(stage.timeStamp.elapsed() >= DATA_INPUT_TIMEOUT)
+			{
+				pLogger->LogError("CDeviceManager::onDeviceCanBeRead packet receiving timeout");
+				stage.amount = 0;
+			}
+
+			amount = read(device.fd, stage.buffer + stage.amount, PACKET_SIZE - stage.amount);
+			errorNumber = errno;
+			if(amount == 0) {
+				pLogger->LogError("CDeviceManager::onDeviceCanBeRead nothing is read, errno: " + std::to_string(errorNumber));
+			}
+			else if(amount < 0) {
+				pLogger->LogError("CDeviceManager::onDeviceCanBeRead error in device, errno: " + std::to_string(errorNumber));
+			}
+			else
+			{
+				stage.amount += amount;
+
+				if(stage.amount < PACKET_SIZE)
+				{
+					//partial packet, keep state unchanged.
+					stage.timeStamp.update(); //update time stamp
+				}
+				else
+				{
+					unsigned short crc;
+					unsigned char crcLow, crcHigh;
+
+					crc = stage.crc16.GetCRC(stage.buffer, PACKET_SIZE -2);
+					crcLow = crc & 0xff;
+					crcHigh = (crc >> 8) & 0xff;
+
+					if((crcLow == stage.buffer[PACKET_SIZE -2]) && (crcHigh == stage.buffer[PACKET_SIZE -1]))
+					{
+						//correct packet
+						if(stage.buffer[0] == DATA_PACKET_TAG)
+						{
+							if(stage.previousId != stage.buffer[1])
+							{
+								for(unsigned char i=0; i<stage.buffer[2]; i++) {
+									appData.push_back(stage.buffer[3 + i]); //read data in packet
+								}
+							}
+							stage.previousId = stage.buffer[1];
+							{
+								char log[256];
+								sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x D %02x", stage.state, stage.previousId);
+								pLogger->LogInfo(log);
+							}
+							stage.state = INPUT_ACKNOWLEDGING;
+						}
+						else if(stage.buffer[0] == ACK_PACKET_TAG)
+						{
+							device.dataExchange.outputStage.OnAcknowledgment(stage.buffer[1]);
+							{
+								char log[256];
+								sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x A %02x", stage.state, stage.buffer[1]);
+								pLogger->LogInfo(log);
+							}
+							stage.state = INPUT_IDLE; //change to idle state
+						}
+						else {
+							pLogger->LogError("CDeviceManager::onDeviceCanBeRead unknown packet: " + std::to_string(stage.buffer[0]));
+						}
+					}
+					else
+					{
+						//corrupted packet
+						pLogger->LogError("CDeviceManager::onDeviceCanBeRead corrupted packet");
+					}
+				}
+			}
+		}
+		break;
+
+		case INPUT_ACKNOWLEDGING:
+		{
+			auto & stage = device.dataExchange.inputStage;
+
+			amount = read(device.fd, stage.buffer, PACKET_SIZE);
+			errorNumber = errno;
+			if(amount == 0) {
+				pLogger->LogError("CDeviceManager::onDeviceCanBeRead nothing is read, errno: " + std::to_string(errorNumber));
+			}
+			else if(amount < 0) {
+				pLogger->LogError("CDeviceManager::onDeviceCanBeRead error in device, errno: " + std::to_string(errorNumber));
+			}
+			else if(amount < PACKET_SIZE)
+			{
+				//partial packet
+				stage.state = INPUT_ACKNOWLEDGING_WHILE_RECEIVING;
+				stage.amount = amount;
+				stage.timeStamp.update();
+			}
+			else
+			{
+				//a complete packet
+				unsigned short crc;
+				unsigned char crcLow, crcHigh;
+
+				crc = stage.crc16.GetCRC(stage.buffer, PACKET_SIZE -2);
+				crcLow = crc & 0xff;
+				crcHigh = (crc >> 8) & 0xff;
+
+				if((crcLow == stage.buffer[PACKET_SIZE -2]) && (crcHigh == stage.buffer[PACKET_SIZE -1]))
+				{
+					//correct packet
+					if(stage.buffer[0] == DATA_PACKET_TAG)
+					{
+						if(stage.previousId != stage.buffer[1])
+						{
+							for(unsigned char i=0; i<stage.buffer[2]; i++) {
+								appData.push_back(stage.buffer[3 + i]); //read data in packet
+							}
+						}
+						stage.previousId = stage.buffer[1];
+						{
+							char log[256];
+							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x D %02x", stage.state, stage.previousId);
+							pLogger->LogInfo(log);
+						}
+						stage.state = INPUT_ACKNOWLEDGING;
+					}
+					else if(stage.buffer[0] == ACK_PACKET_TAG)
+					{
+						device.dataExchange.outputStage.OnAcknowledgment(stage.buffer[1]);
+						{
+							char log[256];
+							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x A %02x", stage.state, stage.buffer[1]);
+							pLogger->LogInfo(log);
+						}
+					}
+					else {
+						pLogger->LogError("CDeviceManager::onDeviceCanBeRead unknown packet: " + std::to_string(stage.buffer[0]));
+					}
+				}
+				else
+				{
+					//corrupted packet
+					pLogger->LogError("CDeviceManager::onDeviceCanBeRead corrupted packet");
+				}
+			}
+		}
+		break;
+
+		case INPUT_ACKNOWLEDGING_WHILE_RECEIVING:
+		{
+			auto & stage = device.dataExchange.inputStage;
+
+			if(stage.timeStamp.elapsed() >= DATA_INPUT_TIMEOUT)
+			{
+				pLogger->LogError("CDeviceManager::onDeviceCanBeRead packet acknowledging receiving timeout");
+				stage.amount = 0;
+			}
+
+			amount = read(device.fd, stage.buffer + stage.amount, PACKET_SIZE - stage.amount);
+			errorNumber = errno;
+			if(amount == 0) {
+				pLogger->LogError("CDeviceManager::onDeviceCanBeRead nothing is read, errno: " + std::to_string(errorNumber));
+			}
+			else if(amount < 0) {
+				pLogger->LogError("CDeviceManager::onDeviceCanBeRead error in device, errno: " + std::to_string(errorNumber));
+			}
+			else
+			{
+				stage.amount += amount;
+
+				if(stage.amount < PACKET_SIZE)
+				{
+					//partial packet, keep state unchanged.
+					stage.timeStamp.update(); //update time stamp
+				}
+				else
+				{
+					unsigned short crc;
+					unsigned char crcLow, crcHigh;
+
+					crc = stage.crc16.GetCRC(stage.buffer, PACKET_SIZE -2);
+					crcLow = crc & 0xff;
+					crcHigh = (crc >> 8) & 0xff;
+
+					if((crcLow == stage.buffer[PACKET_SIZE -2]) && (crcHigh == stage.buffer[PACKET_SIZE -1]))
+					{
+						//correct packet
+						if(stage.buffer[0] == DATA_PACKET_TAG)
+						{
+							if(stage.previousId != stage.buffer[1])
+							{
+								for(unsigned char i=0; i<stage.buffer[2]; i++) {
+									appData.push_back(stage.buffer[3 + i]); //read data in packet
+								}
+							}
+							stage.previousId = stage.buffer[1];
+							{
+								char log[256];
+								sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x D %02x", stage.state, stage.previousId);
+								pLogger->LogInfo(log);
+							}
+							stage.state = INPUT_ACKNOWLEDGING;
+						}
+						else if(stage.buffer[0] == ACK_PACKET_TAG)
+						{
+							device.dataExchange.outputStage.OnAcknowledgment(stage.buffer[1]);
+							{
+								char log[256];
+								sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x A %02x", stage.state, stage.buffer[1]);
+								pLogger->LogInfo(log);
+							}
+							stage.state = INPUT_ACKNOWLEDGING;
+						}
+						else {
+							pLogger->LogError("CDeviceManager::onDeviceCanBeRead unknown packet: " + std::to_string(stage.buffer[0]));
+						}
+					}
+					else
+					{
+						//corrupted packet
+						pLogger->LogError("CDeviceManager::onDeviceCanBeRead corrupted packet");
+					}
+				}
+			}
+		}
+		break;
+
+		default:
+		{
+			pLogger->LogError("CDeviceManager::onDeviceCanBeRead wrong inputStage state: " + std::to_string(device.dataExchange.inputStage.state));
+			device.dataExchange.inputStage.state = INPUT_IDLE;
+		}
 	}
-	else if(amount < 0) {
-		pLogger->LogError("CDeviceManager::onDeviceCanBeRead error in device, errno: " + std::to_string(errorNumber));
-	}
-	pLogger->LogDebug("CDeviceManager::onDeviceCanBeRead " + std::to_string(amount) + " bytes from " + device.fileName);
 
 	if(device.state < DeviceState::RECEIVING_NAME) {
 		pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead clearing buffer, discard bytes: " + std::to_string(amount));
 		return;
 	}
 
+	if(appData.empty()) {
+		return;
+	}
+
 	//log data received
-	for(int i=0; i<amount; i++)
+	for(unsigned int i=0; i<appData.size(); i++)
 	{
 		char tmpBuffer[16];
 
-		sprintf(tmpBuffer, " %02x", buffer[i]);
+		sprintf(tmpBuffer, "%02x,", appData[i]);
 		binaryLog = binaryLog + tmpBuffer;
-		charLog.push_back(buffer[i]);
+		charLog.push_back(appData[i]);
 
-		device.incoming.push_back(buffer[i]);
+		device.incoming.push_back(appData[i]);
 	}
-	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead binary content:" + binaryLog);
-	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead char content: " + charLog);
+	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead binary content: " + binaryLog);
+	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead char content:" + charLog);
 
-	//notify mapping of complete replies
+	//notify upper layer of complete replies
 	for(;;)
 	{
 		bool replyReady = false;
@@ -438,7 +739,6 @@ void CDeviceManager::enqueueCommand(struct Device& device, const std::string com
 	device.outgoing.push_back(COMMAND_TERMINATER);
 }
 
-
 //write a command to device
 void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 {
@@ -454,57 +754,81 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 			}
 			stage.state = OUTPUT_SENDING;
 			stage.sendingIndex = 0;
-		}
-	}
 
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+			{
+				char buffer[256];
 
-	switch(device.state)
-	{
-		case DeviceState::OPENED:
-		{
-			std::string command;
-
-			//make device to spit out rubbish in receiving buffer.
-			command.push_back(COMMAND_TERMINATER);
-			enqueueCommand(device, command);
-			pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten clearing device buffer: " + device.fileName);
-			device.state = DeviceState::CLEARING_BUFFER;
-			device.timeStamp.update();
-		}
-		break;
-
-		case DeviceState::CLEARING_BUFFER:
-		{
-			if(device.timeStamp.elapsed() > 1000000) {
-				//1 second is enough for device to spit out rubbish in receiving buffer.
-				device.state = DeviceState::BUFFER_CLEARED;
-				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten cleared device buffer: " + device.fileName);
+				sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x D %02x", stage.state, stage.buffer[1]);
+				pLogger->LogInfo(buffer);
 			}
 		}
-		break;
-
-		case DeviceState::BUFFER_CLEARED:
-		{
-			//internal command to query device name
-			std::string command(COMMAND_QUERY_NAME);
-			enqueueCommand(device, command);
-			device.state = DeviceState::RECEIVING_NAME;
-			pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten querying device name: " + device.fileName);
-		}
-		break;
-
-		default:
-		{
-			//nothing to do
-		}
-		break;
 	}
 
-	if(device.outgoing.size() > 0)
+	if(device.dataExchange.inputStage.state == INPUT_ACKNOWLEDGING)
 	{
-		//something needs to be sent out
-		device.dataExchange.outputStage.SendData(device.outgoing);
+		//trying to send out ACK
+		if(device.dataExchange.outputStage.SendAcknowledgment(device.dataExchange.inputStage.previousId)) {
+			device.dataExchange.inputStage.state = INPUT_IDLE;
+		}
+	}
+	else if(device.dataExchange.inputStage.state == INPUT_ACKNOWLEDGING_WHILE_RECEIVING)
+	{
+		//trying to send out ACK
+		if(device.dataExchange.outputStage.SendAcknowledgment(device.dataExchange.inputStage.previousId)) {
+			device.dataExchange.inputStage.state = INPUT_RECEIVING;
+		}
+	}
+
+	{
+		Poco::ScopedLock<Poco::Mutex> lock(_mutex); //protect device.outgoing from incoming command
+
+		switch(device.state)
+		{
+			case DeviceState::OPENED:
+			{
+				std::string command;
+
+				//make device to spit out rubbish in receiving buffer.
+				command.push_back(COMMAND_TERMINATER);
+				enqueueCommand(device, command);
+				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten clearing device buffer: " + device.fileName);
+				device.state = DeviceState::CLEARING_BUFFER;
+				device.timeStamp.update();
+			}
+			break;
+
+			case DeviceState::CLEARING_BUFFER:
+			{
+				if(device.timeStamp.elapsed() > 1000000) {
+					//1 second is enough for device to spit out rubbish in receiving buffer.
+					device.state = DeviceState::BUFFER_CLEARED;
+					pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten cleared device buffer: " + device.fileName);
+				}
+			}
+			break;
+
+			case DeviceState::BUFFER_CLEARED:
+			{
+				//internal command to query device name
+				std::string command(COMMAND_QUERY_NAME);
+				enqueueCommand(device, command);
+				device.state = DeviceState::RECEIVING_NAME;
+				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten querying device name: " + device.fileName);
+			}
+			break;
+
+			default:
+			{
+				//nothing to do
+			}
+			break;
+		}
+
+		if(device.outgoing.size() > 0)
+		{
+			//something needs to be sent out
+			device.dataExchange.outputStage.SendData(device.outgoing);
+		}
 	}
 
 	// send data
@@ -543,13 +867,13 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 		{
 			if(stage.buffer[0] == DATA_PACKET_TAG)
 			{
-				stage.state = OUTPUT_WAITING_ACK;
+				stage.state = OUTPUT_WAITING_ACK; // a data packet was sent, wait for the ACK.
 				stage.timeStamp.update();
 
 				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten data packet was sent with id: " + std::to_string(stage.buffer[1]));
 			}
 			else if(stage.buffer[0] == ACK_PACKET_TAG){
-				stage.state = OUTPUT_IDLE;
+				stage.state = OUTPUT_IDLE; // an ACK was sent out.
 				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten acknowledged packet id: " + std::to_string(stage.buffer[1]));
 			}
 			else {
@@ -645,7 +969,7 @@ void CDeviceManager::pollDevices()
 		fdVector.push_back(fd);
 	}
 
-	rc = poll(fdVector.data(), fdVector.size(), 10);
+	rc = poll(fdVector.data(), fdVector.size(), 5);
 	errorNumber = errno;
 	if(rc > 0)
 	{
@@ -781,7 +1105,7 @@ bool CDeviceManager::DataOutputStage::SendAcknowledgment(unsigned char packetId)
 	}
 
 	//calculate CRC
-	crc = _crc16.GetCRC(buffer, PACKET_SIZE -2);
+	crc = crc16.GetCRC(buffer, PACKET_SIZE -2);
 
 	buffer[PACKET_SIZE -2] = crc & 0xff;
 	buffer[PACKET_SIZE -1] = (crc >> 8) & 0xff;
@@ -793,6 +1117,13 @@ bool CDeviceManager::DataOutputStage::SendAcknowledgment(unsigned char packetId)
 		state = OUTPUT_WAITING_ACK_WHILE_SENDING;
 	}
 	sendingIndex = 0;
+
+	{
+		char buffer[256];
+
+		sprintf(buffer, "CDeviceManager::DataOutputStage::SendAcknowledgment >> %02x A %02x", state, buffer[1]);
+		pLogger->LogInfo(buffer);
+	}
 
 	return true;
 }
@@ -831,7 +1162,7 @@ void CDeviceManager::DataOutputStage::SendData(std::deque<char>& dataQueue)
 		dataPacket[3 + amount] = 0;
 	}
 	//crc
-	crc = _crc16.GetCRC(dataPacket, PACKET_SIZE -2);
+	crc = crc16.GetCRC(dataPacket, PACKET_SIZE -2);
 	dataPacket[PACKET_SIZE -2] = crc & 0xff;
 	dataPacket[PACKET_SIZE -1] = (crc >> 8) & 0xff;
 
@@ -841,6 +1172,13 @@ void CDeviceManager::DataOutputStage::SendData(std::deque<char>& dataQueue)
 
 	state = OUTPUT_SENDING;
 	sendingIndex = 0;
+
+	{
+		char buffer[256];
+
+		sprintf(buffer, "CDeviceManager::DataOutputStage::SendData >> %02x D %02x", state, dataPacket[1]);
+		pLogger->LogInfo(buffer);
+	}
 
 	IncreasePacketId();
 }
