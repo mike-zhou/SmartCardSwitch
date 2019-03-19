@@ -63,17 +63,15 @@ private:
 
 	enum InputStageState
 	{
-		INPUT_IDLE = 0, //ready for incoming packet
-		INPUT_RECEIVING, // is receiving a packet
-		INPUT_ACKNOWLEDGING, // the received data packet is to be acknowledged.
-		INPUT_ACKNOWLEDGING_WHILE_RECEIVING // the received data packet is to be acknowledged, and is receiving a new packet
+		INPUT_RECEIVING = 0,
+		INPUT_ACKNOWLEDGING
 	};
 
 	struct DataInputStage
 	{
 		unsigned char buffer[PACKET_SIZE];
 		InputStageState state;
-		unsigned int amount;
+		unsigned int byteAmount;
 		Poco::Timestamp timeStamp;
 		unsigned char previousId;
 		CrcCcitt crc16;
@@ -100,7 +98,7 @@ private:
 		//if possible, pop data from queue and sent it.
 		void SendData(std::deque<char>& dataQueue);
 
-		unsigned char dataPacket[PACKET_SIZE];
+		unsigned char packet[PACKET_SIZE];
 		unsigned char buffer[PACKET_SIZE];
 		OutputStageState state;
 		unsigned int sendingIndex;
