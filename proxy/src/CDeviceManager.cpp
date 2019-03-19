@@ -349,6 +349,12 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 		}
 		else
 		{
+			{
+				char log[256];
+				sprintf(log, "CDeviceManager::onDeviceCanBeRead %d bytes from %s", amount, device.fileName.c_str());
+				pLogger->LogInfo(log);
+			}
+
 			stage.byteAmount += amount;
 
 			if(stage.byteAmount < PACKET_SIZE)
@@ -401,7 +407,7 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 				else
 				{
 					//corrupted packet
-					pLogger->LogError("CDeviceManager::onDeviceCanBeRead corrupted packet");
+					pLogger->LogError("CDeviceManager::onDeviceCanBeRead << corrupted packet");
 				}
 
 				stage.byteAmount = 0;
@@ -429,8 +435,8 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 
 		device.incoming.push_back(appData[i]);
 	}
-	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead binary content: " + binaryLog);
-	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead char content:" + charLog);
+	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead binary APP content: " + binaryLog);
+	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead char APP content:" + charLog);
 
 	//notify upper layer of complete replies
 	for(;;)
@@ -533,7 +539,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 			{
 				char buffer[256];
 
-				sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x D %02x", stage.state, stage.buffer[1]);
+				sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten prepare re-send data packet: %02x", stage.buffer[1]);
 				pLogger->LogInfo(buffer);
 			}
 		}
@@ -613,7 +619,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 			auto amount = write(device.fd, pData, length);
 			if(amount > 0) {
 				stage.sendingIndex += amount;
-				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten wrote" + std::to_string(amount) + " bytes to " + device.fileName);
+				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten wrote " + std::to_string(amount) + " bytes to " + device.fileName);
 			}
 			else {
 				auto errorNumber = errno;
@@ -639,14 +645,24 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 		{
 			if(stage.buffer[0] == DATA_PACKET_TAG)
 			{
-				stage.state = OUTPUT_WAITING_ACK; // a data packet was sent, wait for the ACK.
-				stage.timeStamp.update();
+				{
+					char buffer[256];
 
-				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten data packet was sent with id: " + std::to_string(stage.buffer[1]));
+					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x D %02x", stage.state, stage.buffer[1]);
+					pLogger->LogInfo(buffer);
+				}
+				stage.timeStamp.update();
+				stage.state = OUTPUT_WAITING_ACK; // a data packet was sent, wait for the ACK.
 			}
-			else if(stage.buffer[0] == ACK_PACKET_TAG){
+			else if(stage.buffer[0] == ACK_PACKET_TAG)
+			{
+				{
+					char buffer[256];
+
+					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x A %02x", stage.state, stage.buffer[1]);
+					pLogger->LogInfo(buffer);
+				}
 				stage.state = OUTPUT_IDLE; // an ACK was sent out.
-				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten acknowledged packet id: " + std::to_string(stage.buffer[1]));
 			}
 			else {
 				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten packet of unknown type was sent");
@@ -672,13 +688,27 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 			if(stage.buffer[0] == DATA_PACKET_TAG)
 			{
 				//no data packet can be sent while waiting for acknowledgment
+				{
+					char buffer[256];
+
+					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x D %02x", stage.state, stage.buffer[1]);
+					pLogger->LogInfo(buffer);
+				}
 				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten wrong data packet was sent to: " + device.deviceName);
 				stage.state = OUTPUT_IDLE;
 			}
-			else if(stage.buffer[0] == ACK_PACKET_TAG){
+			else if(stage.buffer[0] == ACK_PACKET_TAG)
+			{
+				{
+					char buffer[256];
+
+					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x A %02x", stage.state, stage.buffer[1]);
+					pLogger->LogInfo(buffer);
+				}
 				stage.state = OUTPUT_WAITING_ACK; //continue waiting for acknowledgment.
 			}
-			else {
+			else
+			{
 				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten packet of unknown type was sent");
 				stage.state = OUTPUT_IDLE;
 			}
@@ -889,7 +919,7 @@ bool CDeviceManager::DataOutputStage::SendAcknowledgment(unsigned char packetId)
 	{
 		char buffer[256];
 
-		sprintf(buffer, "CDeviceManager::DataOutputStage::SendAcknowledgment >> %02x A %02x", state, buffer[1]);
+		sprintf(buffer, "CDeviceManager::DataOutputStage::SendAcknowledgment prepare ACK packet: %02x", buffer[1]);
 		pLogger->LogInfo(buffer);
 	}
 
@@ -949,7 +979,7 @@ void CDeviceManager::DataOutputStage::SendData(std::deque<char>& dataQueue)
 	{
 		char buffer[256];
 
-		sprintf(buffer, "CDeviceManager::DataOutputStage::SendData >> %02x D %02x", state, packet[1]);
+		sprintf(buffer, "CDeviceManager::DataOutputStage::SendData prepare data packet: %02x", packet[1]);
 		pLogger->LogInfo(buffer);
 	}
 
