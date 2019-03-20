@@ -34,6 +34,7 @@ public:
 
 	void SetObserver(IDeviceObserver * pObserver);
 	void StartMonitoringDevices();
+	void AddDeviceFile(const std::string & deviceFilePath);
 
 private:
 	// Called by DeviceSocketMapping object to send a command to device.
@@ -124,6 +125,8 @@ private:
 		ACTIVE,
 		ERROR
 	};
+
+	std::vector<std::string> _deviceFiles;
 
 	struct Device
 	{

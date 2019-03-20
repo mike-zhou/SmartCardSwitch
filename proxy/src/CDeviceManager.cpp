@@ -79,6 +79,25 @@ void CDeviceManager::SendCommand(const std::string& deviceName, const std::strin
 	}
 }
 
+void CDeviceManager::AddDeviceFile(const std::string & deviceFilePath)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	bool fileExist = false;
+
+	for(auto it = _deviceFiles.begin(); it != _deviceFiles.end(); it++)
+	{
+		if(*it == deviceFilePath) {
+			fileExist = true;
+			break;
+		}
+	}
+
+	if(!fileExist) {
+		_deviceFiles.push_back(deviceFilePath);
+	}
+}
+
 void CDeviceManager::checkDevices()
 {
 	//check devices every 1 second
@@ -91,21 +110,21 @@ void CDeviceManager::checkDevices()
 	}
 
 	std::vector<std::string> deviceUnpluged;
-	std::vector<std::string> currentFileList;
+	std::vector<std::string> currentOpenedFiles;
 
-	//iterate each file in the folder /dev/serial/device_by_id
 	try
 	{
-		Poco::File folderFile(DEVICE_FOLDER_PATH);
+		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-		if(folderFile.exists() && folderFile.isDirectory())
+		if(_deviceFiles.empty()) {
+			pLogger->LogError("CDeviceManager::checkDevices no controlling file is specified");
+		}
+		else
 		{
-			//open all DCD files.
-			Poco::DirectoryIterator end;
-			for(DirectoryIterator it(DEVICE_FOLDER_PATH) ;it != end; it++)
+			for(auto it = _deviceFiles.begin(); it != _deviceFiles.end(); it++)
 			{
 				bool fileIsOpened = false;
-				Path p(it->path());
+				Path p(*it);
 				int fd;
 
 				//check if current device has been opened
@@ -116,24 +135,21 @@ void CDeviceManager::checkDevices()
 					}
 				}
 				if(fileIsOpened) {
-					currentFileList.push_back(p.getFileName());
+					currentOpenedFiles.push_back(p.getFileName());
 					continue;
 				}
 
-				//check if it is a DCD device
-				std::string fileName = it->path();
-				if(fileName.find(IDENTIFIER) == std::string::npos) {
-					// not a DCD device
-					continue;
-				}
-
+				std::string fileName = *it;;
 				//open device
 				fd = open(fileName.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
 				if(fd < 0){
+					auto errorNumber = errno;
 					//cannot open device file
+					pLogger->LogError("CDeviceManager::checkDevices cannot open: " + fileName + ", reason: " + std::string(strerror(errorNumber)));
 					continue;
 				}
 
+				//set device file
 				{
 					struct termios tios;
 					int rc;
@@ -194,7 +210,7 @@ void CDeviceManager::checkDevices()
 					_devices.push_back(device);
 				}
 
-				currentFileList.push_back(p.getFileName());
+				currentOpenedFiles.push_back(p.getFileName());
 				pLogger->LogInfo("CDeviceManager::checkDevices file is opened: " + p.getFileName());
 			}
 		}
@@ -214,14 +230,14 @@ void CDeviceManager::checkDevices()
 
 		for(auto oldDeviceIt = _devices.begin(); oldDeviceIt!=_devices.end(); )
 		{
-			auto newDeviceIt = currentFileList.begin();
-			for(; newDeviceIt!=currentFileList.end(); newDeviceIt++)
+			auto newDeviceIt = currentOpenedFiles.begin();
+			for(; newDeviceIt!=currentOpenedFiles.end(); newDeviceIt++)
 			{
 				if(oldDeviceIt->fileName == *newDeviceIt) {
 					break;
 				}
 			}
-			if(newDeviceIt == currentFileList.end()) {
+			if(newDeviceIt == currentOpenedFiles.end()) {
 				//the old device is NOT found in the new file list
 				pLogger->LogInfo("CDeviceManager::checkDevices device is unplugged: " + oldDeviceIt->fileName);
 				if(oldDeviceIt->state == DeviceState::ACTIVE) {

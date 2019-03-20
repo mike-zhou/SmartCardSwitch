@@ -93,6 +93,7 @@ protected:
 			std::string logFile;
 			std::string logFileSize;
 			std::string logFileAmount;
+			std::string controllingFile;
 			std::string monitorFile;
 
 			//use the designated configuration if it exist
@@ -123,6 +124,8 @@ protected:
 				logFile = config().getString("log_file_name", "proxyLog");
 				logFileSize = config().getString("log_file_size", "1M");
 				logFileAmount = config().getString("log_file_amount", "10");
+				//controlling device file
+				controllingFile = config().getString("controlling_device_file", std::string());
 				//monitorFile
 				monitorFile = config().getString("monitor_device_file", std::string());
 			}
@@ -150,6 +153,7 @@ protected:
 
 			CDeviceManager * pDeviceManager = new CDeviceManager;
 			CSocketManager * pSocketManager = new CSocketManager;
+			pDeviceManager->AddDeviceFile(controllingFile);
 			pDeviceManager->SetObserver(pSocketManager);
 			pSocketManager->SetDevice(pDeviceManager);
 
