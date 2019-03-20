@@ -128,7 +128,7 @@ void CDeviceManager::checkDevices()
 				}
 
 				//open device
-				fd = open(fileName.c_str(), O_RDWR | O_NOCTTY);
+				fd = open(fileName.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
 				if(fd < 0){
 					//cannot open device file
 					continue;
@@ -146,7 +146,7 @@ void CDeviceManager::checkDevices()
 						close(fd);
 						continue;
 					}
-					rc = cfsetspeed(&tios, B1152000); //intentionally use a larger baudrate, hoping that more buffer can be allocated
+					rc = cfsetspeed(&tios, B115200); //intentionally use a larger baudrate, hoping that more buffer can be allocated
 					if(0 != rc)
 					{
 						auto e = errno;
@@ -785,54 +785,38 @@ void CDeviceManager::pollDevices()
 		pollfd fd;
 
 		fd.fd = _devices[i].fd;
-		fd.events = POLLOUT | POLLERR;
+		fd.events = POLLIN | POLLOUT | POLLERR;
 		fd.revents = 0;
 		fdVector.push_back(fd);
 	}
-	auto rc = poll(fdVector.data(), fdVector.size(), 0);
+	auto rc = poll(fdVector.data(), fdVector.size(), 10);
 	auto errorNumber = errno;
-	if(rc > 0)
+	if(rc == 0) {
+		return; //
+	}
+	else if(rc < 0) {
+		sleep(100); //
+		return;
+	}
+	else // rc > 0
 	{
 		for(size_t i=0; i<_devices.size(); i++)
 		{
 			auto events = fdVector[i].revents;
 
-			if(events & POLLOUT) {
-				//device can be written.
-				onDeviceCanBeWritten(_devices[i]);
-			}
 			if(events & POLLERR) {
 				onDeviceError(_devices[i], errorNumber);
 			}
-		}
-	}
-
-	//check if device can be read
-	fdVector.clear();
-	for(size_t i=0; i<_devices.size(); i++)
-	{
-		pollfd fd;
-
-		fd.fd = _devices[i].fd;
-		fd.events = POLLIN | POLLERR;
-		fd.revents = 0;
-		fdVector.push_back(fd);
-	}
-
-	rc = poll(fdVector.data(), fdVector.size(), 5);
-	errorNumber = errno;
-	if(rc > 0)
-	{
-		for(size_t i=0; i<_devices.size(); i++)
-		{
-			auto events = fdVector[i].revents;
-
-			if(events & POLLIN) {
-				//device can be read.
-				onDeviceCanBeRead(_devices[i]);
-			}
-			if(events & POLLERR) {
-				onDeviceError(_devices[i], errorNumber);
+			else
+			{
+				if(events & POLLOUT) {
+					//device can be written.
+					onDeviceCanBeWritten(_devices[i]);
+				}
+				if(events & POLLIN) {
+					//device can be read.
+					onDeviceCanBeRead(_devices[i]);
+				}
 			}
 		}
 	}

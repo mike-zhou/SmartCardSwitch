@@ -66,7 +66,7 @@ void CDeviceMonitor::runTask()
 	}
 	else
 	{
-		monitorFileDescriptor = open(_deviceFile.c_str(), O_RDONLY | O_NOCTTY);
+		monitorFileDescriptor = open(_deviceFile.c_str(), O_RDONLY | O_NOCTTY | O_NONBLOCK);
 		if(monitorFileDescriptor < 0){
 			pLogger->LogError("CDeviceMonitor::runTask failed to open: " + _deviceFile);
 		}
