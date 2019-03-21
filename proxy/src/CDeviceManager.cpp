@@ -751,7 +751,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 					for(unsigned int i=0; i<amount; i++)
 					{
 						logContent.push_back(pData[i]);
-					}
+			}
 					pLogger->LogInfo(logContent);
 				}
 			}
