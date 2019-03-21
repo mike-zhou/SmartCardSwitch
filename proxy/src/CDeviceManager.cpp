@@ -162,7 +162,7 @@ void CDeviceManager::checkDevices()
 						close(fd);
 						continue;
 					}
-					rc = cfsetspeed(&tios, B115200); //intentionally use a larger baudrate, hoping that more buffer can be allocated
+					rc = cfsetspeed(&tios, B115200);
 					if(0 != rc)
 					{
 						auto e = errno;
@@ -179,6 +179,9 @@ void CDeviceManager::checkDevices()
 					tios.c_oflag &= ~OPOST;
 					//c_cflag
 					tios.c_cflag &= ~CLOCAL;
+					tios.c_cflag |= CS8;
+					tios.c_cflag &= ~CSTOPB;
+					tios.c_cflag &= ~PARENB;
 					//c_lflag
 					tios.c_lflag &= ~ISIG;
 					tios.c_lflag &= ~ICANON;
@@ -961,10 +964,10 @@ bool CDeviceManager::DataOutputStage::SendAcknowledgment(unsigned char packetId)
 	buffer[PACKET_SIZE -1] = (crc >> 8) & 0xff;
 
 	{
-		char buffer[256];
+		char log[256];
 
-		sprintf(buffer, "CDeviceManager::DataOutputStage::SendAcknowledgment prepare ACK packet: %02x", buffer[1]);
-		pLogger->LogInfo(buffer);
+		sprintf(log, "CDeviceManager::DataOutputStage::SendAcknowledgment prepare ACK packet: %02x", buffer[1]);
+		pLogger->LogInfo(log);
 	}
 
 	if(state == OUTPUT_IDLE) {
