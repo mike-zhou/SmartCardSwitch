@@ -170,6 +170,7 @@ void CDeviceManager::checkDevices()
 						close(fd);
 						continue;
 					}
+#if 0
 					//c_iflag
 					tios.c_iflag &= ~ICRNL;
 					tios.c_iflag &= ~IXON;
@@ -193,7 +194,22 @@ void CDeviceManager::checkDevices()
 					tios.c_lflag &= ~ECHOKE;
 					tios.c_lflag &= ~FLUSHO;
 					tios.c_lflag &= ~EXTPROC;
+#endif
 
+#if 1 //cfmakeraw
+					cfmakeraw(&tios);
+					//polling read.
+					tios.c_cc[VMIN] = 0;
+					tios.c_cc[VTIME] = 0;
+					//8N1
+					tios.c_cflag |= CS8;
+					tios.c_cflag &= ~CSTOPB; //1 stop bit
+					tios.c_cflag &= ~PARENB; //no parity
+					//others
+					tios.c_cflag |= CLOCAL; //ignore modem control lines
+					tios.c_cflag |= CREAD; //enable receiver
+					tios.c_cflag &= ~CRTSCTS; //no RTS/CTS flow control
+#endif
 					rc = tcsetattr(fd, TCSANOW, &tios);
 					if(0 != rc)
 					{
