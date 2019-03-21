@@ -368,6 +368,7 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 		}
 		else
 		{
+			//some bytes arrive.
 			{
 				char log[256];
 				sprintf(log, "CDeviceManager::onDeviceCanBeRead %d bytes from %s", amount, device.fileName.c_str());
