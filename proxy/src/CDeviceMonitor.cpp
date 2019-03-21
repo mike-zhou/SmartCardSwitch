@@ -39,8 +39,6 @@ void CDeviceMonitor::onDeviceCanBeRead(int fd)
 	}
 	else
 	{
-		std::string outputStr;
-
 		pLogger->LogInfo("CDeviceMonitor::onDeviceCanBeRead " + std::to_string(amount) + " bytes from: " + _deviceFile);
 //		for(int i=0; i<amount; i++)
 //		{
