@@ -42,14 +42,14 @@ void CDeviceMonitor::onDeviceCanBeRead(int fd)
 		std::string outputStr;
 
 		pLogger->LogInfo("CDeviceMonitor::onDeviceCanBeRead " + std::to_string(amount) + " bytes from: " + _deviceFile);
-		for(int i=0; i<amount; i++)
-		{
-			char buf[32];
-
-			sprintf(buf, "%02x,", _buffer[i]);
-			outputStr = outputStr + std::string(buf);
-		}
-		pLogger->LogInfo("CDeviceMonitor::onDeviceCanBeRead hex content: " + outputStr);
+//		for(int i=0; i<amount; i++)
+//		{
+//			char buf[32];
+//
+//			sprintf(buf, "%02x,", _buffer[i]);
+//			outputStr = outputStr + std::string(buf);
+//		}
+//		pLogger->LogInfo("CDeviceMonitor::onDeviceCanBeRead hex content: " + outputStr);
 		pLogger->LogInfo("CDeviceMonitor::onDeviceCanBeRead char content: " + std::string((char *)_buffer));
 	}
 }
@@ -94,6 +94,7 @@ void CDeviceMonitor::runTask()
 				}
 				else
 				{
+#if 0
 					//c_iflag
 					tios.c_iflag &= ~ICRNL;
 					tios.c_iflag &= ~IXON;
@@ -117,7 +118,20 @@ void CDeviceMonitor::runTask()
 					tios.c_lflag &= ~ECHOKE;
 					tios.c_lflag &= ~FLUSHO;
 					tios.c_lflag &= ~EXTPROC;
-
+#else
+					cfmakeraw(&tios);
+					//polling read.
+					tios.c_cc[VMIN] = 0;
+					tios.c_cc[VTIME] = 0;
+					//8N1
+					tios.c_cflag |= CS8;
+					tios.c_cflag &= ~CSTOPB; //1 stop bit
+					tios.c_cflag &= ~PARENB; //no parity
+					//others
+					tios.c_cflag |= CLOCAL; //ignore modem control lines
+					tios.c_cflag |= CREAD; //enable receiver
+					tios.c_cflag &= ~CRTSCTS; //no RTS/CTS flow control
+#endif
 					rc = tcsetattr(monitorFileDescriptor, TCSANOW, &tios);
 					if(0 != rc)
 					{

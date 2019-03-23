@@ -55,8 +55,8 @@ private:
 	static const int PACKET_SIZE  = 64;
 	static const unsigned char DATA_PACKET_TAG = 0xDD;
 	static const unsigned char ACK_PACKET_TAG = 0xAA;
-	const unsigned long DATA_INPUT_TIMEOUT = 50000; //50,000 microseconds
-	const unsigned long DATA_ACK_TIMEOUT = 500000; //500,000 microseconds
+	const unsigned long DATA_INPUT_TIMEOUT = 20000; //20,000 microseconds
+	const unsigned long DATA_ACK_TIMEOUT = 50000; //50,000 microseconds
 	static const unsigned char INVALID_PACKET_ID = 0xFF;
 	static const unsigned char INITAL_PACKET_ID = 0; // this id is used only for the first packet after app starts.
 

@@ -425,13 +425,13 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x D %02x", stage.state, stage.previousId);
 							pLogger->LogInfo(log);
 
-							std::string packetStr = "CDeviceManager::onDeviceCanBeRead packet: ";
-							for(unsigned int i=0; i<PACKET_SIZE; i++) {
-								char buffer[8];
-								sprintf(buffer, "%02x,", stage.buffer[i]);
-								packetStr = packetStr + buffer;
-							}
-							pLogger->LogInfo(packetStr);
+//							std::string packetStr = "CDeviceManager::onDeviceCanBeRead packet: ";
+//							for(unsigned int i=0; i<PACKET_SIZE; i++) {
+//								char buffer[8];
+//								sprintf(buffer, "%02x,", stage.buffer[i]);
+//								packetStr = packetStr + buffer;
+//							}
+//							pLogger->LogInfo(packetStr);
 						}
 						stage.state = INPUT_ACKNOWLEDGING;
 					}
@@ -443,13 +443,13 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x A %02x", stage.state, stage.buffer[1]);
 							pLogger->LogInfo(log);
 
-							std::string packetStr = "CDeviceManager::onDeviceCanBeRead packet: ";
-							for(unsigned int i=0; i<PACKET_SIZE; i++) {
-								char buffer[8];
-								sprintf(buffer, "%02x,", stage.buffer[i]);
-								packetStr = packetStr + buffer;
-							}
-							pLogger->LogInfo(packetStr);
+//							std::string packetStr = "CDeviceManager::onDeviceCanBeRead packet: ";
+//							for(unsigned int i=0; i<PACKET_SIZE; i++) {
+//								char buffer[8];
+//								sprintf(buffer, "%02x,", stage.buffer[i]);
+//								packetStr = packetStr + buffer;
+//							}
+//							pLogger->LogInfo(packetStr);
 						}
 					}
 					else {
@@ -487,8 +487,8 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 
 		device.incoming.push_back(appData[i]);
 	}
-	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead binary APP content: " + binaryLog);
-	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead char APP content:" + charLog);
+	//pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead binary APP content: " + binaryLog);
+	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead char APP content: " + charLog);
 
 	//notify upper layer of complete replies
 	for(;;)
@@ -667,8 +667,19 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 
 			unsigned char * pData = stage.buffer + stage.sendingIndex;
 			unsigned int length = PACKET_SIZE - stage.sendingIndex;
+			int amount = 0;
 
-			auto amount = write(device.fd, pData, length);
+			for(unsigned int i=0; i<length; i++)
+			{
+				//send data byte by byte.
+				int rc = write(device.fd, pData + i, 1);
+				if(rc == 1) {
+					amount++;
+				}
+				else {
+					break;
+				}
+			}
 			if(amount > 0) {
 				stage.sendingIndex += amount;
 				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten wrote " + std::to_string(amount) + " bytes to " + device.fileName);
@@ -702,13 +713,13 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x D %02x", stage.state, stage.buffer[1]);
 					pLogger->LogInfo(buffer);
 
-					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
-					for(unsigned int i=0; i<PACKET_SIZE; i++) {
-						char buffer[8];
-						sprintf(buffer, "%02x,", stage.buffer[i]);
-						packetStr = packetStr + buffer;
-					}
-					pLogger->LogInfo(packetStr);
+//					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
+//					for(unsigned int i=0; i<PACKET_SIZE; i++) {
+//						char buffer[8];
+//						sprintf(buffer, "%02x,", stage.buffer[i]);
+//						packetStr = packetStr + buffer;
+//					}
+//					pLogger->LogInfo(packetStr);
 				}
 				stage.timeStamp.update();
 				stage.state = OUTPUT_WAITING_ACK; // a data packet was sent, wait for the ACK.
@@ -720,13 +731,13 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x A %02x", stage.state, stage.buffer[1]);
 					pLogger->LogInfo(buffer);
 
-					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
-					for(unsigned int i=0; i<PACKET_SIZE; i++) {
-						char buffer[8];
-						sprintf(buffer, "%02x,", stage.buffer[i]);
-						packetStr = packetStr + buffer;
-					}
-					pLogger->LogInfo(packetStr);
+//					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
+//					for(unsigned int i=0; i<PACKET_SIZE; i++) {
+//						char buffer[8];
+//						sprintf(buffer, "%02x,", stage.buffer[i]);
+//						packetStr = packetStr + buffer;
+//					}
+//					pLogger->LogInfo(packetStr);
 				}
 				stage.state = OUTPUT_IDLE; // an ACK was sent out.
 			}
@@ -759,13 +770,13 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x D %02x", stage.state, stage.buffer[1]);
 					pLogger->LogInfo(buffer);
 
-					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
-					for(unsigned int i=0; i<PACKET_SIZE; i++) {
-						char buffer[8];
-						sprintf(buffer, "%02x,", stage.buffer[i]);
-						packetStr = packetStr + buffer;
-					}
-					pLogger->LogInfo(packetStr);
+//					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
+//					for(unsigned int i=0; i<PACKET_SIZE; i++) {
+//						char buffer[8];
+//						sprintf(buffer, "%02x,", stage.buffer[i]);
+//						packetStr = packetStr + buffer;
+//					}
+//					pLogger->LogInfo(packetStr);
 				}
 				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten wrong data packet was sent to: " + device.deviceName);
 				stage.state = OUTPUT_IDLE;
@@ -777,13 +788,13 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x A %02x", stage.state, stage.buffer[1]);
 					pLogger->LogInfo(buffer);
 
-					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
-					for(unsigned int i=0; i<PACKET_SIZE; i++) {
-						char buffer[8];
-						sprintf(buffer, "%02x,", stage.buffer[i]);
-						packetStr = packetStr + buffer;
-					}
-					pLogger->LogInfo(packetStr);
+//					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
+//					for(unsigned int i=0; i<PACKET_SIZE; i++) {
+//						char buffer[8];
+//						sprintf(buffer, "%02x,", stage.buffer[i]);
+//						packetStr = packetStr + buffer;
+//					}
+//					pLogger->LogInfo(packetStr);
 				}
 				stage.state = OUTPUT_WAITING_ACK; //continue waiting for acknowledgment.
 			}
@@ -852,6 +863,10 @@ void CDeviceManager::pollDevices()
 				if(events & POLLIN) {
 					//device can be read.
 					onDeviceCanBeRead(_devices[i]);
+				}
+				else
+				{
+					sleep(1);//avoid 100% CPU, and give a chance to send data to device
 				}
 			}
 		}
@@ -1041,10 +1056,10 @@ void CDeviceManager::DataOutputStage::SendData(std::deque<char>& dataQueue)
 	}
 
 	{
-		char buffer[256];
+		char log[256];
 
-		sprintf(buffer, "CDeviceManager::DataOutputStage::SendData prepare data packet: %02x", packet[1]);
-		pLogger->LogInfo(buffer);
+		sprintf(log, "CDeviceManager::DataOutputStage::SendData prepare data packet: %02x", packet[1]);
+		pLogger->LogInfo(log);
 	}
 
 	state = OUTPUT_SENDING;
