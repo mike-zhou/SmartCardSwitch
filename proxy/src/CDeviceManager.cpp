@@ -488,7 +488,7 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 		device.incoming.push_back(appData[i]);
 	}
 	//pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead binary APP content: " + binaryLog);
-	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead char APP content: " + charLog);
+	//pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead char APP content: " + charLog);
 
 	//notify upper layer of complete replies
 	for(;;)
