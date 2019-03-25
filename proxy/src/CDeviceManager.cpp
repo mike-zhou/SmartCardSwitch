@@ -487,8 +487,8 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 
 		device.incoming.push_back(appData[i]);
 	}
-	//pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead binary APP content: " + binaryLog);
-	//pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead char APP content: " + charLog);
+//	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead binary APP content: " + binaryLog);
+//	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead char APP content: " + charLog);
 
 	//notify upper layer of complete replies
 	for(;;)
@@ -680,9 +680,21 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 					break;
 				}
 			}
-			if(amount > 0) {
+			if(amount > 0)
+			{
 				stage.sendingIndex += amount;
 				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten wrote " + std::to_string(amount) + " bytes to " + device.fileName);
+				{
+					char logBuf[16];
+					std::string logContent = "CDeviceManager::onDeviceCanBeWritten content: ";
+
+					for(unsigned int i=0; i<amount; i++)
+					{
+						sprintf(logBuf, "%02x,", pData[i]);
+						logContent = logContent + logBuf;
+					}
+					pLogger->LogInfo(logContent);
+				}
 			}
 			else {
 				auto errorNumber = errno;
@@ -836,7 +848,7 @@ void CDeviceManager::pollDevices()
 		fd.revents = 0;
 		fdVector.push_back(fd);
 	}
-	auto rc = poll(fdVector.data(), fdVector.size(), 10);
+	auto rc = poll(fdVector.data(), fdVector.size(), 1);
 	auto errorNumber = errno;
 	if(rc == 0) {
 		return; //
