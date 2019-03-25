@@ -73,7 +73,7 @@ private:
 		unsigned char buffer[PACKET_SIZE];
 		InputStageState state;
 		unsigned int byteAmount;
-		Poco::Timestamp timeStamp;
+		Poco::Timestamp inputTimeStamp;
 		unsigned char previousId;
 		CrcCcitt crc16;
 
@@ -103,7 +103,7 @@ private:
 		unsigned char buffer[PACKET_SIZE];
 		OutputStageState state;
 		unsigned int sendingIndex;
-		Poco::Timestamp timeStamp;
+		Poco::Timestamp ackTimeStamp;
 		unsigned char packetId;
 
 		CrcCcitt crc16;
@@ -130,8 +130,13 @@ private:
 
 	struct Device
 	{
+		static const Poco::Timestamp::TimeDiff FileReadWarningThreshold = 1000000; //1 second
+		static const Poco::Timestamp::TimeDiff FileWriteWarningThreshold = 1000000; // 1 second
+
 		enum DeviceState state;
-		Poco::Timestamp timeStamp;
+		Poco::Timestamp bufferCleaningStamp;
+		Poco::Timestamp readStamp;
+		Poco::Timestamp writeStamp;
 
 		int fd;
 		std::string fileName; //name of device file in Linux /dev

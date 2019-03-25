@@ -367,7 +367,7 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 		if(stage.byteAmount > 0)
 		{
 			//a partial packet is in buffer
-			if(stage.timeStamp.elapsed() >= DATA_INPUT_TIMEOUT)
+			if(stage.inputTimeStamp.elapsed() >= DATA_INPUT_TIMEOUT)
 			{
 				pLogger->LogError("CDeviceManager::onDeviceCanBeRead packet receiving timeout");
 				stage.byteAmount = 0;
@@ -396,7 +396,7 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 			if(stage.byteAmount < PACKET_SIZE)
 			{
 				//partial packet
-				stage.timeStamp.update(); //update time stamp
+				stage.inputTimeStamp.update(); //update time stamp
 			}
 			else
 			{
@@ -579,7 +579,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 	{
 		auto & stage = device.dataExchange.outputStage;
 
-		if(stage.timeStamp.elapsed() >= DATA_ACK_TIMEOUT)
+		if(stage.ackTimeStamp.elapsed() >= DATA_ACK_TIMEOUT)
 		{
 			//no acknowledgment in time, re-send this packet.
 			for(unsigned int i=0; i<PACKET_SIZE; i++) {
@@ -619,13 +619,13 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 				enqueueCommand(device, command);
 				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten clearing device buffer: " + device.fileName);
 				device.state = DeviceState::CLEARING_BUFFER;
-				device.timeStamp.update();
+				device.bufferCleaningStamp.update();
 			}
 			break;
 
 			case DeviceState::CLEARING_BUFFER:
 			{
-				if(device.timeStamp.elapsed() > 1000000) {
+				if(device.bufferCleaningStamp.elapsed() > 1000000) {
 					//1 second is enough for device to spit out rubbish in receiving buffer.
 					device.state = DeviceState::BUFFER_CLEARED;
 					pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten cleared device buffer: " + device.fileName);
@@ -733,7 +733,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 //					}
 //					pLogger->LogInfo(packetStr);
 				}
-				stage.timeStamp.update();
+				stage.ackTimeStamp.update();
 				stage.state = OUTPUT_WAITING_ACK; // a data packet was sent, wait for the ACK.
 			}
 			else if(stage.buffer[0] == ACK_PACKET_TAG)
@@ -870,16 +870,29 @@ void CDeviceManager::pollDevices()
 			{
 				if(events & POLLOUT) {
 					//device can be written.
+					_devices[i].writeStamp.update();
 					onDeviceCanBeWritten(_devices[i]);
 				}
 				if(events & POLLIN) {
 					//device can be read.
+					_devices[i].readStamp.update();
 					onDeviceCanBeRead(_devices[i]);
 				}
 				else
 				{
 					sleep(1);//avoid 100% CPU, and give a chance to send data to device
 				}
+			}
+
+			if(_devices[i].writeStamp.elapsed() > _devices[i].FileWriteWarningThreshold)
+			{
+				_devices[i].writeStamp.update();
+				pLogger->LogError("CDeviceManager::pollDevices writing unavailable: " + _devices[i].fileName);
+			}
+			if(_devices[i].readStamp.elapsed() > _devices[i].FileReadWarningThreshold)
+			{
+				_devices[i].readStamp.update();
+				pLogger->LogError("CDeviceManager::pollDevices reading unavailable: " + _devices[i].fileName);
 			}
 		}
 	}
