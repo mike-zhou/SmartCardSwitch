@@ -1529,7 +1529,7 @@ void UserCommandRunner::pullUpKeyPressingArm()
 {
 	std::string cmd;
 	//to be made configurable
-	cmd = ConsoleCommandFactory::CmdBdcForward(1, 2, 3, 15000);
+	cmd = ConsoleCommandFactory::CmdBdcForward(1, 3, 2, 15000);
 	runConsoleCommand(cmd);
 }
 
@@ -1537,7 +1537,7 @@ void UserCommandRunner::putDownKeyPressingArm()
 {
 	std::string cmd;
 	//to be made configurable
-	cmd = ConsoleCommandFactory::CmdBdcReverse(1, 2, 3, 15000);
+	cmd = ConsoleCommandFactory::CmdBdcReverse(1, 3, 2, 15000);
 	runConsoleCommand(cmd);
 }
 
