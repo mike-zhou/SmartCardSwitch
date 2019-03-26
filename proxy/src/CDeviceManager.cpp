@@ -746,14 +746,12 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 				stage.sendingIndex += amount;
 				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten wrote " + std::to_string(amount) + " bytes to " + device.fileName);
 				{
-					char logBuf[16];
 					std::string logContent = "CDeviceManager::onDeviceCanBeWritten content: ";
 
 					for(unsigned int i=0; i<amount; i++)
 					{
-						sprintf(logBuf, "%02x,", pData[i]);
-						logContent = logContent + logBuf;
-			}
+						logContent.push_back(pData[i]);
+					}
 					pLogger->LogInfo(logContent);
 				}
 			}
