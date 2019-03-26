@@ -92,7 +92,7 @@ void Logger::Log(const std::string& log)
 
 void Logger::LogError(const std::string& err)
 {
-	Log(err);
+	Log("ERROR: " + err);
 }
 
 void Logger::LogDebug(const std::string& debug)
