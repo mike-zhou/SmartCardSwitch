@@ -791,7 +791,6 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 //					pLogger->LogInfo(packetStr);
 				}
 				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten wrong data packet was sent to: " + device.deviceName);
-				stage.state = OUTPUT_IDLE;
 			}
 			else if(stage.buffer[0] == ACK_PACKET_TAG)
 			{
@@ -808,13 +807,13 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 //					}
 //					pLogger->LogInfo(packetStr);
 				}
-				stage.state = OUTPUT_WAITING_ACK; //continue waiting for acknowledgment.
 			}
 			else
 			{
 				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten packet of unknown type was sent");
-				stage.state = OUTPUT_IDLE;
 			}
+
+			stage.state = OUTPUT_WAITING_ACK; //continue waiting for acknowledgment.
 		}
 		else if(stage.sendingIndex > PACKET_SIZE)
 		{
