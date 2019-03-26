@@ -23,7 +23,7 @@ public:
 private:
 	virtual void runTask() override;
 
-	void onDeviceCanBeRead(int fd);
+	void onMonitorCanBeRead(int fd);
 
 	std::string _deviceFile;
 	static const int BUFFER_LENGTH = 1024;

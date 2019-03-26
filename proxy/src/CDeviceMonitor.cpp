@@ -25,7 +25,7 @@ CDeviceMonitor::CDeviceMonitor(const std::string& filePath): Task("CDeviceMonito
 	_deviceFile = filePath;
 }
 
-void CDeviceMonitor::onDeviceCanBeRead(int fd)
+void CDeviceMonitor::onMonitorCanBeRead(int fd)
 {
 	memset(_buffer, 0, BUFFER_LENGTH);
 	auto amount = read(fd, _buffer, BUFFER_LENGTH);
@@ -177,7 +177,7 @@ void CDeviceMonitor::runTask()
 
 					if(events & POLLIN) {
 						//device can be read.
-						onDeviceCanBeRead(monitorFileDescriptor);
+						onMonitorCanBeRead(monitorFileDescriptor);
 					}
 					if(events & POLLERR)
 					{
