@@ -956,7 +956,7 @@ void CDeviceManager::pollDevices()
 			if(_devices[i].readStamp.elapsed() > _devices[i].FileReadWarningThreshold)
 			{
 				_devices[i].readStamp.update();
-				pLogger->LogError("CDeviceManager::pollDevices reading unavailable: " + _devices[i].fileName);
+				//pLogger->LogError("CDeviceManager::pollDevices reading unavailable: " + _devices[i].fileName);
 			}
 		}
 	}
