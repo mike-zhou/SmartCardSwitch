@@ -32,16 +32,14 @@ void CDeviceMonitor::onMonitorCanBeRead(int fd)
 	auto errorNumber = errno;
 
 	if(amount == 0) {
-		pLogger->LogError("CDeviceMonitor::onDeviceCanBeRead error: EOF is returned");
+		pLogger->LogError("CDeviceMonitor::onMonitorCanBeRead ERROR: EOF is returned");
 	}
 	else if(amount < 0) {
-		pLogger->LogError("CDeviceMonitor::onDeviceCanBeRead error number: " + std::to_string(errorNumber));
+		pLogger->LogError("CDeviceMonitor::onMonitorCanBeRead ERROR: error number: " + std::to_string(errorNumber));
 	}
 	else
 	{
-		std::string outputStr;
-
-		pLogger->LogInfo("CDeviceMonitor::onDeviceCanBeRead " + std::to_string(amount) + " bytes from: " + _deviceFile);
+		pLogger->LogInfo("CDeviceMonitor::onMonitorCanBeRead " + std::to_string(amount) + " bytes from: " + _deviceFile);
 //		for(int i=0; i<amount; i++)
 //		{
 //			char buf[32];
@@ -49,8 +47,8 @@ void CDeviceMonitor::onMonitorCanBeRead(int fd)
 //			sprintf(buf, "%02x,", _buffer[i]);
 //			outputStr = outputStr + std::string(buf);
 //		}
-//		pLogger->LogInfo("CDeviceMonitor::onDeviceCanBeRead hex content: " + outputStr);
-		pLogger->LogInfo("CDeviceMonitor::onDeviceCanBeRead char content: " + std::string((char *)_buffer));
+//		pLogger->LogInfo("CDeviceMonitor::onMonitorCanBeRead hex content: " + outputStr);
+		pLogger->LogInfo("CDeviceMonitor::onMonitorCanBeRead char content: " + std::string((char *)_buffer));
 	}
 }
 
