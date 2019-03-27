@@ -44,7 +44,6 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.libs.404139510" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value="scsClient"/>
-									<listOptionValue builtIn="false" value="PocoZipd"/>
 									<listOptionValue builtIn="false" value="PocoNetd"/>
 									<listOptionValue builtIn="false" value="PocoUtild"/>
 									<listOptionValue builtIn="false" value="PocoXMLd"/>
