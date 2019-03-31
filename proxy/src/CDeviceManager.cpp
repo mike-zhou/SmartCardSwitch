@@ -387,7 +387,7 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 			//some bytes arrive.
 			{
 				char log[256];
-				sprintf(log, "CDeviceManager::onDeviceCanBeRead %d bytes from %s", amount, device.fileName.c_str());
+				sprintf(log, "CDeviceManager::onDeviceCanBeRead %ld bytes from %s", amount, device.fileName.c_str());
 				pLogger->LogInfo(log);
 			}
 
@@ -688,7 +688,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 					char logBuf[16];
 					std::string logContent = "CDeviceManager::onDeviceCanBeWritten content: ";
 
-					for(unsigned int i=0; i<amount; i++)
+					for(int i=0; i<amount; i++)
 					{
 						sprintf(logBuf, "%02x,", pData[i]);
 						logContent = logContent + logBuf;

@@ -180,7 +180,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 4 %d %d", _clks,  _commandId & 0xffff);
+		sprintf(buf, "C 4 %d %ld", _clks,  _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -295,7 +295,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 43 %d %d", _bdcIndex,  _commandId & 0xffff);
+		sprintf(buf, "C 43 %d %ld", _bdcIndex,  _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -326,7 +326,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 44 %d %d %d %d %d", _bdcIndex, _lowClks, _highClks, _cycles, _commandId & 0xffff);
+		sprintf(buf, "C 44 %d %d %d %d %ld", _bdcIndex, _lowClks, _highClks, _cycles, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -360,7 +360,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 45 %d %d %d %d %d", _bdcIndex, _lowClks, _highClks, _cycles,  _commandId & 0xffff);
+		sprintf(buf, "C 45 %d %d %d %d %ld", _bdcIndex, _lowClks, _highClks, _cycles,  _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -391,7 +391,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 46 %d %d", _bdcIndex,  _commandId & 0xffff);
+		sprintf(buf, "C 46 %d %ld", _bdcIndex,  _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -419,7 +419,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 47 %d %d", _bdcIndex,  _commandId & 0xffff);
+		sprintf(buf, "C 47 %d %ld", _bdcIndex,  _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -549,7 +549,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 51 %d %d %d %d", _stepperIndex, _lowClks, _highClks, _commandId & 0xffff);
+		sprintf(buf, "C 51 %d %d %d %ld", _stepperIndex, _lowClks, _highClks, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -580,7 +580,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 52 %d %d %d", _stepperIndex, _buffer, _commandId & 0xffff);
+		sprintf(buf, "C 52 %d %d %ld", _stepperIndex, _buffer, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -611,7 +611,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 53 %d %d %d", _stepperIndex, _decrement, _commandId & 0xffff);
+		sprintf(buf, "C 53 %d %d %ld", _stepperIndex, _decrement, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -642,7 +642,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 54 %d %d %d", _stepperIndex, _buffer, _commandId & 0xffff);
+		sprintf(buf, "C 54 %d %d %ld", _stepperIndex, _buffer, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -673,7 +673,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 55 %d %d %d", _stepperIndex, _increment, _commandId & 0xffff);
+		sprintf(buf, "C 55 %d %d %ld", _stepperIndex, _increment, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -704,7 +704,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 56 %d %d %d", _stepperIndex, _enable ? 1 : 0, _commandId & 0xffff);
+		sprintf(buf, "C 56 %d %d %ld", _stepperIndex, _enable ? 1 : 0, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -735,7 +735,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 57 %d %d %d", _stepperIndex, _forward ? 1 : 0, _commandId & 0xffff);
+		sprintf(buf, "C 57 %d %d %ld", _stepperIndex, _forward ? 1 : 0, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -766,7 +766,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 58 %d %d %d", _stepperIndex, _steps, _commandId & 0xffff);
+		sprintf(buf, "C 58 %d %d %ld", _stepperIndex, _steps, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -789,7 +789,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 59 %d %d", _stepperIndex, _commandId & 0xffff);
+		sprintf(buf, "C 59 %d %ld", _stepperIndex, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -830,7 +830,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 60 %d %d %d %d %d",
+		sprintf(buf, "C 60 %d %d %d %d %ld",
 				_stepperIndex,
 				_locatorIndex,
 				_lineNumberStart,
@@ -863,7 +863,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 61 %d %d", _stepperIndex, _commandId & 0xffff);
+		sprintf(buf, "C 61 %d %ld", _stepperIndex, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -894,7 +894,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 62 %d %d %d", _stepperIndex, _state, _commandId & 0xffff);
+		sprintf(buf, "C 62 %d %d %ld", _stepperIndex, _state, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -922,7 +922,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 100 %d %d", _locatorIndex, _commandId & 0xffff);
+		sprintf(buf, "C 100 %d %ld", _locatorIndex, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -944,7 +944,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 10 %d", _commandId & 0xffff);
+		sprintf(buf, "C 10 %ld", _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -969,7 +969,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 11 %d", _commandId & 0xffff);
+		sprintf(buf, "C 11 %ld", _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -994,7 +994,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 12 %d", _commandId & 0xffff);
+		sprintf(buf, "C 12 %ld", _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -1021,7 +1021,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 30 %d %d", _index, _commandId & 0xffff);
+		sprintf(buf, "C 30 %d %ld", _index, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -1049,7 +1049,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 31 %d %d", _index, _commandId & 0xffff);
+		sprintf(buf, "C 31 %d %ld", _index, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -1077,7 +1077,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 32 %d %d", _index, _commandId & 0xffff);
+		sprintf(buf, "C 32 %d %ld", _index, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
