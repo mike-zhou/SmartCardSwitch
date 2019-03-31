@@ -18,11 +18,11 @@ private:
 	static const unsigned short VERSION = 0x0000;
 	static const unsigned short TAIL_TAG = 0xCCDD;
 
-	static const int headerWidth = 2;
-	static const int lengthWidth= 2;
-	static const int versionWidth = 2;
-	static const int tailWidth = 2;
-	static const int minimumCommandPacketLength = headerWidth + lengthWidth + versionWidth + tailWidth;
+	static const unsigned int headerWidth = 2;
+	static const unsigned int lengthWidth= 2;
+	static const unsigned int versionWidth = 2;
+	static const unsigned int tailWidth = 2;
+	static const unsigned int minimumCommandPacketLength = headerWidth + lengthWidth + versionWidth + tailWidth;
 
 	enum DataState
 	{
@@ -75,7 +75,7 @@ private:
 			return DataState::TAIL_ERROR;
 		}
 		//check JSON
-		for(int i=0; i<(contentLength - versionWidth - tailWidth); i++) {
+		for(unsigned int i=0; i<(contentLength - versionWidth - tailWidth); i++) {
 			unsigned char c = data[headerWidth + lengthWidth + versionWidth +i];
 			if((c < ' ') || (c > '~')) {
 				//illegal JSON character
@@ -83,12 +83,12 @@ private:
 			}
 		}
 		//retrieve command
-		for(int i=0; i<(contentLength - versionWidth - tailWidth); i++) {
+		for(unsigned int i=0; i<(contentLength - versionWidth - tailWidth); i++) {
 			unsigned char c = data[headerWidth + lengthWidth + versionWidth +i];
 			jsonCmd.push_back(c);
 		}
 		//delete data
-		for(int i=0; i<(headerWidth + lengthWidth + contentLength); i++) {
+		for(unsigned int i=0; i<(headerWidth + lengthWidth + contentLength); i++) {
 			data.pop_front();
 		}
 
