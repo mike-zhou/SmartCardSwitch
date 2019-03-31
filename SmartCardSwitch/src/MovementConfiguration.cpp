@@ -225,7 +225,7 @@ bool MovementConfiguration::SetStepperBoundary(unsigned int index,
 	bool rc = false;
 	char buf[256];
 
-	sprintf(buf, "MovementConfiguration::SetStepperBoundary index: %ld, locatorIndex: %ld, start: %ld, terminal: %ld", index, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
+	sprintf(buf, "MovementConfiguration::SetStepperBoundary index: %d, locatorIndex: %d, start: %d, terminal: %d", index, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
 	std::string info(buf);
 	pLogger->LogInfo(info);
 
@@ -262,7 +262,7 @@ bool MovementConfiguration::SetStepperGeneral(unsigned int index,
 	bool rc = false;
 	char buf[512];
 
-	sprintf(buf, "MovementConfiguration::SetStepperGeneral index: %ld, lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
+	sprintf(buf, "MovementConfiguration::SetStepperGeneral index: %d, lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
 			index, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	std::string info(buf);
 	pLogger->LogInfo(info);
@@ -360,7 +360,7 @@ bool MovementConfiguration::GetStepperBoundary(unsigned int index,
 
 	char buf[256];
 
-	sprintf(buf, "MovementConfiguration::GetStepperBoundary index: %ld, locatorIndex: %ld, start: %ld, terminal: %ld", index, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
+	sprintf(buf, "MovementConfiguration::GetStepperBoundary index: %d, locatorIndex: %d, start: %d, terminal: %d", index, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
 	std::string info(buf);
 	pLogger->LogInfo(info);
 
@@ -392,7 +392,7 @@ bool MovementConfiguration::GetStepperGeneral(unsigned int index,
 
 	char buf[512];
 
-	sprintf(buf, "MovementConfiguration::GetStepperGeneral index: %ld, lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
+	sprintf(buf, "MovementConfiguration::GetStepperGeneral index: %d, lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
 			index, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	std::string info(buf);
 	pLogger->LogInfo(info);
