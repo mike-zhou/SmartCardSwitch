@@ -817,7 +817,7 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 				if(dataRead == 0)
 				{
 					char buf[256];
-					sprintf(buf, "CSocketManager::onSocketReadable socket closed: %s, socketId: %Ld",
+					sprintf(buf, "CSocketManager::onSocketReadable socket closed: %s, socketId: %ld",
 							socketWrapper.socket.peerAddress().toString().c_str(),
 							socketWrapper.socketId);
 					pLogger->LogInfo(buf);
@@ -828,7 +828,7 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 				else
 				{
 					char buf[256];
-					sprintf(buf, "CSocketManager::onSocketReadable %d bytes from %s, socketId: %Ld",
+					sprintf(buf, "CSocketManager::onSocketReadable %d bytes from %s, socketId: %ld",
 							dataRead,
 							socketWrapper.socket.peerAddress().toString().c_str(),
 							socketWrapper.socketId);
@@ -843,13 +843,13 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 			catch(Poco::TimeoutException& e)
 			{
 				char buf[256];
-				sprintf(buf, "CSocketManager::onSocketReadable timeout in socket: %Ld", socketWrapper.socketId);
+				sprintf(buf, "CSocketManager::onSocketReadable timeout in socket: %ld", socketWrapper.socketId);
 				pLogger->LogError(buf);
 			}
 			catch(Poco::Net::NetException& e)
 			{
 				char buf[256];
-				sprintf(buf, "CSocketManager::onSocketReadable NetException in socket: %Ld: %s",
+				sprintf(buf, "CSocketManager::onSocketReadable NetException in socket: %ld: %s",
 						socketWrapper.socketId,
 						e.displayText().c_str());
 				pLogger->LogError(buf);
@@ -857,7 +857,7 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 			catch(...)
 			{
 				char buf[256];
-				sprintf(buf, "CSocketManager::onSocketReadable unknown exception in socket: %Ld", socketWrapper.socketId);
+				sprintf(buf, "CSocketManager::onSocketReadable unknown exception in socket: %ld", socketWrapper.socketId);
 				pLogger->LogError(buf);
 			}
 		}
@@ -916,7 +916,7 @@ void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 			dataSent = 0;
 			if(dataSize > 0) {
 				char buf[256];
-				sprintf(buf, "CSocketManager::onSocketWritable writing %d bytes to socket %Ld", dataSize, socketWrapper.socketId);
+				sprintf(buf, "CSocketManager::onSocketWritable writing %d bytes to socket %ld", dataSize, socketWrapper.socketId);
 				pLogger->LogInfo(buf);
 				dataSent = socketWrapper.socket.sendBytes(buffer, dataSize, 0);
 			}
@@ -926,7 +926,7 @@ void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 			//remove the sent data from the sending stage.
 			if(dataSent > 0) {
 				char buf[256];
-				sprintf(buf, "CSocketManager::onSocketWritable wrote %d bytes to socket %Ld", dataSize, socketWrapper.socketId);
+				sprintf(buf, "CSocketManager::onSocketWritable wrote %d bytes to socket %ld", dataSize, socketWrapper.socketId);
 				pLogger->LogInfo(buf);
 				for(;dataSent>0; dataSent--) {
 					socketWrapper.outgoing.pop_front();
@@ -934,7 +934,7 @@ void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 			}
 			else {
 				char buf[256];
-				sprintf(buf, "CSocketManager::onSocketWritable wrote no byte to socket %Ld", socketWrapper.socketId);
+				sprintf(buf, "CSocketManager::onSocketWritable wrote no byte to socket %ld", socketWrapper.socketId);
 				pLogger->LogError(buf);
 				break;
 			}
