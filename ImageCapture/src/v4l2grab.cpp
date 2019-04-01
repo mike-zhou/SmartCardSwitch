@@ -204,7 +204,7 @@ static void imageProcess(const void* p, struct timeval timestamp)
 	//timestamp.tv_sec
 	//timestamp.tv_usec
 	unsigned char* src = (unsigned char*)p;
-	unsigned char* dst = malloc(width*height*3*sizeof(char));
+	unsigned char* dst = (unsigned char*)malloc(width*height*3*sizeof(char));
 
 	YUV420toYUV444(width, height, src, dst);
 
@@ -327,7 +327,7 @@ static void deviceUninit(void)
 
 static void readInit(unsigned int buffer_size)
 {
-	buffers = calloc(1, sizeof(*buffers));
+	buffers = (struct buffer *)calloc(1, sizeof(*buffers));
 
 	if (!buffers) {
 		fprintf(stderr, "Out of memory\n");
@@ -611,7 +611,7 @@ int main(int argc, char **argv)
 	if(continuous == 1) {
 		int max_name_len = snprintf(NULL,0,continuousFilenameFmt,jpegFilename,UINT32_MAX,INT64_MAX);
 		jpegFilenamePart = jpegFilename;
-		jpegFilename = calloc(max_name_len+1,sizeof(char));
+		jpegFilename = (char*)calloc(max_name_len+1,sizeof(char));
 		strcpy(jpegFilename,jpegFilenamePart);
 	}
 	
