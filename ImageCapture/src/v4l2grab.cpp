@@ -104,7 +104,6 @@ struct buffer *         buffers         = NULL;
 static unsigned int _width;
 static unsigned int _height;
 static int _fps;
-static int _continuous;
 static unsigned char _jpegQuality;
 static std::string _deviceFile;
 static unsigned char * _pYUV422Buffer;
@@ -583,7 +582,6 @@ protected:
 				_height = config().getUInt("height", 480);
 				_fps = config().getInt("fps", 30);
 				_jpegQuality = config().getUInt("quality", 70);
-				_continuous = config().getUInt("continuous", 0);
 			}
 			catch(Poco::NotFoundException& e)
 			{
@@ -607,7 +605,6 @@ protected:
 			pLogger->CopyToConsole(true);
 			tmLogger.start(pLogger);
 			pLogger->LogInfo("**** ImageCapture version 1.0.0 ****");
-
 
 			//start the CaptureTask
 			CaptureTask * pTask = new CaptureTask();
