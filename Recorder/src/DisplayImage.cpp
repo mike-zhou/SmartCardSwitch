@@ -8,6 +8,10 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "Poco/Timestamp.h"
+#include "Poco/DateTimeFormat.h"
+#include "Poco/DateTimeFormatter.h"
+
 using namespace cv;
 
 static int showImage(int argc, char** argv)
@@ -33,7 +37,10 @@ static int captureImage()
 		printf("Video device cannot be opened\r\n");
 		return -1;
 	}
+	cap.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
+	cap.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
 
+	Poco::Timestamp timeStamp;
 	namedWindow( "Display Image", WINDOW_AUTOSIZE );
 
 	cv::Mat frame;
@@ -41,10 +48,17 @@ static int captureImage()
 	{
 		cap >> frame;
 		imshow( "Display Image", frame );
+
+		timeStamp.update();
+		std::string rc = Poco::DateTimeFormatter::format(timeStamp, Poco::DateTimeFormat::ISO8601_FRAC_FORMAT);
+		printf("%s\r\n", rc.c_str());
+
 		if(waitKey(1) > 0) {
 			break;
 		}
 	}
+
+	cap.release();
 
 	return 0;
 }
