@@ -46,12 +46,18 @@ static int captureImage()
 	cv::Mat frame;
 	for(;;)
 	{
+		//read frame
 		cap >> frame;
 		imshow( "Display Image", frame );
 
+		//output time information
 		timeStamp.update();
 		std::string rc = Poco::DateTimeFormatter::format(timeStamp, Poco::DateTimeFormat::ISO8601_FRAC_FORMAT);
 		printf("%s\r\n", rc.c_str());
+
+		//save to file
+		rc = rc + ".jpg";
+		imwrite(rc.c_str(), frame);
 
 		if(waitKey(1) > 0) {
 			break;
