@@ -93,8 +93,8 @@ protected:
 			std::string logFile;
 			std::string logFileSize;
 			std::string logFileAmount;
-			std::string controllingFile;
 			std::string monitorFile;
+			std::vector<std::string> controllingFileVec;
 
 			//use the designated configuration if it exist
 			if(args.size() > 0)
@@ -125,7 +125,21 @@ protected:
 				logFileSize = config().getString("log_file_size", "1M");
 				logFileAmount = config().getString("log_file_amount", "10");
 				//controlling device file
-				controllingFile = config().getString("controlling_device_file", std::string());
+				for(int i=0; ; i++)
+				{
+					char keyBuf[128];
+					std::string controllingFile;
+
+					sprintf(keyBuf, "controlling_device_file_%d", i);
+					controllingFile = config().getString(keyBuf, std::string());
+
+					if(controllingFile.empty()) {
+						break;
+					}
+					else {
+						controllingFileVec.push_back(controllingFile);
+					}
+				}
 				//monitorFile
 				monitorFile = config().getString("monitor_device_file", std::string());
 			}
@@ -153,7 +167,13 @@ protected:
 
 			CDeviceManager * pDeviceManager = new CDeviceManager;
 			CSocketManager * pSocketManager = new CSocketManager;
-			pDeviceManager->AddDeviceFile(controllingFile);
+			if(controllingFileVec.empty()) {
+				pLogger->LogError("no controlling file is specified");
+			}
+			for(int i=0; i < controllingFileVec.size(); i++)
+			{
+				pDeviceManager->AddDeviceFile(controllingFileVec[i]);
+			}
 			pDeviceManager->SetObserver(pSocketManager);
 			pSocketManager->SetDevice(pDeviceManager);
 
