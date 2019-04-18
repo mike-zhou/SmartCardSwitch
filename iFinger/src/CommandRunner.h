@@ -21,6 +21,22 @@
  * CommandRunner works as a server, which accepts socket connections from clients,
  * receives key press request, and sends the request to solenoid driver.
  * One key pressing command per socket at a time.
+ *
+ * command:
+ * 	{
+ * 		"userCommand":"press key",
+ * 		"commandId":"unique command id",
+ * 		"index":0
+ * 	}
+ *
+ * reply:
+ * 	{
+ * 		"userCommand":"press key",
+ * 		"commandId":"unique command id",
+ * 		"index":0,
+ * 		"result":"succeeded"|"failed",
+ * 		"errorInfo":"error information"
+ * 	}
  */
 class CommandRunner: public Poco::Task, public ISocketDeposit
 {
@@ -34,6 +50,9 @@ protected:
 
 	//Poco::Task
 	void runTask();
+
+private:
+	static const unsigned int SOLENOID_AMOUNT = 32;
 
 	Poco::Mutex _mutex;
 	unsigned long _lowClks;
@@ -53,6 +72,7 @@ protected:
 	std::vector<unsigned char> _command;
 	std::vector<unsigned char> _reply;
 
+	void onCommand(StreamSocket & socket, const std::string & cmd);
 	void connectDevice();
 	void pollClientSockets();
 	void pollDeviceSocket();
