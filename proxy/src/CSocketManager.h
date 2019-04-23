@@ -134,6 +134,7 @@ private:
 	void onCommandDcmPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDcmPowerOn> cmdPtr);
 	void onCommandDcmPowerOff(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDcmPowerOff> cmdPtr);
 	void onCommandDcmQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDcmQueryPower> cmdPtr);
+	void onCommandSolenoidActivate(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSolenoidActivate> cmdPtr);
 	void sendTranslatedCommandToDevice(long long socketId, const std::string& cmdString);
 
 	long long newSocketId() { return ++_lastSocketId; }
