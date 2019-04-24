@@ -1504,7 +1504,6 @@ std::string ReplyTranslater::solenoidActivate(Poco::JSON::Object::Ptr& replyPtr)
 	unsigned long lowClks;
 	unsigned long highClks;
 	std::string strLowInput;
-	long lowInput;
 
 	//parameters
 	auto size = ds["params"].size();
