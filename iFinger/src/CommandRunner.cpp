@@ -5,6 +5,7 @@
  *      Author: mikez
  */
 
+#include "Poco/Foundation.h"
 #include "Poco/Net/Socket.h"
 #include "Poco/Exception.h"
 #include "Poco/JSON/Parser.h"
@@ -34,11 +35,9 @@ CommandRunner::CommandRunner(unsigned long lowClks, unsigned long highClks, cons
 
 void CommandRunner::AddSocket(StreamSocket& socket)
 {
-	Poco::ScopedLock lock(_mutex);
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	if(_isPressing) {
-
-	}
+	_clientSockets.push_back(socket);
 }
 
 void CommandRunner::replyUser(StreamSocket & socket, const std::string & reply)
@@ -62,9 +61,335 @@ void CommandRunner::replyUser(StreamSocket & socket, const std::string & reply)
 	}
 }
 
+std::string CommandRunner::execDeviceCommand(const std::vector<unsigned char> & cmdPkg)
+{
+	std::string reply;
+	Poco::Timespan zeroSpan;
+	Poco::Timespan timedSpan(10000); //10 milliseconds
+	unsigned char buffer[1024];
+	bool bException = false;
+	int amount;
+	std::deque<unsigned char> deviceReply;
+
+	try
+	{
+		do
+		{
+			bool bError = false;
+
+			//clear socket input buffer
+			for(;;)
+			{
+				if(_deviceSocket.poll(zeroSpan, Poco::Net::Socket::SELECT_ERROR)) {
+					pLogger->LogError("CommandRunner::exeDeviceCommand socket error");
+					bError = true;
+				}
+				else if(_deviceSocket.poll(zeroSpan, Poco::Net::Socket::SELECT_READ))
+				{
+					amount = _deviceSocket.receiveBytes(buffer, 1024);
+					if(amount > 0) {
+						pLogger->LogInfo("CommandRunner::exeDeviceCommand discarded " + std::to_string(amount) + " bytes");
+					}
+					else {
+						pLogger->LogError("CommandRunner::exeDeviceCommand peer socket has closed");
+						bError = true;
+						break;
+					}
+				}
+				else {
+					break; //no data in socket input buffer
+				}
+			}
+			if(bError)
+			{
+				_deviceSocket.close();
+				_socketConnected = false;
+				break;
+			}
+
+			//send command to proxy
+			amount = 0;
+			for(;amount < cmdPkg.size();)
+			{
+				int size = _deviceSocket.sendBytes(cmdPkg.data() + amount, cmdPkg.size() - amount);
+				if(size <= 0) {
+					bError = true;
+					pLogger->LogError("CommandRunner::exeDeviceCommand failed in sending cmd to device");
+					break;
+				}
+				else {
+					amount += size;
+					pLogger->LogInfo("CommandRunner::exeDeviceCommand sent " + std::to_string(amount) + "/" + std::to_string(cmdPkg.size()));
+				}
+			}
+			if(bError)
+			{
+				_deviceSocket.close();
+				_socketConnected = false;
+				break;
+			}
+
+			//receive reply
+			Poco::Timestamp receivingTime;
+			for(;;)
+			{
+				if(receivingTime.elapsed() > DEVICE_REPLY_TIMEOUT) {
+					bError = true;
+					pLogger->LogError("CommandRunner::exeDeviceCommand timeout in device reply");
+					break;
+				}
+
+				if(_deviceSocket.poll(zeroSpan, Poco::Net::Socket::SELECT_ERROR)) {
+					bError = true;
+					pLogger->LogError("CommandRunner::exeDeviceCommand socket error in receiving device reply");
+					break;
+				}
+
+				if(_deviceSocket.poll(timedSpan, Poco::Net::Socket::SELECT_READ))
+				{
+					amount = _deviceSocket.receiveBytes(buffer, 1024);
+					if(amount < 1) {
+						bError = true;
+						pLogger->LogError("CommandRunner::exeDeviceCommand peer socket closed");
+						break;
+					}
+					else
+					{
+						pLogger->LogInfo("CommandRunner::exeDeviceCommand received " + std::to_string(amount) + " bytes");
+						for(int i=0; i<amount; i++) {
+							deviceReply.push_back(buffer[i]);
+						}
+
+						std::vector<std::string> replies;
+						//try to retrieve a reply
+						MsgPackager::RetrieveMsgs(deviceReply, replies);
+						if(!replies.empty()) {
+							reply = replies[0];
+							break;
+						}
+						else {
+							pLogger->LogInfo("CommandRunner::exeDeviceCommand no valid reply");
+						}
+					}
+				}
+			}
+			if(bError)
+			{
+				_deviceSocket.close();
+				_socketConnected = false;
+			}
+
+		} while(0);
+	}
+	catch(Poco::Exception &e)
+	{
+		bException = true;
+		pLogger->LogError("CommandRunner::exeDeviceCommand exception: " + e.displayText());
+	}
+	catch(std::exception & e)
+	{
+		bException = true;
+		pLogger->LogError("CommandRunner::exeDeviceCommand exception: " + std::string(e.what()));
+	}
+	catch(...)
+	{
+		bException = true;
+		pLogger->LogError("CommandRunner::exeDeviceCommand unknown exception");
+	}
+
+	if(bException)
+	{
+		_deviceSocket.close();
+		_socketConnected = false;
+	}
+
+	return reply;
+}
+
 void CommandRunner::connectDevice()
 {
+	std::string deviceName;
 
+	//query device
+	{
+		std::string cmd;
+		std::string reply;
+		std::vector<unsigned char> cmdPkg;
+		bool bException = false;
+
+		_deviceCommandId++;
+
+		cmd = "{";
+		cmd = cmd + "\"command\":\"devices get\",";
+		cmd = cmd + "\"commandId\":" + std::to_string(_deviceCommandId);
+		cmd += "}";
+
+		MsgPackager::PackageMsg(cmd, cmdPkg);
+		reply = execDeviceCommand(cmdPkg);
+
+		if(reply.empty()) {
+			pLogger->LogError("CommandRunner::connectDevice no reply to device query");
+			return;
+		}
+		else {
+			pLogger->LogInfo("CommandRunner::connectDevice device reply: " + reply);
+		}
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var parsedReply = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedReply.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			std::string command;
+			unsigned int commandId;
+
+			command = ds["command"].toString();
+			commandId = ds["commandId"];
+
+			if(command != "devices get") {
+				pLogger->LogError("CommandRunner::connectDevice not reply to devices get");
+				return;
+			}
+			if(commandId != _deviceCommandId) {
+				pLogger->LogError("CommandRunner::connectDevice wrong commandId in reply, should be: " + std::to_string(_deviceCommandId));
+				return;
+			}
+
+			auto size = ds["devices"].size();
+			if(size < 1) {
+				pLogger->LogError("CommandRunner::connectDevice no device is connected");
+				return;
+			}
+			for(int i=0; i<size; i++)
+			{
+				std::string name = ds["devices"][i].toString();
+				pLogger->LogInfo("CommandRunner::connectDevice device: " + name);
+				if(name.find("Solenoid_Driver_") == 0)
+				{
+					deviceName = name;
+					pLogger->LogInfo("CommandRunner::connectDevice found Solenoid Driver");
+					break;
+				}
+			}
+		}
+		catch(Poco::Exception &e)
+		{
+			bException = true;
+			pLogger->LogError("CommandRunner::connectDevice exception in parsing reply: " + e.displayText());
+		}
+		catch(std::exception & e)
+		{
+			bException = true;
+			pLogger->LogError("CommandRunner::connectDevice exception in parsing reply: " + std::string(e.what()));
+		}
+		catch(...)
+		{
+			bException = true;
+			pLogger->LogError("CommandRunner::connectDevice unknown exception");
+		}
+
+		if(bException)
+		{
+			pLogger->LogError("CommandRunner::connectDevice ingore command");
+			return;
+		}
+
+		if(deviceName.empty()) {
+			pLogger->LogError("CommandRunner::connectDevice Solenoid_Driver_XXXX is not connected");
+			return;
+		}
+	}
+
+	//connect device
+	{
+		std::string cmd;
+		std::string reply;
+		std::vector<unsigned char> cmdPkg;
+		bool bException = false;
+
+		_deviceCommandId++;
+
+		cmd = "{";
+		cmd = cmd + "\"command\":\"device connect\",";
+		cmd = cmd + "\"commandId\":" + std::to_string(_deviceCommandId) + ",";
+		cmd = cmd + "\"device\":\"" + deviceName + "\"";
+		cmd += "}";
+
+		MsgPackager::PackageMsg(cmd, cmdPkg);
+		reply = execDeviceCommand(cmdPkg);
+
+		if(reply.empty()) {
+			pLogger->LogError("CommandRunner::connectDevice no reply to device connect");
+			return;
+		}
+		else {
+			pLogger->LogInfo("CommandRunner::connectDevice device reply: " + reply);
+		}
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var parsedReply = parser.parse(reply);
+			Poco::JSON::Object::Ptr objectPtr = parsedReply.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			std::string command;
+			unsigned int commandId;
+			std::string name;
+			bool bConnected;
+			std::string reason;
+
+			command = ds["command"].toString();
+			if(command != "device connect") {
+				pLogger->LogError("CommandRunner::connectDevice wrong reply for device connect");
+				return;
+			}
+			commandId = ds["commandId"];
+			if(commandId != _deviceCommandId) {
+				pLogger->LogError("CommandRunner::connectDevice wrong command id, should be: " + std::to_string(_deviceCommandId));
+				return;
+			}
+			name = ds["deviceName"].toString();
+			if(name != deviceName) {
+				pLogger->LogError("CommandRunner::connectDevice wrong device name in device connect");
+				return;
+			}
+			bConnected = ds["connected"];
+			if(!bConnected) {
+				reason = ds["reason"].toString();
+				pLogger->LogError("CommandRunner::connectDevice failed in device connect, reason: " + reason);
+				return;
+			}
+			else {
+				pLogger->LogInfo("CommandRunner::connectDevice connected to device");
+			}
+		}
+		catch(Poco::Exception &e)
+		{
+			bException = true;
+			pLogger->LogError("CommandRunner::connectDevice exception in parsing reply: " + e.displayText());
+		}
+		catch(std::exception & e)
+		{
+			bException = true;
+			pLogger->LogError("CommandRunner::connectDevice exception in parsing reply: " + std::string(e.what()));
+		}
+		catch(...)
+		{
+			bException = true;
+			pLogger->LogError("CommandRunner::connectDevice unknown exception");
+		}
+
+		if(bException)
+		{
+			pLogger->LogError("CommandRunner::connectDevice ingore command");
+			return;
+		}
+
+		_deviceConnected = true;
+	}
 }
 
 void CommandRunner::onCommand(StreamSocket & socket, const std::string & cmd)
@@ -530,7 +855,14 @@ void CommandRunner::pollClientSockets()
 
 void CommandRunner::pollDeviceSocket()
 {
+	Poco::Timespan zeroSpan;
 
+	if(_deviceSocket.poll(zeroSpan, Poco::Net::Socket::SELECT_ERROR))
+	{
+		pLogger->LogInfo("CommandRunner::pollDeviceSocket peer socket has closed");
+		_deviceSocket.close();
+		_socketConnected = false;
+	}
 }
 
 

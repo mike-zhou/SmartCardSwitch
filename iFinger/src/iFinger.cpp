@@ -21,6 +21,7 @@
 #include "Poco/File.h"
 #include <iostream>
 #include "Logger.h"
+#include "CommandRunner.h"
 
 using namespace std;
 
@@ -146,84 +147,25 @@ protected:
 		// launch tasks
 		try
 		{
-			DeviceAccessor * pDeviceAccessor;
 			CommandRunner * pCommandRunner;
-			ConsoleOperator * pConsoleOperator;
-			UserListener * pUserListener;
-			UserProxy * pUserProxy;
-			UserCommandRunner * pUserCommandRunner;
-			WebServer * pWebServer;
 
-			//device accessor
 			std::string proxyIp = config().getString("proxy_ip_address", "127.0.0.1");
-			std::string proxyPort = config().getString("proxy_port", "60000");
-			proxyIp = proxyIp + ":" + proxyPort;
-			Poco::Net::SocketAddress socketAddress(proxyIp);
-			pDeviceAccessor = new DeviceAccessor;
-			pDeviceAccessor->Init(socketAddress);
+			unsigned int proxyPort = config().getUInt("proxy_port");
+			unsigned int lowClks = config().getUInt("lowClks");
+			unsigned int highClks = config().getUInt("highClks");
 
 			//CommandRunner
-			pCommandRunner = new CommandRunner;
-
-			//ConsoleOperator
-			pConsoleOperator = new ConsoleOperator(pCommandRunner);
-
-			//user proxy
-			std::string userProxyListenerIp = config().getString("user_proxy_listener_ip", "127.0.0.1");
-			std::string userPorxyListenerPort = config().getString("user_proxy_listener_port", "60001");
-			std::string deviceToConnect = config().getString("device_name", "Mixed_Motor_Drivers_HV1.0_SV1.0");
-			unsigned int locatorNumberForReset = config().getInt("locator_number_for_reset", 2);
-			unsigned int lineNumberForReset = config().getInt("line_number_for_reset", 8);
-			bool autoBackToHome = config().getBool("auto_back_to_home_enabled", true);
-			unsigned int autoBackToHomeSeconds = config().getUInt("auto_back_to_home_seconds", 300);
-			Poco::Net::SocketAddress userListenerAddress(userProxyListenerIp + ":" + userPorxyListenerPort);
-			pUserProxy = new UserProxy(deviceToConnect, locatorNumberForReset, lineNumberForReset, autoBackToHome, autoBackToHomeSeconds);
-			pUserCommandRunner = new UserCommandRunner;
-			pUserListener = new UserListener(pUserProxy);
-			pUserListener->Bind(userListenerAddress);
+			pCommandRunner = new CommandRunner(lowClks, highClks, proxyIp, proxyPort);
 
 			//web server
-			unsigned int webServerPort = config().getInt("web_server_port", 80);
-			unsigned int webServerMaxQueue = config().getInt("web_server_max_queue", 128);
-			unsigned int webServerMaxThreads = config().getInt("web_server_max_threads", 16);
-			std::string webServerFilesFolder = config().getString("web_server_folder", "wrongFolder");
-			pWebServer = new WebServer(webServerPort, webServerMaxQueue, webServerMaxThreads, webServerFilesFolder);
-
-			//couple tasks:
-			// command flow: UserProxy >> UserCommandRunner >> ConsoleOperator >> CommandRunner >> DeviceAccessor
-			// reply flow:   DeviceAccessor >> CommandRunner >> ConsoleOperator >> UsesrCommandRunner >> UserProxy
-			pCommandRunner->SetDevice(pDeviceAccessor);
-			pDeviceAccessor->AddObserver(pCommandRunner);
-			pCommandRunner->AddResponseReceiver(pConsoleOperator);
-			//couple user command runner with console operator
-			pUserCommandRunner->SetConsoleOperator(pConsoleOperator);
-			pConsoleOperator->AddObserver(pUserCommandRunner);
-			//couple user command runner with user proxy
-			pUserProxy->SetUserCommandRunner(pUserCommandRunner);
-			pUserCommandRunner->AddObserver(pUserProxy);
-			//couple web server with console operator
-			pWebServer->SetConsoleOperator(pConsoleOperator);
-			pConsoleOperator->AddObserver(pWebServer);
+//			unsigned int webServerPort = config().getInt("web_server_port", 80);
+//			unsigned int webServerMaxQueue = config().getInt("web_server_max_queue", 128);
+//			unsigned int webServerMaxThreads = config().getInt("web_server_max_threads", 16);
+//			std::string webServerFilesFolder = config().getString("web_server_folder", "wrongFolder");
+//			pWebServer = new WebServer(webServerPort, webServerMaxQueue, webServerMaxThreads, webServerFilesFolder);
 
 			//tm takes the ownership of tasks
 			tm.start(pCommandRunner);
-			tm.start(pDeviceAccessor);
-			tm.start(pConsoleOperator);
-			if(config().getBool("user_proxy_enable", true))
-			{
-				tm.start(pUserCommandRunner);
-				tm.start(pUserProxy);
-				tm.start(pUserListener);
-			}
-			else {
-				pLogger->LogInfo("main user proxy is disabled");
-			}
-			if(config().getBool("web_server_enable", true)) {
-				tm.start(pWebServer);
-			}
-			else {
-				pLogger->LogInfo("web server is disabled");
-			}
 		}
 		catch(Poco::Exception& e)
 		{
@@ -239,9 +181,6 @@ protected:
 		//stop tasks
 		tm.cancelAll();
 		tm.joinAll();
-
-		delete pCoordinateStorage;
-		delete pMovementConfiguration;
 
 		//stop logger task.
 		tmLogger.cancelAll();
