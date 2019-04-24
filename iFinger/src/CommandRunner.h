@@ -53,6 +53,9 @@ protected:
 
 private:
 	static const unsigned int SOLENOID_AMOUNT = 32;
+	static const std::string USER_COMMAND = "press key";
+	static const std::string DEVICE_COMMAND = "solenoid activate";
+	static const unsigned long DEVICE_REPLY_TIMEOUT = 3000000; //3 seconds
 
 	Poco::Mutex _mutex;
 	unsigned long _lowClks;
@@ -67,11 +70,13 @@ private:
 	bool _socketConnected;
 	bool _deviceConnected;
 	bool _isPressing;
+	unsigned short _deviceCommandId;
 	StreamSocket _deviceSocket;
 
 	std::vector<unsigned char> _command;
 	std::vector<unsigned char> _reply;
 
+	void replyUser(StreamSocket & socket, const std::string & reply);
 	void onCommand(StreamSocket & socket, const std::string & cmd);
 	void connectDevice();
 	void pollClientSockets();
