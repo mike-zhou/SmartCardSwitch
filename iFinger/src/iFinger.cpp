@@ -5,6 +5,7 @@
  *      Author: mikez
  */
 
+#include <iostream>
 
 #include "Poco/Util/ServerApplication.h"
 #include "Poco/Util/Option.h"
@@ -19,9 +20,10 @@
 #include "Poco/Format.h"
 #include "Poco/Path.h"
 #include "Poco/File.h"
-#include <iostream>
+
 #include "Logger.h"
 #include "CommandRunner.h"
+#include "UserListener.h"
 
 using namespace std;
 
@@ -148,14 +150,24 @@ protected:
 		try
 		{
 			CommandRunner * pCommandRunner;
+			UserListener * pUserListener;
 
 			std::string proxyIp = config().getString("proxy_ip_address", "127.0.0.1");
 			unsigned int proxyPort = config().getUInt("proxy_port");
 			unsigned int lowClks = config().getUInt("lowClks");
 			unsigned int highClks = config().getUInt("highClks");
 
+			std::string userListenerIp = config().getString("user_listener_ip", "127.0.0.1");
+			std::string userListenerPort = config().getString("user_listener_port", "60002");
+
+
 			//CommandRunner
 			pCommandRunner = new CommandRunner(lowClks, highClks, proxyIp, proxyPort);
+			//user listener
+			pUserListener = new UserListener(pCommandRunner);
+			Poco::Net::SocketAddress userAddress(userListenerIp + ":" + userListenerPort);
+			pUserListener->Bind(userAddress);
+
 
 			//web server
 //			unsigned int webServerPort = config().getInt("web_server_port", 80);
@@ -165,6 +177,7 @@ protected:
 //			pWebServer = new WebServer(webServerPort, webServerMaxQueue, webServerMaxThreads, webServerFilesFolder);
 
 			//tm takes the ownership of tasks
+			tm.start(pUserListener);
 			tm.start(pCommandRunner);
 		}
 		catch(Poco::Exception& e)
