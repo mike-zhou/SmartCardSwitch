@@ -24,6 +24,7 @@
 #include "Logger.h"
 #include "CommandRunner.h"
 #include "UserListener.h"
+#include "WebServer.h"
 
 using namespace std;
 
@@ -151,6 +152,7 @@ protected:
 		{
 			CommandRunner * pCommandRunner;
 			UserListener * pUserListener;
+			WebServer * pWebServer;
 
 			std::string proxyIp = config().getString("proxy_ip_address", "127.0.0.1");
 			unsigned int proxyPort = config().getUInt("proxy_port");
@@ -170,13 +172,13 @@ protected:
 
 
 			//web server
-//			unsigned int webServerPort = config().getInt("web_server_port", 80);
-//			unsigned int webServerMaxQueue = config().getInt("web_server_max_queue", 128);
-//			unsigned int webServerMaxThreads = config().getInt("web_server_max_threads", 16);
-//			std::string webServerFilesFolder = config().getString("web_server_folder", "wrongFolder");
-//			pWebServer = new WebServer(webServerPort, webServerMaxQueue, webServerMaxThreads, webServerFilesFolder);
+			unsigned int webServerPort = config().getInt("web_server_port", 80);
+			unsigned int webServerMaxQueue = config().getInt("web_server_max_queue", 128);
+			unsigned int webServerMaxThreads = config().getInt("web_server_max_threads", 16);
+			pWebServer = new WebServer(webServerPort, webServerMaxQueue, webServerMaxThreads, std::stoi(userListenerPort));
 
 			//tm takes the ownership of tasks
+			tm.start(pWebServer);
 			tm.start(pUserListener);
 			tm.start(pCommandRunner);
 		}
