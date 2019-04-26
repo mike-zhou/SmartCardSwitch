@@ -567,6 +567,7 @@ void CommandRunner::onCommand(StreamSocket & socket, const std::string & cmd)
 			replyUser(socket, reply);
 			return;
 		}
+		pLogger->LogInfo("CommandRunner::onCommand sent device command: " + jsonCommand);
 	}
 
 	//receive reply from device
@@ -674,7 +675,7 @@ void CommandRunner::onCommand(StreamSocket & socket, const std::string & cmd)
 			std::string errorInfo;
 
 			command = ds["command"].toString();
-			solenoidIndex = ds["solenoidIndex"];
+			solenoidIndex = ds["index"];
 			lowClks = ds["lowClks"];
 			highClks = ds["highClks"];
 			cmdId = ds["commandId"];
