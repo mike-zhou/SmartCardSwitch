@@ -109,15 +109,17 @@ void KeyRequestHandler::onKey(Poco::Net::HTTPServerRequest& request, Poco::Net::
 
 			if(errorInfo.empty())
 			{
+				pLogger->LogInfo("KeyRequestHandler::onKey key pressing succeeded");
 				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
 				response.setContentType("application/json");
 			}
 			else
 			{
+				pLogger->LogError("KeyRequestHandler::onKey key pressing failed");
 				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
 				response.setReason(errorInfo);
-				response.send();
 			}
+			response.send();
 		}
 	}
 
