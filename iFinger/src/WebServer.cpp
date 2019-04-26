@@ -206,8 +206,8 @@ bool WebServer::PressKey(unsigned int keyIndex, std::string & errorInfo)
 					break;
 				}
 				else {
-					pLogger->LogInfo("WebServer::PressKey sent " + std::to_string(amount) + "/" + std::to_string(cmdPkg.size()) + " bytes to iFinger");
 					amount += size;
+					pLogger->LogInfo("WebServer::PressKey sent " + std::to_string(amount) + "/" + std::to_string(cmdPkg.size()) + " bytes to iFinger");
 				}
 			}
 			if(!errorInfo.empty()) {

@@ -81,17 +81,17 @@ std::string CommandRunner::execDeviceCommand(const std::vector<unsigned char> & 
 			for(;;)
 			{
 				if(_deviceSocket.poll(zeroSpan, Poco::Net::Socket::SELECT_ERROR)) {
-					pLogger->LogError("CommandRunner::exeDeviceCommand socket error");
+					pLogger->LogError("CommandRunner::execDeviceCommand socket error");
 					bError = true;
 				}
 				else if(_deviceSocket.poll(zeroSpan, Poco::Net::Socket::SELECT_READ))
 				{
 					amount = _deviceSocket.receiveBytes(buffer, 1024);
 					if(amount > 0) {
-						pLogger->LogInfo("CommandRunner::exeDeviceCommand discarded " + std::to_string(amount) + " bytes");
+						pLogger->LogInfo("CommandRunner::execDeviceCommand discarded " + std::to_string(amount) + " bytes");
 					}
 					else {
-						pLogger->LogError("CommandRunner::exeDeviceCommand peer socket has closed");
+						pLogger->LogError("CommandRunner::execDeviceCommand peer socket has closed");
 						bError = true;
 						break;
 					}
@@ -114,12 +114,12 @@ std::string CommandRunner::execDeviceCommand(const std::vector<unsigned char> & 
 				int size = _deviceSocket.sendBytes(cmdPkg.data() + amount, cmdPkg.size() - amount);
 				if(size <= 0) {
 					bError = true;
-					pLogger->LogError("CommandRunner::exeDeviceCommand failed in sending cmd to device");
+					pLogger->LogError("CommandRunner::execDeviceCommand failed in sending cmd to device");
 					break;
 				}
 				else {
 					amount += size;
-					pLogger->LogInfo("CommandRunner::exeDeviceCommand sent " + std::to_string(amount) + "/" + std::to_string(cmdPkg.size()));
+					pLogger->LogInfo("CommandRunner::execDeviceCommand sent " + std::to_string(amount) + "/" + std::to_string(cmdPkg.size()));
 				}
 			}
 			if(bError)
@@ -135,13 +135,13 @@ std::string CommandRunner::execDeviceCommand(const std::vector<unsigned char> & 
 			{
 				if(receivingTime.elapsed() > DEVICE_REPLY_TIMEOUT) {
 					bError = true;
-					pLogger->LogError("CommandRunner::exeDeviceCommand timeout in device reply");
+					pLogger->LogError("CommandRunner::execDeviceCommand timeout in device reply");
 					break;
 				}
 
 				if(_deviceSocket.poll(zeroSpan, Poco::Net::Socket::SELECT_ERROR)) {
 					bError = true;
-					pLogger->LogError("CommandRunner::exeDeviceCommand socket error in receiving device reply");
+					pLogger->LogError("CommandRunner::execDeviceCommand socket error in receiving device reply");
 					break;
 				}
 
@@ -150,12 +150,12 @@ std::string CommandRunner::execDeviceCommand(const std::vector<unsigned char> & 
 					amount = _deviceSocket.receiveBytes(buffer, 1024);
 					if(amount < 1) {
 						bError = true;
-						pLogger->LogError("CommandRunner::exeDeviceCommand peer socket closed");
+						pLogger->LogError("CommandRunner::execDeviceCommand peer socket closed");
 						break;
 					}
 					else
 					{
-						pLogger->LogInfo("CommandRunner::exeDeviceCommand received " + std::to_string(amount) + " bytes");
+						pLogger->LogInfo("CommandRunner::execDeviceCommand received " + std::to_string(amount) + " bytes");
 						for(int i=0; i<amount; i++) {
 							deviceReply.push_back(buffer[i]);
 						}
@@ -168,7 +168,7 @@ std::string CommandRunner::execDeviceCommand(const std::vector<unsigned char> & 
 							break;
 						}
 						else {
-							pLogger->LogInfo("CommandRunner::exeDeviceCommand no valid reply");
+							pLogger->LogInfo("CommandRunner::execDeviceCommand no valid reply");
 						}
 					}
 				}
@@ -184,17 +184,17 @@ std::string CommandRunner::execDeviceCommand(const std::vector<unsigned char> & 
 	catch(Poco::Exception &e)
 	{
 		bException = true;
-		pLogger->LogError("CommandRunner::exeDeviceCommand exception: " + e.displayText());
+		pLogger->LogError("CommandRunner::execDeviceCommand exception: " + e.displayText());
 	}
 	catch(std::exception & e)
 	{
 		bException = true;
-		pLogger->LogError("CommandRunner::exeDeviceCommand exception: " + std::string(e.what()));
+		pLogger->LogError("CommandRunner::execDeviceCommand exception: " + std::string(e.what()));
 	}
 	catch(...)
 	{
 		bException = true;
-		pLogger->LogError("CommandRunner::exeDeviceCommand unknown exception");
+		pLogger->LogError("CommandRunner::execDeviceCommand unknown exception");
 	}
 
 	if(bException)

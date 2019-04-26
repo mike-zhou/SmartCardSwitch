@@ -1,4 +1,3 @@
-
 function updatePageStepper(stepper, data) {
     var elementId;
 
@@ -811,6 +810,31 @@ function onPower(target, on) {
     xhr.send(JSON.stringify(command));
 }
 
+function onKey(keyIndex) {
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open('POST', 'key');
+
+    var command = {};
+    command["index"] = keyIndex;
+
+    xhr.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                console.log("key was pressed: " + keyIndex);
+            } else {
+                alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
+            }
+        }
+    };
+    xhr.send(JSON.stringify(command));
+}
+
 function onElementClicked() {
     var elementId = document.activeElement.id;
     var paraArray = elementId.split("_");
@@ -880,6 +904,9 @@ function onElementClicked() {
         var target = paraArray[1];
         var action = paraArray[2];
         onPower(target, action === "on");
+    } else if (device === "iFinger") {
+        var keyIndex = paraArray[2];
+        onKey(keyIndex);
     } else if (elementId === "coordinate_save") {
         saveCoordinate();
     } else if (elementId === "deviceQuery") {
