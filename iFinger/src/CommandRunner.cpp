@@ -899,6 +899,9 @@ void CommandRunner::runTask()
 			else if(!_deviceConnected)
 			{
 				connectDevice();
+				if(!_deviceConnected) {
+					sleep(1000); //wait for 1 second before next connecting.
+				}
 			}
 			else
 			{

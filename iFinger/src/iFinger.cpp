@@ -155,7 +155,7 @@ protected:
 			WebServer * pWebServer;
 
 			std::string proxyIp = config().getString("proxy_ip_address", "127.0.0.1");
-			unsigned int proxyPort = config().getUInt("proxy_port");
+			unsigned int proxyPort = config().getUInt("proxy_ip_port");
 			unsigned int lowClks = config().getUInt("lowClks");
 			unsigned int highClks = config().getUInt("highClks");
 
