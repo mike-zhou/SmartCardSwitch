@@ -57,7 +57,8 @@ enum CommandType
 	StepperConfigHome,
 	StepperQuery,
 	StepperSetState,
-	LocatorQuery
+	LocatorQuery,
+	SolenoidActivate
 };
 
 //{
@@ -1087,6 +1088,40 @@ private:
 	unsigned int _index;
 };
 
+//{
+//	"command":"solenoid activate",
+//	"index":0,
+//	"lowClks":1,
+//	"highClks":2
+//}
+class CommandSolenoidActivate
+{
+public:
+	CommandSolenoidActivate(unsigned int index, unsigned int lowClks, unsigned int highClks, unsigned long commandId)
+	{
+		_index = index;
+		_commandId = commandId;
+		_lowClks = lowClks;
+		_highClks = highClks;
+	}
+
+	CommandType Type() { return CommandType::SolenoidActivate; }
+
+	std::string ToString()
+	{
+		char buf[256];
+
+		sprintf(buf, "C 200 %d %d %d %ld", _index, _lowClks, _highClks, _commandId & 0xffff);
+		std::string cmd(buf);
+		return cmd;
+	}
+
+private:
+	unsigned long _commandId;
+	unsigned int _index;
+	unsigned int _lowClks;
+	unsigned int _highClks;
+};
 
 // translate JSON command to device command
 class CommandTranslator
@@ -1133,6 +1168,7 @@ public:
 	std::shared_ptr<CommandDcmPowerOn> GetCommandDcmPowerOn();
 	std::shared_ptr<CommandDcmPowerOff> GetCommandDcmPowerOff();
 	std::shared_ptr<CommandDcmQueryPower> GetCommandDcmQueryPower();
+	std::shared_ptr<CommandSolenoidActivate> GetCommandSolenoidActivate();
 
 private:
 	std::string _jsonCmd;
@@ -1174,6 +1210,7 @@ private:
 	const std::string strCommandDcmPowerOn = "dcm power on";
 	const std::string strCommandDcmPowerOff = "dcm power off";
 	const std::string strCommandDcmQueryPower = "dcm query power";
+	const std::string strCommandSolenoidActivate = "solenoid activate";
 };
 
 #endif /* COMMANDPARSER_H_ */

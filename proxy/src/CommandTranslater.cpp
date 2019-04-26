@@ -169,6 +169,9 @@ CommandType CommandTranslator::Type()
 		else if(command == strCommandDcmQueryPower) {
 			_type = CommandType::DcmQueryPower;
 		}
+		else if(command == strCommandSolenoidActivate) {
+			_type = CommandType::SolenoidActivate;
+		}
 		else {
 			pLogger->LogError("CommandTranslator::CommandType unknown command in " + _jsonCmd);
 			_type = CommandType::Invalid;
@@ -1749,3 +1752,48 @@ std::shared_ptr<CommandDcmQueryPower> CommandTranslator::GetCommandDcmQueryPower
 	return nullptr;
 }
 
+std::shared_ptr<CommandSolenoidActivate> CommandTranslator::GetCommandSolenoidActivate()
+{
+	try
+	{
+		Poco::JSON::Parser parser;
+		Poco::Dynamic::Var result = parser.parse(_jsonCmd);
+		Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+
+		if(objectPtr->has(std::string("command")))
+		{
+			std::string command = objectPtr->getValue<std::string>("command");
+			unsigned long commandId = objectPtr->getValue<unsigned long>("commandId");
+
+			if(command.size() < 1) {
+				pLogger->LogError("CommandTranslator::GetCommandSolenoidActivate invalid command in " + _jsonCmd);
+			}
+			else if(command != strCommandSolenoidActivate) {
+				pLogger->LogError("CommandTranslator::GetCommandSolenoidActivate wrong command in " + _jsonCmd);
+			}
+			else
+			{
+				int index = objectPtr->getValue<int>("index");
+				unsigned int lowClks = objectPtr->getValue<unsigned int>("lowClks");
+				unsigned int highClks = objectPtr->getValue<unsigned int>("highClks");
+
+				std::shared_ptr<CommandSolenoidActivate> p(new CommandSolenoidActivate(index, lowClks, highClks, commandId));
+				return p;
+			}
+		}
+		else
+		{
+			pLogger->LogError("CommandTranslator::GetCommandSolenoidActivate no command in " + _jsonCmd);
+		}
+	}
+	catch(Poco::Exception& e)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandSolenoidActivate exception occurs: " + e.displayText() + " in " + _jsonCmd);
+	}
+	catch(...)
+	{
+		pLogger->LogError("CommandTranslator::GetCommandSolenoidActivate unknown exception in " + _jsonCmd);
+	}
+
+	return nullptr;
+}

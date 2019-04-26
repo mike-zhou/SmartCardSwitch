@@ -7,34 +7,33 @@ const port = 80;
 const scsHostName = "127.0.0.1";
 const scsHostPort = 60002;
 
+const iFingerHostName = "127.0.0.1"
+const iFingerHostPort = 60003;
 
-function appLog(str)
-{
+function appLog(str) {
     var d = new Date();
-    var log = d.getFullYear() + "-" +d.getMonth() + "-" + d.getDay() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + "." + d.getMilliseconds();
+    var log = d.getFullYear() + "-" + d.getMonth() + "-" + d.getDay() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + "." + d.getMilliseconds();
 
     log = log + " " + str;
     console.log(log);
 }
 
-function onRetrievingFile(fileName, fileType, response)
-{
+function onRetrievingFile(fileName, fileType, response) {
     appLog("onRetrievingFile " + fileName);
     fs.stat(fileName, function(error, stats) {
-        if(error) {
+        if (error) {
             appLog("onRetrievingFile Error: " + error.message);
             response.statusCode = 400;
             response.end();
             return;
         }
 
-        if(stats.isFile()) {
+        if (stats.isFile()) {
             var stream = fs.createReadStream(fileName);
             response.statusCode = 200;
             response.setHeader('Content-Type', fileType);
             stream.pipe(response);
-        }
-        else {
+        } else {
             appLog("onRetrievingFile not a file: " + fileName);
             response.statusCode = 400;
             response.statusMessage = "not a file: " + fileName;
@@ -43,13 +42,12 @@ function onRetrievingFile(fileName, fileType, response)
     });
 }
 
-function onPostRequest(request, response) 
-{
+function onPostRequest(request, response) {
     let body = [];
 
     request.on('data', (chunk) => {
         body.push(chunk);
-    }).on('end', ()=> {
+    }).on('end', () => {
         body = Buffer.concat(body).toString();
         appLog("onPostRequest " + request.url + " : " + body);
 
@@ -73,8 +71,8 @@ function onPostRequest(request, response)
                 appLog("onPostRequest SCS reply: " + scsBody);
 
                 response.statusCode = scsResponse.statusCode;
-                if('headers' in response) {
-                    if('content-type' in response.headers) {
+                if ('headers' in response) {
+                    if ('content-type' in response.headers) {
                         response.setHeader('Content-Type', scsResponse.headers['content-type']);
                     }
                 }
@@ -95,8 +93,58 @@ function onPostRequest(request, response)
     });
 }
 
-function onDefaultPage(request, response)
-{
+function onPostRequest_iFinger(request, response) {
+    let body = [];
+
+    request.on('data', (chunk) => {
+        body.push(chunk);
+    }).on('end', () => {
+        body = Buffer.concat(body).toString();
+        appLog("onPostRequest_iFinger " + request.url + " : " + body);
+
+        //forward this request to SmartCardSwitch
+        var iFingerOptions = {};
+        iFingerOptions.hostname = iFingerHostName;
+        iFingerOptions.port = iFingerHostPort;
+        iFingerOptions.path = request.url;
+        iFingerOptions.method = 'POST';
+        iFingerOptions.headers = {};
+        iFingerOptions.headers["Content-Type"] = "application/json";
+        iFingerOptions.headers["Content-Length"] = Buffer.byteLength(body);
+
+        var iFingerRequest = http.request(iFingerOptions, (iFingerResponse) => {
+            let replyBody = [];
+
+            iFingerResponse.on('data', (chunk) => {
+                replyBody.push(chunk);
+            }).on('end', () => {
+                replyBody = Buffer.concat(replyBody).toString();
+                appLog("onPostRequest_iFinger reply: " + replyBody);
+
+                response.statusCode = iFingerResponse.statusCode;
+                if ('headers' in response) {
+                    if ('content-type' in response.headers) {
+                        response.setHeader('Content-Type', iFingerResponse.headers['content-type']);
+                    }
+                }
+                response.end(replyBody);
+            });
+        });
+        iFingerRequest.on('error', (e) => {
+            var msg = "onPostRequest_iFinger error in iFinger request: " + e;
+            appLog(msg);
+            //notify browser of error
+            response.statusCode = 400;
+            response.setHeader('Content-Type', 'text/plain');
+            response.end(msg);
+        });
+
+        iFingerRequest.write(body);
+        iFingerRequest.end();
+    });
+}
+
+function onDefaultPage(request, response) {
     appLog("onDefaultPage ");
     const stream = fs.createReadStream('default.html');
 
@@ -105,49 +153,38 @@ function onDefaultPage(request, response)
     stream.pipe(response);
 }
 
-function onHttpRequest(request, response)
-{
+function onHttpRequest(request, response) {
     appLog("onHttpRequest: " + request.url);
 
     var url = request.url;
 
-    if(url === "/stepperMove") {
+    if (url === "/stepperMove") {
         onPostRequest(request, response);
-    }
-    else if(url === "/stepperConfigMovement") {
+    } else if (url === "/stepperConfigMovement") {
         onPostRequest(request, response);
-    }
-    else if(url === "/stepperConfigHome") {
+    } else if (url === "/stepperConfigHome") {
         onPostRequest(request, response);
-    }
-    else if(url === "/query") {
+    } else if (url === "/query") {
         onPostRequest(request, response);
-    }
-    else if(url === "/bdc") {
+    } else if (url === "/bdc") {
         onPostRequest(request, response);
-    }
-    else if(url === "/saveCoordinate") {
+    } else if (url === "/saveCoordinate") {
         onPostRequest(request, response);
-    }
-    else if(url === "/toCoordinate") {
+    } else if (url === "/toCoordinate") {
         onPostRequest(request, response);
-    }
-    else if(url === "/power") {
+    } else if (url === "/power") {
         onPostRequest(request, response);
-    }
-    else if(url === "/") {
+    } else if (url === "/key") {
+        onPostRequest_iFinger(request, response);
+    } else if (url === "/") {
         onDefaultPage(request, response);
-    }
-    else if(url.indexOf("/scripts/") === 0) {
+    } else if (url.indexOf("/scripts/") === 0) {
         onRetrievingFile(url.slice(1), "application/javascript", response);
-    }
-    else if(url.indexOf("/css/") === 0) {
+    } else if (url.indexOf("/css/") === 0) {
         onRetrievingFile(url.slice(1), "text/css", response);
-    }
-    else if(url.indexOf("/videos/") === 0) {
+    } else if (url.indexOf("/videos/") === 0) {
         onRetrievingFile(url.slice(1), "video/mp4", response);
-    }
-    else {
+    } else {
         var errorMsg = "onHttpRequest unsupported URL: " + request.url;
 
         appLog(errorMsg);
@@ -162,5 +199,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+    console.log(`Server running at http://${hostname}:${port}/`);
 });

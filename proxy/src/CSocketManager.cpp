@@ -360,6 +360,10 @@ void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::s
 		onCommandLocatorQuery(socketWrapper, translator.GetCommandLocatorQuery());
 		break;
 
+	case CommandType::SolenoidActivate:
+		onCommandSolenoidActivate(socketWrapper, translator.GetCommandSolenoidActivate());
+		break;
+
 	case CommandType::Invalid:
 		break;
 
@@ -727,6 +731,16 @@ void CSocketManager::onCommandStepperSetState(struct SocketWrapper& socketWrappe
 }
 
 void CSocketManager::onCommandLocatorQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandLocatorQuery> cmdPtr)
+{
+	if(cmdPtr == nullptr) {
+		pLogger->LogError("CSocketManager::"  + std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
+
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+}
+
+void CSocketManager::onCommandSolenoidActivate(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSolenoidActivate> cmdPtr)
 {
 	if(cmdPtr == nullptr) {
 		pLogger->LogError("CSocketManager::"  + std::string(__FUNCTION__) + " failed in translating JSON");
