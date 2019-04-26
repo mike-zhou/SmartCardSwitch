@@ -443,12 +443,12 @@ void CommandRunner::onCommand(StreamSocket & socket, const std::string & cmd)
 	//verify user command
 	if(command != USER_COMMAND)
 	{
-		reply = "{\"userCommand\":\"" + command + ",\"commandId\":\"" + cmdId + ",\"index\":" + std::to_string(index) + ",";
+		reply = "{\"userCommand\":\"" + command + "\",\"commandId\":" + cmdId + ",\"index\":" + std::to_string(index) + ",";
 		reply = reply + "\"result\":\"failed\",\"errorInfo\":\"wrong command\"}";
 	}
 	else if(index >= SOLENOID_AMOUNT)
 	{
-		reply = "{\"userCommand\":\"" + command + ",\"commandId\":\"" + cmdId + ",\"index\":" + std::to_string(index) + ",";
+		reply = "{\"userCommand\":\"" + command + "\",\"commandId\":" + cmdId + ",\"index\":" + std::to_string(index) + ",";
 		reply = reply + "\"result\":\"failed\",\"errorInfo\":\"index out of range\"}";
 	}
 	if(!reply.empty())
@@ -457,7 +457,7 @@ void CommandRunner::onCommand(StreamSocket & socket, const std::string & cmd)
 		return;
 	}
 
-	replyHeader = "{\"userCommand\":\"" + command + ",\"commandId\":\"" + cmdId + ",\"index\":" + std::to_string(index) + ",\"result\":\"";
+	replyHeader = "{\"userCommand\":\"" + command + "\",\"commandId\":" + cmdId + ",\"index\":" + std::to_string(index) + ",\"result\":\"";
 	replyHeaderFailure = replyHeader + "failed" + "\",\"errorInfo\":\"";
 
 	//check device's availability
@@ -742,6 +742,11 @@ void CommandRunner::pollClientSockets()
 	Timespan zeroSpan;
 	int socketAmount;
 
+	if(_clientSockets.empty()) {
+		sleep(10); //sleep 10 milliseconds
+		return;
+	}
+
 	//check if socket can accept replies/events.
 	{
 		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
@@ -767,7 +772,12 @@ void CommandRunner::pollClientSockets()
 		pLogger->LogError("CommandRunner::pollClientSockets unknown exception in select");
 	}
 
-	if(socketAmount > 0)
+	if(socketAmount < 1) {
+		//no user command
+		sleep(10); //sleep 10 milliseconds
+		return;
+	}
+	else
 	{
 		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -903,11 +913,11 @@ void CommandRunner::runTask()
 					sleep(1000); //wait for 1 second before next connecting.
 				}
 			}
-			else
-			{
-				pollClientSockets();
+			else {
 				pollDeviceSocket();
 			}
+
+			pollClientSockets();
 		}
 		catch(Poco::Exception &e)
 		{
