@@ -31,6 +31,60 @@ using Poco::Path;
 
 extern ProxyLogger * pLogger;
 
+static void UcharToHex(unsigned char c, unsigned char & low4Bits, unsigned char & highBits)
+{
+	unsigned char h4 = (c >> 4) & 0x0F;
+	unsigned char l4 = c & 0x0F;
+
+	if(l4 <= 9) {
+		low4Bits = l4 + '0';
+	}
+	else {
+		low4Bits = l4 - 0xA + 'A';
+	}
+
+	if(h4 <= 9) {
+		highBits = h4 + '0';
+	}
+	else {
+		highBits = h4 - 0xA + 'A';
+	}
+}
+
+static unsigned char UcharFromHex(unsigned char low4Bits, unsigned char high4Bits)
+{
+	unsigned char c = 0;
+
+	if((low4Bits >= '0') && (low4Bits <= '9')) {
+		c = low4Bits - '0';
+	}
+	else if((low4Bits >= 'A') && (low4Bits <= 'F')){
+		c = low4Bits - 'A' + 0xA;
+	}
+	else if((low4Bits >= 'a') && (low4Bits <= 'f')){
+		c = low4Bits - 'a' + 0xA;
+	}
+	else {
+		pLogger->LogError("UcharFromHex wrong low4Bits: " + std::to_string(low4Bits));
+	}
+
+	if((high4Bits >= '0') && (high4Bits <= '9')) {
+		c += (high4Bits - '0') << 4;
+	}
+	else if((high4Bits >= 'A') && (high4Bits <= 'F')){
+		c += (high4Bits - 'A' + 0xA) << 4;
+	}
+	else if((high4Bits >= 'a') && (high4Bits <= 'f')){
+		c += (high4Bits - 'a' + 0xA) << 4;
+	}
+	else {
+		pLogger->LogError("UcharFromHex wrong high4Bits: " + std::to_string(high4Bits));
+	}
+
+	return c;
+}
+
+
 CDeviceManager::CDeviceManager() : Task("CDeviceManager")
 {
 	_pObserver = NULL;
@@ -180,9 +234,9 @@ void CDeviceManager::checkDevices()
 					tios.c_oflag &= ~OPOST;
 					//c_cflag
 					tios.c_cflag &= ~CLOCAL;
-					tios.c_cflag |= CS8;
-					tios.c_cflag &= ~CSTOPB;
-					tios.c_cflag &= ~PARENB;
+//					tios.c_cflag |= CS8;
+//					tios.c_cflag &= ~CSTOPB;
+//					tios.c_cflag &= ~PARENB;
 					//c_lflag
 					tios.c_lflag &= ~ISIG;
 					tios.c_lflag &= ~ICANON;
@@ -404,49 +458,56 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 				unsigned short crc;
 				unsigned char crcLow, crcHigh;
 
-				crc = stage.crc16.GetCRC(stage.buffer, PACKET_SIZE -2);
+				crc = stage.crc16.GetCRC(stage.buffer, PACKET_SIZE - 4);
 				crcLow = crc & 0xff;
 				crcHigh = (crc >> 8) & 0xff;
 
-				if((crcLow == stage.buffer[PACKET_SIZE -2]) && (crcHigh == stage.buffer[PACKET_SIZE -1]))
+				if((crcLow == UcharFromHex(stage.buffer[PACKET_SIZE - 3], stage.buffer[PACKET_SIZE -4])) &&
+					(crcHigh == UcharFromHex(stage.buffer[PACKET_SIZE -1], stage.buffer[PACKET_SIZE -2])))
 				{
 					//correct packet
-					if(stage.buffer[0] == DATA_PACKET_TAG)
+					unsigned char tag = UcharFromHex(stage.buffer[1], stage.buffer[0]);
+					unsigned char curPacketId = UcharFromHex(stage.buffer[3], stage.buffer[2]);
+
+					if(tag == DATA_PACKET_TAG)
 					{
-						if(stage.previousId != stage.buffer[1])
+						if(stage.previousId != curPacketId)
 						{
-							for(unsigned char i=0; i<stage.buffer[2]; i++) {
-								appData.push_back(stage.buffer[3 + i]); //read data in packet
+							unsigned char dataLength = UcharFromHex(stage.buffer[5], stage.buffer[4]);
+
+							dataLength = dataLength * 2;//convert to length of HEX bytes.
+							for(unsigned char i=0; i<dataLength; i+=2) {
+								appData.push_back(UcharFromHex(stage.buffer[6 + i + 1], stage.buffer[6 + i])); //read data in packet
 							}
 						}
-						stage.previousId = stage.buffer[1];
+						stage.previousId = curPacketId;
 						{
 							char log[256];
-							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x D %02x", stage.state, stage.previousId);
+							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x D %02x", stage.state, curPacketId);
 							pLogger->LogInfo(log);
 
 //							std::string packetStr = "CDeviceManager::onDeviceCanBeRead packet: ";
-//							for(unsigned int i=0; i<PACKET_SIZE; i++) {
+//							for(unsigned int i=0; i<PACKET_SIZE; i+=2) {
 //								char buffer[8];
-//								sprintf(buffer, "%02x,", stage.buffer[i]);
+//								sprintf(buffer, "%c%c,", stage.buffer[i], stage.buffer[i+1]);
 //								packetStr = packetStr + buffer;
 //							}
 //							pLogger->LogInfo(packetStr);
 						}
 						stage.state = INPUT_ACKNOWLEDGING;
 					}
-					else if(stage.buffer[0] == ACK_PACKET_TAG)
+					else if(tag == ACK_PACKET_TAG)
 					{
-						device.dataExchange.outputStage.OnAcknowledgment(stage.buffer[1]);
+						device.dataExchange.outputStage.OnAcknowledgment(curPacketId);
 						{
 							char log[256];
-							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x A %02x", stage.state, stage.buffer[1]);
+							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x A %02x", stage.state, curPacketId);
 							pLogger->LogInfo(log);
 
 //							std::string packetStr = "CDeviceManager::onDeviceCanBeRead packet: ";
-//							for(unsigned int i=0; i<PACKET_SIZE; i++) {
+//							for(unsigned int i=0; i<PACKET_SIZE; i+=2) {
 //								char buffer[8];
-//								sprintf(buffer, "%02x,", stage.buffer[i]);
+//								sprintf(buffer, "%c%c,", stage.buffer[i], stage.buffer[i+1]);
 //								packetStr = packetStr + buffer;
 //							}
 //							pLogger->LogInfo(packetStr);
@@ -591,7 +652,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 			{
 				char buffer[256];
 
-				sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten prepare re-send data packet: %02x", stage.buffer[1]);
+				sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten prepare re-send data packet: %02x", UcharFromHex(stage.buffer[3], stage.buffer[2]));
 				pLogger->LogInfo(buffer);
 			}
 		}
@@ -685,14 +746,12 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 				stage.sendingIndex += amount;
 				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten wrote " + std::to_string(amount) + " bytes to " + device.fileName);
 				{
-					char logBuf[16];
 					std::string logContent = "CDeviceManager::onDeviceCanBeWritten content: ";
 
 					for(int i=0; i<amount; i++)
 					{
-						sprintf(logBuf, "%02x,", pData[i]);
-						logContent = logContent + logBuf;
-					}
+						logContent.push_back(pData[i]);
+			}
 					pLogger->LogInfo(logContent);
 				}
 			}
@@ -718,17 +777,20 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 		}
 		else if(stage.sendingIndex == PACKET_SIZE)
 		{
-			if(stage.buffer[0] == DATA_PACKET_TAG)
+			unsigned char tag = UcharFromHex(stage.buffer[1], stage.buffer[0]);
+			unsigned char packetId = UcharFromHex(stage.buffer[3], stage.buffer[2]);
+
+			if(tag == DATA_PACKET_TAG)
 			{
 				{
 					char buffer[256];
-					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x D %02x", stage.state, stage.buffer[1]);
+					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x D %02x", stage.state, packetId);
 					pLogger->LogInfo(buffer);
 
 //					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
-//					for(unsigned int i=0; i<PACKET_SIZE; i++) {
+//					for(unsigned int i=0; i<PACKET_SIZE; i+=2) {
 //						char buffer[8];
-//						sprintf(buffer, "%02x,", stage.buffer[i]);
+//						sprintf(buffer, "%c%c,", stage.buffer[i], stage.buffer[i+1]);
 //						packetStr = packetStr + buffer;
 //					}
 //					pLogger->LogInfo(packetStr);
@@ -736,17 +798,17 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 				stage.ackTimeStamp.update();
 				stage.state = OUTPUT_WAITING_ACK; // a data packet was sent, wait for the ACK.
 			}
-			else if(stage.buffer[0] == ACK_PACKET_TAG)
+			else if(tag == ACK_PACKET_TAG)
 			{
 				{
 					char buffer[256];
-					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x A %02x", stage.state, stage.buffer[1]);
+					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x A %02x", stage.state, packetId);
 					pLogger->LogInfo(buffer);
 
 //					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
-//					for(unsigned int i=0; i<PACKET_SIZE; i++) {
+//					for(unsigned int i=0; i<PACKET_SIZE; i+=2) {
 //						char buffer[8];
-//						sprintf(buffer, "%02x,", stage.buffer[i]);
+//						sprintf(buffer, "%c%c,", stage.buffer[i], stage.buffer[i+1]);
 //						packetStr = packetStr + buffer;
 //					}
 //					pLogger->LogInfo(packetStr);
@@ -754,7 +816,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 				stage.state = OUTPUT_IDLE; // an ACK was sent out.
 			}
 			else {
-				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten packet of unknown type was sent");
+				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten packet of unknown type was sent: " + std::to_string(tag));
 				stage.state = OUTPUT_IDLE;
 			}
 		}
@@ -774,35 +836,38 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 		}
 		else if(stage.sendingIndex == PACKET_SIZE)
 		{
-			if(stage.buffer[0] == DATA_PACKET_TAG)
+			unsigned char tag = UcharFromHex(stage.buffer[1], stage.buffer[0]);
+			unsigned char packetId = UcharFromHex(stage.buffer[3], stage.buffer[2]);
+
+			if(tag == DATA_PACKET_TAG)
 			{
 				//no data packet can be sent while waiting for acknowledgment
 				{
 					char buffer[256];
-					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x D %02x", stage.state, stage.buffer[1]);
+					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x D %02x", stage.state, packetId);
 					pLogger->LogInfo(buffer);
 
 //					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
-//					for(unsigned int i=0; i<PACKET_SIZE; i++) {
+//					for(unsigned int i=0; i<PACKET_SIZE; i+=2) {
 //						char buffer[8];
-//						sprintf(buffer, "%02x,", stage.buffer[i]);
+//						sprintf(buffer, "%c%c,", stage.buffer[i], stage.buffer[i+1]);
 //						packetStr = packetStr + buffer;
 //					}
 //					pLogger->LogInfo(packetStr);
 				}
 				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten wrong data packet was sent to: " + device.deviceName);
 			}
-			else if(stage.buffer[0] == ACK_PACKET_TAG)
+			else if(tag == ACK_PACKET_TAG)
 			{
 				{
 					char buffer[256];
-					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x A %02x", stage.state, stage.buffer[1]);
+					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x A %02x", stage.state, packetId);
 					pLogger->LogInfo(buffer);
 
 //					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
-//					for(unsigned int i=0; i<PACKET_SIZE; i++) {
+//					for(unsigned int i=0; i<PACKET_SIZE; i+=2) {
 //						char buffer[8];
-//						sprintf(buffer, "%02x,", stage.buffer[i]);
+//						sprintf(buffer, "%c%c,", stage.buffer[i], stage.buffer[i+1]);
 //						packetStr = packetStr + buffer;
 //					}
 //					pLogger->LogInfo(packetStr);
@@ -810,7 +875,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
 			}
 			else
 			{
-				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten packet of unknown type was sent");
+				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten packet of unknown type was sent: " + std::to_string(tag));
 			}
 
 			stage.state = OUTPUT_WAITING_ACK; //continue waiting for acknowledgment.
@@ -922,6 +987,8 @@ void CDeviceManager::pollDevices()
 
 void CDeviceManager::runTask()
 {
+	pLogger->LogInfo("CDeviceManager::runTask starts");
+
 	while(1)
 	{
 		if(isCancelled()) {
@@ -982,18 +1049,20 @@ void CDeviceManager::DataOutputStage::IncreasePacketId()
 
 void CDeviceManager::DataOutputStage::OnAcknowledgment(unsigned char packetId)
 {
+	unsigned char pId = UcharFromHex(packet[3], packet[2]);
+
 	if(state == OUTPUT_WAITING_ACK)
 	{
-		if(packet[1] == packetId) {
+		if(pId == packetId) {
 			state = OUTPUT_IDLE;
-			pLogger->LogInfo("CDeviceManager::DataOutputStage::OnNotify " + std::to_string(packetId));
+			//pLogger->LogInfo("CDeviceManager::DataOutputStage::OnNotify " + std::to_string(packetId));
 		}
 	}
 	else if(state == OUTPUT_WAITING_ACK_WHILE_SENDING)
 	{
-		if(packet[1] == packetId) {
+		if(pId == packetId) {
 			state = OUTPUT_SENDING;
-			pLogger->LogInfo("CDeviceManager::DataOutputStage::OnNotify " + std::to_string(packetId));
+			//pLogger->LogInfo("CDeviceManager::DataOutputStage::OnNotify " + std::to_string(packetId));
 		}
 	}
 }
@@ -1001,28 +1070,40 @@ void CDeviceManager::DataOutputStage::OnAcknowledgment(unsigned char packetId)
 bool CDeviceManager::DataOutputStage::SendAcknowledgment(unsigned char packetId)
 {
 	uint16_t crc;
+	unsigned char l4, h4;
 
 	if((state != OUTPUT_IDLE) && (state != OUTPUT_WAITING_ACK)) {
 		return false; //cannot send ack
 	}
 
 	//fill buffer with an ACK
-	buffer[0] = ACK_PACKET_TAG;
-	buffer[1] = packetId;
-	for(unsigned int i=2; i<(PACKET_SIZE -2); i++) {
-		buffer[i] = 0;
+	//Tag
+	UcharToHex(ACK_PACKET_TAG, l4, h4);
+	buffer[0] = h4;
+	buffer[1] = l4;
+	//packetId
+	UcharToHex(packetId, l4, h4);
+	buffer[2] = h4;
+	buffer[3] = l4;
+	//paddings
+	UcharToHex(0, l4, h4);
+	for(unsigned int i=4; i<(PACKET_SIZE -4); i+=2) {
+		buffer[i] = h4;
+		buffer[i + 1] = l4;
 	}
-
 	//calculate CRC
-	crc = crc16.GetCRC(buffer, PACKET_SIZE -2);
-
-	buffer[PACKET_SIZE -2] = crc & 0xff;
-	buffer[PACKET_SIZE -1] = (crc >> 8) & 0xff;
+	crc = crc16.GetCRC(buffer, PACKET_SIZE -4);
+	UcharToHex(crc & 0xff, l4, h4);
+	buffer[PACKET_SIZE -4] = h4;
+	buffer[PACKET_SIZE -3] = l4;
+	UcharToHex((crc >> 8) & 0xff, l4, h4);
+	buffer[PACKET_SIZE -2] = h4;
+	buffer[PACKET_SIZE -1] = l4;
 
 	{
 		char log[256];
 
-		sprintf(log, "CDeviceManager::DataOutputStage::SendAcknowledgment prepare ACK packet: %02x", buffer[1]);
+		sprintf(log, "CDeviceManager::DataOutputStage::SendAcknowledgment prepare ACK packet: %02x", UcharFromHex(buffer[3], buffer[2]));
 		pLogger->LogInfo(log);
 	}
 
@@ -1049,12 +1130,19 @@ void CDeviceManager::DataOutputStage::SendData(std::deque<char>& dataQueue)
 	unsigned char amount;
 	unsigned char c;
 	uint16_t crc;
+	unsigned char l4, h4;
 
-	//header
-	packet[0] = DATA_PACKET_TAG;
-	packet[1] = packetId;
+	//fill packet with application data
+	//Tag
+	UcharToHex(DATA_PACKET_TAG, l4, h4);
+	packet[0] = h4;
+	packet[1] = l4;
+	//packetId
+	UcharToHex(packetId, l4, h4);
+	packet[2] = h4;
+	packet[3] = l4;
 	//data
-	for(amount=0; amount<(PACKET_SIZE -5); amount++)
+	for(amount=0; amount<(PACKET_SIZE-10); amount+=2)
 	{
 		if(dataQueue.empty()) {
 			break;
@@ -1062,19 +1150,30 @@ void CDeviceManager::DataOutputStage::SendData(std::deque<char>& dataQueue)
 
 		c = dataQueue[0];
 		dataQueue.pop_front();
-		packet[3 + amount] = c;
+		UcharToHex(c, l4, h4);
+		packet[6 + amount] = h4;
+		packet[6 + amount + 1] = l4;
 	}
 	//length
-	packet[2] = amount;
+	UcharToHex(amount/2, l4, h4);
+	packet[4] = h4;
+	packet[5] = l4;
 	//padding
-	for(; amount<(PACKET_SIZE -5); amount++) {
-		packet[3 + amount] = 0;
+	for(; amount<(PACKET_SIZE-10); amount+=2) {
+		UcharToHex(0, l4, h4);
+		packet[6 + amount] = h4;
+		packet[6 + amount + 1] = l4;
 	}
 	//crc
-	crc = crc16.GetCRC(packet, PACKET_SIZE -2);
-	packet[PACKET_SIZE -2] = crc & 0xff;
-	packet[PACKET_SIZE -1] = (crc >> 8) & 0xff;
+	crc = crc16.GetCRC(packet, PACKET_SIZE - 4);
+	UcharToHex(crc & 0xff, l4, h4); //crcLow
+	packet[PACKET_SIZE -4] = h4;
+	packet[PACKET_SIZE -3] = l4;
+	UcharToHex((crc >> 8) & 0xff, l4, h4); //crcHigh
+	packet[PACKET_SIZE -2] = h4;
+	packet[PACKET_SIZE -1] = l4;
 
+	//copy packet to buffer
 	for(unsigned int i=0; i<PACKET_SIZE; i++) {
 		buffer[i] = packet[i];
 	}
@@ -1082,7 +1181,7 @@ void CDeviceManager::DataOutputStage::SendData(std::deque<char>& dataQueue)
 	{
 		char log[256];
 
-		sprintf(log, "CDeviceManager::DataOutputStage::SendData prepare data packet: %02x", packet[1]);
+		sprintf(log, "CDeviceManager::DataOutputStage::SendData prepare data packet: %02x", UcharFromHex(buffer[3], buffer[2]));
 		pLogger->LogInfo(log);
 	}
 
