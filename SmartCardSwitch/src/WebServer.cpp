@@ -2674,6 +2674,26 @@ std::string WebServer::DeviceStatus()
 		json.pop_back();//remove the last ','
 	}
 	json += "],";
+	//coordinate Smart card offsets
+	json += "\"coordinateSmartCardOffsets\":[";
+	for(unsigned int i=0; i<pCoordinateStorage->SmartCardsAmount(); i++)
+	{
+		int value = 0;
+
+		json += "{";
+		if(pCoordinateStorage->GetSmartCardOffset(i, value)) {
+		}
+		else {
+			pLogger->LogError("WebServer::DeviceStatus failed to retrieve smart card offset: " + std::to_string(i));
+		}
+		json += "\"index\":" + std::to_string(i) + ",";
+		json += "\"value\":" + std::to_string(value) ;
+		json += "},";
+	}
+	if(pCoordinateStorage->SmartCardsAmount()) {
+		json.pop_back();//remove the last ','
+	}
+	json += "],";
 	//pedKeyGate
 	json += "\"coordinatePedKeyGate\":{";
 	{
