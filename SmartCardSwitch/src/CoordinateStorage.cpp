@@ -109,6 +109,18 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 				SetCoordinate(Type::SmartCard, x, y, z, w, index);
 			}
 
+			//smart card offset
+			auto smartCardOffsetAmount = ds["smartCardOffsets"].size();
+			for(unsigned int i=0; i<smartCardOffsetAmount; i++)
+			{
+				unsigned int index;
+				int value;
+
+				index = ds["smartCardOffsets"][i]["index"];
+				value = ds["smartCardOffsets"][i]["value"];
+				SetSmartCardOffset(index, value);
+			}
+
 			//PED keys
 			_pedKeyGate.x = ds["pedKeys"]["gate"]["x"];
 			_pedKeyGate.y = ds["pedKeys"]["gate"]["y"];
@@ -329,6 +341,16 @@ bool CoordinateStorage::PersistToFile()
 	}
 	json = json + "]";//end of cards
 	json = json + "}";//end of smartCards
+
+	//smart card offsets
+	json = json + ",\"smartCardOffsets\":[";
+	for(unsigned int i=0; i<_smartCardOffsets.size(); i++) {
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + std::to_string(_smartCardOffsets[i]) + "},";
+	}
+	if(!_smartCardOffsets.empty()) {
+		json.pop_back();
+	}
+	json = json + "]";//end of smart card offset.
 
 	//PED keys
 	json = json + ",\"pedKeys\": {";
@@ -1222,6 +1244,31 @@ bool CoordinateStorage::GetMaximumW(long & value)
 	}
 
 	value = _maximumW;
+	return true;
+}
+
+bool CoordinateStorage::SetSmartCardOffset(unsigned int index, int offset)
+{
+	for(;;) {
+		if(_smartCardOffsets.size() <= index) {
+			_smartCardOffsets.push_back(-1);
+		}
+		else {
+			break;
+		}
+	}
+
+	_smartCardOffsets[index] = offset;
+	return true;
+}
+
+bool CoordinateStorage::GetSmartCardOffset(unsigned int index, int& offset)
+{
+	if(index >= _smartCardOffsets.size()) {
+		return false;
+	}
+
+	offset = _smartCardOffsets[index];
 	return true;
 }
 

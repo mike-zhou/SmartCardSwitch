@@ -85,6 +85,9 @@ public:
 	bool GetMaximumZ(long & value);
 	bool GetMaximumW(long & value);
 
+	bool SetSmartCardOffset(unsigned int index, int offset);
+	bool GetSmartCardOffset(unsigned int index, int& offset);
+
 private:
 	//constraints
 	const unsigned int SMART_CARDS_AMOUNT = 64;
@@ -154,6 +157,9 @@ private:
 
 	//safe
 	Coordinate _safe;
+
+	//smart card offset
+	std::vector<int> _smartCardOffsets;
 };
 
 #endif /* COORDINATESTORAGE_H_ */

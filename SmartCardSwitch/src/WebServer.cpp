@@ -1993,6 +1993,12 @@ bool WebServer::SaveCoordinate(const std::string & coordinateType, unsigned int 
 			errorInfo = "failed to save coordinate of smart card: " + std::to_string(data);
 			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
 		}
+
+		rc = pCoordinateStorage->SetSmartCardOffset(data, _consoleCommand.resultSteppers[4].homeOffset);
+		if(rc == false) {
+			errorInfo = "failed to save offset of smart card: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
 	}
 	else if(coordinateType == "smartCardGate")
 	{
