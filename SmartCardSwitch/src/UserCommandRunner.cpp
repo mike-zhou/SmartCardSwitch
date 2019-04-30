@@ -333,6 +333,7 @@ void UserCommandRunner::executeUserCmdResetDevice()
 	const unsigned int y = 1;
 	const unsigned int z = 2;
 	const unsigned int w = 3;
+	const unsigned int v = 4;
 
 
 	//power on steppers
@@ -347,7 +348,7 @@ void UserCommandRunner::executeUserCmdResetDevice()
 	runConsoleCommand(cmd);
 
 	//reset steppers
-	unsigned int stepperIndexes[STEPPER_AMOUNT] = {z, w, y, x};
+	unsigned int stepperIndexes[STEPPER_AMOUNT] = {z, w, y, x, v};
 	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
 	{
 		auto rc = pMovementConfiguration->GetStepperGoHome(lowClks,

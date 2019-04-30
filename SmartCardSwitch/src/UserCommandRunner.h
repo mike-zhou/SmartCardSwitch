@@ -99,7 +99,7 @@ private:
 	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) override;
 
 private:
-	static const int STEPPER_AMOUNT = 4;
+	static const int STEPPER_AMOUNT = 5;
 	static const int LOCATOR_AMOUNT = 8;
 	static const int DCM_AMOUNT = 2;
 
