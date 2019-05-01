@@ -221,6 +221,7 @@ private:
 	int currentY();
 	int currentZ();
 	int currentW();
+	int currentV();
 
 	//append commands to configure stepper movement
 	void configStepperMovement(unsigned int index,
@@ -237,6 +238,13 @@ private:
 	void moveStepperY(unsigned int initialPos, unsigned int finalPos) { moveStepper(1, initialPos, finalPos); }
 	void moveStepperZ(unsigned int initialPos, unsigned int finalPos) { moveStepper(2, initialPos, finalPos); }
 	void moveStepperW(unsigned int initialPos, unsigned int finalPos) { moveStepper(3, initialPos, finalPos); }
+	void moveStepperV(unsigned int initialPos, unsigned int finalPos) { moveStepper(4, initialPos, finalPos); }
+
+	//smart card bay
+	void moveSmartCardCarriage(unsigned int cardNumber);
+	void pushUpSmartCardArm();
+	void pullDownSmartCardArm();
+	void releaseSmartCardArm();
 
 	//delay
 	void deviceDelay(unsigned int clks);

@@ -495,6 +495,15 @@ int UserCommandRunner::currentW()
 	return _consoleCommand.resultSteppers[3].homeOffset;
 }
 
+int UserCommandRunner::currentV()
+{
+	if(_consoleCommand.resultSteppers[4].state == StepperState::Unknown) {
+		return -1;
+	}
+
+	return _consoleCommand.resultSteppers[4].homeOffset;
+}
+
 UserCommandRunner::CurrentPosition UserCommandRunner::getCurrentPosition()
 {
 	int x, y, z, w;
@@ -556,6 +565,44 @@ UserCommandRunner::CurrentPosition UserCommandRunner::getCurrentPosition()
 	}
 
 	throw Poco::Exception("UserCommandRunner::getCurrentPosition unknown position");
+}
+
+void UserCommandRunner::moveSmartCardCarriage(unsigned int cardNumber)
+{
+	int curV, finalV;
+
+	auto rc = pCoordinateStorage->GetSmartCardOffset(cardNumber, finalV);
+	if(rc == false)
+	{
+		throwError("UserCommandRunner::moveToSmartCard failed to retrieve smart card offset: " + std::to_string(cardNumber));
+	}
+
+	curV = currentV();
+	moveStepperV(curV, finalV);
+}
+
+void UserCommandRunner::pushUpSmartCardArm()
+{
+	std::string cmd;
+	//to be made configurable
+	cmd = ConsoleCommandFactory::CmdBdcForward(2, 3, 2, 5000);
+	runConsoleCommand(cmd);
+}
+
+void UserCommandRunner::pullDownSmartCardArm()
+{
+	std::string cmd;
+	//to be made configurable
+	cmd = ConsoleCommandFactory::CmdBdcReverse(2, 3, 2, 5000);
+	runConsoleCommand(cmd);
+}
+
+void UserCommandRunner::releaseSmartCardArm()
+{
+	std::string cmd;
+
+	cmd = ConsoleCommandFactory::CmdBdcCoast(2);
+	runConsoleCommand(cmd);
 }
 
 void UserCommandRunner::moveStepper(unsigned int index, unsigned int initialPos, unsigned int finalPos)
@@ -656,19 +703,22 @@ void UserCommandRunner::toHome()
 
 	//to home
 	{
-		int curX, curY, curZ, curW;
-		int x, y, z, w;
+		int curX, curY, curZ, curW, curV;
+		int x, y, z, w, v;
 
 		//move to home position
 		curX = currentX();
 		curY = currentY();
 		curZ = currentZ();
 		curW = currentW();
+		curV = currentV();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::Home, x, y, z, w);
+		v = 0;
 		moveStepperW(curW, w);
 		moveStepperX(curX, x);
 		moveStepperY(curY, y);
 		moveStepperZ(curZ, z);
+		moveStepperV(curV, v);
 	}
 }
 
@@ -1151,8 +1201,11 @@ void UserCommandRunner::executeUserCmdInsertSmartCard()
 
 	toSmartCardGate();
 	openClamp();
+	moveSmartCardCarriage(_userCommand.smartCardNumber);
+	pushUpSmartCardArm();
 	gate_smartCard_withoutCard(_userCommand.smartCardNumber);
 	closeClamp();
+	releaseSmartCardArm();
 	smartCard_gate_withCard(_userCommand.smartCardNumber);
 	toSmartCardReaderGate();
 	gate_smartCardReader_withCard();
@@ -1304,6 +1357,7 @@ void UserCommandRunner::executeUserCmdRemoveSmartCard()
 	closeClamp();
 	smartCardReader_gate_withCard();
 	toSmartCardGate();
+	moveSmartCardCarriage(_userCommand.smartCardNumber);
 	gate_smartCard_withCard(_userCommand.smartCardNumber);
 	openClamp();
 	smartCard_gate_withoutCard(_userCommand.smartCardNumber);
@@ -1319,8 +1373,12 @@ void UserCommandRunner::executeUserCmdSwipeSmartCard()
 
 	toSmartCardGate();
 	openClamp();
+	moveSmartCardCarriage(_userCommand.smartCardNumber);
+	pushUpSmartCardArm();
 	gate_smartCard_withoutCard(_userCommand.smartCardNumber);
 	closeClamp();
+	pullDownSmartCardArm();
+	releaseSmartCardArm();
 	smartCard_gate_withCard(_userCommand.smartCardNumber);
 	toSmartCardReaderGate();
 	gate_smartCardReader_withCard();
@@ -1391,8 +1449,12 @@ void UserCommandRunner::executeUserCmdTapSmartCard()
 	pLogger->LogInfo("UserCommandRunner::executeUserCmdTapSmartCard ######");
 	toSmartCardGate();
 	openClamp();
+	moveSmartCardCarriage(_userCommand.smartCardNumber);
+	pushUpSmartCardArm();
 	gate_smartCard_withoutCard(_userCommand.smartCardNumber);
 	closeClamp();
+	pullDownSmartCardArm();
+	releaseSmartCardArm();
 	smartCard_gate_withCard(_userCommand.smartCardNumber);
 	pLogger->LogInfo("UserCommandRunner::executeUserCmdTapSmartCard ###### toContactlessReaderGate");
 	toContactlessReaderGate();
@@ -1512,8 +1574,12 @@ void UserCommandRunner::executeUserCmdShowBarCode()
 {
 	toSmartCardGate();
 	openClamp();
+	moveSmartCardCarriage(_userCommand.smartCardNumber);
+	pushUpSmartCardArm();
 	gate_smartCard_withoutCard(_userCommand.smartCardNumber);
 	closeClamp();
+	pullDownSmartCardArm();
+	releaseSmartCardArm();
 	smartCard_gate_withCard(_userCommand.smartCardNumber);
 	toBarcodeReaderGate();
 	gate_barcodeReader();
