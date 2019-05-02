@@ -174,6 +174,8 @@ function onHttpRequest(request, response) {
         onPostRequest(request, response);
     } else if (url === "/power") {
         onPostRequest(request, response);
+    } else if( url === "/toSmartCardOffset") {
+        onPostRequest(request, response);
     } else if (url === "/key") {
         onPostRequest_iFinger(request, response);
     } else if (url === "/") {

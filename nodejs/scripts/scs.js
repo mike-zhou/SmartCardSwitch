@@ -309,6 +309,22 @@ function updatePageCoordinates(serverResponse) {
     document.getElementById("coordinateList").innerHTML = html;
 }
 
+function updatePageSmartCardOffsets(sesrverResponse) 
+{
+    var html = "";
+    var coorSmartCardOffsets = serverResponse["coordinateSmartCardOffsets"];
+
+    for(i=0; i<coorSmartCardOffsets.length; i++) 
+    {
+        var index = coorSmartCardOffsets[i].index;
+        var value = coorSmartCardOffsets[i].value;
+
+        html += "<input name=\"smartCardOffset_selection\" id=\"smartCardOffset_index_" + index + "\" type=\"radio\">" + index + ": </input>";
+        html += "<label name=\"smartCardOffset_value_" + index + "\" for=\"smartCardOffset_index_" + index + "\">" + value + "</label><br>";
+    }
+    document.getElementById("smartCardOffsets").innerHTML = html;
+}
+
 function updatePage(serverResponse) {
     for (key in serverResponse) {
         if (key === "stepper0") {
@@ -377,6 +393,7 @@ function updatePage(serverResponse) {
     }
 
     updatePageCoordinates(serverResponse);
+    updatePageSmartCardOffsets(serverResponse);
 }
 
 function moveStepper(stepper, forward, steps) {
@@ -784,6 +801,38 @@ function onCoordinateItem(type, index) {
     }
 }
 
+function onSmartCardOffset(type, index)
+{
+    if(type==="index") {
+        var content = document.getElementById("smartCardOffset_value_" + index).innerText;
+        document.getElementById("smartCardOffset_selected").innerText = content;
+    }
+    else if(type === "to") {
+        var command = {};
+        command["v"] = document.getElementById("smartCardOffset_selected").innerText;
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open('POST', 'toSmartCardOffset');
+
+        xhr.onreadystatechange = function() {
+            var DONE = 4; // readyState 4 means the request is done.
+            var OK = 200; // status 200 is a successful return.
+            if (xhr.readyState === DONE) {
+                console.log("response is available");
+                console.log("response type: " + xhr.responseType);
+
+                if (xhr.status === OK) {
+                    console.log("toSmartCardOffset succeeded");
+                } else {
+                    alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                }
+            }
+        };
+        xhr.send(JSON.stringify(command));
+    }
+}
+
 function onPower(target, on) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
@@ -900,6 +949,14 @@ function onElementClicked() {
         var type = paraArray[1];
         var index = parseInt(paraArray[2]);
         onCoordinateItem(type, index);
+    }else if (device === "smartCardOffset") {
+        var index;
+        var type = paraArray[1];
+
+        if((type === "index") || (type==="value")) {
+            index = parseInt(paraArray[2]);
+        }
+        onSmartCardOffset(type, index);
     } else if (device === "power") {
         var target = paraArray[1];
         var action = paraArray[2];

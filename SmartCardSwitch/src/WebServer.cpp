@@ -662,6 +662,77 @@ void ScsRequestHandler::onPower(Poco::Net::HTTPServerRequest& request, Poco::Net
 	}
 }
 
+void ScsRequestHandler::onToSmartCardOffset(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onToSmartCardOffset no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onToSmartCardOffset command: " + command);
+		unsigned int offset;
+		bool exceptionOccurred = true;
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			offset = ds["v"];
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onToSmartCardOffset exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onToSmartCardOffset unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onToSmartCardOffset reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else
+		{
+			std::string errorInfo;
+
+			if(!_pWebServer->ToSmartCardOffset(offset, errorInfo)) {
+				pLogger->LogError("ScsRequestHandler::onToSmartCardOffset failed: " + errorInfo);
+			}
+
+			if(errorInfo.empty())
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				response.send();
+			}
+			else
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
+		}
+	}
+}
+
 void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	const std::string& uri = request.getURI();
@@ -693,6 +764,9 @@ void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poc
 	}
 	else if(uri == "/power") {
 		onPower(request, response);
+	}
+	else if(uri == "/toSmartCardOffset") {
+		onToSmartCardOffset(request, response);
 	}
 	else
 	{
@@ -2528,6 +2602,30 @@ bool WebServer::ToCoordinateIndirect(const unsigned int x, const unsigned int y,
 		StepperMove(STEPPER_Y, false, maxY-y, errorInfo);
 		if(!errorInfo.empty()) {
 			pLogger->LogError("WebServer::ToCoordinate fail to move stepper Y: " + errorInfo);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool WebServer::ToSmartCardOffset(const unsigned int offset, std::string & errorInfo)
+{
+	errorInfo.clear();
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex);
+
+	unsigned int curV = _consoleCommand.resultSteppers[STEPPER_V].homeOffset;
+	if(offset > curV) {
+		StepperMove(STEPPER_V, true, offset - curV, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToSmartCardOffset fail to move stepper V: " + errorInfo);
+			return false;
+		}
+	}
+	else {
+		StepperMove(STEPPER_V, false, offset - curV, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToSmartCardOffset fail to move stepper V: " + errorInfo);
 			return false;
 		}
 	}

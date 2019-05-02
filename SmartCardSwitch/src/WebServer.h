@@ -130,6 +130,14 @@ private:
 	//		"on":true
 	//	}
 	void onPower(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
+	//request:
+	//	uri: /toSmartCardOffset
+	// 	body:
+	//	{
+	//		"v":1
+	//	}
+	void onToSmartCardOffset(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
 
 
@@ -185,6 +193,7 @@ public:
 	bool SaveCoordinate(const std::string & coordinateType, unsigned int data, std::string & errorInfo);
 	bool ToCoordinate(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo);
 	bool ToCoordinateIndirect(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo);
+	bool ToSmartCardOffset(const unsigned int offset, std::string & errorInfo);
 	//return a JSON string representing current device status.
 	std::string DeviceStatus();
 
@@ -253,6 +262,7 @@ private:
 	static const int STEPPER_Y = 1;
 	static const int STEPPER_Z = 2;
 	static const int STEPPER_W = 3;
+	static const int STEPPER_V = 4;
 
 
 	Poco::Mutex _webServerMutex;
