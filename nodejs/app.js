@@ -8,7 +8,7 @@ const scsHostName = "127.0.0.1";
 const scsHostPort = 60002;
 
 const iFingerHostName = "127.0.0.1"
-const iFingerHostPort = 60003;
+const iFingerHostPort = 60004;
 
 function appLog(str) {
     var d = new Date();
