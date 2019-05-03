@@ -105,6 +105,19 @@ public:
 		return json;
 	}
 
+	static std::string CmdPressPedKey(unsigned int index)
+	{
+		std::string json;
+
+		json += "{";
+		json +=  	"\"userCommand\":\"press key\",";
+		json +=  	"\"commandId\":\"" + getUniqueId() + "\",";
+		json += 	"\"index\":" + std::to_string(index);
+		json += "}";
+
+		return json;
+	}
+
 	static std::string CmdPressSoftKey(unsigned int downPeriod, unsigned int upPeriod, const std::vector<unsigned int>& keyNumbers)
 	{
 		std::string json;

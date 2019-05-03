@@ -50,6 +50,7 @@ private:
 	const std::string ErrorResetConfirmNeeded = "reset confirm is needed";
 	const std::string ErrorDeviceNotInitialized = "device hasn't been initialized";
 	const std::string ErrorWrongDeviceState = "wrong device state";
+	const std::string ErrorCommandIdMismatch = "command id doesn't match";
 
 	static ScsClientImp * _pInstance;
 	static Poco::Mutex _mutex;
@@ -59,9 +60,13 @@ private:
 
 	std::string _ipAddr;
 	unsigned int _portNumber;
+	unsigned int _iFingerPortNumber;
 
 	std::string sendCommand(const std::string & command);
+	std::string sendIFingerCommand(const std::string & command);
 	ScsResult getErrorCode(const std::string & errorInfo);
+
+	std::string pressIFingerKey(unsigned int index, std::string & errorInfo);
 };
 
 #endif /* SRC_SCSCLIENTIMP_H_ */
