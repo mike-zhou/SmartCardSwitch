@@ -356,6 +356,10 @@ void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::s
 		onCommandStepperSetState(socketWrapper, translator.GetCommandStepperSetState());
 		break;
 
+	case CommandType::StepperForwardClockwise:
+		onCommandStepperForwardClockwise(socketWrapper, translator.GetCommandStepperForwardClockwise());
+		break;
+
 	case CommandType::LocatorQuery:
 		onCommandLocatorQuery(socketWrapper, translator.GetCommandLocatorQuery());
 		break;
@@ -721,6 +725,16 @@ void CSocketManager::onCommandStepperQuery(struct SocketWrapper& socketWrapper, 
 }
 
 void CSocketManager::onCommandStepperSetState(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperSetState> cmdPtr)
+{
+	if(cmdPtr == nullptr) {
+		pLogger->LogError("CSocketManager::"  + std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
+
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+}
+
+void CSocketManager::onCommandStepperForwardClockwise(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperForwardClockwise> cmdPtr)
 {
 	if(cmdPtr == nullptr) {
 		pLogger->LogError("CSocketManager::"  + std::string(__FUNCTION__) + " failed in translating JSON");

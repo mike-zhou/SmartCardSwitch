@@ -57,6 +57,7 @@ enum CommandType
 	StepperConfigHome,
 	StepperQuery,
 	StepperSetState,
+	StepperForwardClockwise,
 	LocatorQuery,
 	SolenoidActivate
 };
@@ -902,6 +903,37 @@ public:
 };
 
 //{
+//	"command":"stepper forward clockwise",
+//	"index":0,
+//	"clockwise":1
+//}
+class CommandStepperForwardClockwise
+{
+public:
+	CommandStepperForwardClockwise(int stepperIndex, bool clockwise, unsigned long commandId)
+	{
+		_stepperIndex = stepperIndex;
+		_clockwise = clockwise;
+		_commandId = commandId;
+	}
+
+	CommandType Type() { return CommandType::StepperForwardClockwise; }
+
+	std::string ToString()
+	{
+		char buf[256];
+		sprintf(buf, "C 63 %d %d %ld", _stepperIndex, _clockwise?1:0, _commandId & 0xffff);
+		std::string cmd(buf);
+		return cmd;
+	}
+
+private:
+	int _stepperIndex;
+	bool _clockwise;
+	unsigned long _commandId;
+};
+
+//{
 //	"command":"locator query",
 //	"index":0
 //}
@@ -1161,6 +1193,7 @@ public:
 	std::shared_ptr<CommandStepperConfigHome> GetCommandStepperConfigHome();
 	std::shared_ptr<CommandStepperQuery> GetCommandStepperQuery();
 	std::shared_ptr<CommandStepperSetState> GetCommandStepperSetState();
+	std::shared_ptr<CommandStepperForwardClockwise> GetCommandStepperForwardClockwise();
 	std::shared_ptr<CommandLocatorQuery> GetCommandLocatorQuery();
 	std::shared_ptr<CommandOptPowerOn> GetCommandOptPowerOn();
 	std::shared_ptr<CommandOptPowerOff> GetCommandOptPowerOff();
@@ -1203,6 +1236,7 @@ private:
 	const std::string strCommandStepperConfigHome = "stepper config home";
 	const std::string strCommandStepperQuery = "stepper query";
 	const std::string strCommandStepperSetState = "stepper set state";
+	const std::string strCommandStepperForwardClockwise = "stepper forward clockwise";
 	const std::string strCommandLocatorQuery = "locator query";
 	const std::string strCommandOptPowerOn = "opt power on";
 	const std::string strCommandOptPowerOff = "opt power off";

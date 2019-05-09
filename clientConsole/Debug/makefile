@@ -44,7 +44,7 @@ all: clientConsole
 clientConsole: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L/home/mikez/Poco/poco-1.9.0/lib -L"/home/mikez/Developments/invenco/Logger/Debug" -L"/home/mikez/Developments/invenco/scsClient/Debug" -o "clientConsole" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L/home/mikez/Poco/poco-1.9.0/lib -L"/home/user1/Developments/invenco/Logger/Debug" -L"/home/user1/Developments/invenco/scsClient/Debug" -o "clientConsole" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

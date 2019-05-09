@@ -127,6 +127,7 @@ private:
 	void onCommandStepperConfigHome(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperConfigHome> cmdPtr);
 	void onCommandStepperQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperQuery> cmdPtr);
 	void onCommandStepperSetState(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperSetState> cmdPtr);
+	void onCommandStepperForwardClockwise(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperForwardClockwise> cmdPtr);
 	void onCommandLocatorQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandLocatorQuery> cmdPtr);
 	void onCommandOptPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandOptPowerOn> cmdPtr);
 	void onCommandOptPowerOff(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandOptPowerOff> cmdPtr);

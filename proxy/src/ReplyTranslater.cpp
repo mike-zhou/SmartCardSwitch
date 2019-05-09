@@ -1440,6 +1440,48 @@ std::string ReplyTranslater::stepperSetState(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
+std::string ReplyTranslater::stepperForwardClockwise(Poco::JSON::Object::Ptr& replyPtr)
+{
+	std::string reply;
+	std::string strCmdId;
+	std::string error;
+	std::string strIndex;
+	Poco::DynamicStruct ds = *replyPtr;
+	long commandId;
+	long index;
+
+	//parameters
+	auto size = ds["params"].size();
+	if(size != 3) {
+		throw Poco::JSON::JSONException("ReplyTranslater::stepperForwardClockwise wrong parameter amount: " + std::to_string(size));
+	}
+	strIndex = ds["params"][0].toString();
+	index = getHexValue(strIndex);
+	strCmdId = ds["params"][size - 1].toString();
+	commandId = getHexValue(strCmdId);
+
+	if (replyPtr->has("error")) {
+		error = ds["error"].toString();
+	}
+
+	reply = "{";
+	reply = reply + "\"command\":\"" + strCommandStepperForwardClockwise + "\",";
+	reply = reply + "\"index\":" + std::to_string(index) + ",";
+	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	if(!error.empty()) {
+		reply = reply + ",\"error\":\"" + error + "\"";
+		//"\"error\":\"invalid command\""
+		//"\"error\":\"too many parameters\""
+		//"\"error\":\"unknown command\""
+		//"\"error\":\"wrong parameter amount\""
+		//"\"error\":\"stepper index is out of scope\""
+		//"\"error\":\"invalid parameter\""
+	}
+	reply += "}";
+
+	return reply;
+}
+
 std::string ReplyTranslater::locatorQuery(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
@@ -1686,6 +1728,10 @@ std::string ReplyTranslater::formatCmdReply(Poco::JSON::Object::Ptr& replyPtr)
 
 	case 62:
 		reply = stepperSetState(replyPtr);
+		break;
+
+	case 63:
+		reply = stepperForwardClockwise(replyPtr);
 		break;
 
 	case 100:

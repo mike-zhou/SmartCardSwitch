@@ -60,6 +60,7 @@ private:
 	const std::string strCommandStepperConfigHome = "stepper config home";
 	const std::string strCommandStepperQuery = "stepper query";
 	const std::string strCommandStepperSetState = "stepper set state";
+	const std::string strCommandStepperForwardClockwise = "stepper forward clockwise";
 	const std::string strCommandLocatorQuery = "locator query";
 	const std::string strCommandSolenoidActivate = "solenoid activate";
 	//events
@@ -131,6 +132,7 @@ private:
 	std::string stepperConfigHome(Poco::JSON::Object::Ptr& replyPtr);
 	std::string stepperQuery(Poco::JSON::Object::Ptr& replyPtr);
 	std::string stepperSetState(Poco::JSON::Object::Ptr& replyPtr);
+	std::string stepperForwardClockwise(Poco::JSON::Object::Ptr& replyPtr);
 	std::string locatorQuery(Poco::JSON::Object::Ptr& replyPtr);
 	std::string solenoidActivate(Poco::JSON::Object::Ptr& replyPtr);
 	//events
