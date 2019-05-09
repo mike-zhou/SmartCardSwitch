@@ -2731,6 +2731,35 @@ ICommandReception::CommandId CommandRunner::StepperSetState(unsigned int index, 
 	return cmdId;
 }
 
+ICommandReception::CommandId CommandRunner::StepperForwardClockwise(unsigned int index, bool bForwardClockwise)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+	std::shared_ptr<DeviceCommand> cmdPtr (nullptr);
+	if(_userCommand.resultConnectedDeviceName.empty()) {
+		pLogger->LogError("CommandRunner::StepperForwardClockwise hasn't connected to any device");
+	}
+	else {
+		if(index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::StepperForwardClockwise invalid stepper index: " + std::to_string(index));
+		}
+		else
+		{
+			cmdPtr = CommandFactory::StepperForwardClockwise(index, bForwardClockwise);
+			if(cmdPtr == nullptr) {
+				pLogger->LogError("CommandRunner::StepperForwardClockwise empty ptr returned from CommandFactory::StepperForward");
+			}
+			else {
+				_userCommand.stepperIndex = index;
+			}
+		}
+	}
+
+	ICommandReception::CommandId cmdId ;
+	cmdId = sendCmdToDevice(cmdPtr);
+	return cmdId;
+}
+
 ICommandReception::CommandId CommandRunner::LocatorQuery(unsigned int index)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);

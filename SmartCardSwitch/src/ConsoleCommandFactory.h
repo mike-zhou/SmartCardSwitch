@@ -53,6 +53,7 @@ public:
 		StepperMove = 74,
 		StepperQuery = 75,
 		StepperSetState = 76,
+		StepperForwardClockwise = 77,
 		LocatorQuery = 90,
 		SaveMovementConfig = 300,
 		SaveMovementConfigStepperBoundary = 301,
@@ -162,6 +163,7 @@ public:
 	}
 
 	static std::string CmdStepperQuery(unsigned int index) 	{ return "75 " + std::to_string(index) + "\r\n"; }
+	static std::string CmdStepperForwardClockwise(unsigned int index, bool forwardClockwise) { return "77 " + std::to_string(index) + (forwardClockwise?" 1":" 0") + "\r\n"; }
 	static std::string CmdLocatorQuery(unsigned int index) 	{ return "90 " + std::to_string(index) + "\r\n"; }
 
 	static Type GetCmdType(const std::string& consoleCmd);

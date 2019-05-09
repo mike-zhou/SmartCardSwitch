@@ -81,6 +81,7 @@ private:
 									StepperState state,
 									bool bEnabled,
 									bool bForward,
+									bool bForwardClockwise,
 									unsigned int locatorIndex,
 									unsigned int locatorLineNumberStart,
 									unsigned int locatorLineNumberTerminal,
@@ -92,6 +93,7 @@ private:
 									unsigned long decelerationBuffer,
 									unsigned long decelerationBufferIncrement) override;
 
+	virtual void OnStepperForwardClockwise(CommandId key, bool bSuccess) override;
 	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) override;
 
 private:
@@ -123,6 +125,7 @@ private:
 		unsigned int steps = 0;
 		bool enabled = true;
 		bool forward = false;
+		bool forwardClockwise = true;
 
 		int locatorIndex = 0;
 		int locatorLineNumberStart = 0;

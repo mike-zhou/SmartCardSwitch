@@ -80,6 +80,7 @@ private:
 	virtual CommandId StepperMove(unsigned int index, unsigned short steps) override;
 	virtual CommandId StepperQuery(unsigned int index) override;
 	virtual CommandId StepperSetState(unsigned int index, StepperState state) override;
+	virtual CommandId StepperForwardClockwise(unsigned int index, bool bForwardClockwise) override;
 	virtual CommandId LocatorQuery(unsigned int index) override;
 	virtual CommandId SaveMovementConfig() override;
 
