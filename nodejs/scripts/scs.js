@@ -25,6 +25,13 @@ function updatePageStepper(stepper, data) {
     document.getElementById(elementId).selectedIndex = data["locatorLineNumberStart"] - 1;
     elementId = stepper + "LocatorLineNumberTerminal";
     document.getElementById(elementId).selectedIndex = data["locatorLineNumberTerminal"] - 1;
+    elementId = stepper + "ForwardClockwise";
+    if(data["forwardClockwise"] == true) {
+        document.getElementById(elementId).innerHTML = "Clockwise";
+    }
+    else {
+        document.getElementById(elementId).innerHTML = "Counter Clockwise";
+    }
 }
 
 function updatePageLocator(locator, data) {
@@ -587,6 +594,37 @@ function onStepperConfigHome(index) {
     xhr.send(JSON.stringify(parameters));
 }
 
+function onStepperConfigForwardClockwise(index) {
+    var selectionIndex = parseInt(document.getElementById("stepper" + index + "ForwardClockwiseSelection").selectedIndex);
+
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open('POST', 'stepperConfigForwardClockwise');
+
+    xhr.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                var jsonObj = xhr.response;
+                console.log(JSON.stringify(jsonObj)); // 'This is the output.'
+                updatePage(jsonObj);
+            } else {
+                alert('Error: ' + xhr.status + ": " + xhr.statusText); // An error occurred during the request.
+            }
+        }
+    };
+
+    var parameters = {};
+    parameters["index"] = parseInt(index);
+    parameters["forwardClockwise"] = Boolean(selectionIndex == 0);
+
+    xhr.send(JSON.stringify(parameters));
+}
+
 function saveCoordinate() {
     console.log(">>saveCoordinate()");
     //find out which coordinate radio is selected
@@ -929,6 +967,8 @@ function onElementClicked() {
             onStepperConfigMovement(index);
         } else if (action === "configHome") {
             onStepperConfigHome(index);
+        } else if (action === "configForwardClockwise") {
+            onStepperConfigForwardClockwise(index);
         } else {
             alert("onElementClicked unknown action type: " + elementId);
         }
