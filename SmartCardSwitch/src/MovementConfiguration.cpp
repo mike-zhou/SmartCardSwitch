@@ -79,6 +79,7 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 			{
 				unsigned int index;
 
+				bool forwardClockwise;
 				long lowClks;
 				long highClks;
 				long accelerationBuffer;
@@ -89,6 +90,7 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 				int locatorLineNumberStart;
 				int locatorLineNumberTerminal;
 
+				forwardClockwise			= ds["steppers"][i]["forwardClockwise"];
 				index 						= ds["steppers"][i]["index"];
 				lowClks 					= ds["steppers"][i]["value"]["lowClks"];
 				highClks 					= ds["steppers"][i]["value"]["highClks"];
@@ -107,10 +109,13 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 									accelerationBufferDecrement,
 									decelerationBuffer,
 									decelerationBufferIncrement);
+
 				SetStepperBoundary(index,
 									locatorIndex,
 									locatorLineNumberStart,
 									locatorLineNumberTerminal);
+
+				SetStepperForwardClockwise(index, forwardClockwise);
 			}
 
 			//cardInsert
@@ -291,6 +296,35 @@ bool MovementConfiguration::SetStepperGeneral(unsigned int index,
 	return rc;
 }
 
+bool MovementConfiguration::SetStepperForwardClockwise(unsigned int index, bool forwardClockwise)
+{
+	bool rc = false;
+	char buf[512];
+
+	sprintf(buf, "MovementConfiguration::SetStepperForwardClockwise index: %d, clockwise: %s",
+			index, forwardClockwise?"true":"false");
+	std::string info(buf);
+	pLogger->LogInfo(info);
+
+	if(index < STEPPERS_AMOUNT)
+	{
+		if(index >= _steppers.size())
+		{
+			for(; _steppers.size() < STEPPERS_AMOUNT; ) {
+				StepperMovementConfig defaultCfg;
+				_steppers.push_back(defaultCfg);
+			}
+		}
+
+		auto& stepper = _steppers[index];
+		stepper.forwardClockwise = forwardClockwise;
+
+		rc = true;
+	}
+
+	return rc;
+}
+
 bool MovementConfiguration::SetStepperCardInsert(
 					long lowClks,
 					long highClks,
@@ -400,6 +434,28 @@ bool MovementConfiguration::GetStepperGeneral(unsigned int index,
 	return true;
 }
 
+bool MovementConfiguration::GetStepperForwardClockwise(unsigned int index, bool & forwardClockwise)
+{
+	if(index >= STEPPERS_AMOUNT) {
+		return false;
+	}
+	if(index >= _steppers.size()) {
+		return false;
+	}
+
+	forwardClockwise = _steppers[index].forwardClockwise;
+
+
+	char buf[512];
+
+	sprintf(buf, "MovementConfiguration::GetStepperForwardClockwise index: %d, forward clockwise: %s",
+			index, forwardClockwise?"true":"false");
+	std::string info(buf);
+	pLogger->LogInfo(info);
+
+	return true;
+}
+
 bool MovementConfiguration::GetStepperCardInsert(
 					long & lowClks,
 					long & highClks,
@@ -482,6 +538,7 @@ void MovementConfiguration::GetBdcConfig(unsigned long& lowClks, unsigned long& 
 
 MovementConfiguration::StepperMovementConfig::StepperMovementConfig()
 {
+	forwardClockwise = true;
 	lowClks = 0;
 	highClks = 0;
 	accelerationBuffer = 0;
@@ -498,7 +555,8 @@ std::string MovementConfiguration::StepperMovementConfig::ToJsonObj()
 	std::string json;
 
 	json = "{";
-	json = json + "\"lowClks\":" + std::to_string(lowClks);
+	json = json + "\"forwardClockwise\":" + std::string(forwardClockwise ? "true" : "false");
+	json = json + ",\"lowClks\":" + std::to_string(lowClks);
 	json = json + ",\"highClks\":" + std::to_string(highClks);
 	json = json + ",\"accelerationBuffer\":" + std::to_string(accelerationBuffer);
 	json = json + ",\"accelerationBufferDecrement\":" + std::to_string(accelerationBufferDecrement);

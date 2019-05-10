@@ -100,6 +100,15 @@ private:
 	void onStepperConfigMovement(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 
 	//request:
+	//	uri: /stepperConfigForwardClockwise
+	//	body:
+	//	{
+	//		"index":1,
+	//		"forwardClockwise":true
+	//	}
+	void onStepperConfigForwardClockwise(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
+	//request:
 	//	uri: /stepperConfigHome
 	// 	body:
 	//	{
@@ -185,6 +194,7 @@ public:
 						unsigned int decelerationBuffer,
 						unsigned int decelerationBufferIncrement,
 						std::string & errorInfo);
+	bool StepperConfigForwardClockwise(unsigned int index, bool forwardClockwise, std::string & errorInfo);
 	bool BdcForward(unsigned int index, std::string & errorInfo);
 	bool BdcReverse(unsigned int index, std::string & errorInfo);
 	bool BdcDeactivate(unsigned int index, std::string & errorInfo);
@@ -240,6 +250,7 @@ private:
 								StepperState state,
 								bool bEnabled,
 								bool bForward,
+								bool bForwardClockwise,
 								unsigned int locatorIndex,
 								unsigned int locatorLineNumberStart,
 								unsigned int locatorLineNumberTerminal,
@@ -252,6 +263,7 @@ private:
 								unsigned long decelerationBufferIncrement) override;
 
 	virtual void OnStepperSetState(CommandId key, bool bSuccess) override;
+	virtual void OnStepperForwardClockwise(CommandId key, bool bSuccess) override;
 	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) override;
 
 private:
@@ -285,6 +297,7 @@ private:
 		unsigned int stepperIndex;
 		unsigned int steps;
 		bool stepperForward;
+		bool stepperForwardClockwise;
 		unsigned int lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement;
 		unsigned int locatorLineNumberStart, locatorLineNumberTerminal;
 		unsigned int locatorIndex;
@@ -304,6 +317,7 @@ private:
 			StepperState state;
 			bool enabled;
 			bool forward;
+			bool forwardClockwise;
 			//boundary
 			unsigned int homeOffset;
 			unsigned int targetPosition;

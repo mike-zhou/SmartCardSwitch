@@ -30,6 +30,8 @@ public:
 						long decelerationBuffer,
 						long decelerationBufferIncrement);
 
+	bool SetStepperForwardClockwise(unsigned int index, bool forwardClockwise);
+
 	bool SetStepperCardInsert(
 						long lowClks,
 						long highClks,
@@ -59,6 +61,8 @@ public:
 						long & decelerationBuffer,
 						long & decelerationBufferIncrement);
 
+	bool GetStepperForwardClockwise(unsigned int index, bool & forwardClockwise);
+
 	bool GetStepperCardInsert(
 						long & lowClks,
 						long & highClks,
@@ -86,6 +90,7 @@ private:
 
 	struct StepperMovementConfig
 	{
+		bool forwardClockwise;
 		long lowClks;
 		long highClks;
 		long accelerationBuffer;

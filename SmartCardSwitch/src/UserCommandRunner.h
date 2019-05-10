@@ -25,7 +25,7 @@
 
 /**
  * This class accepts user command with IUserCommandRunner interface,
- * expands user command to console commands,
+ * expands one user command to multiple console commands,
  * passes those console commands to ConsoleOperator instance one by one,
  * and sends result of user command to IUserCommandRunnerObserver
  */
@@ -84,6 +84,7 @@ private:
 								StepperState state,
 								bool bEnabled,
 								bool bForward,
+								bool bForwardClockwise,
 								unsigned int locatorIndex,
 								unsigned int locatorLineNumberStart,
 								unsigned int locatorLineNumberTerminal,
@@ -96,6 +97,7 @@ private:
 								unsigned long decelerationBufferIncrement) override;
 
 	virtual void OnStepperSetState(CommandId key, bool bSuccess) override {}
+	virtual void OnStepperForwardClockwise(CommandId key, bool bSuccess) override;
 	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) override;
 
 private:
@@ -320,6 +322,7 @@ private:
 		unsigned int stepperIndex;
 		unsigned int steps;
 		bool stepperForward;
+		bool stepperForwardClockwise;
 		unsigned int locatorIndex;
 
 		//command results
@@ -335,6 +338,7 @@ private:
 			StepperState state;
 			bool enabled;
 			bool forward;
+			bool forwardClockwise;
 			unsigned int homeOffset;
 			unsigned int targetPosition;
 			unsigned int locatorIndex;

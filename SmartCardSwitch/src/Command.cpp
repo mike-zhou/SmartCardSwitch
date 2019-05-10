@@ -755,6 +755,34 @@ std::string CommandStepperMove::ToJsonCommandString()
 	return cmd;
 }
 
+/////////////////////////////////////////////////
+// CommandStepperForwardClockwise
+/////////////////////////////////////////////////
+CommandStepperForwardClockwise::CommandStepperForwardClockwise(unsigned int stepperIndex, bool forwardClockwise)
+{
+	_stepperIndex = stepperIndex;
+	_forwardClockwise = forwardClockwise;
+}
+
+std::string CommandStepperForwardClockwise::CommandKey()
+{
+	return std::string("stepper forward clockwise");
+}
+
+std::string CommandStepperForwardClockwise::ToJsonCommandString()
+{
+	std::string cmd;
+
+	cmd = "{";
+	cmd = cmd + "\"command\":\"stepper forward clockwise\",";
+	cmd = cmd + "\"commandId\":" + std::to_string(CommandId()) + ",";
+	cmd = cmd + "\"index\":" + std::to_string(_stepperIndex) + ",";
+	cmd = cmd + "\"forwardClockwise\":" + std::string(_forwardClockwise?"1":"0");
+	cmd += "}";
+
+	return cmd;
+}
+
 /////////////////////////////////////////////
 // CommandLoctorQuery
 /////////////////////////////////////////////

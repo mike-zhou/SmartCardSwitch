@@ -359,6 +359,78 @@ void ScsRequestHandler::onStepperConfigMovement(Poco::Net::HTTPServerRequest& re
 	}
 }
 
+void ScsRequestHandler::onStepperConfigForwardClockwise(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onStepperConfigForwardClockwise no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onStepperConfigForwardClockwise command: " + command);
+		unsigned int index;
+		bool forwardClockwise;
+		bool exceptionOccurred = true;
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			index = ds["index"];
+			forwardClockwise = ds["forwardClockwise"];
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperConfigForwardClockwise exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperConfigForwardClockwise unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperConfigForwardClockwise reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else
+		{
+			std::string errorInfo;
+			if(!_pWebServer->StepperConfigForwardClockwise(index, forwardClockwise, errorInfo))
+			{
+				pLogger->LogError("ScsRequestHandler::onStepperConfigForwardClockwise failed to configure stepper movement: " + errorInfo);
+			}
+
+			if(errorInfo.empty()) {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				auto& oStream = response.send();
+				oStream << _pWebServer->DeviceStatus();
+			}
+			else {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
+		}
+	}
+}
+
 void ScsRequestHandler::onStepperConfigHome(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	std::string command = getJsonCommand(request);
@@ -1539,6 +1611,7 @@ void WebServer::OnStepperQuery(CommandId key, bool bSuccess,
 							StepperState state,
 							bool bEnabled,
 							bool bForward,
+							bool bForwardClockwise,
 							unsigned int locatorIndex,
 							unsigned int locatorLineNumberStart,
 							unsigned int locatorLineNumberTerminal,
@@ -1569,6 +1642,7 @@ void WebServer::OnStepperQuery(CommandId key, bool bSuccess,
 
 		data.state = state;
 		data.forward = bForward;
+		data.forwardClockwise = bForwardClockwise;
 		data.enabled = bEnabled;
 		data.locatorIndex = locatorIndex;
 		data.locatorLineNumberStart = locatorLineNumberStart;
@@ -1594,6 +1668,31 @@ void WebServer::OnStepperQuery(CommandId key, bool bSuccess,
 void WebServer::OnStepperSetState(CommandId key, bool bSuccess)
 {
 
+}
+
+void WebServer::OnStepperForwardClockwise(CommandId key, bool bSuccess)
+{
+	if(key == InvalidCommandId) {
+		return;
+	}
+
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		//update result.
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].forwardClockwise = _consoleCommand.stepperForwardClockwise;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput)
@@ -1816,6 +1915,21 @@ bool WebServer::StepperConfigMovement(
 	}
 
 	return true;
+}
+
+bool WebServer::StepperConfigForwardClockwise(unsigned int index, bool forwardClockwise, std::string & errorInfo)
+{
+	errorInfo.clear();
+
+	if(index >= STEPPER_AMOUNT) {
+		errorInfo = "stepper index is out of range: " + std::to_string(index);
+	}
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperConfigMovement " + errorInfo);
+		return false;
+	}
+
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
 }
 
 bool WebServer::BdcForward(unsigned int index, std::string & errorInfo)
@@ -2648,6 +2762,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"state\":" + std::to_string((int)(data.state)) + ",";
 			json += "\"enabled\":" + (data.enabled?std::string("true"):std::string("false")) + ",";
 			json += "\"forward\":" + (data.forward?std::string("true"):std::string("false")) + ",";
+			json += "\"forwardClockwise\":" + (data.forwardClockwise?std::string("true"):std::string("false")) + ",";
 			json += "\"homeOffset\":" + std::to_string(data.homeOffset) + ",";
 			json += "\"locatorIndex\":" + std::to_string(data.locatorIndex) + ",";
 			json += "\"locatorLineNumberStart\":" + std::to_string(data.locatorLineNumberStart) + ",";

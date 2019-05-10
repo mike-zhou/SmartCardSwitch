@@ -328,6 +328,7 @@ void UserCommandRunner::executeUserCmdResetDevice()
 	int locatorIndex;
 	int locatorLineNumberStart;
 	int locatorLineNumberTerminal;
+	bool forwardClockwise;
 
 	const unsigned int x = 0;
 	const unsigned int y = 1;
@@ -357,10 +358,14 @@ void UserCommandRunner::executeUserCmdResetDevice()
 															accelerationBufferDecrement,
 															decelerationBuffer,
 															decelerationBufferIncrement);
+
 		rc = rc && pMovementConfiguration->GetStepperBoundary(stepperIndexes[i],
 															locatorIndex,
 															locatorLineNumberStart,
 															locatorLineNumberTerminal);
+
+		rc = rc && pMovementConfiguration->GetStepperForwardClockwise(stepperIndexes[i], forwardClockwise);
+
 		if(rc)
 		{
 			configStepperMovement(stepperIndexes[i],
@@ -373,6 +378,9 @@ void UserCommandRunner::executeUserCmdResetDevice()
 
 			cmd = ConsoleCommandFactory::CmdStepperConfigHome(stepperIndexes[i], locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
 			runConsoleCommand(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperForwardClockwise(stepperIndexes[i], forwardClockwise);
+			runConsoleCommand(cmd);
+
 			cmd = ConsoleCommandFactory::CmdStepperRun(stepperIndexes[i], 0, 0);
 			runConsoleCommand(cmd);
 		}
@@ -3164,6 +3172,7 @@ void UserCommandRunner::OnStepperQuery(CommandId key, bool bSuccess,
 							StepperState state,
 							bool bEnabled,
 							bool bForward,
+							bool bForwardClockwise,
 							unsigned int locatorIndex,
 							unsigned int locatorLineNumberStart,
 							unsigned int locatorLineNumberTerminal,
@@ -3192,6 +3201,7 @@ void UserCommandRunner::OnStepperQuery(CommandId key, bool bSuccess,
 
 		stepperData.enabled = bEnabled;
 		stepperData.forward = bForward;
+		stepperData.forwardClockwise = bForwardClockwise;
 		stepperData.locatorIndex = locatorIndex;
 		stepperData.locatorLineNumberStart = locatorLineNumberStart;
 		stepperData.locatorLineNumberTerminal = locatorLineNumberTerminal;
@@ -3201,6 +3211,29 @@ void UserCommandRunner::OnStepperQuery(CommandId key, bool bSuccess,
 	}
 	else {
 		pLogger->LogError("UserCommandRunner::OnStepperQuery failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperForwardClockwise(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperForwardClockwise successful command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].forwardClockwise = _consoleCommand.stepperForwardClockwise;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperForwardClockwise failure command Id: " + std::to_string(_consoleCommand.cmdId));
 		_consoleCommand.state = CommandState::Failed;
 	}
 }

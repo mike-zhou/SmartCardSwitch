@@ -40,6 +40,7 @@ CommandRunner::CommandRunner(): Task("CommandRunner")
 		status.state = std::string();//empty string by default
 		status.enabled = UserCommand::StepperEnableStatus::UNKOWN;
 		status.forward = UserCommand::StepperDirectionStatus::UNKNOWN;
+		status.forwardClockwise = UserCommand::StepperForwardClockwiseStatus::UNKNOWN;
 		status.locatorIndex = -1;
 		status.locatorLineNumberStart = -1;
 		status.locatorLineNumberTerminal = -1;
@@ -1419,6 +1420,7 @@ void CommandRunner::onFeedbackStepperQuery(std::shared_ptr<ReplyTranslator::Repl
 				stepperState,
 				_userCommand.resultStepperStatus[replyPtr->index].enabled == UserCommand::StepperEnableStatus::ENABLED,
 				_userCommand.resultStepperStatus[replyPtr->index].forward == UserCommand::StepperDirectionStatus::FORWORD,
+				_userCommand.resultStepperStatus[replyPtr->index].forwardClockwise == UserCommand::StepperForwardClockwiseStatus::CLOCKWISE,
 				_userCommand.resultStepperStatus[replyPtr->index].locatorIndex,
 				_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberStart,
 				_userCommand.resultStepperStatus[replyPtr->index].locatorLineNumberTerminal,
@@ -1468,6 +1470,54 @@ void CommandRunner::onFeedbackStepperSetState(std::shared_ptr<ReplyTranslator::R
 	{
 		auto pReceiver = *it;
 		pReceiver->OnStepperSetState(_userCommand.commandId,
+				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
+	}
+}
+
+void CommandRunner::onFeedbackStepperForwardClockwise(std::shared_ptr<ReplyTranslator::ReplyStepperForwardClockwise> replyPtr)
+{
+	if(!isCorrespondingReply(replyPtr->commandKey, replyPtr->commandId)) {
+		return;
+	}
+
+	bool success = false;
+
+	if(replyPtr->errorInfo.empty())
+	{
+		if(replyPtr->index >= STEPPER_AMOUNT) {
+			pLogger->LogError("CommandRunner::onFeedbackStepperForwardClockwise index out of range: " + std::to_string(replyPtr->index));
+		}
+		else if(replyPtr->index != _userCommand.stepperIndex) {
+			pLogger->LogError("CommandRunner::onFeedbackStepperForwardClockwise wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
+		}
+		else {
+			if(replyPtr->forwardClockwise) {
+				_userCommand.resultStepperStatus[replyPtr->index].forwardClockwise = UserCommand::StepperForwardClockwiseStatus::CLOCKWISE;
+			}
+			else {
+				_userCommand.resultStepperStatus[replyPtr->index].forwardClockwise = UserCommand::StepperForwardClockwiseStatus::COUNTER_CLOCKWISE;
+			}
+
+			pLogger->LogInfo("CommandRunner::onFeedbackStepperForwardClockwise index: " + std::to_string(replyPtr->index) + ", forward clockwise: " + (replyPtr->forwardClockwise?"1":"0"));
+
+			success = true;
+		}
+	}
+	else {
+		pLogger->LogError("CommandRunner::onFeedbackStepperSetState error: " + replyPtr->errorInfo);
+	}
+
+	if(success) {
+		_userCommand.state = UserCommand::CommandState::SUCCEEDED;
+	}
+	else {
+		_userCommand.state = UserCommand::CommandState::FAILED;
+	}
+
+	for(auto it = _cmdResponseReceiverArray.begin(); it != _cmdResponseReceiverArray.end(); it++)
+	{
+		auto pReceiver = *it;
+		pReceiver->OnStepperForwardClockwise(_userCommand.commandId,
 				_userCommand.state == UserCommand::CommandState::SUCCEEDED);
 	}
 }
@@ -1759,6 +1809,12 @@ void CommandRunner::processFeedbacks()
 				onFeedbackStepperSetState(replyPtr);
 			}
 			break;
+
+			case ReplyTranslator::ReplyType::StepperForwardClockwise:
+			{
+				auto replyPtr = translator.ToStepperForwardClockwise();
+				onFeedbackStepperForwardClockwise(replyPtr);
+			}
 
 			case ReplyTranslator::ReplyType::LocatorQuery:
 			{
