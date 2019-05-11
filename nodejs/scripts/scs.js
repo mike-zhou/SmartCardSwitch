@@ -26,10 +26,9 @@ function updatePageStepper(stepper, data) {
     elementId = stepper + "LocatorLineNumberTerminal";
     document.getElementById(elementId).selectedIndex = data["locatorLineNumberTerminal"] - 1;
     elementId = stepper + "ForwardClockwise";
-    if(data["forwardClockwise"] == true) {
+    if (data["forwardClockwise"] == true) {
         document.getElementById(elementId).innerHTML = "Clockwise";
-    }
-    else {
+    } else {
         document.getElementById(elementId).innerHTML = "Counter Clockwise";
     }
 }
@@ -316,13 +315,11 @@ function updatePageCoordinates(serverResponse) {
     document.getElementById("coordinateList").innerHTML = html;
 }
 
-function updatePageSmartCardOffsets(sesrverResponse) 
-{
+function updatePageSmartCardOffsets(sesrverResponse) {
     var html = "";
     var coorSmartCardOffsets = serverResponse["coordinateSmartCardOffsets"];
 
-    for(i=0; i<coorSmartCardOffsets.length; i++) 
-    {
+    for (i = 0; i < coorSmartCardOffsets.length; i++) {
         var index = coorSmartCardOffsets[i].index;
         var value = coorSmartCardOffsets[i].value;
 
@@ -435,6 +432,8 @@ function moveStepper(stepper, forward, steps) {
         parameters["index"] = 2;
     } else if (stepper === "stepper3") {
         parameters["index"] = 3;
+    } else if (stepper === "stepper4") {
+        parameters["index"] = 4;
     } else {
         alert("Wrong stepper: " + stepper);
         return;
@@ -839,13 +838,11 @@ function onCoordinateItem(type, index) {
     }
 }
 
-function onSmartCardOffset(type, index)
-{
-    if(type==="index") {
+function onSmartCardOffset(type, index) {
+    if (type === "index") {
         var content = document.getElementById("smartCardOffset_value_" + index).innerText;
         document.getElementById("smartCardOffset_selected").innerText = content;
-    }
-    else if(type === "to") {
+    } else if (type === "to") {
         var command = {};
         command["v"] = document.getElementById("smartCardOffset_selected").innerText;
 
@@ -989,11 +986,11 @@ function onElementClicked() {
         var type = paraArray[1];
         var index = parseInt(paraArray[2]);
         onCoordinateItem(type, index);
-    }else if (device === "smartCardOffset") {
+    } else if (device === "smartCardOffset") {
         var index;
         var type = paraArray[1];
 
-        if((type === "index") || (type==="value")) {
+        if ((type === "index") || (type === "value")) {
             index = parseInt(paraArray[2]);
         }
         onSmartCardOffset(type, index);

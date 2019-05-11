@@ -376,9 +376,9 @@ void UserCommandRunner::executeUserCmdResetDevice()
 								decelerationBuffer,
 								decelerationBufferIncrement);
 
-			cmd = ConsoleCommandFactory::CmdStepperConfigHome(stepperIndexes[i], locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
-			runConsoleCommand(cmd);
 			cmd = ConsoleCommandFactory::CmdStepperForwardClockwise(stepperIndexes[i], forwardClockwise);
+			runConsoleCommand(cmd);
+			cmd = ConsoleCommandFactory::CmdStepperConfigHome(stepperIndexes[i], locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
 			runConsoleCommand(cmd);
 
 			cmd = ConsoleCommandFactory::CmdStepperRun(stepperIndexes[i], 0, 0);
