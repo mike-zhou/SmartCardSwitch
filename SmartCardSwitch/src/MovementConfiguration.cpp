@@ -44,7 +44,7 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 		//open storage file
 		int fd = open(_pathFileName.c_str(), O_RDONLY);
 		if(fd < 0) {
-			pLogger->LogError("MovementConfiguration::PersistToFile cannot open file: " + _pathFileName);
+			pLogger->LogError("MovementConfiguration::MovementConfiguration cannot open file: " + _pathFileName);
 			return;
 		}
 		//read out the file content
@@ -63,7 +63,7 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 		close(fd);
 
 		if(json.empty()) {
-			pLogger->LogError("MovementConfiguration::PersistToFile nothing read from: " + _pathFileName);
+			pLogger->LogError("MovementConfiguration::MovementConfiguration nothing read from: " + _pathFileName);
 		}
 		else
 		{
@@ -90,8 +90,8 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 				int locatorLineNumberStart;
 				int locatorLineNumberTerminal;
 
-				forwardClockwise			= ds["steppers"][i]["forwardClockwise"];
 				index 						= ds["steppers"][i]["index"];
+				forwardClockwise			= ds["steppers"][i]["value"]["forwardClockwise"];
 				lowClks 					= ds["steppers"][i]["value"]["lowClks"];
 				highClks 					= ds["steppers"][i]["value"]["highClks"];
 				accelerationBuffer 			= ds["steppers"][i]["value"]["accelerationBuffer"];
@@ -139,16 +139,16 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 			_bdc.highClks = ds["bdc"]["highClks"];
 			_bdc.cycles = ds["bdc"]["cycles"];
 
-			pLogger->LogInfo("MovementConfiguration::PersistToFile storage file is parsed successfully");
+			pLogger->LogInfo("MovementConfiguration::MovementConfiguration storage file is parsed successfully");
 		}
 	}
 	catch(Poco::Exception& e)
 	{
-		pLogger->LogError("MovementConfiguration::PersistToFile exception: " + e.displayText());
+		pLogger->LogError("MovementConfiguration::MovementConfiguration exception: " + e.displayText());
 	}
 	catch(...)
 	{
-		pLogger->LogError("MovementConfiguration::PersistToFile unknown exception");
+		pLogger->LogError("MovementConfiguration::MovementConfiguration unknown exception");
 	}
 }
 

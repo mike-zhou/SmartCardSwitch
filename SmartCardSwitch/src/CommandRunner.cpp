@@ -1815,6 +1815,7 @@ void CommandRunner::processFeedbacks()
 				auto replyPtr = translator.ToStepperForwardClockwise();
 				onFeedbackStepperForwardClockwise(replyPtr);
 			}
+			break;
 
 			case ReplyTranslator::ReplyType::LocatorQuery:
 			{

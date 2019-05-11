@@ -3,7 +3,7 @@
 		{
 			"index": 0,
 			"value": {
-				"forwardClockWise": true,
+				"forwardClockwise": true,
 				"lowClks": 10,
 				"highClks": 10,
 				"accelerationBuffer": 100,
@@ -18,7 +18,7 @@
 		{
 			"index": 1,
 			"value": {
-				"forwardClockWise": false,
+				"forwardClockwise": false,
 				"lowClks": 10,
 				"highClks": 10,
 				"accelerationBuffer": 100,
@@ -33,7 +33,7 @@
 		{
 			"index": 2,
 			"value": {
-				"forwardClockWise": true,
+				"forwardClockwise": true,
 				"lowClks": 10,
 				"highClks": 10,
 				"accelerationBuffer": 100,
@@ -48,7 +48,7 @@
 		{
 			"index": 3,
 			"value": {
-				"forwardClockWise": true,
+				"forwardClockwise": true,
 				"lowClks": 10,
 				"highClks": 10,
 				"accelerationBuffer": 100,
@@ -63,16 +63,16 @@
 		{
 			"index": 4,
 			"value": {
-				"forwardClockWise": true,
+				"forwardClockwise": true,
 				"lowClks": 10,
 				"highClks": 10,
 				"accelerationBuffer": 200,
 				"accelerationBufferDecrement": 5,
 				"decelerationBuffer": 200,
 				"decelerationBufferIncrement": 5,
-				"locatorIndex": -1,
-				"locatorLineNumberStart": -1,
-				"locatorLineNumberTerminal": -1
+				"locatorIndex": 4,
+				"locatorLineNumberStart": 7,
+				"locatorLineNumberTerminal": 8
 			}
 		}
 	],

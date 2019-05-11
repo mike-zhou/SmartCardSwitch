@@ -1446,9 +1446,11 @@ std::string ReplyTranslater::stepperForwardClockwise(Poco::JSON::Object::Ptr& re
 	std::string strCmdId;
 	std::string error;
 	std::string strIndex;
+	std::string strForwardClockwise;
 	Poco::DynamicStruct ds = *replyPtr;
 	long commandId;
 	long index;
+	int forwardClockwise;
 
 	//parameters
 	auto size = ds["params"].size();
@@ -1457,6 +1459,8 @@ std::string ReplyTranslater::stepperForwardClockwise(Poco::JSON::Object::Ptr& re
 	}
 	strIndex = ds["params"][0].toString();
 	index = getHexValue(strIndex);
+	strForwardClockwise = ds["params"][1].toString();
+	forwardClockwise = getHexValue(strForwardClockwise);
 	strCmdId = ds["params"][size - 1].toString();
 	commandId = getHexValue(strCmdId);
 
@@ -1468,6 +1472,7 @@ std::string ReplyTranslater::stepperForwardClockwise(Poco::JSON::Object::Ptr& re
 	reply = reply + "\"command\":\"" + strCommandStepperForwardClockwise + "\",";
 	reply = reply + "\"index\":" + std::to_string(index) + ",";
 	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	reply = reply + ",\"forwardClockwise\":" + std::to_string(forwardClockwise);
 	if(!error.empty()) {
 		reply = reply + ",\"error\":\"" + error + "\"";
 		//"\"error\":\"invalid command\""

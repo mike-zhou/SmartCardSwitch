@@ -1430,7 +1430,7 @@ std::shared_ptr<CommandStepperForwardClockwise> CommandTranslator::GetCommandSte
 			else
 			{
 				int stepperIndex = objectPtr->getValue<int>("index");
-				int clockwise = objectPtr->getValue<int>("clockwise");
+				int clockwise = objectPtr->getValue<int>("forwardClockwise");
 
 				std::shared_ptr<CommandStepperForwardClockwise> p(new CommandStepperForwardClockwise(stepperIndex, (clockwise != 0), commandId));
 				return p;
