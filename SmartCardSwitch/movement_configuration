@@ -64,12 +64,12 @@
 			"index": 4,
 			"value": {
 				"forwardClockwise": true,
-				"lowClks": 10,
-				"highClks": 10,
-				"accelerationBuffer": 200,
-				"accelerationBufferDecrement": 5,
-				"decelerationBuffer": 200,
-				"decelerationBufferIncrement": 5,
+				"lowClks": 5,
+				"highClks": 5,
+				"accelerationBuffer": 100,
+				"accelerationBufferDecrement": 1,
+				"decelerationBuffer": 100,
+				"decelerationBufferIncrement": 1,
 				"locatorIndex": 4,
 				"locatorLineNumberStart": 7,
 				"locatorLineNumberTerminal": 8
