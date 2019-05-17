@@ -153,6 +153,25 @@ function onDefaultPage(request, response) {
     stream.pipe(response);
 }
 
+function onGetCardSlotMappings(request, response) {
+    appLog("onGetCardSlotMappings");
+
+    fs.readFile("data/cardSlotMapping.json", function(err, contents) {
+        if(err) {
+            appLog("onGetCardSlotMappings ERROR: " + err);
+            response.statusCode = 400;
+            response.setHeader('Content-Type', 'text/json');
+            response.end();
+        }
+        else {
+            response.statusCode = 200;
+            response.setHeader('Content-Type', 'text/json');
+            response.write(contents);
+            response.end();
+        }
+    });
+}
+
 function onHttpRequest(request, response) {
     appLog("onHttpRequest: " + request.url);
 
@@ -180,8 +199,14 @@ function onHttpRequest(request, response) {
         onPostRequest(request, response);
     } else if (url === "/key") {
         onPostRequest_iFinger(request, response);
+    } else if (url === "/getCardSlotMappings") {
+        onGetCardSlotMappings(request, response);
+    } else if (url === "/updateCardSlotMappings") {
+        onSaveCardSlotMapping(request, response);
     } else if (url === "/") {
         onDefaultPage(request, response);
+    } else if (url.indexOf("/subPages/") === 0) {
+        onRetrievingFile(url.slice(1), "text/html", response);
     } else if (url.indexOf("/scripts/") === 0) {
         onRetrievingFile(url.slice(1), "application/javascript", response);
     } else if (url.indexOf("/css/") === 0) {

@@ -1,0 +1,80 @@
+[
+    {
+        "name":"General",
+        "active":true,
+        "mapping":[
+            {
+                "cardName":"Test Card 07",
+                "slotNumber":0
+            },
+            {
+                "cardName":"Smart Card 1",
+                "slotNumber":1
+            },
+            {
+                "cardName":"Meganetic Card 2",
+                "slotNumber":2
+            },
+            {
+                "cardName":"Contactless Card 3",
+                "slotNumber":3
+            },
+            {
+                "cardName":"Barcode 1",
+                "slotNumber":4
+            }
+        ]
+    },
+    {
+        "name":"Sepecific mapping 1",
+        "active":false,
+        "mapping":[
+            {
+                "cardName":"Test Card 07",
+                "slotNumber":0
+            },
+            {
+                "cardName":"Smart Card 1",
+                "slotNumber":1
+            },
+            {
+                "cardName":"Meganetic Card 2",
+                "slotNumber":1
+            },
+            {
+                "cardName":"Contactless Card 3",
+                "slotNumber":1
+            },
+            {
+                "cardName":"Barcode 1",
+                "slotNumber":1
+            }
+        ]
+    },
+    {
+        "name":"Sepecific mapping 2",
+        "active":false,
+        "mapping":[
+            {
+                "cardName":"Test Card 07",
+                "slotNumber":1
+            },
+            {
+                "cardName":"Smart Card 1",
+                "slotNumber":1
+            },
+            {
+                "cardName":"Meganetic Card 2",
+                "slotNumber":1
+            },
+            {
+                "cardName":"Contactless Card 3",
+                "slotNumber":1
+            },
+            {
+                "cardName":"Barcode 1",
+                "slotNumber":1
+            }
+        ]
+    }
+]
