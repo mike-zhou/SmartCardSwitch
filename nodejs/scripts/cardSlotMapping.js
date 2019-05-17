@@ -164,7 +164,18 @@ function onElementClicked()
         var action = paraArray[1];
         if(action === "delete") {
             var index = paraArray[2];
+            var mappingName = getCurrentMappingName();
 
+            for(var i=0; i<globalCardSlotMappings.length; i++)
+            {
+                var element = globalCardSlotMappings[i];
+                if(element.name != mappingName) {
+                    continue;
+                }
+        
+                element.mapping.splice(index, 1);
+                loadMapping(mappingName);
+            }
         }
     }
     else if(group === "mappingModify")
