@@ -6,26 +6,37 @@
     <title>Card Slot Mapping</title>
     <link rel="stylesheet" href="/css/scs.css">
 </head>
+
 <body onclick="onElementClicked()">
     <div class="functionZone">
-        Current mapping: <label id="mappingSelect_activeMapping"></label><br>
-        Available mappings: <select id="mappingSelect_mappingSet"></select>
-        <button id="mappingSelect_choose"> Choose </button><br>
+        <p>
+            Current mapping: <label id="mappingSelect_activeMapping"></label>
+        </p>
+        <p>
+            Available mappings: <select id="mappingSelect_mappingSet"></select>
+            <button id="mappingSelect_choose"> Choose </button>
+        </p>
     </div><br>
 
     <div class="functionZone">
         <label id="mappingContent_title"></label>
-        <div  id="mappingContent_details"></div>
+        <div id="mappingContent_details"></div>
     </div><br>
 
     <div class="functionZone">
-        CardName: 
-        <label id="mappingModify_cardName"></label>
-        Slot: 
-        <select id="mappingModify_slotSelection"></select>
-        <button id="mappingModify_add"> Add </button>
+        <p>
+            CardName:
+            <input type="text" id="mappingModify_cardName"></input>
+            Slot:
+            <select id="mappingModify_slotSelection"></select>
+            <button id="mappingModify_add"> Add </button>
+        </p>
+        <p>
+            <button id="mapingModify_save"> Save </button>
+        </p>
     </div>
 
     <script src="/scripts/cardSlotMapping.js"></script>
 </body>
+
 </html>
