@@ -104,17 +104,43 @@ function loadMapping(mappingName)
 
 function addCardSlotMapping(mappingName, cardName, slotNumber)
 {
-    for(var i=0; i<globalCardSlotMappings.length; i++) {
+    for(var i=0; i<globalCardSlotMappings.length; i++) 
+    {
         var element = globalCardSlotMappings[i];
-        if(element.name == mappingName) {
+        if(element.name != mappingName) {
+            continue;
+        }
+        var cardExist = false;
+
+        for(var j=0; j<element.mapping.length; j++)
+        {
+            if(element.mapping[j].cardName == cardName) {
+                cardExist = true;
+                break;
+            }
+        }
+
+        if(cardExist) {
+            console.log("ERROR: " + cardName + " has already in the mapping");
+            alert(cardName + " cannot be added\nIt has already in the mapping!");
+        }
+        else
+        {
             var item = {};
             item["cardName"] = cardName;
             item["slotNumber"] = slotNumber;
             element.mapping.push(item);
             updateCardSlotMappingTable(element.mapping);
-            break;
         }
     }
+}
+
+function getCurrentMappingName()
+{
+    var index =  document.getElementById("mappingSelect_mappingSet").selectedIndex;
+    var mappingName = document.getElementById("mappingSelect_mappingSet").options[index].text;
+
+    return mappingName;
 }
 
 function onElementClicked() 
@@ -128,8 +154,7 @@ function onElementClicked()
     {
         var action = paraArray[1];
         if(action === "choose") {
-            var index =  document.getElementById("mappingSelect_mappingSet").selectedIndex;
-            var mappingName = document.getElementById("mappingSelect_mappingSet").options[index].text;
+            var mappingName = getCurrentMappingName();
             console.log("onElementClicked load mapping: " + mappingName);
             loadMapping(mappingName);
         }
@@ -138,6 +163,7 @@ function onElementClicked()
     {
         var action = paraArray[1];
         if(action === "delete") {
+            var index = paraArray[2];
 
         }
     }
