@@ -902,20 +902,98 @@ void CDeviceManager::pollDevices()
 
 	std::vector<struct pollfd> fdVector;
 
-	//check if device can be written.
+	//poll reading
 	for(size_t i=0; i<_devices.size(); i++)
 	{
 		pollfd fd;
 
 		fd.fd = _devices[i].fd;
-		fd.events = POLLIN | POLLOUT | POLLERR;
+		fd.events = POLLIN | POLLERR;
 		fd.revents = 0;
 		fdVector.push_back(fd);
 	}
-	auto rc = poll(fdVector.data(), fdVector.size(), 1);
+	auto rc = poll(fdVector.data(), fdVector.size(), 10); //sleep 10 milliseconds if no event
 	auto errorNumber = errno;
 	if(rc == 0) {
 		return; //
+	}
+	else if(rc < 0) {
+		sleep(100); //
+		return;
+	}
+	else // rc > 0
+	{
+		for(size_t i=0; i<_devices.size(); i++)
+		{
+			auto events = fdVector[i].revents;
+
+			if(events & POLLERR) {
+				onDeviceError(_devices[i], errorNumber);
+			}
+			else
+			{
+				if(events & POLLIN) {
+					//device can be read.
+					_devices[i].readStamp.update();
+					onDeviceCanBeRead(_devices[i]);
+				}
+			}
+
+			if(_devices[i].readStamp.elapsed() > _devices[i].FileReadWarningThreshold)
+			{
+				_devices[i].readStamp.update();
+				//pLogger->LogError("CDeviceManager::pollDevices reading unavailable: " + _devices[i].fileName);
+			}
+		}
+	}
+	//remove the device having an error
+	{
+		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+		for(auto deviceIt = _devices.begin(); deviceIt != _devices.end(); )
+		{
+			if(deviceIt->state == DeviceState::ERROR)
+			{
+				close(deviceIt->fd);
+				//notify observers of device's unavailability
+				if(!deviceIt->deviceName.empty()) {
+					//this device has been fully enumerated.
+					_pObserver->OnDeviceUnplugged(deviceIt->deviceName);
+				}
+				//erase this device
+				deviceIt = _devices.erase(deviceIt);
+			}
+			else
+			{
+				deviceIt++;
+			}
+		}
+	}
+
+
+	fdVector.clear();
+	//poll writing
+	for(size_t i=0; i<_devices.size(); i++)
+	{
+		pollfd fd;
+
+		fd.fd = _devices[i].fd;
+		fd.events = POLLOUT | POLLERR;
+		fd.revents = 0;
+		fdVector.push_back(fd);
+	}
+	rc = poll(fdVector.data(), fdVector.size(), 0); //return at once.
+	errorNumber = errno;
+	if(rc == 0)
+	{
+		//check period of writing unavailable
+		for(size_t i=0; i<_devices.size(); i++)
+		{
+			if(_devices[i].writeStamp.elapsed() > _devices[i].FileWriteWarningThreshold)
+			{
+				_devices[i].writeStamp.update();
+				pLogger->LogError("CDeviceManager::pollDevices writing unavailable: " + _devices[i].fileName);
+			}
+		}
 	}
 	else if(rc < 0) {
 		sleep(100); //
@@ -937,30 +1015,16 @@ void CDeviceManager::pollDevices()
 					_devices[i].writeStamp.update();
 					onDeviceCanBeWritten(_devices[i]);
 				}
-				if(events & POLLIN) {
-					//device can be read.
-					_devices[i].readStamp.update();
-					onDeviceCanBeRead(_devices[i]);
-				}
-				else
-				{
-					sleep(1);//avoid 100% CPU, and give a chance to send data to device
-				}
 			}
 
+			//check period of writing unavailable
 			if(_devices[i].writeStamp.elapsed() > _devices[i].FileWriteWarningThreshold)
 			{
 				_devices[i].writeStamp.update();
 				pLogger->LogError("CDeviceManager::pollDevices writing unavailable: " + _devices[i].fileName);
 			}
-			if(_devices[i].readStamp.elapsed() > _devices[i].FileReadWarningThreshold)
-			{
-				_devices[i].readStamp.update();
-				//pLogger->LogError("CDeviceManager::pollDevices reading unavailable: " + _devices[i].fileName);
-			}
 		}
 	}
-
 	//remove the device having an error
 	{
 		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
