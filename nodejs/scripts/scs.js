@@ -403,7 +403,7 @@ function updatePage(serverResponse) {
 function moveStepper(stepper, forward, steps) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'stepperMove');
+    xhr.open('POST', '/stepperMove');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -452,7 +452,7 @@ function moveStepper(stepper, forward, steps) {
 function setBdc(index, action) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'bdc');
+    xhr.open('POST', '/bdc');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -481,7 +481,7 @@ function setBdc(index, action) {
 function queryDevice() {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'query');
+    xhr.open('POST', '/query');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -527,7 +527,7 @@ function onStepperConfigMovement(index) {
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'stepperConfigMovement');
+    xhr.open('POST', '/stepperConfigMovement');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -565,7 +565,7 @@ function onStepperConfigHome(index) {
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'stepperConfigHome');
+    xhr.open('POST', '/stepperConfigHome');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -598,7 +598,7 @@ function onStepperConfigForwardClockwise(index) {
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'stepperConfigForwardClockwise');
+    xhr.open('POST', '/stepperConfigForwardClockwise');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -715,7 +715,7 @@ function saveCoordinate() {
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'saveCoordinate');
+    xhr.open('POST', '/saveCoordinate');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -779,7 +779,7 @@ function onCoordinateItem(type, index) {
 
         var xhr = new XMLHttpRequest();
         xhr.responseType = "json";
-        xhr.open('POST', 'toCoordinate');
+        xhr.open('POST', '/toCoordinate');
 
         xhr.onreadystatechange = function() {
             var DONE = 4; // readyState 4 means the request is done.
@@ -808,7 +808,7 @@ function onCoordinateItem(type, index) {
 
         var xhr = new XMLHttpRequest();
         xhr.responseType = "json";
-        xhr.open('POST', 'toCoordinate');
+        xhr.open('POST', '/toCoordinate');
 
         xhr.onreadystatechange = function() {
             var DONE = 4; // readyState 4 means the request is done.
@@ -848,7 +848,7 @@ function onSmartCardOffset(type, index) {
 
         var xhr = new XMLHttpRequest();
         xhr.responseType = "json";
-        xhr.open('POST', 'toSmartCardOffset');
+        xhr.open('POST', '/toSmartCardOffset');
 
         xhr.onreadystatechange = function() {
             var DONE = 4; // readyState 4 means the request is done.
@@ -871,7 +871,7 @@ function onSmartCardOffset(type, index) {
 function onPower(target, on) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'power');
+    xhr.open('POST', '/power');
 
     var command = {};
     command["target"] = target;
@@ -897,7 +897,7 @@ function onPower(target, on) {
 function onKey(keyIndex) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'key');
+    xhr.open('POST', '/key');
 
     var command = {};
     command["index"] = keyIndex;
