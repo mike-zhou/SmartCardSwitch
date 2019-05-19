@@ -143,6 +143,31 @@ function getCurrentMappingName()
     return mappingName;
 }
 
+function saveCardSlotMapping()
+{
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open('POST', '/saveCardSlotMappings');
+
+    xhr.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                var jsonObj = xhr.response;
+                console.log("saveCardSlotMappings succeeded");
+                alert("Card slot mapping is saved");
+            } else {
+                alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
+            }
+        }
+    };
+    xhr.send(JSON.stringify(globalCardSlotMappings));
+}
+
 function onElementClicked() 
 {
     //element id is in the format of group_action_XXX
@@ -190,7 +215,7 @@ function onElementClicked()
             addCardSlotMapping(mappingName, cardName, slotNumber);
         }
         else if(action === "save") {
-
+            saveCardSlotMapping();
         }
     }
 }

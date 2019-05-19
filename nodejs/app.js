@@ -1,7 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 
-const hostname = '127.0.0.1';
+const hostname = '0.0.0.0';
 const port = 80;
 
 const scsHostName = "127.0.0.1";
@@ -9,6 +9,8 @@ const scsHostPort = 60002;
 
 const iFingerHostName = "127.0.0.1"
 const iFingerHostPort = 60004;
+
+const _cardSlotMappingFile = "data/cardSlotMapping.json";
 
 function appLog(str) {
     var d = new Date();
@@ -42,7 +44,7 @@ function onRetrievingFile(fileName, fileType, response) {
     });
 }
 
-function onPostRequest(request, response) {
+function onPostRequest_SCS(request, response) {
     let body = [];
 
     request.on('data', (chunk) => {
@@ -156,7 +158,7 @@ function onDefaultPage(request, response) {
 function onGetCardSlotMappings(request, response) {
     appLog("onGetCardSlotMappings");
 
-    fs.readFile("data/cardSlotMapping.json", function(err, contents) {
+    fs.readFile(_cardSlotMappingFile, function(err, contents) {
         if(err) {
             appLog("onGetCardSlotMappings ERROR: " + err);
             response.statusCode = 400;
@@ -172,36 +174,66 @@ function onGetCardSlotMappings(request, response) {
     });
 }
 
+function onSaveCardSlotMapping(request, response)
+{
+    appLog("onSaveCardSlotMapping");
+    let mappings = [];
+
+    request.on('data', (chunk) => {
+        mappings.push(chunk);
+    }).on('end', () => {
+        mappings = Buffer.concat(mappings).toString();
+        appLog("onSaveCardSlotMapping " + request.url + " : " + mappings);
+
+        fs.writeFile(_cardSlotMappingFile, mappings, function(err) {
+            if(err) {
+                appLog("onSaveCardSlotMapping ERROR: " + err);
+                response.statusCode = 400;
+                response.setHeader('Content-Type', 'text/plain');
+                response.write("failed to save mapping, error: " + err);
+                response.end();
+            }
+            else {
+                appLog("onSaveCardSlotMapping mapping is saved");
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'text/plain');
+                response.write("mapping is saved successfully");
+                response.end();
+            }
+        });
+    });
+}
+
 function onHttpRequest(request, response) {
     appLog("onHttpRequest: " + request.url);
 
     var url = request.url;
 
     if (url === "/stepperMove") {
-        onPostRequest(request, response);
+        onPostRequest_SCS(request, response);
     } else if (url === "/stepperConfigMovement") {
-        onPostRequest(request, response);
+        onPostRequest_SCS(request, response);
     } else if (url === "/stepperConfigHome") {
-        onPostRequest(request, response);
+        onPostRequest_SCS(request, response);
     } else if (url === "/query") {
-        onPostRequest(request, response);
+        onPostRequest_SCS(request, response);
     } else if (url === "/bdc") {
-        onPostRequest(request, response);
+        onPostRequest_SCS(request, response);
     } else if (url === "/saveCoordinate") {
-        onPostRequest(request, response);
+        onPostRequest_SCS(request, response);
     } else if (url === "/toCoordinate") {
-        onPostRequest(request, response);
+        onPostRequest_SCS(request, response);
     } else if (url === "/power") {
-        onPostRequest(request, response);
+        onPostRequest_SCS(request, response);
     } else if( url === "/toSmartCardOffset") {
-        onPostRequest(request, response);
+        onPostRequest_SCS(request, response);
     } else if (url === "/stepperConfigForwardClockwise") {
-        onPostRequest(request, response);
+        onPostRequest_SCS(request, response);
     } else if (url === "/key") {
         onPostRequest_iFinger(request, response);
     } else if (url === "/getCardSlotMappings") {
         onGetCardSlotMappings(request, response);
-    } else if (url === "/updateCardSlotMappings") {
+    } else if (url === "/saveCardSlotMappings") {
         onSaveCardSlotMapping(request, response);
     } else if (url === "/") {
         onDefaultPage(request, response);
