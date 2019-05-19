@@ -915,7 +915,7 @@ void CDeviceManager::pollDevices()
 	auto rc = poll(fdVector.data(), fdVector.size(), 10); //sleep 10 milliseconds if no event
 	auto errorNumber = errno;
 	if(rc == 0) {
-		return; //
+		; //no event happened, jump to writing polling
 	}
 	else if(rc < 0) {
 		sleep(100); //
@@ -968,7 +968,6 @@ void CDeviceManager::pollDevices()
 			}
 		}
 	}
-
 
 	fdVector.clear();
 	//poll writing
