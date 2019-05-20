@@ -1,10 +1,12 @@
 const http = require('http');
 const fs = require('fs');
+var net = require('net');
 
 const hostname = '0.0.0.0';
 const port = 80;
 
 const scsHostName = "127.0.0.1";
+const scsUserProxyPort = 60001;
 const scsHostPort = 60002;
 
 const iFingerHostName = "127.0.0.1"
@@ -206,12 +208,40 @@ function onSaveCardSlotMapping(request, response)
     });
 }
 
+function sendSCSCommand(pkg, response)
+{
+    var client = new net.socket();
+    let reply = [];
+
+    client.on('connect', () => {
+        appLog("sendSCSCommand connected, send package to SCS");
+        client.write(pkg, 'binary');
+    }).on('data', (content) => {
+        reply.push(content);
+    }).on('end', () => {
+        reply = Buffer.concat(reply); 
+        appLog("sendSCSCommand reply received");
+    }).on('error', (err) => {
+        appLog("sendSCSCommand Error: " + err);
+        response.statusCode = 400;
+        response.setHeader('Content-Type', 'text/plain');
+        response.write(err);
+        response.end();
+        _isAccessingCard = false;
+    }).on('close', (hadError) => {
+        if(!hadError) {
+
+        }
+    });
+
+    client.connect(scsUserProxyPort, scsHostName);
+}
+
 function onCardAccess(request, response)
 {
     appLog("onCardAccess");
 
     if(_isAccessingCard == true) {
-
         response.statusCode = 400;
         response.setHeader('Content-Type', 'text/plain');
         response.write("a card is being accessed");
