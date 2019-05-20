@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>iRack console</title>
+    <link rel="stylesheet" href="/css/scs.css">
+</head>
+
+<body onclick="onElementClicked()">
+    <div class="functionZone">
+        <p>
+            Active mapping: <label id="mappingActivation_currentMapping"></label>
+        </p>
+        <p>
+            Available mappings: <select id="mappingActivation_selection"></select>
+            <button id="mappingActivation_activate"> Activate </button>
+        </p>
+    </div><br>
+
+    <div class="functionZone">
+        <h2>Cards</h2>
+        <div id="cardAccess"></div>
+    </div><br>
+
+    <div class="functionZone">
+        <h2>PED keys</h2>
+        <table>
+            <tr>
+                <td><button type="button" id="iFinger_key_0"> 1 </button></td>
+                <td><button type="button" id="iFinger_key_1"> 2 </button></td>
+                <td><button type="button" id="iFinger_key_2"> 3 </button></td>
+            </tr>
+            <tr>
+                <td><button type="button" id="iFinger_key_3"> 4 </button></td>
+                <td><button type="button" id="iFinger_key_4"> 5 </button></td>
+                <td><button type="button" id="iFinger_key_5"> 6 </button></td>
+            </tr>
+            <tr>
+                <td><button type="button" id="iFinger_key_6"> 7 </button></td>
+                <td><button type="button" id="iFinger_key_7"> 8 </button></td>
+                <td><button type="button" id="iFinger_key_8"> 9 </button></td>
+            </tr>
+            <tr>
+                <td><button type="button" id="iFinger_key_9"> * </button></td>
+                <td><button type="button" id="iFinger_key_10"> 0 </button></td>
+                <td><button type="button" id="iFinger_key_11"> # </button></td>
+            </tr>
+            <tr>
+                <td><button type="button" id="iFinger_key_12"> X </button></td>
+                <td><button type="button" id="iFinger_key_13"> &lt </button></td>
+                <td><button type="button" id="iFinger_key_14"> O </button></td>
+            </tr>
+        </table>
+    </div>
+    <div class="functionZone">
+        <h2>Soft keys</h2>
+        <table>
+            <tr>
+                <td><button type="button" id="iFinger_key_15"> Left 1 </button></td>
+                <td><button type="button" id="iFinger_key_16"> Right 1 </button></td>
+            </tr>
+            <tr>
+                <td><button type="button" id="iFinger_key_17"> Left 2 </button></td>
+                <td><button type="button" id="iFinger_key_18"> Right 2 </button></td>
+            </tr>
+            <tr>
+                <td><button type="button" id="iFinger_key_19"> Left 3 </button></td>
+                <td><button type="button" id="iFinger_key_20"> Right 3 </button></td>
+            </tr>
+            <tr>
+                <td><button type="button" id="iFinger_key_21"> Left 4 </button></td>
+                <td><button type="button" id="iFinger_key_22"> Right 4 </button></td>
+            </tr>
+        </table>
+    </div>
+    <div class="functionZone">
+        <h2>ADA keys</h2>
+        <table>
+            <tr>
+                <td><button type="button" id="iFinger_key_23"> Left 1 </button></td>
+                <td></td>
+                <td><button type="button" id="iFinger_key_24"> Right 1 </button></td>
+            </tr>
+            <tr>
+                <td><button type="button" id="iFinger_key_25"> Left 2 </button></td>
+                <td></td>
+                <td><button type="button" id="iFinger_key_26"> Right 2 </button></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><button type="button" id="iFinger_key_31"> HELP </button></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><button type="button" id="iFinger_key_27"> Left 3 </button></td>
+                <td></td>
+                <td><button type="button" id="iFinger_key_28"> Right 3 </button></td>
+            </tr>
+            <tr>
+                <td><button type="button" id="iFinger_key_29"> Left 4 </button></td>
+                <td></td>
+                <td><button type="button" id="iFinger_key_30"> Right 4 </button></td>
+            </tr>
+        </table>
+    </div>
+
+    <script src="/scripts/console.js"></script>
+</body>
+
+</html>

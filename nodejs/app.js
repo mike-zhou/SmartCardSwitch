@@ -11,6 +11,8 @@ const iFingerHostName = "127.0.0.1"
 const iFingerHostPort = 60004;
 
 const _cardSlotMappingFile = "data/cardSlotMapping.json";
+var _isAccessingCard = false;
+var _isPressingkey = false;
 
 function appLog(str) {
     var d = new Date();
@@ -204,7 +206,103 @@ function onSaveCardSlotMapping(request, response)
     });
 }
 
-function onHttpRequest(request, response) {
+function onCardAccess(request, response)
+{
+    appLog("onCardAccess");
+
+    if(_isAccessingCard == true) {
+
+        response.statusCode = 400;
+        response.setHeader('Content-Type', 'text/plain');
+        response.write("a card is being accessed");
+        response.end();
+        return;
+    }
+    else {
+        _isAccessingCard = true;
+    }
+
+    let command = [];
+
+    request.on('data', (chunk) => {
+        command.push(chunk);
+    }).on('end', () => {
+        command = Buffer.concat(command).toString(); //command changes to a string object.
+        appLog("onCardAccess " + request.url + " : " + command);
+
+        fs.readFile(_cardSlotMappingFile, function(err, contents) {
+            if(err) 
+            {
+                appLog("onCardAccess failed to read mapping file ERROR: " + err);
+                response.statusCode = 400;
+                response.setHeader('Content-Type', 'text/plain');
+                response.write("failed to read mapping file");
+                response.end();
+                _isAccessingCard = false;
+            }
+            else 
+            {
+                var mappings=JSON.parse(contents);
+                var cmd = JSON.parse(command);
+                var slotNumber;
+                
+                //find card's slot number in the active mapping
+                for(var i=0; i<mappings.length; i++)
+                {
+                    if(mappings[i].active == true) 
+                    {
+                        for(var j=0; j<mappings[i].mapping; j++) {
+                            if(mappings[i].mapping[j].cardName === cmd.name) {
+                                slotNumber = mappings[i].mapping[j].slotNumber;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                if(isNaN(slotNumber)) {
+                    appLog("onCardAccess cannot find card name in active mapping: " + cmd.name);
+                    response.statusCode = 400;
+                    response.setHeader('Content-Type', 'text/plain');
+                    response.write("failed to read mapping file");
+                    response.end();
+                    _isAccessingCard = false;
+                }
+                else {
+                    if(cmd.command === "insert") {
+
+                    }
+                    else if(cmd.command === "extract") {
+
+                    }
+                    else if(cmd.command === "swipe") {
+
+                    }
+                    else if(cmd.command === "tapContactless") {
+
+                    }
+                    else if(cmd.command === "tapBarcode") {
+
+                    }
+                    else {
+                        appLog("onCardAccess unsupported command: " + command);
+                        response.statusCode = 400;
+                        response.setHeader('Content-Type', 'text/plain');
+                        response.write("onCardAccess unsupported command: " + command);
+                        response.end();
+                        _isAccessingCard = false;
+                        return;
+                    }
+                }
+            }
+        });
+    });
+
+}
+
+function onHttpRequest(request, response) 
+{
     appLog("onHttpRequest: " + request.url);
 
     var url = request.url;
@@ -235,6 +333,8 @@ function onHttpRequest(request, response) {
         onGetCardSlotMappings(request, response);
     } else if (url === "/saveCardSlotMappings") {
         onSaveCardSlotMapping(request, response);
+    } else if (url === "/cardAccess") {
+        onCardAccess(request, response);
     } else if (url === "/") {
         onDefaultPage(request, response);
     } else if (url.indexOf("/subPages/") === 0) {
