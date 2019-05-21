@@ -326,6 +326,7 @@ function onElementClicked()
     {
         var action = paraArray[1];
         var index = paraArray[2];
+        
         if(action === "insert") {
             onCardInsert(index);
         }
@@ -340,6 +341,9 @@ function onElementClicked()
         }
         else if(action === "tapBarcode") {
             onCardTapBarcode(index);
+        }
+        else {
+            alert("unknown action: " + action);
         }
     }
     else if(group === "iFinger") {

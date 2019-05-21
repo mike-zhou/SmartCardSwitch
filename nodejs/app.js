@@ -15,6 +15,22 @@ const iFingerHostPort = 60004;
 const _cardSlotMappingFile = "data/cardSlotMapping.json";
 var _isAccessingCard = false;
 var _isPressingkey = false;
+var _commandIdNumber = 0;
+
+function newCommandId()
+{
+    var cmdId;
+
+    _commandIdNumber = _commandIdNumber + 1;
+    cmdId = "unique command id " + _commandIdNumber;
+
+    return cmdId;
+}
+
+function getCommandId() 
+{
+    return "unique command id " + _commandIdNumber;
+}
 
 function appLog(str) {
     var d = new Date();
@@ -208,30 +224,117 @@ function onSaveCardSlotMapping(request, response)
     });
 }
 
-function sendSCSCommand(pkg, response)
+function packageCommand(command)
 {
-    var client = new net.socket();
+    var cmdLength = command.length;
+    var pkg = new Uint8Array(cmdLength + 8);
+
+    //TLV structure
+    //tag
+    pkg[0] = 0xAA;
+    pkg[1] = 0xBB;
+
+    //length
+    var contentLength = cmdLength + 4;
+    pkg[2] = Math.floor(contentLength / 256);
+    pkg[3] = contentLength - pkg[2]*256;
+
+    //version
+    pkg[4] = 0;
+    pkg[5] = 0;
+
+    //command
+    for(var i=0; i<cmdLength; i++) {
+        pkg[6 + i] = command.charAt(i);
+    }
+
+    //tail
+
+    pkg[6 + cmdLength] = 0xCC;
+    pkg[6 +  cmdLength + 1] = 0xDD;
+
+    return pkg;
+}
+
+function retrieveReply(pkg) 
+{
+    var reply = "";
+
+    if(pkg.length > 8) 
+    {
+        //check tag
+        if((pkg[0] == 0xAA) &&
+            (pkg[1] == 0xBB) &&
+            (pkg[pkg.length - 2] == 0xCC) &&
+            (pkg[pkg.length -1 ] == 0xDD))
+        {
+            var length = pkg[2] * 256 + pkg[3];
+            if(length === (pkg.length - 4)) 
+            {
+                for(var i=0; i<(pkg.length -8); i++)
+                {
+                    reply = reply + pkg[6 + i];
+                }
+            }
+        }
+    }
+
+    return reply;
+}
+
+function sendSCSCommand(command, response)
+{
+    var client = new net.Socket();
     let reply = [];
 
     client.on('connect', () => {
-        appLog("sendSCSCommand connected, send package to SCS");
-        client.write(pkg, 'binary');
+        appLog("sendSCSCommand connected, send command to SCS: " + command);
+        var cmdPkg = packageCommand(command);
+        client.end(Buffer.from(cmdPkg.buffer));
     }).on('data', (content) => {
         reply.push(content);
     }).on('end', () => {
-        reply = Buffer.concat(reply); 
-        appLog("sendSCSCommand reply received");
+        var replyPkg = Buffer.concat(reply); //reply changes to UInt8Array
+        appLog("sendSCSCommand reply received " + replyPkg.length + " bytes");
+
+        var cmdReply = retrieveReply(replyPkg);
+        appLog("sendSCSCommand reply: " + cmdReply);
+        var replyObj = JSON.parse(cmdReply);
+        if(replyObj["commandId"] === getCommandId()) 
+        {
+            response.setHeader('Content-Type', 'text/plain');
+
+            if(replyObj["result"] === "failed") {
+                response.statusCode = 400;
+                response.write(replyObj["errorInfo"]);
+            }
+            else if(replyObj["result"] === "succeeded") {
+                response.statusCode = 200;
+            }
+            else {
+                response.statusCode = 400;
+                response.write("internal error: unknown SCS reply");
+            }
+
+            response.end();
+        }
+        else 
+        {
+            appLog("sendSCSCommand reply not match");
+            response.statusCode = 400;
+            response.setHeader('Content-Type', 'text/plain');
+            response.write("SCS reply doesn't match command");
+            response.end();
+        }
     }).on('error', (err) => {
         appLog("sendSCSCommand Error: " + err);
         response.statusCode = 400;
         response.setHeader('Content-Type', 'text/plain');
-        response.write(err);
+        response.write("Error: " + err);
         response.end();
-        _isAccessingCard = false;
     }).on('close', (hadError) => {
-        if(!hadError) {
-
-        }
+        appLog("sendSCSCommand socket closed with error: " + hadError);
+        _isAccessingCard = false;
     });
 
     client.connect(scsUserProxyPort, scsHostName);
@@ -281,7 +384,7 @@ function onCardAccess(request, response)
                 {
                     if(mappings[i].active == true) 
                     {
-                        for(var j=0; j<mappings[i].mapping; j++) {
+                        for(var j=0; j<mappings[i].mapping.length; j++) {
                             if(mappings[i].mapping[j].cardName === cmd.name) {
                                 slotNumber = mappings[i].mapping[j].slotNumber;
                                 break;
@@ -301,7 +404,13 @@ function onCardAccess(request, response)
                 }
                 else {
                     if(cmd.command === "insert") {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "insert smart card";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
 
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
                     }
                     else if(cmd.command === "extract") {
 
