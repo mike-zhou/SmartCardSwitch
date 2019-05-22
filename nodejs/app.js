@@ -273,34 +273,43 @@ function retrieveReply(pkg)
             {
                 for(var i=0; i<(pkg.length -8); i++)
                 {
-                    reply = reply + pkg[6 + i];
+                    reply = reply + String.fromCharCode(pkg[6+i]);
                 }
             }
         }
     }
 
+    if(reply.length < 1) {
+        reply = "{}";
+    }
     return reply;
 }
 
 function sendSCSCommand(command, response)
 {
     var client = new net.Socket();
-    let reply = [];
+    let replySegments = [];
 
     client.on('connect', () => {
         appLog("sendSCSCommand connected, send command to SCS: " + command);
         var cmdPkg = packageCommand(command);
         client.end(Buffer.from(cmdPkg.buffer));
     }).on('data', (content) => {
-        reply.push(content);
+        replySegments.push(content);
     }).on('end', () => {
-        var replyPkg = Buffer.concat(reply); //reply changes to UInt8Array
+        var replyPkg = Buffer.concat(replySegments); //reply changes to UInt8Array
         appLog("sendSCSCommand reply received " + replyPkg.length + " bytes");
-
         var cmdReply = retrieveReply(replyPkg);
         appLog("sendSCSCommand reply: " + cmdReply);
         var replyObj = JSON.parse(cmdReply);
-        if(replyObj["commandId"] === getCommandId()) 
+        if(replyObj["commandId"] === "invalid") 
+        {
+            response.setHeader('Content-Type', 'text/plain');
+            response.statusCode = 400;
+            response.write(replyObj["errorInfo"]);
+            response.end();
+        }
+        else if(replyObj["commandId"] === getCommandId()) 
         {
             response.setHeader('Content-Type', 'text/plain');
 
