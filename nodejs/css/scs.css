@@ -18,6 +18,25 @@
     background-color: bisque;
 }
 
-.cardSlotMappingTable {
+.cardSlotMappingTable,
+.cardSlotMappingTable th,
+.cardSlotMappingTable td {
     border: 1px solid black;
+    border-collapse: collapse;
 }
+
+.cardSlotMappingTable tr:nth-child(even) {
+    background-color: beige;
+}
+
+.cardSlotAccessTable,
+.cardSlotAccessTable th,
+.cardSlotAccessTable td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+.cardSlotAccessTable tr:nth-child(even) {
+    background-color: beige;
+}
+

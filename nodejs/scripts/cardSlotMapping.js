@@ -12,7 +12,7 @@ function updateCardSlotMappingTable(mapping) {
 
         row = "<tr>";
         row = row + "<td>" + mapping[i].cardName + "</td>";
-        row = row + "<td>" + mapping[i].slotNumber + "</td>";
+        row = row + "<td align=\"center\">" + mapping[i].slotNumber + "</td>";
         row = row + "<td><button id=\"" + "mappingContent_delete_" + i + "\"> Delete </button></td>";
         row = row + "</tr>";
 

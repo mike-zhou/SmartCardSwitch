@@ -23,7 +23,7 @@ function updateCardSlotMappingTable(mapping) {
 
         row = "<tr>";
         row = row + "<td>" + mapping[i].cardName + "</td>";
-        row = row + "<td>" + mapping[i].slotNumber + "</td>";
+        row = row + "<td align=\"center\">" + mapping[i].slotNumber + "</td>";
         row = row + "<td>";
         row = row +     "<button id=\"" + "cardAccess_insert_" + i + "\"> Insert </button>" + " ";
         row = row +     "<button id=\"" + "cardAccess_extract_" + i + "\"> Extract </button>" + " ";
