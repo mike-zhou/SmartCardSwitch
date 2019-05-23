@@ -995,12 +995,12 @@ void UserCommandRunner::gate_smartCard_withoutCard(unsigned int cardNumber)
 
 	//move to top of smart card
 	moveStepperX(curX, finalX);
-	moveStepperY(curY, finalY + offset);
+	moveStepperY(curY, finalY - offset);
 
 	//move down
 	moveStepperZ(curZ, finalZ);
 
-	moveStepperY(finalY + offset, finalY);
+	moveStepperY(finalY - offset, finalY);
 }
 
 void UserCommandRunner::smartCard_gate_withCard(unsigned int cardNumber)
@@ -1346,9 +1346,9 @@ void UserCommandRunner::smartCard_gate_withoutCard(unsigned int cardNumber)
 	}
 
 	//in order not to interfere card in smart card bay
-	moveStepperY(curY, curY + fetchOffset);
+	moveStepperY(curY, curY - fetchOffset);
 	moveStepperZ(curZ + releaseOffset, finalZ);
-	moveStepperY(curY + fetchOffset, finalY);
+	moveStepperY(curY - fetchOffset, finalY);
 	moveStepperX(curX, finalX);
 }
 
