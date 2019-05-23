@@ -101,7 +101,7 @@ function activateMapping(mappingName)
 
 function onKey(keyIndex) {
     var xhr = new XMLHttpRequest();
-    xhr.responseType = "json";
+    xhr.responseType = "text/plain";
     xhr.open('POST', '/key');
 
     var command = {};
@@ -117,7 +117,7 @@ function onKey(keyIndex) {
             if (xhr.status === OK) {
                 console.log("key was pressed: " + keyIndex);
             } else {
-                alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
+                alert('Error: ' + xhr.status + ":" + xhr.statusText + ":" + xhr.response); // An error occurred during the request.
             }
         }
     };

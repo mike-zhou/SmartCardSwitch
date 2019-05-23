@@ -118,13 +118,24 @@ function onPostRequest_SCS(request, response) {
 function onPostRequest_iFinger(request, response) {
     let body = [];
 
+    if(_isPressingkey == true) {
+        appLog("onPostRequest_iFinger key is being pressed");
+        response.statusCode = 400;
+        response.setHeader('Content-Type', 'text/plain');
+        response.end("key is being pressed");
+        return;
+    }
+    else {
+        _isPressingkey = true;
+    }
+
     request.on('data', (chunk) => {
         body.push(chunk);
     }).on('end', () => {
         body = Buffer.concat(body).toString();
         appLog("onPostRequest_iFinger " + request.url + " : " + body);
 
-        //forward this request to SmartCardSwitch
+        //forward this request to iFinger
         var iFingerOptions = {};
         iFingerOptions.hostname = iFingerHostName;
         iFingerOptions.port = iFingerHostPort;
@@ -141,7 +152,7 @@ function onPostRequest_iFinger(request, response) {
                 replyBody.push(chunk);
             }).on('end', () => {
                 replyBody = Buffer.concat(replyBody).toString();
-                appLog("onPostRequest_iFinger reply: " + replyBody);
+                appLog("onPostRequest_iFinger reply: " + JSON.stringify(replyBody));
 
                 response.statusCode = iFingerResponse.statusCode;
                 if ('headers' in response) {
@@ -150,6 +161,7 @@ function onPostRequest_iFinger(request, response) {
                     }
                 }
                 response.end(replyBody);
+                _isPressingkey = false;
             });
         });
         iFingerRequest.on('error', (e) => {
@@ -159,6 +171,7 @@ function onPostRequest_iFinger(request, response) {
             response.statusCode = 400;
             response.setHeader('Content-Type', 'text/plain');
             response.end(msg);
+            _isPressingkey = false;
         });
 
         iFingerRequest.write(body);
