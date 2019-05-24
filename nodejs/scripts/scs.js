@@ -315,7 +315,7 @@ function updatePageCoordinates(serverResponse) {
     document.getElementById("coordinateList").innerHTML = html;
 }
 
-function updatePageSmartCardOffsets(sesrverResponse) {
+function updatePageSmartCardOffsets(serverResponse) {
     var html = "";
     var coorSmartCardOffsets = serverResponse["coordinateSmartCardOffsets"];
 
@@ -324,7 +324,7 @@ function updatePageSmartCardOffsets(sesrverResponse) {
         var value = coorSmartCardOffsets[i].value;
 
         html += "<input name=\"smartCardOffset_selection\" id=\"smartCardOffset_index_" + index + "\" type=\"radio\">" + index + ": </input>";
-        html += "<label name=\"smartCardOffset_value_" + index + "\" for=\"smartCardOffset_index_" + index + "\">" + value + "</label><br>";
+        html += "<label id=\"smartCardOffset_value_" + index + "\" for=\"smartCardOffset_index_" + index + "\">" + value + "</label><br>";
     }
     document.getElementById("smartCardOffsets").innerHTML = html;
 }
@@ -948,7 +948,7 @@ function onSmartCardOffset(type, index) {
 
         var xhr = new XMLHttpRequest();
         xhr.responseType = "json";
-        xhr.open('POST', '/toSmartCardOffset');
+        xhr.open('POST', '/toCoordinateItem');
 
         xhr.onreadystatechange = function() {
             var DONE = 4; // readyState 4 means the request is done.
