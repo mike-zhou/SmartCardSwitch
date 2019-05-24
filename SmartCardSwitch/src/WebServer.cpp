@@ -586,6 +586,110 @@ void ScsRequestHandler::onToCoordinate(Poco::Net::HTTPServerRequest& request, Po
 	}
 }
 
+void ScsRequestHandler::onToCoordinateItem(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onToCoordinateItem no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onToCoordinateItem command: " + command);
+		int x, y, z, w, v;
+		bool exceptionOccurred = true;
+
+		x = -1;
+		y = -1;
+		z = -1;
+		w = -1;
+		v = -1;
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			if(objectPtr->has("x")) {
+				x = ds["x"];
+			}
+			else if(objectPtr->has("y")) {
+				y = ds["y"];
+			}
+			else if(objectPtr->has("z")) {
+				z = ds["z"];
+			}
+			else if(objectPtr->has("w")) {
+				w = ds["w"];
+			}
+			else if(objectPtr->has("v")) {
+				v = ds["v"];
+			}
+			else {
+				throw Poco::Exception("wrong parameter in command");
+			}
+
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onToCoordinateItem exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onToCoordinateItem unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onToCoordinateItem reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else
+		{
+			std::string errorInfo;
+			if(x >= 0) {
+				_pWebServer->ToCoordinateItem(0, x, errorInfo);
+			}
+			else if(y >= 0) {
+				_pWebServer->ToCoordinateItem(1, y, errorInfo);
+			}
+			else if(z >= 0) {
+				_pWebServer->ToCoordinateItem(2, z, errorInfo);
+			}
+			else if(w >= 0) {
+				_pWebServer->ToCoordinateItem(3, w, errorInfo);
+			}
+			else if(v >= 0) {
+				_pWebServer->ToCoordinateItem(4, v, errorInfo);
+			}
+
+			if(errorInfo.empty()) {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				auto& oStream = response.send();
+				oStream << _pWebServer->DeviceStatus();
+			}
+			else {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
+		}
+	}
+}
+
 void ScsRequestHandler::onSaveCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	std::string command = getJsonCommand(request);
@@ -833,6 +937,9 @@ void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poc
 	}
 	else if(uri == "/toCoordinate") {
 		onToCoordinate(request, response);
+	}
+	else if(uri == "/toCoordinateItem") {
+		onToCoordinateItem(request, response);
 	}
 	else if(uri == "/power") {
 		onPower(request, response);
@@ -2614,6 +2721,31 @@ bool WebServer::ToCoordinate(const unsigned int x, const unsigned int y, const u
 			pLogger->LogError("WebServer::ToCoordinate fail to move stepper X: " + errorInfo);
 			return false;
 		}
+	}
+
+	return true;
+}
+
+bool WebServer::ToCoordinateItem(const unsigned int index, unsigned int coordinate, std::string & errorInfo)
+{
+	errorInfo.clear();
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex);
+
+	if(index >= STEPPER_AMOUNT) {
+		errorInfo = "stepper index out of range: " + std::to_string(index);
+		pLogger->LogError("WebServer::ToCoordinateItem stepper index out of range: " + std::to_string(index));
+		return false;
+	}
+
+	unsigned int curOffset = _consoleCommand.resultSteppers[index].homeOffset;
+
+	bool forward = (coordinate > curOffset);
+	unsigned int steps = forward?(coordinate - curOffset):(curOffset - coordinate);
+
+	StepperMove(index, forward, steps, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::ToCoordinateItem failed to move stepper: " + std::to_string(index));
+		return false;
 	}
 
 	return true;
