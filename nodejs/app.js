@@ -482,6 +482,8 @@ function onHttpRequest(request, response)
         onPostRequest_SCS(request, response);
     } else if (url === "/toCoordinate") {
         onPostRequest_SCS(request, response);
+    } else if (url === "/toCoordinateItem") {
+        onPostRequest_SCS(request, response);
     } else if (url === "/power") {
         onPostRequest_SCS(request, response);
     } else if( url === "/toSmartCardOffset") {

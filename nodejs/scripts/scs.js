@@ -825,6 +825,106 @@ function onCoordinateItem(type, index) {
             }
         };
         xhr.send(JSON.stringify(command));
+    } else if (type === "toX") {
+        updateDest = false;
+
+        var command = {};
+        command["x"] = document.getElementById("destCoordinateX").innerText;
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open('POST', '/toCoordinateItem');
+
+        xhr.onreadystatechange = function() {
+            var DONE = 4; // readyState 4 means the request is done.
+            var OK = 200; // status 200 is a successful return.
+            if (xhr.readyState === DONE) {
+                console.log("response is available");
+                console.log("response type: " + xhr.responseType);
+
+                if (xhr.status === OK) {
+                    console.log("toCoordinateItem succeeded");
+                } else {
+                    alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                }
+            }
+        };
+        xhr.send(JSON.stringify(command));
+    } else if (type === "toY") {
+        updateDest = false;
+
+        var command = {};
+        command["y"] = document.getElementById("destCoordinateY").innerText;
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open('POST', '/toCoordinateItem');
+
+        xhr.onreadystatechange = function() {
+            var DONE = 4; // readyState 4 means the request is done.
+            var OK = 200; // status 200 is a successful return.
+            if (xhr.readyState === DONE) {
+                console.log("response is available");
+                console.log("response type: " + xhr.responseType);
+
+                if (xhr.status === OK) {
+                    console.log("toCoordinateItem succeeded");
+                } else {
+                    alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                }
+            }
+        };
+        xhr.send(JSON.stringify(command));
+    } else if (type === "toZ") {
+        updateDest = false;
+
+        var command = {};
+        command["z"] = document.getElementById("destCoordinateZ").innerText;
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open('POST', '/toCoordinateItem');
+
+        xhr.onreadystatechange = function() {
+            var DONE = 4; // readyState 4 means the request is done.
+            var OK = 200; // status 200 is a successful return.
+            if (xhr.readyState === DONE) {
+                console.log("response is available");
+                console.log("response type: " + xhr.responseType);
+
+                if (xhr.status === OK) {
+                    console.log("toCoordinateItem succeeded");
+                } else {
+                    alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                }
+            }
+        };
+        xhr.send(JSON.stringify(command));
+    } else if (type === "toW") {
+        updateDest = false;
+
+        var command = {};
+        command["w"] = document.getElementById("destCoordinateW").innerText;
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open('POST', '/toCoordinateItem');
+
+        xhr.onreadystatechange = function() {
+            var DONE = 4; // readyState 4 means the request is done.
+            var OK = 200; // status 200 is a successful return.
+            if (xhr.readyState === DONE) {
+                console.log("response is available");
+                console.log("response type: " + xhr.responseType);
+
+                if (xhr.status === OK) {
+                    console.log("toCoordinateItem succeeded");
+                } else {
+                    alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                }
+            }
+        };
+        xhr.send(JSON.stringify(command));
     } else {
         console.log("Error: unknown coordinateItem type: " + type);
         updateDest = false;
