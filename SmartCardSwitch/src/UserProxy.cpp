@@ -584,6 +584,17 @@ void UserProxy::runTask()
 					else
 					{
 						pLogger->LogInfo("UserProxy::runTask received bytes amount: " + std::to_string(amount));
+						{
+							std::string content;
+
+							for(int i=0; i<amount; i++)
+							{
+								char tmpBuffer[32];
+								sprintf(tmpBuffer, "%02x,", buffer[i]);
+								content += std::string(tmpBuffer);
+							}
+							pLogger->LogInfo("UserProxy::runTask content: " + content);
+						}
 
 						for(unsigned int i=0; i<amount; i++) {
 							_input.push_back(buffer[i]);

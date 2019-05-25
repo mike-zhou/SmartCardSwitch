@@ -203,7 +203,7 @@ private:
 	void executeUserCmdPressAssistKey();
 	void executeUserCmdTouchScreen();
 
-	enum class CurrentPosition
+	enum class Position
 	{
 		Unknown = 0,
 		Home,
@@ -217,7 +217,8 @@ private:
 		ContactlessReaderGate,
 		BarCodeReaderGate
 	};
-	CurrentPosition getCurrentPosition();
+	Position getCurrentPosition();
+	Position getPosition(int x, int y, int z, int w);
 
 	int currentX();
 	int currentY();
