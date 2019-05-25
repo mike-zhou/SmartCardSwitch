@@ -257,8 +257,11 @@ function packageCommand(command)
     pkg[5] = 0;
 
     //command
-    for(var i=0; i<cmdLength; i++) {
-        pkg[6 + i] = command.charAt(i);
+    for(var i=0; i<cmdLength; i++) 
+    {
+        var v = command.charCodeAt(i);
+        pkg[6 + i] = v;
+
     }
 
     //tail
