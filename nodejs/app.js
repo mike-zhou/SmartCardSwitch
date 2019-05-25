@@ -261,7 +261,6 @@ function packageCommand(command)
     {
         var v = command.charCodeAt(i);
         pkg[6 + i] = v;
-
     }
 
     //tail
@@ -309,7 +308,7 @@ function sendSCSCommand(command, response)
     client.on('connect', () => {
         appLog("sendSCSCommand connected, send command to SCS: " + command);
         var cmdPkg = packageCommand(command);
-        client.end(Buffer.from(cmdPkg.buffer));
+        client.write(Buffer.from(cmdPkg.buffer));
     }).on('data', (content) => {
         replySegments.push(content);
     }).on('end', () => {
@@ -438,17 +437,45 @@ function onCardAccess(request, response)
                         sendSCSCommand(JSON.stringify(scsCommand), response);
                     }
                     else if(cmd.command === "extract") {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "remove smart card";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
 
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
                     }
                     else if(cmd.command === "swipe") {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "swipe smart card";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
+                        scsCommand["downPeriod"] = 1000;
 
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
                     }
                     else if(cmd.command === "tapContactless") {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "tap smart card";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
 
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
                     }
                     else if(cmd.command === "tapBarcode") {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "show bar code";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
 
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
                     }
+                    // else if(cmd.command === "touchScreen") {
+
+                    // }
                     else {
                         appLog("onCardAccess unsupported command: " + command);
                         response.statusCode = 400;
