@@ -123,7 +123,8 @@ public:
  * {
  * 	"userCommand":"swipe smart card",
  * 	"commandId":"uniqueCommandId",
- * 	"smartCardNumber":0
+ * 	"smartCardNumber":0,
+ * 	"downPeriod":1
  * }
  *
  * {
