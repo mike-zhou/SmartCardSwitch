@@ -415,7 +415,6 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 
 	{
 		auto errorNumber = errno;
-		ssize_t amount;
 		auto & stage = device.dataExchange.inputStage;
 
 		if(stage.byteAmount > 0)
@@ -423,12 +422,12 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 			//a partial packet is in buffer
 			if(stage.inputTimeStamp.elapsed() >= DATA_INPUT_TIMEOUT)
 			{
-				pLogger->LogError("CDeviceManager::onDeviceCanBeRead packet receiving timeout");
-				stage.byteAmount = 0;
+				pLogger->LogError("CDeviceManager::onDeviceCanBeRead packet receiving timeout, discard " + std::to_string(stage.byteAmount) + " bytes");
+				stage.byteAmount = 0; //discard the partial packet
 			}
 		}
 
-		amount = read(device.fd, stage.buffer + stage.byteAmount, PACKET_SIZE - stage.byteAmount);
+		auto amount = read(device.fd, stage.buffer + stage.byteAmount, PACKET_SIZE - stage.byteAmount);
 		errorNumber = errno;
 		if(amount == 0) {
 			pLogger->LogError("CDeviceManager::onDeviceCanBeRead nothing is read, errno: " + std::to_string(errorNumber));
@@ -443,6 +442,12 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device)
 				char log[256];
 				sprintf(log, "CDeviceManager::onDeviceCanBeRead %ld bytes from %s", amount, device.fileName.c_str());
 				pLogger->LogInfo(log);
+
+				std::string logStr;
+				for( int i=0; i<amount; i++) {
+					logStr.push_back(stage.buffer[stage.byteAmount + i]);
+				}
+				pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead content: " + logStr);
 			}
 
 			stage.byteAmount += amount;
