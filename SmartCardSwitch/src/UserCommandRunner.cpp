@@ -734,6 +734,33 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 			break;
 
+			case Position::BarCodeReaderGate:
+			{
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
+				moveStepperW(fromW, toW);
+				moveStepperZ(fromZ, toZ);
+			}
+			break;
+
+			case Position::ContactlessReaderGate:
+			{
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
+				moveStepperW(fromW, toW);
+				moveStepperZ(fromZ, toZ);
+			}
+			break;
+
+			case Position::TouchScreenGate:
+			{
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
+				moveStepperZ(fromZ, toZ);
+				moveStepperW(fromW, toW);
+			}
+			break;
+
 			default:
 			{
 				throwError("UserCommandRunner::gateToGate target position is not supported");
@@ -758,6 +785,15 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 
 			case Position::SmartCardReaderGate:
 				break; //nothing to be done
+
+			case Position::TouchScreenGate:
+			{
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
+				moveStepperZ(fromZ, toZ);
+				moveStepperW(fromW, toW);
+			}
+			break;
 
 			default:
 			{
