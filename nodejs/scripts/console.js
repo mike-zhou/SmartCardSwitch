@@ -133,7 +133,7 @@ function getCardName(index)
         var element = globalCardSlotMappings[i];
         if(element.active == true) 
         {
-            cardName = element.mapping[i].cardName;
+            cardName = element.mapping[index].cardName;
             break;
         }
     }
