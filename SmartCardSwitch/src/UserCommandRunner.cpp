@@ -707,6 +707,18 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 	{
 		switch(targetGate)
 		{
+			case Position::Home:
+			{
+				int curV = currentV();
+
+				moveStepperV(curV, 0);
+				moveStepperX(fromX, toX);
+				moveStepperW(fromW, toW);
+				moveStepperY(fromY, toY);
+				moveStepperZ(fromZ, toZ);
+			}
+			break;
+
 			case Position::SmartCardGate:
 				break; //nothing to be done
 
@@ -714,11 +726,11 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			{
 				int tmpW = (fromW + toW)/2;
 
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
 				moveStepperW(fromW, tmpW);
 				moveStepperZ(fromZ, toZ);
 				moveStepperW(tmpW, toW);
-				moveStepperY(fromY, toY);
-				moveStepperX(fromX, toX);
 			}
 			break;
 
