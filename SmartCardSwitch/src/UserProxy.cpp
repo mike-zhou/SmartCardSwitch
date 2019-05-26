@@ -569,16 +569,36 @@ void UserProxy::runTask()
 				continue;
 			}
 
-			if(_sockets.empty()) {
-				sleep(10);
-				continue;
-			}
-
+			//normal state
 			bool exceptionOccured = false;
 			bool peerClosed = false;
-
 			try
 			{
+				if(_autoBackToHomeEnabled)
+				{
+					if(autoBackToHomeStamp.elapsed() >= Poco::Timestamp::TimeDiff(_autoBackToHomeSeconds * 1000000))
+					{
+						autoBackToHomeStamp.update();
+
+						if(_pUserCmdRunner != nullptr)
+						{
+							std::string errorInfo;
+							std::string cmd = createAutoBackToHomeCmd();
+
+							_pUserCmdRunner->RunCommand(cmd, errorInfo);
+							if(!errorInfo.empty())
+							{
+								pLogger->LogError("UserProxy::runTask internal auto back to home error: " + errorInfo);
+							}
+						}
+					}
+				}
+
+				if(_sockets.empty()) {
+					sleep(10);
+					continue;
+				}
+
 				//receive user command
 				if(_sockets[0].poll(timeSpan, Poco::Net::Socket::SELECT_READ))
 				{
@@ -720,26 +740,6 @@ void UserProxy::runTask()
 							else {
 								pLogger->LogError("UserProxy::runTask error in sending out data: " + std::to_string(amount));
 								peerClosed = true; // to close this socket.
-							}
-						}
-					}
-				}
-
-				if(_autoBackToHomeEnabled)
-				{
-					if(autoBackToHomeStamp.elapsed() >= Poco::Timestamp::TimeDiff(_autoBackToHomeSeconds * 1000000))
-					{
-						autoBackToHomeStamp.update();
-
-						if(_pUserCmdRunner != nullptr)
-						{
-							std::string errorInfo;
-							std::string cmd = createAutoBackToHomeCmd();
-
-							_pUserCmdRunner->RunCommand(cmd, errorInfo);
-							if(!errorInfo.empty())
-							{
-								pLogger->LogError("UserProxy::runTask internal auto back to home error: " + errorInfo);
 							}
 						}
 					}
