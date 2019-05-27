@@ -306,6 +306,24 @@ function onCardTapBarcode(index)
     xhr.send(JSON.stringify(command));
 }
 
+function onAddTouchScreenArea()
+{
+    var areaName = document.getElementById("touchScreen_areas").value;
+    if(areaName) {
+        var selectedAreas = document.getElementById("touchScreen_selectedAreas");
+        var html = selectedAreas.innerHTML;
+        
+        html = html + "<option>" + areaName + "</option>";
+        selectedAreas.innerHTML = html;
+        selectedAreas.size = selectedAreas.length;        
+    }
+}
+
+function onDeleteTouchScreenArea()
+{
+    
+}
+
 function onElementClicked() 
 {
     //element id is in the format of group_action_XXX
@@ -344,6 +362,19 @@ function onElementClicked()
         }
         else {
             alert("unknown action: " + action);
+        }
+    }
+    else if(group === "touchScreen") {
+        var action = paraArray[1];
+
+        if(action === "add") {
+            onAddTouchScreenArea();
+        }
+        else if(action === "delete") {
+            onDeleteTouchScreenArea();
+        }
+        else if(action === "press") {
+            onPressTouchScreenArea();
         }
     }
     else if(group === "iFinger") {
@@ -393,10 +424,11 @@ function onTouchScreenMappingArrived(coordinates)
     for(var i=0; i<coordinates.length; i++)
     {
         coordinate = coordinates[i];
-        html = html + "<li>" + coordinate["areaName"] + "</li>";
+        html = html + "<option>" + coordinate["areaName"] + "</option>";
     }
 
     document.getElementById("touchScreen_areas").innerHTML = html;
+    document.getElementById("touchScreen_areas").size = coordinates.length;
 }
 
 function askForCardSlotMapping() {
