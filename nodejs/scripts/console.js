@@ -1,5 +1,5 @@
 var globalCardSlotMappings;
-
+var globalTouchScreenMapping;
 
 
 
@@ -385,6 +385,20 @@ function onCardSlotMappingArrived(mappings) {
     }
 }
 
+function onTouchScreenMappingArrived(coordinates)
+{
+    globalTouchScreenMapping = coordinates;
+    var html = "";
+
+    for(var i=0; i<coordinates.length; i++)
+    {
+        coordinate = coordinates[i];
+        html = html + "<li>" + coordinate["areaName"] + "</li>";
+    }
+
+    document.getElementById("touchScreen_areas").innerHTML = html;
+}
+
 function askForCardSlotMapping() {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
@@ -407,5 +421,27 @@ function askForCardSlotMapping() {
         }
     };
     xhr.send();
+
+    var xhr2 = new XMLHttpRequest();
+    xhr2.responseType = "json";
+    xhr2.open('POST', '/getTouchScreenMapping');
+
+    xhr2.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr2.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr2.responseType);
+
+            if (xhr2.status === OK) {
+                var jsonObj = xhr2.response;
+                onTouchScreenMappingArrived(jsonObj);
+                console.log("getTouchScreenMapping succeeded");
+            } else {
+                alert('Error: ' + xhr2.status + ":" + xhr2.statusText); // An error occurred during the request.
+            }
+        }
+    };
+    xhr2.send();
 }
 document.addEventListener("DOMContentLoaded", askForCardSlotMapping);

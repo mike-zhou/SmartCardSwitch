@@ -13,6 +13,8 @@ const iFingerHostName = "127.0.0.1"
 const iFingerHostPort = 60004;
 
 const _cardSlotMappingFile = "data/cardSlotMapping.json";
+const _touchScreenMappingFile = "data/touchScreenMapping.json";
+
 var _isAccessingCard = false;
 var _isPressingkey = false;
 var _commandIdNumber = 0;
@@ -489,7 +491,26 @@ function onCardAccess(request, response)
             }
         });
     });
+}
 
+function onGetTouchScreenMapping(request, response)
+{
+    appLog("onGetTouchScreenMapping");
+
+    fs.readFile(_touchScreenMappingFile, function(err, contents) {
+        if(err) {
+            appLog("onGetTouchScreenMapping ERROR: " + err);
+            response.statusCode = 400;
+            response.setHeader('Content-Type', 'text/json');
+            response.end();
+        }
+        else {
+            response.statusCode = 200;
+            response.setHeader('Content-Type', 'text/json');
+            response.write(contents);
+            response.end();
+        }
+    });
 }
 
 function onHttpRequest(request, response) 
@@ -528,6 +549,8 @@ function onHttpRequest(request, response)
         onSaveCardSlotMapping(request, response);
     } else if (url === "/cardAccess") {
         onCardAccess(request, response);
+    } else if (url === "/getTouchScreenMapping") {
+        onGetTouchScreenMapping(request, response);
     } else if (url === "/") {
         onDefaultPage(request, response);
     } else if (url.indexOf("/subPages/") === 0) {
