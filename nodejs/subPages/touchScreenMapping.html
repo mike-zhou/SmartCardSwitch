@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Touch Screen Mapping</title>
+    <link rel="stylesheet" href="/css/scs.css">
+</head>
+
+<body onclick="onElementClicked()">
+    <div class="functionZone">
+        <p>
+            Current mapping: <label id="touchScreen_activeMapping"></label>
+        </p>
+        <p>
+            Available mappings: <select id="touchScreen_mappingSet"></select>
+            <button id="touchScreen_choose"> Choose </button>
+        </p>
+    </div><br>
+
+    <div class="functionZone">
+        <label id="mappingContent_title"></label>
+        <div id="mappingContent_details"></div>
+    </div><br>
+
+    <div class="functionZone">
+        <p>
+            CardName:
+            <input type="text" id="mappingModify_areaName"></input>
+            Area:
+            <select id="mappingModify_areaSelection"></select>
+            <button id="mappingModify_add"> Add </button>
+        </p>
+        <p>
+            <button id="mappingModify_save"> Save </button>
+        </p>
+    </div>
+
+    <script src="/scripts/touchScreenMapping.js"></script>
+</body>
+
+</html>
