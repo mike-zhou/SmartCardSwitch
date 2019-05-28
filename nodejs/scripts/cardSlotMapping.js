@@ -58,7 +58,7 @@ function onCardSlotMappingArrived(mappings) {
     }
 
     var slotSelection = document.getElementById("mappingModify_slotSelection");
-    for (var i = 0; i < 60; i++) {
+    for (var i = 0; i < 70; i++) {
         var option = document.createElement("option");
         option.text = i;
         slotSelection.options.add(option, i);
