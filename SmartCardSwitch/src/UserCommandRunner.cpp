@@ -727,8 +727,8 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 				int tmpW = (fromW + toW)/2;
 
 				moveStepperY(fromY, toY);
-				moveStepperX(fromX, toX);
 				moveStepperW(fromW, tmpW);
+				moveStepperX(fromX, toX);
 				moveStepperZ(fromZ, toZ);
 				moveStepperW(tmpW, toW);
 			}
@@ -737,8 +737,8 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			case Position::BarCodeReaderGate:
 			{
 				moveStepperY(fromY, toY);
-				moveStepperX(fromX, toX);
 				moveStepperW(fromW, toW);
+				moveStepperX(fromX, toX);
 				moveStepperZ(fromZ, toZ);
 			}
 			break;
@@ -746,20 +746,20 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			case Position::ContactlessReaderGate:
 			{
 				moveStepperY(fromY, toY);
-				moveStepperX(fromX, toX);
 				moveStepperW(fromW, toW);
+				moveStepperX(fromX, toX);
 				moveStepperZ(fromZ, toZ);
 			}
 			break;
 
-			case Position::TouchScreenGate:
-			{
-				moveStepperY(fromY, toY);
-				moveStepperX(fromX, toX);
-				moveStepperZ(fromZ, toZ);
-				moveStepperW(fromW, toW);
-			}
-			break;
+//			case Position::TouchScreenGate:
+//			{
+//				moveStepperY(fromY, toY);
+//				moveStepperX(fromX, toX);
+//				moveStepperZ(fromZ, toZ);
+//				moveStepperW(fromW, toW);
+//			}
+//			break;
 
 			default:
 			{
@@ -777,20 +777,58 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 
 				moveStepperW(fromW, tmpW);
 				moveStepperZ(fromZ, toZ);
-				moveStepperW(tmpW, toW);
 				moveStepperY(fromY, toY);
 				moveStepperX(fromX, toX);
+				moveStepperW(tmpW, toW);
 			}
 			break;
 
 			case Position::SmartCardReaderGate:
 				break; //nothing to be done
 
-			case Position::TouchScreenGate:
+//			case Position::TouchScreenGate:
+//			{
+//				moveStepperY(fromY, toY);
+//				moveStepperX(fromX, toX);
+//				moveStepperZ(fromZ, toZ);
+//				moveStepperW(fromW, toW);
+//			}
+//			break;
+
+			default:
 			{
-				moveStepperY(fromY, toY);
-				moveStepperX(fromX, toX);
+				throwError("UserCommandRunner::gateToGate target position is not supported");
+			}
+		}
+	}
+	else if(sourceGate == Position::BarCodeReaderGate)
+	{
+		switch(targetGate)
+		{
+			case Position::SmartCardGate:
+			{
 				moveStepperZ(fromZ, toZ);
+				moveStepperX(fromX, toX);
+				moveStepperY(fromY, toY);
+				moveStepperW(fromW, toW);
+			}
+			break;
+
+			default:
+			{
+				throwError("UserCommandRunner::gateToGate target position is not supported");
+			}
+		}
+	}
+	else if(sourceGate == Position::ContactlessReaderGate)
+	{
+		switch(targetGate)
+		{
+			case Position::SmartCardGate:
+			{
+				moveStepperZ(fromZ, toZ);
+				moveStepperX(fromX, toX);
+				moveStepperY(fromY, toY);
 				moveStepperW(fromW, toW);
 			}
 			break;
@@ -1516,7 +1554,7 @@ void UserCommandRunner::gate_contactlessReader()
 		throwError("UserCommandRunner::gate_contactlessReader failed to retrieve contactless reader gate");
 	}
 
-	moveStepperY(curY, finalY);
+	moveStepperW(curW, finalW);
 }
 
 void UserCommandRunner::contactlessReader_gate()
@@ -1539,7 +1577,7 @@ void UserCommandRunner::contactlessReader_gate()
 		throwError("UserCommandRunner::contactlessReader_gate failed to retrieve contactless reader");
 	}
 
-	moveStepperY(curY, finalY);
+	moveStepperW(curW, finalW);
 }
 
 void UserCommandRunner::executeUserCmdTapSmartCard()
