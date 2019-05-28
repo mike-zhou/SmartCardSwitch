@@ -255,6 +255,7 @@ function onCardTapContactless(index)
     var command = {};
     command["command"] = "tapContactless";
     command["name"] = cardName;
+    command["downPeriod"] = 4000;
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -288,6 +289,7 @@ function onCardTapBarcode(index)
     var command = {};
     command["command"] = "tapBarcode";
     command["name"] = cardName;
+    command["downPeriod"] = 4000;
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
