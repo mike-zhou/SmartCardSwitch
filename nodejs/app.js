@@ -543,6 +543,92 @@ function onSaveTouchScreenMappings(request, response)
     });
 }
 
+function onTouchScreen(request, response)
+{
+    appLog("onTouchScreen");
+    let command = [];
+
+    request.on('data', (chunk) => {
+        command.push(chunk);
+    }).on('end', () => {
+        command = Buffer.concat(command).toString(); //command changes to a string object.
+        appLog("onTouchScreen " + request.url + " : " + command);
+
+        fs.readFile(_touchScreenMappingFile, function(err, contents) {
+            if(err) 
+            {
+                appLog("onTouchScreen failed to read mapping file ERROR: " + err);
+                response.statusCode = 400;
+                response.setHeader('Content-Type', 'text/plain');
+                response.write("failed to read mapping file");
+                response.end();
+                _isAccessingCard = false;
+            }
+            else 
+            {
+                var mappings=JSON.parse(contents);
+                var cmd = JSON.parse(command);
+                var scsCmd = {};
+                var errorInfo = "";
+
+                scsCmd["userCommand"] = "touch screen";
+                scsCmd["commandId"] = newCommandId();
+                scsCmd["downPeriod"] = 4000;
+                scsCmd["upPeriod"] = 4000;
+                scsCmd["keys"] = [];
+                //find touch screen area in the active mapping
+                for(var i=0; i<mappings.length; i++)
+                {
+                    //find the active mapping.
+                    if(mappings[i].active == true) 
+                    {
+                        var activeMapping = mappings[i].mapping;
+
+                        //iterate elements in cmd
+                        for(var j=0; j<cmd.length; j++)
+                        {
+                            var areaName = cmd[j].areaName;
+                            var found = false;
+
+                            scsCmd["keys"][j] = {};
+                            scsCmd["keys"][j].index = cmd[j].order;
+
+                            //find the key index for the area name
+                            for(var k=0; k<activeMapping.length; k++)
+                            {
+                                if(areaName === activeMapping[k].areaName) 
+                                {
+                                    found = true;
+                                    scsCmd["keys"][j].keyNumber = activeMapping[k].index;
+                                    break;
+                                }
+                            }
+
+                            if(found == false) {
+                                errorInfo = "Error: no key is defined for " + areaName;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                if(errorInfo.length > 0) {
+                    appLog("onTouchScreen " + errorInfo);
+                    response.statusCode = 400;
+                    response.setHeader('Content-Type', 'text/plain');
+                    response.write(errorInfo);
+                    response.end();
+                    _isAccessingCard = false;
+                }
+                else {
+                    sendSCSCommand(JSON.stringify(scsCmd), response);
+                }
+            }
+        });
+    });
+}
+
 function onHttpRequest(request, response) 
 {
     appLog("onHttpRequest: " + request.url);
@@ -583,6 +669,8 @@ function onHttpRequest(request, response)
         onGetTouchScreenMappings(request, response);
     } else if (url === "/saveTouchScreenMappings") {
         onSaveTouchScreenMappings(request, response);
+    } else if (url === "/touchScreen") {
+        onTouchScreen(request, response);
     } else if (url === "/") {
         onDefaultPage(request, response);
     } else if (url.indexOf("/subPages/") === 0) {

@@ -1,5 +1,5 @@
 var globalCardSlotMappings;
-var globalTouchScreenMapping;
+var globalTouchScreenMappings;
 
 
 
@@ -323,7 +323,98 @@ function onAddTouchScreenArea()
 
 function onDeleteTouchScreenArea()
 {
-    
+    var selectedAreas = document.getElementById("touchScreen_selectedAreas");
+    selectedAreas.remove(selectedAreas.selectedIndex);
+    selectedAreas.size = selectedAreas.length;
+}
+
+function onPressTouchScreenArea()
+{
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "text/plain";
+    xhr.open('POST', '/touchScreen');
+
+    var command = [];
+    var selectedAreas = document.getElementById("touchScreen_selectedAreas").options;
+    if(selectedAreas.length < 1) 
+    {
+        alert('Error: no touch screen area is selected');
+        return;
+    }
+    for(var i=0; i<selectedAreas.length; i++)
+    {
+        command[i] = {};
+        command[i]["areaName"] = selectedAreas[i].value;
+        command[i]["order"] = i;
+    }
+
+    xhr.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                var jsonObj = xhr.response;
+                console.log("onPressTouchScreenArea succeeded");
+            } else {
+                alert('Error: ' + xhr.status + ":" + xhr.statusText + ":" + xhr.response); // An error occurred during the request.
+            }
+        }
+    };
+    xhr.send(JSON.stringify(command));
+}
+
+function onActivateTouchScreenMapping()
+{
+    var html = "";
+    var itemAmount = 0;
+    var selectedMappingName = document.getElementById("touchScreen_mappingSelection").value;
+
+    for(var i=0; i<globalTouchScreenMappings.length; i++) 
+    {
+        var mapping = globalTouchScreenMappings[i];
+
+        mapping.active = false;
+        if(mapping.name == selectedMappingName) 
+        {
+            mapping.active = true;
+            document.getElementById("touchScreen_currentMapping").innerText = selectedMappingName;
+
+            for(var j=0; j<mapping.mapping.length; j++) 
+            {
+                html = html + "<option>" + mapping.mapping[j]["areaName"] + "</option>";
+                itemAmount = j + 1;
+            }
+
+            document.getElementById("touchScreen_areas").innerHTML = html;
+            document.getElementById("touchScreen_areas").size = document.getElementById("touchScreen_areas").length;
+            document.getElementById("touchScreen_selectedAreas").innerHTML = "";
+        }
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open('POST', '/saveTouchScreenMappings');
+
+    xhr.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                var jsonObj = xhr.response;
+                console.log("onActivateTouchScreenMapping succeeded");
+                alert("Touch screen mapping is activated");
+            } else {
+                alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
+            }
+        }
+    };
+    xhr.send(JSON.stringify(globalTouchScreenMappings));
 }
 
 function onElementClicked() 
@@ -378,6 +469,9 @@ function onElementClicked()
         else if(action === "press") {
             onPressTouchScreenArea();
         }
+        else if(action === "mappingActivate") {
+            onActivateTouchScreenMapping();
+        }
     }
     else if(group === "iFinger") {
         onKey(paraArray[2]);
@@ -418,22 +512,43 @@ function onCardSlotMappingArrived(mappings) {
     }
 }
 
-function onTouchScreenMappingArrived(coordinates)
+function onTouchScreenMappingArrived(mappings)
 {
-    globalTouchScreenMapping = coordinates;
+    globalTouchScreenMappings = mappings;
     var html = "";
+    var activeMappingName = "";
+    var itemAmount = 0;
+    var names = [];
 
-    for(var i=0; i<coordinates.length; i++)
+    for(var i=0; i<mappings.length; i++)
     {
-        coordinate = coordinates[i];
-        html = html + "<option>" + coordinate["areaName"] + "</option>";
+        var mapping = mappings[i];
+
+        names[i] = mapping.name;
+        if(mapping.active == true) 
+        {
+            activeMappingName = mapping.name;
+            for(var j=0; j<mapping.mapping.length; j++) 
+            {
+                html = html + "<option>" + mapping.mapping[j]["areaName"] + "</option>";
+                itemAmount = j + 1;
+            }
+        }
     }
 
+    var selection = document.getElementById("touchScreen_mappingSelection");
+    for (var i = 0; i < names.length; i++) {
+        var option = document.createElement("option");
+        option.text = names[i];
+        selection.options.add(option, i);
+    }
+
+    document.getElementById("touchScreen_currentMapping").innerText = activeMappingName;
     document.getElementById("touchScreen_areas").innerHTML = html;
-    document.getElementById("touchScreen_areas").size = coordinates.length;
+    document.getElementById("touchScreen_areas").size = itemAmount;
 }
 
-function askForCardSlotMapping() {
+function askForMappings() {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
     xhr.open('POST', '/getCardSlotMappings');
@@ -458,7 +573,7 @@ function askForCardSlotMapping() {
 
     var xhr2 = new XMLHttpRequest();
     xhr2.responseType = "json";
-    xhr2.open('POST', '/getTouchScreenMapping');
+    xhr2.open('POST', '/getTouchScreenMappings');
 
     xhr2.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -478,4 +593,4 @@ function askForCardSlotMapping() {
     };
     xhr2.send();
 }
-document.addEventListener("DOMContentLoaded", askForCardSlotMapping);
+document.addEventListener("DOMContentLoaded", askForMappings);
