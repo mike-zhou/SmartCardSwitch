@@ -222,6 +222,7 @@ function onCardSwipe(index)
     var command = {};
     command["command"] = "swipe";
     command["name"] = cardName;
+    command["downPeriod"] = 4000;
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.

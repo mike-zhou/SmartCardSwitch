@@ -453,7 +453,7 @@ function onCardAccess(request, response)
                         scsCommand["userCommand"] = "swipe smart card";
                         scsCommand["commandId"] = newCommandId();
                         scsCommand["smartCardNumber"] = slotNumber;
-                        scsCommand["downPeriod"] = 1000;
+                        scsCommand["downPeriod"] = cmd.downPeriod;
 
                         sendSCSCommand(JSON.stringify(scsCommand), response);
                     }
@@ -463,6 +463,7 @@ function onCardAccess(request, response)
                         scsCommand["userCommand"] = "tap smart card";
                         scsCommand["commandId"] = newCommandId();
                         scsCommand["smartCardNumber"] = slotNumber;
+                        scsCommand["downPeriod"] = cmd.downPeriod;
 
                         sendSCSCommand(JSON.stringify(scsCommand), response);
                     }
@@ -472,7 +473,8 @@ function onCardAccess(request, response)
                         scsCommand["userCommand"] = "show bar code";
                         scsCommand["commandId"] = newCommandId();
                         scsCommand["smartCardNumber"] = slotNumber;
-
+                        scsCommand["downPeriod"] = cmd.downPeriod;
+                        
                         sendSCSCommand(JSON.stringify(scsCommand), response);
                     }
                     // else if(cmd.command === "touchScreen") {
