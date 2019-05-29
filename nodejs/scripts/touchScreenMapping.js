@@ -1,18 +1,18 @@
-var globalCardSlotMappings;
+var globalTouchScreenMappings;
 
-function updateCardSlotMappingTable(mapping) {
-    var html = "<table class=\"cardSlotMappingTable\">";
+function updateTouchScreenMappingTable(mapping) {
+    var html = "<table class=\"touchScreenMappingTable\">";
 
     //header
-    html = html + "<tr><th>Card Name</th><th>Slot</th><th>Action</th></tr>";
+    html = html + "<tr><th>AreaName</th><th>Index</th><th>Action</th></tr>";
 
     //mappings
     for (var i = 0; i < mapping.length; i++) {
         var row;
 
         row = "<tr>";
-        row = row + "<td>" + mapping[i].cardName + "</td>";
-        row = row + "<td align=\"center\">" + mapping[i].slotNumber + "</td>";
+        row = row + "<td>" + mapping[i].areaName + "</td>";
+        row = row + "<td align=\"center\">" + mapping[i].index + "</td>";
         row = row + "<td><button id=\"" + "mappingContent_delete_" + i + "\"> Delete </button></td>";
         row = row + "</tr>";
 
@@ -24,51 +24,51 @@ function updateCardSlotMappingTable(mapping) {
     document.getElementById("mappingContent_details").innerHTML = html;
 }
 
-function onCardSlotMappingArrived(mappings) {
-    globalCardSlotMappings = mappings; //save to global variable.
+function onTouchScreenMappingArrived(mappings) {
+    globalTouchScreenMappings = mappings; //save to global variable.
     var names = [];
-    var activeMapping;
+    var currentMapping = "";
 
-    if ((globalCardSlotMappings === undefined) ||
-        (!Array.isArray(globalCardSlotMappings)) ||
-        (globalCardSlotMappings.lenth == 0)) {
-        console.log("onCardSlotMappingArrived illegal mapping: " + mappings);
+    if ((globalTouchScreenMappings === undefined) ||
+        (!Array.isArray(globalTouchScreenMappings)) ||
+        (globalTouchScreenMappings.lenth == 0)) {
+        console.log("onTouchScreenMappingArrived illegal mapping: " + mappings);
         return;
     }
 
-    for (var i = 0; i < globalCardSlotMappings.length; i++) {
-        var cur = globalCardSlotMappings[i];
+    //find and show active mapping
+    for (var i = 0; i < globalTouchScreenMappings.length; i++) {
+        var cur = globalTouchScreenMappings[i];
         names[i] = cur.name;
         if (cur.active == true) {
-            activeMapping = cur.name;
-            updateCardSlotMappingTable(cur.mapping);
+            currentMapping = cur.name;
+            updateTouchScreenMappingTable(cur.mapping);
         }
     }
+    //update mapping name
+    document.getElementById("mappingSelect_currentMapping").innerText = currentMapping;
 
-    document.getElementById("mappingSelect_activeMapping").innerText = activeMapping;
-
+    //update mapping selection list
     var selection = document.getElementById("mappingSelect_mappingSet");
-    for (var i = 0; i < selection.options.length;) {
-        selection.options.remove(0);
-    }
     for (var i = 0; i < names.length; i++) {
         var option = document.createElement("option");
         option.text = names[i];
         selection.options.add(option, i);
     }
-
-    var slotSelection = document.getElementById("mappingModify_slotSelection");
-    for (var i = 0; i < 70; i++) {
+ 
+    //set mapping index list
+    var slotSelection = document.getElementById("mappingModify_indexSelection");
+    for (var i = 0; i < 50; i++) {
         var option = document.createElement("option");
         option.text = i;
         slotSelection.options.add(option, i);
     }
 }
 
-function askForCardSlotMapping() {
+function askForTouchScreenMapping() {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', '/getCardSlotMappings');
+    xhr.open('POST', '/getTouchScreenMappings');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -79,8 +79,8 @@ function askForCardSlotMapping() {
 
             if (xhr.status === OK) {
                 var jsonObj = xhr.response;
-                onCardSlotMappingArrived(jsonObj);
-                console.log("getCardSlotMappings succeeded");
+                onTouchScreenMappingArrived(jsonObj);
+                console.log("getTouchScreenMappings succeeded");
             } else {
                 alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
             }
@@ -89,49 +89,49 @@ function askForCardSlotMapping() {
     xhr.send();
 }
 
-document.addEventListener("DOMContentLoaded", askForCardSlotMapping);
+document.addEventListener("DOMContentLoaded", askForTouchScreenMapping);
 
 function loadMapping(mappingName)
 {
-    for(var i=0; i<globalCardSlotMappings.length; i++) {
-        var element = globalCardSlotMappings[i];
+    for(var i=0; i<globalTouchScreenMappings.length; i++) {
+        var element = globalTouchScreenMappings[i];
         if(element.name == mappingName) {
-            document.getElementById("mappingSelect_activeMapping").innerText = mappingName;
-            updateCardSlotMappingTable(element.mapping);
+            document.getElementById("mappingSelect_currentMapping").innerText = mappingName;
+            updateTouchScreenMappingTable(element.mapping);
             break;
         }
     }
 }
 
-function addCardSlotMapping(mappingName, cardName, slotNumber)
+function addTouchScreenMapping(mappingName, areaName, index)
 {
-    for(var i=0; i<globalCardSlotMappings.length; i++) 
+    for(var i=0; i<globalTouchScreenMappings.length; i++) 
     {
-        var element = globalCardSlotMappings[i];
+        var element = globalTouchScreenMappings[i];
         if(element.name != mappingName) {
             continue;
         }
-        var cardExist = false;
+        var areaExist = false;
 
         for(var j=0; j<element.mapping.length; j++)
         {
-            if(element.mapping[j].cardName == cardName) {
-                cardExist = true;
+            if(element.mapping[j].areaName == areaName) {
+                areaExist = true;
                 break;
             }
         }
 
-        if(cardExist) {
-            console.log("ERROR: " + cardName + " has already in the mapping");
-            alert(cardName + " cannot be added\nIt has already in the mapping!");
+        if(areaExist) {
+            console.log("ERROR: " + areaName + " has already in the mapping");
+            alert(areaName + " cannot be added\nIt has already in the mapping!");
         }
         else
         {
             var item = {};
-            item["cardName"] = cardName;
-            item["slotNumber"] = slotNumber;
+            item["areaName"] = areaName;
+            item["index"] = index;
             element.mapping.push(item);
-            updateCardSlotMappingTable(element.mapping);
+            updateTouchScreenMappingTable(element.mapping);
         }
         break;
     }
@@ -145,11 +145,11 @@ function getCurrentMappingName()
     return mappingName;
 }
 
-function saveCardSlotMapping()
+function saveTouchScreenMapping()
 {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', '/saveCardSlotMappings');
+    xhr.open('POST', '/saveTouchScreenMappings');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -160,14 +160,14 @@ function saveCardSlotMapping()
 
             if (xhr.status === OK) {
                 var jsonObj = xhr.response;
-                console.log("saveCardSlotMappings succeeded");
-                alert("Card slot mapping is saved");
+                console.log("saveTouchScreenMappings succeeded");
+                alert("Touch screen mapping is saved");
             } else {
                 alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
             }
         }
     };
-    xhr.send(JSON.stringify(globalCardSlotMappings));
+    xhr.send(JSON.stringify(globalTouchScreenMappings));
 }
 
 function onElementClicked() 
@@ -193,9 +193,9 @@ function onElementClicked()
             var index = paraArray[2];
             var mappingName = getCurrentMappingName();
 
-            for(var i=0; i<globalCardSlotMappings.length; i++)
+            for(var i=0; i<globalTouchScreenMappings.length; i++)
             {
-                var element = globalCardSlotMappings[i];
+                var element = globalTouchScreenMappings[i];
                 if(element.name != mappingName) {
                     continue;
                 }
@@ -209,15 +209,15 @@ function onElementClicked()
     {
         var action = paraArray[1];
         if(action === "add") {
-            var cardName = document.getElementById("mappingModify_cardName").value;
-            var slotNumber = document.getElementById("mappingModify_slotSelection").selectedIndex;
-            var mappingName = document.getElementById("mappingSelect_activeMapping").innerText;
+            var areaName = document.getElementById("mappingModify_areaName").value;
+            var index = document.getElementById("mappingModify_indexSelection").selectedIndex;
+            var mappingName = document.getElementById("mappingSelect_currentMapping").innerText;
 
-            console.log("onElementClicked add " + cardName + ":" + slotNumber + " to " + mappingName);
-            addCardSlotMapping(mappingName, cardName, slotNumber);
+            console.log("onElementClicked add " + areaName + ":" + index + " to " + mappingName);
+            addTouchScreenMapping(mappingName, areaName, index);
         }
         else if(action === "save") {
-            saveCardSlotMapping();
+            saveTouchScreenMapping();
         }
     }
 }

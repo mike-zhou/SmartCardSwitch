@@ -493,9 +493,9 @@ function onCardAccess(request, response)
     });
 }
 
-function onGetTouchScreenMapping(request, response)
+function onGetTouchScreenMappings(request, response)
 {
-    appLog("onGetTouchScreenMapping");
+    appLog("onGetTouchScreenMappings");
 
     fs.readFile(_touchScreenMappingFile, function(err, contents) {
         if(err) {
@@ -510,6 +510,36 @@ function onGetTouchScreenMapping(request, response)
             response.write(contents);
             response.end();
         }
+    });
+}
+
+function onSaveTouchScreenMappings(request, response)
+{
+    appLog("onSaveTouchScreenMappings");
+    let mappings = [];
+
+    request.on('data', (chunk) => {
+        mappings.push(chunk);
+    }).on('end', () => {
+        mappings = Buffer.concat(mappings).toString();
+        appLog("onSaveTouchScreenMappings " + request.url + " : " + mappings);
+
+        fs.writeFile(_touchScreenMappingFile, mappings, function(err) {
+            if(err) {
+                appLog("onSaveTouchScreenMappings ERROR: " + err);
+                response.statusCode = 400;
+                response.setHeader('Content-Type', 'text/plain');
+                response.write("failed to save mapping, error: " + err);
+                response.end();
+            }
+            else {
+                appLog("onSaveTouchScreenMappings mapping is saved");
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'text/plain');
+                response.write("mapping is saved successfully");
+                response.end();
+            }
+        });
     });
 }
 
@@ -549,8 +579,10 @@ function onHttpRequest(request, response)
         onSaveCardSlotMapping(request, response);
     } else if (url === "/cardAccess") {
         onCardAccess(request, response);
-    } else if (url === "/getTouchScreenMapping") {
-        onGetTouchScreenMapping(request, response);
+    } else if (url === "/getTouchScreenMappings") {
+        onGetTouchScreenMappings(request, response);
+    } else if (url === "/saveTouchScreenMappings") {
+        onSaveTouchScreenMappings(request, response);
     } else if (url === "/") {
         onDefaultPage(request, response);
     } else if (url.indexOf("/subPages/") === 0) {

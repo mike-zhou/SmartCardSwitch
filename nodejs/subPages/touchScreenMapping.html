@@ -10,11 +10,11 @@
 <body onclick="onElementClicked()">
     <div class="functionZone">
         <p>
-            Current mapping: <label id="touchScreen_activeMapping"></label>
+            Available mappings: <select id="mappingSelect_mappingSet"></select>
+            <button id="mappingSelect_choose"> Choose </button>
         </p>
         <p>
-            Available mappings: <select id="touchScreen_mappingSet"></select>
-            <button id="touchScreen_choose"> Choose </button>
+            Current mapping: <label id="mappingSelect_currentMapping"></label>
         </p>
     </div><br>
 
@@ -25,10 +25,10 @@
 
     <div class="functionZone">
         <p>
-            CardName:
+            AreaName:
             <input type="text" id="mappingModify_areaName"></input>
-            Area:
-            <select id="mappingModify_areaSelection"></select>
+            Index:
+            <select id="mappingModify_indexSelection"></select>
             <button id="mappingModify_add"> Add </button>
         </p>
         <p>
