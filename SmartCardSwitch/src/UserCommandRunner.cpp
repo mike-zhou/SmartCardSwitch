@@ -745,8 +745,8 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 
 			case Position::ContactlessReaderGate:
 			{
-				moveStepperY(fromY, toY);
 				moveStepperW(fromW, toW);
+				moveStepperY(fromY, toY);
 				moveStepperX(fromX, toX);
 				moveStepperZ(fromZ, toZ);
 			}
@@ -1554,7 +1554,7 @@ void UserCommandRunner::gate_contactlessReader()
 		throwError("UserCommandRunner::gate_contactlessReader failed to retrieve contactless reader gate");
 	}
 
-	moveStepperW(curW, finalW);
+	moveStepperZ(curZ, finalZ);
 }
 
 void UserCommandRunner::contactlessReader_gate()
@@ -1577,7 +1577,7 @@ void UserCommandRunner::contactlessReader_gate()
 		throwError("UserCommandRunner::contactlessReader_gate failed to retrieve contactless reader");
 	}
 
-	moveStepperW(curW, finalW);
+	moveStepperZ(curZ, finalZ);
 }
 
 void UserCommandRunner::executeUserCmdTapSmartCard()
