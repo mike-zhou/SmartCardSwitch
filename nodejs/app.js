@@ -549,6 +549,17 @@ function onTouchScreen(request, response)
 {
     appLog("onTouchScreen");
     let command = [];
+    
+    if(_isAccessingCard == true) {
+        response.statusCode = 400;
+        response.setHeader('Content-Type', 'text/plain');
+        response.write("a card is being accessed");
+        response.end();
+        return;
+    }
+    else {
+        _isAccessingCard = true;
+    }
 
     request.on('data', (chunk) => {
         command.push(chunk);
