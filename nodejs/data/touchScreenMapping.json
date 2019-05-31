@@ -1,1 +1,78 @@
-[{"name":"general","active":false,"mapping":[{"areaName":"area 0","index":0},{"areaName":"area 1","index":1},{"areaName":"area 2","index":2},{"areaName":"area 3","index":3},{"areaName":"area 4","index":4},{"areaName":"area 5","index":5},{"areaName":"area 6","index":6},{"areaName":"area 7","index":7}]},{"name":"car wash","active":true,"mapping":[{"areaName":"car wash 1","index":0},{"areaName":"car wash 2","index":1},{"areaName":"previous","index":2},{"areaName":"next","index":3},{"areaName":"main menu","index":4},{"areaName":"$5","index":5},{"areaName":"$10","index":6},{"areaName":"cancel","index":7},{"areaName":"$15","index":8}]}]
+[
+	{
+		"name": "general",
+		"active": false,
+		"mapping": [
+			{
+				"areaName": "area 0",
+				"index": 0
+			},
+			{
+				"areaName": "area 1",
+				"index": 1
+			},
+			{
+				"areaName": "area 2",
+				"index": 2
+			},
+			{
+				"areaName": "area 3",
+				"index": 3
+			},
+			{
+				"areaName": "area 4",
+				"index": 4
+			},
+			{
+				"areaName": "area 5",
+				"index": 5
+			},
+			{
+				"areaName": "area 6",
+				"index": 6
+			},
+			{
+				"areaName": "area 7",
+				"index": 7
+			}
+		]
+	},
+	{
+		"name": "car wash",
+		"active": true,
+		"mapping": [
+			{
+				"areaName": "car wash 1",
+				"index": 0
+			},
+			{
+				"areaName": "car wash 2",
+				"index": 1
+			},
+			{
+				"areaName": "previous",
+				"index": 2
+			},
+			{
+				"areaName": "next",
+				"index": 3
+			},
+			{
+				"areaName": "main menu",
+				"index": 4
+			},
+			{
+				"areaName": "$5",
+				"index": 5
+			},
+			{
+				"areaName": "$10",
+				"index": 6
+			},
+			{
+				"areaName": "cancel",
+				"index": 7
+			}
+		]
+	}
+]

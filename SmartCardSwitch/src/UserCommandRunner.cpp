@@ -752,14 +752,14 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 			break;
 
-//			case Position::TouchScreenGate:
-//			{
-//				moveStepperY(fromY, toY);
-//				moveStepperX(fromX, toX);
-//				moveStepperZ(fromZ, toZ);
-//				moveStepperW(fromW, toW);
-//			}
-//			break;
+			case Position::TouchScreenGate:
+			{
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
+				moveStepperZ(fromZ, toZ);
+				moveStepperW(fromW, toW);
+			}
+			break;
 
 			default:
 			{
@@ -786,14 +786,14 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			case Position::SmartCardReaderGate:
 				break; //nothing to be done
 
-//			case Position::TouchScreenGate:
-//			{
-//				moveStepperY(fromY, toY);
-//				moveStepperX(fromX, toX);
-//				moveStepperZ(fromZ, toZ);
-//				moveStepperW(fromW, toW);
-//			}
-//			break;
+			case Position::TouchScreenGate:
+			{
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
+				moveStepperZ(fromZ, toZ);
+				moveStepperW(fromW, toW);
+			}
+			break;
 
 			default:
 			{
@@ -830,6 +830,34 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 				moveStepperX(fromX, toX);
 				moveStepperY(fromY, toY);
 				moveStepperW(fromW, toW);
+			}
+			break;
+
+			default:
+			{
+				throwError("UserCommandRunner::gateToGate target position is not supported");
+			}
+		}
+	}
+	else if(sourceGate == Position::TouchScreenGate)
+	{
+		switch(targetGate)
+		{
+			case Position::SmartCardReaderGate:
+			{
+				moveStepperW(fromW, toW);
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
+				moveStepperZ(fromZ, toZ);
+			}
+			break;
+
+			case Position::SmartCardGate:
+			{
+				moveStepperW(fromW, toW);
+				moveStepperZ(fromZ, toZ);
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
 			}
 			break;
 
@@ -1622,7 +1650,7 @@ void UserCommandRunner::parseUserCmdBarCode(Poco::DynamicStruct& ds)
 	_userCommand.downPeriod = downPeriod;
 }
 
-void UserCommandRunner::parseUserCmdKeys(Poco::DynamicStruct& ds)
+void UserCommandRunner::parseUserCmdPedKeys(Poco::DynamicStruct& ds)
 {
 	_userCommand.downPeriod = ds["downPeriod"];
 	_userCommand.upPeriod = ds["upPeriod"];
@@ -1644,11 +1672,106 @@ void UserCommandRunner::parseUserCmdKeys(Poco::DynamicStruct& ds)
 				_userCommand.keyNumbers[index] = number;
 			}
 			else {
-				throwError("UserCommandRunner::parseUserCmdKeys key number of range: " + std::to_string(number));
+				throwError("UserCommandRunner::parseUserCmdKeys key number out of range: " + std::to_string(number));
 			}
 		}
 		else {
 			throwError("UserCommandRunner::parseUserCmdKeys index out of range: " + std::to_string(index));
+		}
+	}
+}
+
+void UserCommandRunner::parseUserCmdSoftKeys(Poco::DynamicStruct& ds)
+{
+	_userCommand.downPeriod = ds["downPeriod"];
+	_userCommand.upPeriod = ds["upPeriod"];
+	_userCommand.keyNumbers.clear();
+
+	auto keyAmount = ds["keys"].size();
+
+	for(unsigned int i=0; i<keyAmount; i++) {
+		_userCommand.keyNumbers.push_back(0);
+	}
+
+	for(unsigned int i=0; i<keyAmount; i++)
+	{
+		unsigned int index = ds["keys"][i]["index"];
+		unsigned int number = ds["keys"][i]["keyNumber"];
+
+		if(index < keyAmount) {
+			if(number < pCoordinateStorage->SoftKeysAmount()) {
+				_userCommand.keyNumbers[index] = number;
+			}
+			else {
+				throwError("UserCommandRunner::parseUserCmdSoftKeys key number out of range: " + std::to_string(number));
+			}
+		}
+		else {
+			throwError("UserCommandRunner::parseUserCmdSoftKeys index out of range: " + std::to_string(index));
+		}
+	}
+
+}
+
+void UserCommandRunner::parseUserCmdTouchScreenKeys(Poco::DynamicStruct& ds)
+{
+	_userCommand.downPeriod = ds["downPeriod"];
+	_userCommand.upPeriod = ds["upPeriod"];
+	_userCommand.keyNumbers.clear();
+
+	auto keyAmount = ds["keys"].size();
+
+	for(unsigned int i=0; i<keyAmount; i++) {
+		_userCommand.keyNumbers.push_back(0);
+	}
+
+	for(unsigned int i=0; i<keyAmount; i++)
+	{
+		unsigned int index = ds["keys"][i]["index"];
+		unsigned int number = ds["keys"][i]["keyNumber"];
+
+		if(index < keyAmount) {
+			if(number < pCoordinateStorage->TouchScreenKeysAmount()) {
+				_userCommand.keyNumbers[index] = number;
+			}
+			else {
+				throwError("UserCommandRunner::parseUserCmdTouchScreenKeys key number out of range: " + std::to_string(number));
+			}
+		}
+		else {
+			throwError("UserCommandRunner::parseUserCmdTouchScreenKeys index out of range: " + std::to_string(index));
+		}
+	}
+
+}
+
+void UserCommandRunner::parseUserCmdAdaKeys(Poco::DynamicStruct& ds)
+{
+	_userCommand.downPeriod = ds["downPeriod"];
+	_userCommand.upPeriod = ds["upPeriod"];
+	_userCommand.keyNumbers.clear();
+
+	auto keyAmount = ds["keys"].size();
+
+	for(unsigned int i=0; i<keyAmount; i++) {
+		_userCommand.keyNumbers.push_back(0);
+	}
+
+	for(unsigned int i=0; i<keyAmount; i++)
+	{
+		unsigned int index = ds["keys"][i]["index"];
+		unsigned int number = ds["keys"][i]["keyNumber"];
+
+		if(index < keyAmount) {
+			if(number < pCoordinateStorage->AssistKeysAmount()) {
+				_userCommand.keyNumbers[index] = number;
+			}
+			else {
+				throwError("UserCommandRunner::parseUserCmdAdaKeys key number of range: " + std::to_string(number));
+			}
+		}
+		else {
+			throwError("UserCommandRunner::parseUserCmdAdaKeys index out of range: " + std::to_string(index));
 		}
 	}
 }
@@ -2265,8 +2388,8 @@ void UserCommandRunner::touchScreenKey_gate(unsigned int keyNumber)
 		throwError("UserCommandRunner::touchScreenKey_gate failed to retrieve touch screen key:" + std::to_string(keyNumber));
 	}
 
-	moveStepperX(curX, finalX);
 	moveStepperY(curY, finalY);
+	moveStepperX(curX, finalX);
 	moveStepperZ(curZ, finalZ);
 }
 
@@ -2347,9 +2470,9 @@ void UserCommandRunner::gate_touchScreenKey(unsigned int keyNumber)
 	}
 
 	//to key
+	moveStepperZ(curZ, finalZ);
 	moveStepperX(curX, finalX);
 	moveStepperY(curY, finalY);
-	moveStepperZ(curZ, finalZ);
 
 	//press key
 	curX = finalX;
@@ -2390,7 +2513,6 @@ void UserCommandRunner::executeUserCmdTouchScreen()
 	}
 
 	toTouchScreenGate();
-	putDownKeyPressingArm();
 
 	auto pKeys = _userCommand.keyNumbers.data();
 	unsigned int lastKeyIndex = _userCommand.keyNumbers.size() - 1;
@@ -2406,8 +2528,6 @@ void UserCommandRunner::executeUserCmdTouchScreen()
 
 	//back to gate
 	touchScreenKey_gate(pKeys[lastKeyIndex]);
-	pullUpKeyPressingArm();
-	releaseKeyPressingArm();
 }
 
 void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& errorInfo)
@@ -2470,16 +2590,16 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			parseUserCmdBarCode(ds);
 		}
 		else if(_userCommand.command == UserCmdPressPedKey) {
-			parseUserCmdKeys(ds);
+			parseUserCmdPedKeys(ds);
 		}
 		else if(_userCommand.command == UserCmdPressSoftKey) {
-			parseUserCmdKeys(ds);
+			parseUserCmdSoftKeys(ds);
 		}
 		else if(_userCommand.command == UserCmdPressAssistKey) {
-			parseUserCmdKeys(ds);
+			parseUserCmdAdaKeys(ds);
 		}
 		else if(_userCommand.command == UserCmdTouchScreen) {
-			parseUserCmdKeys(ds);
+			parseUserCmdTouchScreenKeys(ds);
 		}
 		else if(_userCommand.command == UserCmdBackToHome) {
 			//no further parameters to parse

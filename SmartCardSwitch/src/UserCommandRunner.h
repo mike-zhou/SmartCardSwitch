@@ -185,7 +185,10 @@ private:
 	void parseUserCmdSwipeSmartCard(Poco::DynamicStruct& ds);
 	void parseUserCmdTapSmartCard(Poco::DynamicStruct& ds);
 	void parseUserCmdBarCode(Poco::DynamicStruct& ds);
-	void parseUserCmdKeys(Poco::DynamicStruct& ds);
+	void parseUserCmdPedKeys(Poco::DynamicStruct& ds);
+	void parseUserCmdSoftKeys(Poco::DynamicStruct& ds);
+	void parseUserCmdTouchScreenKeys(Poco::DynamicStruct& ds);
+	void parseUserCmdAdaKeys(Poco::DynamicStruct& ds);
 	void parseUserCmdDcm(Poco::DynamicStruct& ds);
 
 	//fulfill user command with console commands
