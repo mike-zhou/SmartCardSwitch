@@ -273,21 +273,67 @@ function updatePageCoordinates(serverResponse) {
     var coorTouchScreenKeysPressed = serverResponse["coordinateTouchScreenKeysPressed"];
     for (i = 0;
         (i < coorTouchScreenKeys.length) || (i < coorTouchScreenKeysPressed.length); i++) {
-        if (i < coorTouchScreenKeys.length) {
-            var index = coorTouchScreenKeys[i].index;
-            var x = coorTouchScreenKeys[i].x;
-            var y = coorTouchScreenKeys[i].y;
-            var z = coorTouchScreenKeys[i].z;
-            var w = coorTouchScreenKeys[i].w;
+        if (i < coorTouchScreenKeys.length) 
+        {
+            var index, x, y, z, w;
+
+            if(coorTouchScreenKeys[i].hasOwnProperty("index")) 
+                index = coorTouchScreenKeys[i].index;
+            else 
+                continue;
+
+            if(coorTouchScreenKeys[i].hasOwnProperty("x")) 
+                x = coorTouchScreenKeys[i].x;
+            else 
+                continue;
+
+            if(coorTouchScreenKeys[i].hasOwnProperty("y")) 
+                y = coorTouchScreenKeys[i].y;
+            else 
+                continue;
+
+            if(coorTouchScreenKeys[i].hasOwnProperty("z")) 
+                z = coorTouchScreenKeys[i].z;
+            else 
+                continue;
+
+           if(coorTouchScreenKeys[i].hasOwnProperty("w")) 
+                w = coorTouchScreenKeys[i].w;
+            else 
+                continue;
+
             html += createCoordinateLineWithIndex("TouchScreenKey", x, y, z, w, index);
         }
-        if (i < coorAssistKeysPressed.length) {
-            var index = coorAssistKeysPressed[i].index;
-            var x = coorAssistKeysPressed[i].x;
-            var y = coorAssistKeysPressed[i].y;
-            var z = coorAssistKeysPressed[i].z;
-            var w = coorAssistKeysPressed[i].w;
-            html += createCoordinateLineWithIndex("coorTouchScreenKeysPressed", x, y, z, w, index);
+        if (i < coorTouchScreenKeysPressed.length) 
+        {
+            var index, x, y, z, w;
+
+            if(coorTouchScreenKeysPressed[i].hasOwnProperty("index")) 
+                index = coorTouchScreenKeysPressed[i].index;
+            else 
+                continue;
+
+            if(coorTouchScreenKeysPressed[i].hasOwnProperty("x")) 
+                x = coorTouchScreenKeysPressed[i].x;
+            else 
+                continue;
+
+            if(coorTouchScreenKeysPressed[i].hasOwnProperty("y")) 
+                y = coorTouchScreenKeysPressed[i].y;
+            else 
+                continue;
+
+            if(coorTouchScreenKeysPressed[i].hasOwnProperty("z")) 
+                z = coorTouchScreenKeysPressed[i].z;
+            else 
+                continue;
+
+            if(coorTouchScreenKeysPressed[i].hasOwnProperty("w")) 
+                w = coorTouchScreenKeysPressed[i].w;
+            else 
+                continue;
+
+            html += createCoordinateLineWithIndex("TouchScreenKeyPressed", x, y, z, w, index);
         }
     }
 
@@ -663,7 +709,7 @@ function saveCoordinate() {
         case "smartCardReaderGate":
         case "pedKeyGate":
         case "softKeyGate":
-        case "touchScreenGate":
+        case "touchScreenKeyGate":
         case "assistKeyGate":
         case "contactlessReader":
         case "contactlessReaderGate":
@@ -678,7 +724,7 @@ function saveCoordinate() {
         case "pedKey":
         case "softKey":
         case "assistKey":
-        case "touchScreenKey:":
+        case "touchScreenKey":
             {
                 var keyUp = document.getElementById("coordinate_keyState_0").checked;
                 var keyDown = document.getElementById("coordinate_keyState_1").checked;
@@ -709,7 +755,7 @@ function saveCoordinate() {
             break;
 
         default:
-            alert("unknown coordinate type");
+            alert("unknown coordinate type: " + selectedRadio.coordinateType);
             return;
     }
 
