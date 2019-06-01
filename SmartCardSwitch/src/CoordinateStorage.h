@@ -15,6 +15,7 @@ class CoordinateStorage
 public:
 	CoordinateStorage(std::string filePathName);
 	bool PersistToFile();
+	void ReloadCoordinate();
 
 	enum Type
 	{

@@ -2536,6 +2536,8 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 
 	pLogger->LogInfo("UserCommandRunner::RunCommand parse command: ====== " + jsonCmd);
 
+	pCoordinateStorage->ReloadCoordinate();
+
 //	if(_deviceHomePositioned == false) {
 //		errorInfo = ErrorDeviceNotHomePositioned;
 //		pLogger->LogError("UserCommandRunner::RunCommand device not home positioned, denied: " + jsonCmd);

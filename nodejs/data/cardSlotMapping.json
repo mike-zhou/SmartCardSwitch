@@ -1,76 +1,300 @@
-[{
-	"name": "General",
-	"active": true,
-	"mapping": [{
-		"cardName": "Test Card 07",
-		"slotNumber": 0
+[
+	{
+		"name": "General",
+		"active": true,
+		"mapping": [
+			{
+				"cardName": "card 0",
+				"slotNumber": 0
+			},
+			{
+				"cardName": "card 1",
+				"slotNumber": 1
+			},
+			{
+				"cardName": "card 2",
+				"slotNumber": 2
+			},
+			{
+				"cardName": "card 3",
+				"slotNumber": 3
+			},
+			{
+				"cardName": "card 4",
+				"slotNumber": 4
+			},
+			{
+				"cardName": "card 5",
+				"slotNumber": 5
+			},
+			{
+				"cardName": "card 6",
+				"slotNumber": 6
+			},
+			{
+				"cardName": "card 7",
+				"slotNumber": 7
+			},
+			{
+				"cardName": "card 8",
+				"slotNumber": 8
+			},
+			{
+				"cardName": "card 9",
+				"slotNumber": 9
+			},
+			{
+				"cardName": "card 10",
+				"slotNumber": 10
+			},
+			{
+				"cardName": "card 11",
+				"slotNumber": 11
+			},
+			{
+				"cardName": "card 12",
+				"slotNumber": 12
+			},
+			{
+				"cardName": "card 13",
+				"slotNumber": 13
+			},
+			{
+				"cardName": "card 14",
+				"slotNumber": 14
+			},
+			{
+				"cardName": "card 15",
+				"slotNumber": 15
+			},
+			{
+				"cardName": "card 16",
+				"slotNumber": 16
+			},
+			{
+				"cardName": "card 17",
+				"slotNumber": 17
+			},
+			{
+				"cardName": "card 18",
+				"slotNumber": 18
+			},
+			{
+				"cardName": "card 19",
+				"slotNumber": 19
+			},
+			{
+				"cardName": "card 20",
+				"slotNumber": 20
+			},
+			{
+				"cardName": "card 21",
+				"slotNumber": 21
+			},
+			{
+				"cardName": "card 22",
+				"slotNumber": 22
+			},
+			{
+				"cardName": "card 23",
+				"slotNumber": 23
+			},
+			{
+				"cardName": "card 24",
+				"slotNumber": 24
+			},
+			{
+				"cardName": "card 25",
+				"slotNumber": 25
+			},
+			{
+				"cardName": "card 26",
+				"slotNumber": 26
+			},
+			{
+				"cardName": "card 27",
+				"slotNumber": 27
+			},
+			{
+				"cardName": "card 28",
+				"slotNumber": 28
+			},
+			{
+				"cardName": "card 29",
+				"slotNumber": 29
+			},
+			{
+				"cardName": "card 30",
+				"slotNumber": 30
+			},
+			{
+				"cardName": "card 31",
+				"slotNumber": 31
+			},
+			{
+				"cardName": "card 32",
+				"slotNumber": 32
+			},
+			{
+				"cardName": "card 33",
+				"slotNumber": 33
+			},
+			{
+				"cardName": "card 34",
+				"slotNumber": 34
+			},
+			{
+				"cardName": "card 35",
+				"slotNumber": 35
+			},
+			{
+				"cardName": "card 36",
+				"slotNumber": 36
+			},
+			{
+				"cardName": "card 37",
+				"slotNumber": 37
+			},
+			{
+				"cardName": "card 38",
+				"slotNumber": 38
+			},
+			{
+				"cardName": "card 39",
+				"slotNumber": 39
+			},
+			{
+				"cardName": "card 40",
+				"slotNumber": 40
+			},
+			{
+				"cardName": "card 41",
+				"slotNumber": 41
+			},
+			{
+				"cardName": "card 42",
+				"slotNumber": 42
+			},
+			{
+				"cardName": "card 43",
+				"slotNumber": 43
+			},
+			{
+				"cardName": "card 44",
+				"slotNumber": 44
+			},
+			{
+				"cardName": "card 45",
+				"slotNumber": 45
+			},
+			{
+				"cardName": "card 46",
+				"slotNumber": 46
+			},
+			{
+				"cardName": "card 47",
+				"slotNumber": 47
+			},
+			{
+				"cardName": "card 48",
+				"slotNumber": 48
+			},
+			{
+				"cardName": "card 49",
+				"slotNumber": 49
+			},
+			{
+				"cardName": "card 50",
+				"slotNumber": 50
+			},
+			{
+				"cardName": "card 51",
+				"slotNumber": 51
+			},
+			{
+				"cardName": "card 52",
+				"slotNumber": 52
+			},
+			{
+				"cardName": "card 53",
+				"slotNumber": 53
+			},
+			{
+				"cardName": "card 54",
+				"slotNumber": 54
+			},
+			{
+				"cardName": "card 55",
+				"slotNumber": 55
+			},
+			{
+				"cardName": "card 56",
+				"slotNumber": 56
+			},
+			{
+				"cardName": "card 57",
+				"slotNumber": 57
+			},
+			{
+				"cardName": "card 58",
+				"slotNumber": 58
+			},
+			{
+				"cardName": "card 59",
+				"slotNumber": 59
+			}
+		]
 	},
 	{
-		"cardName": "Smart Card 1",
-		"slotNumber": 1
+		"name": "Sepecific mapping 1",
+		"active": false,
+		"mapping": [
+			{
+				"cardName": "Test Card 07",
+				"slotNumber": 0
+			},
+			{
+				"cardName": "Smart Card 1",
+				"slotNumber": 1
+			},
+			{
+				"cardName": "Meganetic Card 2",
+				"slotNumber": 1
+			},
+			{
+				"cardName": "Contactless Card 3",
+				"slotNumber": 1
+			},
+			{
+				"cardName": "Barcode 1",
+				"slotNumber": 1
+			}
+		]
 	},
 	{
-		"cardName": "Meganetic Card 2",
-		"slotNumber": 2
-	},
-	{
-		"cardName": "Contactless Card 3",
-		"slotNumber": 3
-	},
-	{
-		"cardName": "Barcode 1",
-		"slotNumber": 4
-	},
-	{
-		"cardName": "card 1",
-		"slotNumber": 0
-	}]
-},
-{
-	"name": "Sepecific mapping 1",
-	"active": false,
-	"mapping": [{
-		"cardName": "Test Card 07",
-		"slotNumber": 0
-	},
-	{
-		"cardName": "Smart Card 1",
-		"slotNumber": 1
-	},
-	{
-		"cardName": "Meganetic Card 2",
-		"slotNumber": 1
-	},
-	{
-		"cardName": "Contactless Card 3",
-		"slotNumber": 1
-	},
-	{
-		"cardName": "Barcode 1",
-		"slotNumber": 1
-	}]
-},
-{
-	"name": "Sepecific mapping 2",
-	"active": false,
-	"mapping": [{
-		"cardName": "Test Card 07",
-		"slotNumber": 1
-	},
-	{
-		"cardName": "Smart Card 1",
-		"slotNumber": 1
-	},
-	{
-		"cardName": "Meganetic Card 2",
-		"slotNumber": 1
-	},
-	{
-		"cardName": "Contactless Card 3",
-		"slotNumber": 1
-	},
-	{
-		"cardName": "Barcode 1",
-		"slotNumber": 1
-	}]
-}]
+		"name": "Sepecific mapping 2",
+		"active": false,
+		"mapping": [
+			{
+				"cardName": "Test Card 07",
+				"slotNumber": 1
+			},
+			{
+				"cardName": "Smart Card 1",
+				"slotNumber": 1
+			},
+			{
+				"cardName": "Meganetic Card 2",
+				"slotNumber": 1
+			},
+			{
+				"cardName": "Contactless Card 3",
+				"slotNumber": 1
+			},
+			{
+				"cardName": "Barcode 1",
+				"slotNumber": 1
+			}
+		]
+	}
+]

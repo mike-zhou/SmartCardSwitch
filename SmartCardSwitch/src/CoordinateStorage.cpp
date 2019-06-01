@@ -21,10 +21,15 @@
 
 extern Logger * pLogger;
 
+
 CoordinateStorage::CoordinateStorage(std::string filePathName)
 {
 	_filePathName = filePathName;
+	ReloadCoordinate();
+}
 
+void CoordinateStorage::ReloadCoordinate()
+{
 	_smartCardSlowlyPlaceStart = -1;
 	_smartCardSlowlyPlaceEnd = -1;
 	_smartCardFetchOffset = -1;
@@ -41,6 +46,17 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 	_home.y = 0;
 	_home.z = 0;
 	_home.w = 0;
+
+	_smartCards.clear();
+	_pedKeys.clear();
+	_pedKeysPressed.clear();
+	_softKeys.clear();
+	_softKeysPressed.clear();
+	_touchScreenKeys.clear();
+	_touchScreenKeysPressed.clear();
+	_assistKeys.clear();
+	_assistKeysPressed.clear();
+	_smartCardOffsets.clear();
 
 	if(_filePathName.empty()) {
 		pLogger->LogError("CoordinateStorage::CoordinateStorage empty file path & name");
