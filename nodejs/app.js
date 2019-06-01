@@ -642,6 +642,70 @@ function onTouchScreen(request, response)
     });
 }
 
+function onAdjustStepperW(request, response)
+{
+    appLog("onAdjustStepperW");
+    let command = [];
+    
+    request.on('data', (chunk) => {
+        command.push(chunk);
+    }).on('end', () => {
+        command = Buffer.concat(command).toString();
+        appLog("onAdjustStepperW " + request.url + " : " + command);
+
+        var cmd = JSON.parse(command);
+
+        //direct the command to SCS
+        if(cmd.command === "pullUpCard") 
+        {
+            var scsCommand = {};
+            
+            scsCommand["userCommand"] = "pull up smart card";
+            scsCommand["commandId"] = newCommandId();
+            scsCommand["smartCardNumber"] = cmd.index;
+
+            sendSCSCommand(JSON.stringify(scsCommand), response);
+        }
+        else if(cmd.command === "setOffset") 
+        {
+            var scsCommand = {};
+            
+            scsCommand["userCommand"] = "adjust stepper w";
+            scsCommand["commandId"] = newCommandId();
+            scsCommand["adjustment"] = cmd.offset;
+
+            sendSCSCommand(JSON.stringify(scsCommand), response);
+        }
+        else if(cmd.command === "putBackCard") 
+        {
+            var scsCommand = {};
+            
+            scsCommand["userCommand"] = "put back smart card";
+            scsCommand["commandId"] = newCommandId();
+            scsCommand["smartCardNumber"] = cmd.index;
+
+            sendSCSCommand(JSON.stringify(scsCommand), response);
+        }
+        else if(cmd.command === "finish") 
+        {
+            var scsCommand = {};
+            
+            scsCommand["userCommand"] = "finish stepper w adjustment";
+            scsCommand["commandId"] = newCommandId();
+
+            sendSCSCommand(JSON.stringify(scsCommand), response);
+        }
+        else
+        {
+            appLog("onAdjustStepperW unsupported command: " + command);
+            response.statusCode = 400;
+            response.setHeader('Content-Type', 'text/plain');
+            response.write("onAdjustStepperW unsupported command: " + command);
+            response.end();
+        }
+    });   
+}
+
 function onHttpRequest(request, response) 
 {
     appLog("onHttpRequest: " + request.url);
@@ -684,6 +748,8 @@ function onHttpRequest(request, response)
         onSaveTouchScreenMappings(request, response);
     } else if (url === "/touchScreen") {
         onTouchScreen(request, response);
+    } else if (url === "/adjustStepperW") {
+        onAdjustStepperW(request, response);
     } else if (url === "/") {
         onDefaultPage(request, response);
     } else if (url.indexOf("/subPages/") === 0) {

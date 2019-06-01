@@ -122,20 +122,18 @@ public:
  * {
  * 	"userCommand":"adjust stepper w",
  * 	"commandId":uniqueCommandId",
- * 	"smartCardNumber":0,
  * 	"adjustment":0
- * }
- *
- * {
- * 	"userCommand":"finish stepper w adjustment"
- * 	"commandId":uniqueCommandId",
- * 	"smartCardNumber":0
  * }
  *
  * {
  * 	"userCommand":"put back smart card",
  * 	"commandId":uniqueCommandId",
  * 	"smartCardNumber":0
+ * }
+ *
+ * {
+ * 	"userCommand":"finish stepper w adjustment"
+ * 	"commandId":uniqueCommandId",
  * }
  *
  * {

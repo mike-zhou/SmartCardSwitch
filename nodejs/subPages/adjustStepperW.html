@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Card Slot Mapping</title>
+    <link rel="stylesheet" href="/css/scs.css">
+</head>
+
+<body onclick="onElementClicked()">
+    <h2>Please adjust stepper W in the following sequence:</h2>
+    <p>
+        1. Pull up smart card 0: 
+        <button id="adjustStepperW_pullUpSmartCard"> Pull Up </button>
+    </p>
+
+    <p>
+        2. Adjust stepper W offset: 
+        <button id="adjustStepperW_decreaseOffset"> - </button>
+        <label id="adjustStepperW_offsest"> 0 </label>
+        <button id="adjustStepperW_increaseOffset"> + </button>
+    </p>
+
+    <p>
+        3. Put back smart card 0:
+        <button id="adjustStepperW_putBackSmartCard"> Put Back </button>
+    </p>
+
+    <p>
+        4. Finish stepper W adjusting: <button id="adjustStepperW_finish"> Finish </button>
+    </p>
+
+    <script src="/scripts/adjustStepperW.js"></script>
+</body>
+
+</html>
