@@ -438,8 +438,7 @@ void UserCommandRunner::parseUserCmdAjustStepperW(Poco::DynamicStruct& ds)
 
 void UserCommandRunner::parseUserCmdFinishStepperWAdjustment(Poco::DynamicStruct& ds)
 {
-	_userCommand.wAdjusted = true;
-	parseUserCmdSmartCard(ds);
+	//nothing is done here
 }
 
 
@@ -476,9 +475,6 @@ void UserCommandRunner::executeUserCmdFinishStepperWAdjustment()
 
 void UserCommandRunner::executeUserCmdPutBackSmartCard()
 {
-	smartCardReader_gate_withCard();
-	toSmartCardGate();
-	moveSmartCardCarriage(_userCommand.smartCardNumber);
 	gate_smartCard_withCard(_userCommand.smartCardNumber);
 	openClamp();
 	smartCard_gate_withoutCard(_userCommand.smartCardNumber);
