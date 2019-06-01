@@ -429,6 +429,62 @@ void UserCommandRunner::executeUserCmdResetDevice()
 	}
 }
 
+
+void UserCommandRunner::parseUserCmdAjustStepperW(Poco::DynamicStruct& ds)
+{
+	_userCommand.wAdjustment = ds["adjustment"];
+
+}
+
+void UserCommandRunner::parseUserCmdFinishStepperWAdjustment(Poco::DynamicStruct& ds)
+{
+	_userCommand.wAdjusted = true;
+	parseUserCmdSmartCard(ds);
+}
+
+
+void UserCommandRunner::executeUserCmdPullUpSmartCard()
+{
+	toSmartCardGate();
+	openClamp();
+	moveSmartCardCarriage(_userCommand.smartCardNumber);
+	pushUpSmartCardArm();
+	gate_smartCard_withoutCard(_userCommand.smartCardNumber);
+	closeClamp();
+	pullDownSmartCardArm();
+	releaseSmartCardArm();
+	smartCard_gate_withCard(_userCommand.smartCardNumber);
+}
+
+void UserCommandRunner::executeUserCmdAdjustStepperW()
+{
+	int curW = currentW();
+	int x, y, z, w;
+
+	pLogger->LogInfo("UserCommandRunner::executeUserCmdAdjustStepperW adjustment: " + std::to_string(_userCommand.wAdjustment));
+	pCoordinateStorage->SetWAdjustment(_userCommand.wAdjustment);
+	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
+
+	moveStepperW(curW, w);
+}
+
+void UserCommandRunner::executeUserCmdFinishStepperWAdjustment()
+{
+	pLogger->LogInfo("UserCommandRunner::executeUserCmdFinishStepperWAdjustment stepperW adjustment finished");
+	_userCommand.wAdjusted = true;
+}
+
+void UserCommandRunner::executeUserCmdPutBackSmartCard()
+{
+	smartCardReader_gate_withCard();
+	toSmartCardGate();
+	moveSmartCardCarriage(_userCommand.smartCardNumber);
+	gate_smartCard_withCard(_userCommand.smartCardNumber);
+	openClamp();
+	smartCard_gate_withoutCard(_userCommand.smartCardNumber);
+	releaseClamp();
+}
+
 void UserCommandRunner::parseUserCmdSmartCard(Poco::DynamicStruct& ds)
 {
 	unsigned int number = ds["smartCardNumber"];
@@ -2576,6 +2632,24 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		else if(_userCommand.command == UserCmdResetDevice) {
 			parseUserCmdResetDevice(ds);
 		}
+		else if(_userCommand.command == UserCmdPullUpSmartCard) {
+			parseUserCmdSmartCard(ds);
+		}
+		else if(_userCommand.command == UserCmdAdjustStepperW) {
+			parseUserCmdAjustStepperW(ds);
+		}
+		else if(_userCommand.command == UsesrCmdPutBackSmartCard) {
+			parseUserCmdSmartCard(ds);
+		}
+		else if(_userCommand.command == UserCmdFinishStepperWAdjustment) {
+			parseUserCmdFinishStepperWAdjustment(ds);
+		}
+		//stop other command if stepper w hasn't been adjusted.
+		else if(_userCommand.wAdjusted == false) {
+			errorInfo = ErrorStepperWNotAdjusted;
+			pLogger->LogError("UserCommandRunner::RunCommand " + errorInfo);
+			return;
+		}
 		else if(_userCommand.command == UserCmdInsertSmartCard) {
 			parseUserCmdSmartCard(ds);
 		}
@@ -3671,6 +3745,18 @@ void UserCommandRunner::runTask()
 				}
 				else if(_userCommand.command == UserCmdResetDevice) {
 					executeUserCmdResetDevice();
+				}
+				else if(_userCommand.command == UserCmdPullUpSmartCard) {
+					executeUserCmdPullUpSmartCard();
+				}
+				else if(_userCommand.command == UserCmdAdjustStepperW) {
+					executeUserCmdAdjustStepperW();
+				}
+				else if(_userCommand.command == UsesrCmdPutBackSmartCard) {
+					executeUserCmdPutBackSmartCard();
+				}
+				else if(_userCommand.command == UserCmdFinishStepperWAdjustment) {
+					executeUserCmdFinishStepperWAdjustment();
 				}
 				else if(_userCommand.command == UserCmdInsertSmartCard)
 				{

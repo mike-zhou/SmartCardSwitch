@@ -25,7 +25,18 @@ extern Logger * pLogger;
 CoordinateStorage::CoordinateStorage(std::string filePathName)
 {
 	_filePathName = filePathName;
+	_wAdjustment = 0;
 	ReloadCoordinate();
+}
+
+int CoordinateStorage::GetWAdjustment()
+{
+	return _wAdjustment;
+}
+
+void CoordinateStorage::SetWAdjustment(int adjustment)
+{
+	_wAdjustment = adjustment;
 }
 
 void CoordinateStorage::ReloadCoordinate()
@@ -1088,7 +1099,7 @@ bool CoordinateStorage::GetCoordinate(Type type,
 		x = value.x;
 		y = value.y;
 		z = value.z;
-		w = value.w;
+		w = value.w + _wAdjustment;
 	}
 
 	return rc;

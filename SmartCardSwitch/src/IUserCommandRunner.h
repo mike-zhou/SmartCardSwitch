@@ -17,6 +17,10 @@ public:
 	const std::string UserCmdCheckResetPressed = "check reset pressed";
 	const std::string UserCmdCheckResetReleased = "check reset released";
 	const std::string UserCmdResetDevice = "reset device";
+	const std::string UserCmdPullUpSmartCard = "pull up smart card";
+	const std::string UserCmdAdjustStepperW = "adjust stepper w";
+	const std::string UserCmdFinishStepperWAdjustment = "finish stepper w adjustment";
+	const std::string UsesrCmdPutBackSmartCard = "put back smart card";
 	const std::string UserCmdInsertSmartCard = "insert smart card";
 	const std::string UserCmdRemoveSmartCard = "remove smart card";
 	const std::string UserCmdSwipeSmartCard = "swipe smart card";
@@ -39,6 +43,7 @@ public:
 	const std::string ErrorDeviceNotHomePositioned = "device hasn't been home positioned";
 	const std::string ErrorUserCommandOnGoing = "a user command is running";
 	const std::string ErrorInvalidJsonUserCommand = "user command cannot be parsed";
+	const std::string ErrorStepperWNotAdjusted = "stepper W hasn't been adjusted";
 	const std::string ErrorUnSupportedCommand = "command is not supported";
 	const std::string ErrorFailedExpandingConnectDevice = "failed in expanding connect device";
 	const std::string ErrorFailedExpandingCheckResetPressed = "failed in expanding check reset pressed";
@@ -106,6 +111,31 @@ public:
  * 	"userCommand":"power off dcm",
  * 	"commandId":"uniqueCommandId",
  * 	"index":0
+ * }
+ *
+ * {
+ * 	"userCommand":"pull up smart card",
+ * 	"commandId":uniqueCommandId",
+ * 	"smartCardNumber":0
+ * }
+ *
+ * {
+ * 	"userCommand":"adjust stepper w",
+ * 	"commandId":uniqueCommandId",
+ * 	"smartCardNumber":0,
+ * 	"adjustment":0
+ * }
+ *
+ * {
+ * 	"userCommand":"finish stepper w adjustment"
+ * 	"commandId":uniqueCommandId",
+ * 	"smartCardNumber":0
+ * }
+ *
+ * {
+ * 	"userCommand":"put back smart card",
+ * 	"commandId":uniqueCommandId",
+ * 	"smartCardNumber":0
  * }
  *
  * {

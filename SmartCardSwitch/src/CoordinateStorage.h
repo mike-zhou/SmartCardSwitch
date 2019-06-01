@@ -49,6 +49,9 @@ public:
 	unsigned int TouchScreenKeysAmount() { return _touchScreenKeys.size(); }
 	unsigned int AssistKeysAmount() { return _assistKeys.size(); }
 
+	int GetWAdjustment();
+	void SetWAdjustment(int adjustment);
+
 	bool SetCoordinate(Type type,
 					unsigned int x,
 					unsigned int y,
@@ -97,6 +100,8 @@ private:
 	const unsigned int SOFT_KEYS_AMOUNT = 8;
 	const unsigned int TOUCH_SCREEN_KEYS_AMOUNT = 64;
 	const unsigned int ASSIST_KEYS_AMOUNT = 9;
+
+	int _wAdjustment;
 
 	std::string _filePathName;
 
