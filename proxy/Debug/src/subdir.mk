@@ -9,9 +9,11 @@ CPP_SRCS += \
 ../src/CListener.cpp \
 ../src/CSocketManager.cpp \
 ../src/CommandTranslater.cpp \
+../src/LinuxComDevice.cpp \
 ../src/ProxyLogger.cpp \
 ../src/ReplyFactory.cpp \
 ../src/ReplyTranslater.cpp \
+../src/WinComDevice.cpp \
 ../src/proxy.cpp 
 
 OBJS += \
@@ -20,9 +22,11 @@ OBJS += \
 ./src/CListener.o \
 ./src/CSocketManager.o \
 ./src/CommandTranslater.o \
+./src/LinuxComDevice.o \
 ./src/ProxyLogger.o \
 ./src/ReplyFactory.o \
 ./src/ReplyTranslater.o \
+./src/WinComDevice.o \
 ./src/proxy.o 
 
 CPP_DEPS += \
@@ -31,9 +35,11 @@ CPP_DEPS += \
 ./src/CListener.d \
 ./src/CSocketManager.d \
 ./src/CommandTranslater.d \
+./src/LinuxComDevice.d \
 ./src/ProxyLogger.d \
 ./src/ReplyFactory.d \
 ./src/ReplyTranslater.d \
+./src/WinComDevice.d \
 ./src/proxy.d 
 
 

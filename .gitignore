@@ -5,3 +5,9 @@ RemoteSystemsTempFiles/
 proxy/Debug/proxy
 proxy/Release/proxy
 
+VC/Invenco/Debug/
+VC/Invenco/Logger/Debug/
+VC/Invenco/MsgPackager/Debug/
+VC/Invenco/SmartCardSwitch/Debug/
+VC/Invenco/proxy/Debug/
+VC/Invenco/.vs/
