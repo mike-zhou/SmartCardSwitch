@@ -76,7 +76,6 @@ static unsigned char UcharFromHex(unsigned char low4Bits, unsigned char high4Bit
 CDeviceManager::CDeviceManager() : Task("CDeviceManager")
 {
 	_pObserver = NULL;
-	_startMonitoringDevices = false;
 }
 
 CDeviceManager::~CDeviceManager() {
@@ -88,11 +87,6 @@ void CDeviceManager::SetObserver(IDeviceObserver * pObserver)
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	_pObserver = pObserver;
-}
-
-void CDeviceManager::StartMonitoringDevices()
-{
-	_startMonitoringDevices = true;
 }
 
 void CDeviceManager::SendCommand(const std::string& deviceName, const std::string& command)

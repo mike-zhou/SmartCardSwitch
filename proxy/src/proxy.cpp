@@ -187,8 +187,6 @@ protected:
 			tm.start(pListener);
 			tm.start(pMonitor);
 
-			pDeviceManager->StartMonitoringDevices();
-
 			waitForTerminationRequest();
 			//stop tasks
 			tm.cancelAll();

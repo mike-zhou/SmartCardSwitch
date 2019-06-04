@@ -35,7 +35,6 @@ public:
 	virtual ~CDeviceManager();
 
 	void SetObserver(IDeviceObserver * pObserver);
-	void StartMonitoringDevices();
 	void AddDeviceFile(const std::string & deviceFilePath);
 
 private:
@@ -63,8 +62,6 @@ private:
 	const long DATA_ACK_TIMEOUT = 200000; //200,000 microseconds
 	static const unsigned char INVALID_PACKET_ID = 0xFF;
 	static const unsigned char INITAL_PACKET_ID = 0; // this id is used only for the first packet after app starts.
-
-	bool _startMonitoringDevices;
 
 	enum InputStageState
 	{
