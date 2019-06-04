@@ -1,0 +1,71 @@
+@startuml
+participant CListener
+participant CSocketManager
+participant CDeviceManager
+participant ILowlevelDevice
+participant device
+
+note over CListener, ILowlevelDevice
+initialize
+endnote
+
+->CDeviceManager: AddDeviceFile
+
+note over CListener, ILowlevelDevice
+start threads
+endnote
+
+CDeviceManager -> ILowlevelDevice: create low level device object
+CDeviceManager -> ILowlevelDevice: launch low level device
+note over ILowlevelDevice
+low level device runs in a thread
+endnote
+
+CDeviceManager -> CDeviceManager: update timestamps of\nread and write periodically
+
+note over device
+no device
+endnote
+ILowlevelDevice -> ILowlevelDevice: check if device file exists
+activate ILowlevelDevice
+ILowlevelDevice -> CDeviceManager: DeviceNotConnected
+deactivate ILowlevelDevice
+
+note over device
+device is plugged
+endnote
+
+ILowlevelDevice -> ILowlevelDevice: check if device file exists
+activate ILowlevelDevice
+ILowlevelDevice -> CDeviceManager: DeviceConnected
+deactivate ILowlevelDevice
+
+ILowlevelDevice -> ILowlevelDevice: openDevice
+activate ILowlevelDevice
+ILowlevelDevice -> CDeviceManager: DeviceNormal
+deactivate ILowlevelDevice
+
+ILowlevelDevice -> ILowlevelDevice: sendData
+activate ILowlevelDevice
+ILowlevelDevice -> CDeviceManager: onLowLevelDeviceWritable
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: onDeviceCanBeWritten
+activate CDeviceManager
+CDeviceManager -> ILowlevelDevice: SendCommand
+deactivate CDeviceManager
+deactivate CDeviceManager
+ILowlevelDevice -> device: poll
+ILowlevelDevice -> device: write low level device
+deactivate ILowlevelDevice
+
+ILowlevelDevice -> ILowlevelDevice: receiveData
+activate ILowlevelDevice
+ILowlevelDevice -> device: poll
+ILowlevelDevice -> device: read
+ILowlevelDevice -> CDeviceManager: onLowlevelDeviceReply
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: onDeviceCanBeRead
+deactivate CDeviceManager
+deactivate ILowlevelDevice
+
+@enduml
