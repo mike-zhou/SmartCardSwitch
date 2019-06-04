@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 #include <fcntl.h>
-#include <unistd.h>
+#include <stdio.h>
 #include "Poco/File.h"
 #include "Poco/Path.h"
 #include "Poco/Exception.h"
@@ -42,7 +42,7 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 		std::string json;
 
 		//open storage file
-		int fd = open(_pathFileName.c_str(), O_RDONLY);
+		FILE * fd = fopen(_pathFileName.c_str(), "r");
 		if(fd < 0) {
 			pLogger->LogError("MovementConfiguration::MovementConfiguration cannot open file: " + _pathFileName);
 			return;
@@ -51,7 +51,7 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 		for(;;)
 		{
 			unsigned char c;
-			auto amount = read(fd, &c, 1);
+			auto amount = fread(&c, 1, 1, fd);
 			if(amount < 1) {
 				break;
 			}
@@ -60,7 +60,7 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 			}
 		}
 		//close file
-		close(fd);
+		fclose(fd);
 
 		if(json.empty()) {
 			pLogger->LogError("MovementConfiguration::MovementConfiguration nothing read from: " + _pathFileName);
@@ -185,25 +185,25 @@ bool MovementConfiguration::PersistToFile()
 	//write json string to file
 	try
 	{
-		int fd;
+		FILE * fd;
 		Poco::File storageFile(_pathFileName);
 
 		if(storageFile.exists()) {
 			storageFile.remove(false);
 		}
 
-		fd = open(_pathFileName.c_str(), O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-		if(fd >= 0)
+		fd = fopen(_pathFileName.c_str(), "w");
+		if(fd != NULL)
 		{
 			pLogger->LogInfo("MovementConfiguration::PersistToFile write " + std::to_string(json.size()) + " bytes to file " + _pathFileName);
-			auto amount = write(fd, json.c_str(), json.size());
+			auto amount = fwrite(json.c_str(), json.size(), 1, fd);
 			if(amount != json.size()) {
 				pLogger->LogError("MovementConfiguration::PersistToFile failure in writing: " + std::to_string(amount) + "/" + std::to_string(json.size()));
 			}
 			else {
 				rc = true;
 			}
-			close(fd);
+			fclose(fd);
 		}
 		else
 		{

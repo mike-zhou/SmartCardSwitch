@@ -994,7 +994,7 @@ const std::string& WebServer::GetDefaultPageContent()
 		{
 			std::string filePathName = pagePath.toString();
 
-			int fd = open(filePathName.c_str(), O_RDONLY);
+			FILE * fd = fopen(filePathName.c_str(), "r");
 			if(fd < 0) {
 				pLogger->LogError("WebServer::GetDefaultPageContent cannot open file: " + filePathName);
 			}
@@ -1003,7 +1003,7 @@ const std::string& WebServer::GetDefaultPageContent()
 				for(;;)
 				{
 					unsigned char c;
-					auto amount = read(fd, &c, 1);
+					auto amount = fread(&c, 1, 1, fd);
 					if(amount < 1) {
 						break;
 					}
@@ -1012,7 +1012,7 @@ const std::string& WebServer::GetDefaultPageContent()
 					}
 				}
 				//close file
-				close(fd);
+				fclose(fd);
 			}
 		}
 

@@ -19,7 +19,7 @@ public:
 
 	typedef unsigned long CommandId;
 
-	const CommandId InvalidCommandId = 0;
+	static const CommandId InvalidCommandId = 0;
 
 	enum class BdcStatus
 	{
