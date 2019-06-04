@@ -2037,6 +2037,10 @@ bool WebServer::StepperConfigForwardClockwise(unsigned int index, bool forwardCl
 	}
 
 	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
+
+	//not implemented in webserver yet.
+
+	return false;
 }
 
 bool WebServer::BdcForward(unsigned int index, std::string & errorInfo)
