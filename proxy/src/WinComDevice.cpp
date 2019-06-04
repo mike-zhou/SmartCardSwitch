@@ -91,8 +91,6 @@ void WinComDevice::runTask()
 
 bool WinComDevice::SendCommand(const std::vector<unsigned char> & command, std::string & info)
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-
 	info.clear();
 	if (_state == LowlevelDeviceState::DeviceNotConnected) {
 		info = DEVICE_NOT_CONNECTED;
@@ -163,11 +161,11 @@ void WinComDevice::openDevice()
 
 	COMMTIMEOUTS Cptimeouts;
 
-	Cptimeouts.ReadIntervalTimeout = MAXDWORD;
+	Cptimeouts.ReadIntervalTimeout = 0;
 	Cptimeouts.ReadTotalTimeoutMultiplier = 0;
-	Cptimeouts.ReadTotalTimeoutConstant = 0;
+	Cptimeouts.ReadTotalTimeoutConstant = 10; //10 milliseconds
 	Cptimeouts.WriteTotalTimeoutMultiplier = 0;
-	Cptimeouts.WriteTotalTimeoutConstant = 0;
+	Cptimeouts.WriteTotalTimeoutConstant = 1000; //1000 milliseconds
 
 	if (!SetCommTimeouts(_handle, &Cptimeouts))
 	{
@@ -183,16 +181,47 @@ void WinComDevice::openDevice()
 
 bool WinComDevice::receiveData()
 {
+	unsigned char buffer[1024];
+	DWORD amount;
+
+	//read until timeout
+	for (;;)
+	{
+		amount = 0;
+		auto rc = ReadFile(_handle, buffer, 1024, &amount, NULL);
+		if (rc)
+		{
+			if (amount > 0)
+			{
+				pLogger->LogInfo("WinComDevice::receiveData received " + std::to_string(amount) + " bytes");
+				for (unsigned int i = 0; i < amount; i++) {
+					_inputQueue.push_back(buffer[i]);
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+		else
+		{
+			auto errorCode = GetLastError();
+			pLogger->LogError("WinComDevice::receiveData error code: " + std::to_string(errorCode));
+			break;
+		}
+	}
+
 	if (!_inputQueue.empty()) {
 		//notify observer of the remaining data.
 		_pObserver->onLowlevelDeviceReply(_name, _inputQueue);
 	}
 
+	return true;
 }
 
 bool WinComDevice::sendData()
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	DWORD amount;
 
 	if (_outputQueue.empty()) {
 		_pObserver->onLowlevelDeviceWritable(_name, this); //ask for data from observer
@@ -208,9 +237,20 @@ bool WinComDevice::sendData()
 	}
 
 	//write data to device
+	auto rc = WriteFile(_handle, data.data(), data.size(), &amount, NULL);
+	if (rc)
+	{
+		pLogger->LogInfo("WinComDevice::sendData sent " + std::to_string(amount) + " bytes");
+		for (unsigned int i = 0; i < amount; i++) {
+			_outputQueue.pop_front();
+		}
+	}
+	else
+	{
+		auto errorCode = GetLastError();
+		pLogger->LogError("WinComDevice::sendData error code: " + std::to_string(errorCode));
+	}
 
-
-	_outputQueue.clear();
 	return true;
 }
 

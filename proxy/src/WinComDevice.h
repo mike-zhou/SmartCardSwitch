@@ -27,8 +27,6 @@ private:
 	const int WRITING_TIMEOUT = 1000; // 1000 milliseconds
 	const int READING_TIMEOUT = 10; // 10 milliseconds
 
-	Poco::Mutex _mutex;
-
 	HANDLE _handle;
 	bool _bExit;
 	LowlevelDeviceState _state;

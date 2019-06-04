@@ -269,7 +269,37 @@ std::string ReplyTranslater::optPowerOff(Poco::JSON::Object::Ptr& replyPtr)
 
 std::string ReplyTranslater::optQueryPower(Poco::JSON::Object::Ptr& replyPtr)
 {
+	std::string reply;
+	std::string strCmdId;
+	Poco::DynamicStruct ds = *replyPtr;
+	long commandId;
+	std::string error;
 
+	auto size = ds["params"].size();
+	if (size != 1) {
+		throw Poco::JSON::JSONException("ReplyTranslater::optQueryPower wrong parameter amount: " + std::to_string(size));
+	}
+
+	strCmdId = ds["params"][size - 1].toString();
+	commandId = getHexValue(strCmdId);
+
+	if (replyPtr->has("error")) {
+		error = ds["error"].toString();
+	}
+
+	reply = "{";
+	reply = reply + "\"command\":\"" + strCommandOptQueryPower + "\",";
+	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	if (!error.empty()) {
+		reply = reply + ",\"error\":\"" + error + "\"";
+		//"\"error\":\"invalid command\""
+		//"\"error\":\"too many parameters\""
+		//"\"error\":\"unknown command\""
+		//"\"error\":\"wrong parameter amount\""
+	}
+	reply += "}";
+
+	return reply;
 }
 
 std::string ReplyTranslater::dcmPowerOn(Poco::JSON::Object::Ptr& replyPtr)
@@ -354,7 +384,37 @@ std::string ReplyTranslater::dcmPowerOff(Poco::JSON::Object::Ptr& replyPtr)
 
 std::string ReplyTranslater::dcmQueryPower(Poco::JSON::Object::Ptr& replyPtr)
 {
+	std::string reply;
+	std::string strCmdId;
+	Poco::DynamicStruct ds = *replyPtr;
+	long commandId;
+	std::string error;
 
+	auto size = ds["params"].size();
+	if (size != 1) {
+		throw Poco::JSON::JSONException("ReplyTranslater::dcmQueryPower wrong parameter amount: " + std::to_string(size));
+	}
+
+	strCmdId = ds["params"][size - 1].toString();
+	commandId = getHexValue(strCmdId);
+
+	if (replyPtr->has("error")) {
+		error = ds["error"].toString();
+	}
+
+	reply = "{";
+	reply = reply + "\"command\":\"" + strCommandDcmQueryPower + "\",";
+	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	if (!error.empty()) {
+		reply = reply + ",\"error\":\"" + error + "\"";
+		//"\"error\":\"invalid command\""
+		//"\"error\":\"too many parameters\""
+		//"\"error\":\"unknown command\""
+		//"\"error\":\"wrong parameter amount\""
+	}
+	reply += "}";
+
+	return reply;
 }
 
 std::string ReplyTranslater::bdcsPowerOn(Poco::JSON::Object::Ptr& replyPtr)

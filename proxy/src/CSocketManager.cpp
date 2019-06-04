@@ -5,7 +5,6 @@
  *      Author: user1
  */
 
-#include <poll.h>
 #include <stddef.h>
 #include "Poco/Timespan.h"
 #include "Poco/Net/Socket.h"
