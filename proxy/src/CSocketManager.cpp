@@ -1017,7 +1017,6 @@ void CSocketManager::pollSockets()
 	using Poco::Net::Socket;
 	using Poco::Timespan;
 
-	std::vector<struct pollfd> fdVector;
 	Socket::SocketList readList, writeList, exceptionList;
 	Timespan zeroSpan;
 	Timespan timedSpan(10*1000); //10 ms
