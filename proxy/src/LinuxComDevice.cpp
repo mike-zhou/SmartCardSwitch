@@ -136,12 +136,12 @@ bool LinuxComDevice::receiveData()
 	}
 	if(rc < 0)
 	{
-		pLogger->LogError("LinuxComDevice::receiveData error in poll: " + _name + "errno: " + std::to_string(errorNumber));
+		pLogger->LogError("LinuxComDevice::receiveData error in poll: " + _name + " errno: " + std::to_string(errorNumber));
 		_state = LowlevelDeviceState::DeviceError;
 		return false;
 	}
-	if(desc.events & POLLERR) {
-		pLogger->LogError("LinuxComDevice::receiveData error in poll: " + _name + "errno: " + std::to_string(errorNumber));
+	if((desc.events & POLLERR) && (errorNumber > 0)) {
+		pLogger->LogError("LinuxComDevice::receiveData error in poll: " + _name + " errno: " + std::to_string(errorNumber));
 		_state = LowlevelDeviceState::DeviceError;
 		return false;
 	}
