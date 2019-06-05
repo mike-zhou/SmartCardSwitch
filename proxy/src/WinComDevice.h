@@ -19,6 +19,8 @@ private:
 private:
 	WinComDevice();
 
+	const unsigned int MAXIMUM_QUEUE_SIZE = 0xFFFF;
+
 	const std::string DEVICE_NOT_CONNECTED = "device not connected";
 	const std::string DEVICE_NOT_NORMAL = "device not normal";
 	const std::string DEVICE_ERROR = "device error";
@@ -30,7 +32,6 @@ private:
 	HANDLE _handle;
 	bool _bExit;
 	LowlevelDeviceState _state;
-	unsigned char _inputBuffer[1024];
 	std::deque<unsigned char> _inputQueue;
 	std::deque<unsigned char> _outputQueue;
 	Poco::Timestamp _timeLastWrite;

@@ -736,6 +736,7 @@ void CDeviceManager::onLowlevelDeviceWritable(const std::string & deviceName, IL
 	{
 		if(deviceName == it->fileName)
 		{
+			it->writeStamp.update();
 			onDeviceCanBeWritten(*it, pLowlevelDevice);
 			break;
 		}

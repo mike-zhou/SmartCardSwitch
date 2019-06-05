@@ -165,7 +165,7 @@ void WinComDevice::openDevice()
 	Cptimeouts.ReadTotalTimeoutMultiplier = 0;
 	Cptimeouts.ReadTotalTimeoutConstant = 10; //10 milliseconds
 	Cptimeouts.WriteTotalTimeoutMultiplier = 0;
-	Cptimeouts.WriteTotalTimeoutConstant = 1000; //1000 milliseconds
+	Cptimeouts.WriteTotalTimeoutConstant = 50; //50 milliseconds
 
 	if (!SetCommTimeouts(_handle, &Cptimeouts))
 	{
@@ -258,6 +258,10 @@ bool WinComDevice::sendData()
 	{
 		auto errorCode = GetLastError();
 		pLogger->LogError("WinComDevice::sendData error code: " + std::to_string(errorCode));
+		if (_outputQueue.size() > MAXIMUM_QUEUE_SIZE) {
+			pLogger->LogError("WinComDevice::sendData discard " + std::to_string(_outputQueue.size()) + " bytes");
+			_outputQueue.clear();
+		}
 	}
 
 	return true;
