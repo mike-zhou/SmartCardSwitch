@@ -71,9 +71,6 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="proxy_wrapper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\proxy\src\CDeviceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

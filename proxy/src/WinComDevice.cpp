@@ -193,10 +193,14 @@ bool WinComDevice::receiveData()
 		{
 			if (amount > 0)
 			{
+				std::string content;
+
 				pLogger->LogInfo("WinComDevice::receiveData received " + std::to_string(amount) + " bytes");
 				for (unsigned int i = 0; i < amount; i++) {
+					content.push_back(buffer[i]);
 					_inputQueue.push_back(buffer[i]);
 				}
+				pLogger->LogInfo("WinComDevice::receiveData << " + content);
 			}
 			else
 			{
@@ -240,10 +244,15 @@ bool WinComDevice::sendData()
 	auto rc = WriteFile(_handle, data.data(), data.size(), &amount, NULL);
 	if (rc)
 	{
-		pLogger->LogInfo("WinComDevice::sendData sent " + std::to_string(amount) + " bytes");
-		for (unsigned int i = 0; i < amount; i++) {
+		std::string content;
+		pLogger->LogInfo("WinComDevice::sendData wrote " + std::to_string(amount) + " bytes");
+		for (unsigned int i = 0; i < amount; i++) 
+		{
+			unsigned char c = _outputQueue[0];
+			content.push_back(c);
 			_outputQueue.pop_front();
 		}
+		pLogger->LogInfo("WinComDevice::sendData >> " + content);
 	}
 	else
 	{

@@ -539,7 +539,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device, ILowlevelDevice
 			if(pLowlevelDevice->SendCommand(dataVct, errInfo))
 			{
 				stage.sendingIndex = PACKET_SIZE;
-				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten wrote " + std::to_string(PACKET_SIZE) + " bytes to " + device.fileName);
+				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten write " + std::to_string(PACKET_SIZE) + " bytes to " + device.fileName);
 			}
 			else {
 				pLogger->LogError("CDeviceManager::onDeviceCanBeWritten failed in writing " + device.fileName + ", errInfo: " + errInfo);
@@ -959,6 +959,10 @@ bool CDeviceManager::DataOutputStage::SendAcknowledgment(unsigned char packetId)
 	return true;
 }
 
+/**
+* retrieve data from the head of dataQueue,
+* package it and put the package to sending buffer
+*/
 void CDeviceManager::DataOutputStage::SendData(std::deque<char>& dataQueue)
 {
 	if(state != OUTPUT_IDLE) {
