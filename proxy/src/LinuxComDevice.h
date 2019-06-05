@@ -28,8 +28,8 @@ private:
 	const std::string DEVICE_NOT_ACCEPT_FURTHER_DATA = "device not accept further data";
 	const std::string EMPTY_COMMAND = "empty command";
 
-	const unsigned int WRITING_TIMEOUT = 1000000; // 1000 microseconds
-	const unsigned int READING_TIMEOUT = 10000; // 10 microseconds
+	const unsigned int WRITING_TIMEOUT = 50; // 50 milliseconds
+	const unsigned int READING_TIMEOUT = 10; // 10 milliseconds
 
 	Poco::Mutex _mutex;
 
@@ -39,7 +39,6 @@ private:
 	unsigned char _inputBuffer[1024];
 	std::deque<unsigned char> _inputQueue;
 	std::deque<unsigned char> _outputQueue;
-	Poco::Timestamp _timeLastWrite;
 
 	void openDevice();
 	bool receiveData();

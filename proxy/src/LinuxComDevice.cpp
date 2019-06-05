@@ -113,7 +113,6 @@ void LinuxComDevice::openDevice()
 	}
 
 	pLogger->LogInfo("LinuxComDevice::openDevice file is opened: " + _name);
-	_timeLastWrite.update();
 	_state = LowlevelDeviceState::DeviceNormal;
 }
 
@@ -159,9 +158,15 @@ bool LinuxComDevice::receiveData()
 	}
 	else if(amount > 0)
 	{
+		std::string content;
+
 		for(unsigned int i=0; i<amount; i++) {
 			_inputQueue.push_back(_inputBuffer[i]);
+			content.push_back((_inputBuffer[i]));
 		}
+		pLogger->LogInfo("LinuxComDevice::receiveData received " + std::to_string(amount) + " bytes");
+		pLogger->LogInfo("LinuxComDevice::receiveData << " + content);
+
 		_pObserver->onLowlevelDeviceReply(_name, _inputQueue);
 	}
 
@@ -209,11 +214,11 @@ bool LinuxComDevice::sendData()
 			_state = LowlevelDeviceState::DeviceError;
 			return false;
 		}
-//		if(desc.events & POLLERR) {
-//			pLogger->LogError("LinuxComDevice::sendData error in events: " + _name + " errno: " + std::to_string((int)errorNumber));
-//			_state = LowlevelDeviceState::DeviceError;
-//			return false;
-//		}
+		if((desc.events & POLLERR) && (errorNumber > 0)) {
+			pLogger->LogError("LinuxComDevice::sendData error in events: " + _name + " errno: " + std::to_string((int)errorNumber));
+			_state = LowlevelDeviceState::DeviceError;
+			return false;
+		}
 
 		if(desc.events & POLLOUT)
 		{
@@ -229,22 +234,16 @@ bool LinuxComDevice::sendData()
 			else if(amount > 0)
 			{
 				std::string info;
-				pLogger->LogInfo("LinuxComDevice::sendData sent " + std::to_string(amount) + " bytes to " + _name);
+				pLogger->LogInfo("LinuxComDevice::sendData wrote " + std::to_string(amount) + " bytes to " + _name);
 				for(int i=0; i<amount; i++) {
 					info.push_back(data[i]);
 				}
-				pLogger->LogInfo("LinuxComDevice::sendData: " + info);
-				_timeLastWrite.update();
+				pLogger->LogInfo("LinuxComDevice::sendData >> " + info);
 			}
 			else if(amount == 0)
 			{
-				pLogger->LogError("LinuxComDevice::sendData failed in writting device: " + _name);
+				pLogger->LogError("LinuxComDevice::sendData failed in writing device: " + _name);
 			}
-		}
-
-		if(_timeLastWrite.elapsed() > WRITING_TIMEOUT) {
-			pLogger->LogError("LinuxComDevice::sendData device not accept data: " + _name);
-			_timeLastWrite.update();
 		}
 	}
 
@@ -355,10 +354,6 @@ bool LinuxComDevice::SendCommand(const std::vector<unsigned char> & command, std
 	if(_outputQueue.size() > MAX_OUTPUT_QUEUE_SIZE) {
 		info = DEVICE_NOT_ACCEPT_FURTHER_DATA;
 		return false;
-	}
-
-	if(_outputQueue.empty()) {
-		_timeLastWrite.update();
 	}
 
 	for (unsigned int i = 0; i < command.size(); i++) {
