@@ -3,7 +3,7 @@
 		"gate": {
 			"x": 84,
 			"y": 36,
-			"z": 1280,
+			"z": 1440,
 			"w": 152
 		},
 		"cards": [
@@ -815,7 +815,7 @@
 		"gate": {
 			"x": 2084,
 			"y": 36,
-			"z": 1280,
+			"z": 1440,
 			"w": 353
 		},
 		"keys": [
@@ -995,7 +995,7 @@
 		"gate": {
 			"x": 404,
 			"y": 868,
-			"z": 1280,
+			"z": 1440,
 			"w": 356
 		},
 		"reader": {
@@ -1025,7 +1025,7 @@
 		"z": -1,
 		"w": -1
 	},
-	"smartCardSlowlyPlaceStart": 1280,
+	"smartCardSlowlyPlaceStart": 1440,
 	"smartCardSlowlyPlaceEnd": 1056,
 	"smartCardFetchOffset": 32,
 	"smartCardReleaseOffset": -1,
