@@ -197,7 +197,7 @@ bool MovementConfiguration::PersistToFile()
 		{
 			pLogger->LogInfo("MovementConfiguration::PersistToFile write " + std::to_string(json.size()) + " bytes to file " + _pathFileName);
 			auto amount = fwrite(json.c_str(), json.size(), 1, fd);
-			if(amount != json.size()) {
+			if(amount != 1) {
 				pLogger->LogError("MovementConfiguration::PersistToFile failure in writing: " + std::to_string(amount) + "/" + std::to_string(json.size()));
 			}
 			else {

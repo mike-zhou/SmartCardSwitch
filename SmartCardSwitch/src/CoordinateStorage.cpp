@@ -524,7 +524,7 @@ bool CoordinateStorage::PersistToFile()
 		{
 			pLogger->LogInfo("CoordinateStorage::PersistToFile write " + std::to_string(json.size()) + " bytes to file " + _filePathName);
 			auto amount = fwrite(json.c_str(), json.size(), 1, fd);
-			if(amount != json.size()) {
+			if(amount != 1) {
 				pLogger->LogError("CoordinateStorage::PersistToFile failure in writing: " + std::to_string(amount) + "/" + std::to_string(json.size()));
 			}
 			else {
