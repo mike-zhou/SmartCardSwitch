@@ -28,7 +28,7 @@ no device
 endnote
 ILowlevelDevice -> ILowlevelDevice: check if device file exists
 activate ILowlevelDevice
-ILowlevelDevice -> CDeviceManager: DeviceNotConnected
+ILowlevelDevice -> CDeviceManager: onLowlevelDeviceState(DeviceNotConnected)
 deactivate ILowlevelDevice
 
 note over device
@@ -37,13 +37,103 @@ endnote
 
 ILowlevelDevice -> ILowlevelDevice: check if device file exists
 activate ILowlevelDevice
-ILowlevelDevice -> CDeviceManager: DeviceConnected
+ILowlevelDevice -> CDeviceManager: onLowlevelDeviceState(DeviceConnected)
 deactivate ILowlevelDevice
 
 ILowlevelDevice -> ILowlevelDevice: openDevice
 activate ILowlevelDevice
-ILowlevelDevice -> CDeviceManager: DeviceNormal
+ILowlevelDevice -> CDeviceManager: onLowlevelDeviceState(DeviceNormal)
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: DeviceState::OPENED
+deactivate CDeviceManager
 deactivate ILowlevelDevice
+
+note over CDeviceManager
+start initializing device
+endnote
+
+ILowlevelDevice -> ILowlevelDevice: sendData
+activate ILowlevelDevice
+ILowlevelDevice -> CDeviceManager: onLowLevelDeviceWritable
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: onDeviceCanBeWritten
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: enque 0x0D
+CDeviceManager -> CDeviceManager: DeviceState::CLEARING_BUFFER
+CDeviceManager -> ILowlevelDevice: SendCommand
+deactivate CDeviceManager
+deactivate CDeviceManager
+ILowlevelDevice -> device: poll
+ILowlevelDevice -> device: write low level device
+deactivate ILowlevelDevice
+
+ILowlevelDevice -> ILowlevelDevice: sendData
+activate ILowlevelDevice
+ILowlevelDevice -> CDeviceManager: onLowLevelDeviceWritable
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: onDeviceCanBeWritten
+activate CDeviceManager
+CDeviceManager -> ILowlevelDevice: SendCommand
+deactivate CDeviceManager
+deactivate CDeviceManager
+ILowlevelDevice -> device: poll
+ILowlevelDevice -> device: write low level device
+deactivate ILowlevelDevice
+
+ILowlevelDevice -> ILowlevelDevice: sendData
+activate ILowlevelDevice
+ILowlevelDevice -> CDeviceManager: onLowLevelDeviceWritable
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: onDeviceCanBeWritten
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: enque COMMAND_QUERY_NAME
+CDeviceManager -> CDeviceManager: DeviceState::RECEIVING_NAME
+CDeviceManager -> ILowlevelDevice: SendCommand
+deactivate CDeviceManager
+deactivate CDeviceManager
+ILowlevelDevice -> device: poll
+ILowlevelDevice -> device: write low level device
+deactivate ILowlevelDevice
+
+ILowlevelDevice -> ILowlevelDevice: receiveData
+activate ILowlevelDevice
+ILowlevelDevice -> device: poll
+ILowlevelDevice -> device: read
+ILowlevelDevice -> CDeviceManager: onLowlevelDeviceReply
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: onDeviceCanBeRead
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: onReply
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: DeviceState::ACTIVE
+CDeviceManager -> CSocketManager: OnDeviceInserted
+deactivate CDeviceManager
+deactivate CDeviceManager
+deactivate CDeviceManager
+deactivate ILowlevelDevice
+
+note over CDeviceManager
+device is initialized
+endnote
+
+
+CListener -> CListener: runTask
+activate CListener
+-> CListener: connect
+CListener -> CSocketManager: AddSocket
+deactivate CListener
+
+CSocketManager -> CSocketManager: runTask
+activate CSocketManager
+CSocketManager -> CSocketManager: pollSockets
+activate CSocketManager
+-> CSocketManager: command arrives
+CSocketManager -> CDeviceManager: SendCommand
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: enqueue Command
+deactivate CDeviceManager
+deactivate CSocketManager
+deactivate CSocketManager
 
 ILowlevelDevice -> ILowlevelDevice: sendData
 activate ILowlevelDevice
@@ -65,7 +155,24 @@ ILowlevelDevice -> device: read
 ILowlevelDevice -> CDeviceManager: onLowlevelDeviceReply
 activate CDeviceManager
 CDeviceManager -> CDeviceManager: onDeviceCanBeRead
+activate CDeviceManager
+CDeviceManager -> CDeviceManager: onReply
+activate CDeviceManager
+CDeviceManager -> CSocketManager: OnDeviceReply
+deactivate CDeviceManager
+deactivate CDeviceManager
 deactivate CDeviceManager
 deactivate ILowlevelDevice
+
+CSocketManager -> CSocketManager: runTask
+activate CSocketManager
+CSocketManager -> CSocketManager: pollSockets
+activate CSocketManager
+CSocketManager -> CSocketManager: onSocketWritable
+activate CSocketManager
+ <- CSocketManager: send out reply
+deactivate CSocketManager
+deactivate CSocketManager
+deactivate CSocketManager
 
 @enduml
