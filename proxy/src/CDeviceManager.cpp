@@ -186,7 +186,15 @@ void CDeviceManager::onReply(struct Device& device, const std::string& reply)
 					device.deviceName = name;
 					device.state = DeviceState::ACTIVE;
 					pLogger->LogInfo("CDeviceManager::onReply device inserted: " + device.deviceName + ":" + device.fileName);
-					_pObserver->OnDeviceInserted(device.deviceName);
+					if(_pObserver != nullptr) {
+						_pObserver->OnDeviceInserted(device.deviceName);
+					}
+					else {
+						pLogger->LogError("CDeviceManager::onReply invalid observer at receiving name");
+					}
+				}
+				else {
+					pLogger->LogError("CDeviceManager::onReply no name in reply");
 				}
 			}
 		}
@@ -194,7 +202,12 @@ void CDeviceManager::onReply(struct Device& device, const std::string& reply)
 
 		case DeviceState::ACTIVE:
 		{
-			_pObserver->OnDeviceReply(device.deviceName, json);
+			if(_pObserver != nullptr) {
+				_pObserver->OnDeviceReply(device.deviceName, json);
+			}
+			else {
+				pLogger->LogError("CDeviceManager::onReply invalid observer at active");
+			}
 		}
 		break;
 
@@ -389,10 +402,10 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device, std::deque<unsigne
 					// a carriage return means that a complete reply is found
 					//0x0D is changed to 0x0A in raspberry pi.
 					if(illegal) {
-						pLogger->LogError("CDeviceManager::onDeviceCanBeRead illegal reply from: " + device.fileName + " : " + reply.data());
+						pLogger->LogError("CDeviceManager::onDeviceCanBeRead illegal reply from: " + device.fileName + " : " + reply);
 					}
 					else if(!reply.empty()) {
-						pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead rely: " + device.fileName + ":" + std::string(reply.data()));
+						pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead rely: " + device.fileName + ":" + reply);
 						onReply(device, reply);
 					}
 					break;
@@ -510,12 +523,12 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device, ILowlevelDevice
 			}
 			break;
 		}
+	}
 
-		if(device.outgoing.size() > 0)
-		{
-			//something needs to be sent out
-			device.dataExchange.outputStage.SendData(device.outgoing);
-		}
+	if(device.outgoing.size() > 0)
+	{
+		//put data to output stage if possible
+		device.dataExchange.outputStage.SendData(device.outgoing);
 	}
 
 	// send data
@@ -538,7 +551,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device, ILowlevelDevice
 
 			if(pLowlevelDevice->SendCommand(dataVct, errInfo))
 			{
-				stage.sendingIndex = PACKET_SIZE;
+				stage.sendingIndex = PACKET_SIZE; //update sending index to indicate progress.
 				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten write " + std::to_string(PACKET_SIZE) + " bytes to " + device.fileName);
 			}
 			else {
