@@ -652,7 +652,7 @@ void UserCommandRunner::pushUpSmartCardArm()
 {
 	std::string cmd;
 	//to be made configurable
-	cmd = ConsoleCommandFactory::CmdBdcReverse(1, 3, 2, 5000);
+	cmd = ConsoleCommandFactory::CmdBdcReverse(1, 3, 2, 3000);
 	runConsoleCommand(cmd);
 }
 
@@ -660,7 +660,7 @@ void UserCommandRunner::pullDownSmartCardArm()
 {
 	std::string cmd;
 	//to be made configurable
-	cmd = ConsoleCommandFactory::CmdBdcForward(1, 3, 2, 5000);
+	cmd = ConsoleCommandFactory::CmdBdcForward(1, 3, 2, 2000);
 	runConsoleCommand(cmd);
 }
 
