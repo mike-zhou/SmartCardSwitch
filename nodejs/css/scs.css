@@ -40,3 +40,6 @@
     background-color: beige;
 }
 
+.touchScreenTableConsole td:nth-child(odd) {
+    vertical-align: top;
+}
