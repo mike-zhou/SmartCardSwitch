@@ -1,6 +1,6 @@
 var globalCardSlotMappings;
 var globalTouchScreenMappings;
-
+let currentCardIndex;
 
 
 function getSelectedMappingName()
@@ -22,7 +22,7 @@ function updateCardSlotMappingTable(mapping) {
         var row;
 
         row = "<tr>";
-        row = row + "<td>" + mapping[i].cardName + "</td>";
+        row = row + "<td><input name=\"cardIndicator\" id=\"cardAccess_indicator_" + i +"\" type=\"radio\">" + mapping[i].cardName + "</td>";
         row = row + "<td align=\"center\">" + mapping[i].slotNumber + "</td>";
         row = row + "<td>";
         row = row +     "<button id=\"" + "cardAccess_insert_" + i + "\"> Insert </button>" + " ";
@@ -440,19 +440,36 @@ function onElementClicked()
         var index = paraArray[2];
         
         if(action === "insert") {
+            currentCardIndex = index;
+            document.getElementById("cardAccess_indicator_" + index).checked = true;
             onCardInsert(index);
         }
         else if(action === "extract") {
+            currentCardIndex = index;
+            document.getElementById("cardAccess_indicator_" + index).checked = true;
             onCardExtract(index);
         }
         else if(action === "swipe") {
+            currentCardIndex = index;
+            document.getElementById("cardAccess_indicator_" + index).checked = true;
             onCardSwipe(index);
         }
         else if(action === "tapContactless") {
+            currentCardIndex = index;
+            document.getElementById("cardAccess_indicator_" + index).checked = true;
             onCardTapContactless(index);
         }
         else if(action === "tapBarcode") {
+            currentCardIndex = index;
+            document.getElementById("cardAccess_indicator_" + index).checked = true;
             onCardTapBarcode(index);
+        }
+        else if(action === "indicator") {
+            //do nothing
+            if(!isNaN(currentCardIndex)) {
+                //move focus back to the provious card indicator
+                document.getElementById("cardAccess_indicator_" + currentCardIndex).checked = true;
+            }
         }
         else {
             alert("unknown action: " + action);
