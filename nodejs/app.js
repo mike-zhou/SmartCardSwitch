@@ -2,15 +2,26 @@ const http = require('http');
 const fs = require('fs');
 var net = require('net');
 
+//IP address and port number clients can connect to.
 const hostname = '0.0.0.0';
 const port = 80;
 
+//IP address and port number SmartCardSwitch listens to.
 const scsHostName = "127.0.0.1";
 const scsUserProxyPort = 60001;
 const scsHostPort = 60002;
 
-const iFingerHostName = "127.0.0.1"
+//IP address and port number iFinger listens to.
+const iFingerHostName = "127.0.0.1";
 const iFingerHostPort = 60004;
+
+//log relevant setting
+const logFolder = "./logs";
+const logFileName = "log";
+const logFileAmount = 10;
+const logFileSize = 5000000; // 5M bytes
+var logBuffer = "";
+var logMaintancePeriod = 60000; //60000 milliseconds
 
 const _cardSlotMappingFile = "data/cardSlotMapping.json";
 const _touchScreenMappingFile = "data/touchScreenMapping.json";
@@ -34,12 +45,97 @@ function getCommandId()
     return "unique command id " + _commandIdNumber;
 }
 
-function appLog(str) {
+function appLog(str) 
+{
     var d = new Date();
-    var log = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + "." + d.getMilliseconds();
+    var logLine = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + "." + d.getMilliseconds();
 
-    log = log + " " + str;
-    console.log(log);
+    logLine = logLine + " " + str;
+    console.log(logLine);
+    logBuffer = logBuffer + logLine + "\r\n";
+}
+
+function maintainLog()
+{
+    function persistLog(fileName) 
+    {
+        fs.appendFile(logFolder + "/" + fileName, logBuffer, function(error) {
+            if(error) {
+                console.log("ERROR: maintainLog error: " + error);
+            }
+        });
+        logBuffer = ""; //clear logBuffer
+    }
+
+    fs.stat(logFolder, function(error, stats) {
+        if(error) {
+            console.log("Error in retrieveing folder information: " + logFolder);
+            fs.mkdir(logFolder, function(err) {
+                if(err) {
+                    console.log("ERROR: maintainLog failed to create folder: " + err);
+                    logBuffer = "";
+                }
+                else {
+                    //save log to the first log file.
+                    console.log("maintainLog created log folder: " + logFolder);
+                    persistLog(logFileName + "_0");
+                }
+            });
+        }
+        else 
+        {
+            fs.readdir(logFolder, function(err, files) {
+                if(err) {
+                    console.log("ERROR: maintainLog failed to read files in: " + logFolder);
+                    logBuffer = "";
+                }
+                else 
+                {
+                    if(files.length < 1) {
+                        persistLog(logFileName + "_0");
+                    }
+                    else
+                    {
+                        let min_index;
+                        let max_index;
+
+                        //find the minimum and maximum index
+                        let nameElements = files[0].split('_');
+                        min_index = parseInt(nameElements[1]);
+                        max_index = min_index;
+                        for(let i=0; i<files.length; i++) {
+                            nameElements = files[i].split('_');
+                            let index = parseInt(nameElements[1]);
+                            if(min_index > index) {
+                                min_index = index;
+                            }
+                            if(max_index < index) {
+                                max_index = index;
+                            }
+                        }
+
+                        if(files.length > logFileAmount) {
+                            //log files need to be deleted
+                            for(let i=0; i<(files.length - logFileAmount); i++) {
+                                let index = min_index + i;
+                                let fileName = logFolder + "/" + logFileName + "_" + index;
+                                fs.unlink(fileName, function(err) {
+                                    if(err) {
+                                        console.log("ERROR: maintainLog failed to delete: " + fileName);
+                                    }
+                                })
+                            }
+                        }
+
+                        {
+                            let fileName = logFileName + "_" + max_index;
+                            persistLog(fileName);
+                        }
+                    }
+                }
+            });  
+        }
+    });
 }
 
 function onRetrievingFile(fileName, fileType, response) {
@@ -770,10 +866,13 @@ function onHttpRequest(request, response)
     }
 }
 
+//set up log
+setInterval(maintainLog, logMaintancePeriod);
+//create web server.
 const server = http.createServer((req, res) => {
     onHttpRequest(req, res);
 });
-
+//start web server
 server.listen(port, hostname, () => {
-    console.log(`Server running at http://${hostname}:${port}/`);
+    appLog(`Server running at http://${hostname}:${port}/`);
 });
