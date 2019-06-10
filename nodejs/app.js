@@ -36,7 +36,7 @@ function getCommandId()
 
 function appLog(str) {
     var d = new Date();
-    var log = d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + "." + d.getMilliseconds();
+    var log = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + "." + d.getMilliseconds();
 
     log = log + " " + str;
     console.log(log);
