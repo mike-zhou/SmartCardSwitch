@@ -42,16 +42,28 @@
 
     <div class="functionZone">
         <h2>Power</h2>
-        <input name="power_steppers" id="power_steppers_on" type="radio"><label for="power_steppers_on">PowerOnSteppers</label>
-        <input name="power_steppers" id="power_steppers_off" type="radio"><label for="power_steppers_off">PowerOffSteppers</label><br>
-        <input name="power_bdcs" id="power_bdcs_on" type="radio"><label for="power_bdcs_on">PowerOnBdcs</label>
-        <input name="power_bdcs" id="power_bdcs_off" type="radio"><label for="power_bdcs_off">PowerOffBdcs</label><br>
-        <input name="power_opt" id="power_opt_on" type="radio"><label for="power_opt_on">PowerOnOPT</label>
-        <input name="power_opt" id="power_opt_off" type="radio"><label for="power_opt_off">PowerOffOPT</label><br>
-        <input name="power_dcm0" id="power_dcm0_on" type="radio"><label for="power_dcm0_on">PowerOnDcm0</label>
-        <input name="power_dcm0" id="power_dcm0_off" type="radio"><label for="power_dcm0_off">PowerOffDcm0</label><br>
-        <input name="power_dcm1" id="power_dcm1_on" type="radio"><label for="power_dcm1_on">PowerOndcm1</label>
-        <input name="power_dcm1" id="power_dcm1_off" type="radio"><label for="power_dcm1_off">PowerOffdcm1</label><br>
+        <table>
+            <tr>
+                <td><input name="power_steppers" id="power_steppers_on" type="radio"><label for="power_steppers_on">PowerOnSteppers</label></td>
+                <td><input name="power_steppers" id="power_steppers_off" type="radio"><label for="power_steppers_off">PowerOffSteppers</label></td>
+            </tr>
+            <tr>
+                <td><input name="power_bdcs" id="power_bdcs_on" type="radio"><label for="power_bdcs_on">PowerOnBdcs</label></td>
+                <td><input name="power_bdcs" id="power_bdcs_off" type="radio"><label for="power_bdcs_off">PowerOffBdcs</label></td>
+            </tr>
+            <tr>
+                <td><input name="power_opt" id="power_opt_on" type="radio"><label for="power_opt_on">PowerOnOPT</label></td>
+                <td><input name="power_opt" id="power_opt_off" type="radio"><label for="power_opt_off">PowerOffOPT</label></td>
+            </tr>
+            <tr>
+                <td><input name="power_dcm0" id="power_dcm0_on" type="radio"><label for="power_dcm0_on">PowerOnDcm0</label></td>
+                <td><input name="power_dcm0" id="power_dcm0_off" type="radio"><label for="power_dcm0_off">PowerOffDcm0</label></td>
+            </tr>
+            <tr>
+                <td><input name="power_dcm1" id="power_dcm1_on" type="radio"><label for="power_dcm1_on">PowerOndcm1</label></td>
+                <td><input name="power_dcm1" id="power_dcm1_off" type="radio"><label for="power_dcm1_off">PowerOffdcm1</label><br></td>
+            </tr>
+        </table>
     </div>
 
     <div class="functionZone">
@@ -458,109 +470,146 @@
         <h2>Coordinates</h2>
         <div>
             <div>
-                <input name="coordinate" id="coordinate_safe" type="radio"><label for="coordinate_safe">Safe</label>
-                <input name="coordinate" id="coordinate_smartCardGate" type="radio"><label for="coordinate_smartCardGate">SmartCardGate</label>
-                <input name="coordinate" id="coordinate_smartCardReaderGate" type="radio"><label for="coordinate_smartCardReaderGate">SmartCardReaderGate</label>
-                <input name="coordinate" id="coordinate_smartCardReader" type="radio"><label for="coordinate_smartCardReader">SmartCardReader</label>
-                <input name="coordinate" id="coordinate_softKeyGate" type="radio"><label for="coordinate_softKeyGate">SoftKeyGate</label><br>
-                <input name="coordinate" id="coordinate_pedKeyGate" type="radio"><label for="coordinate_pedKeyGate">PedKeyGate</label>
-                <input name="coordinate" id="coordinate_touchScreenKeyGate" type="radio"><label for="coordinate_touchScreenKeyGate">TouchScreenKeyGate</label>
-                <input name="coordinate" id="coordinate_assistKeyGate" type="radio"><label for="coordinate_assistKeyGate">AssistKeyGate</label>
-                <input name="coordinate" id="coordinate_contactlessReader" type="radio"><label for="coordinate_contactlessReader">ContactlessReader</label><br>
-                <input name="coordinate" id="coordinate_contactlessReaderGate" type="radio"><label for="coordinate_contactlessReaderGate">ContactlessReaderGate</label>
-                <input name="coordinate" id="coordinate_barcodeReader" type="radio"><label for="coordinate_barcodeReader">BarCodeReader</label>
-                <input name="coordinate" id="coordinate_barcodeReaderGate" type="radio"><label for="coordinate_barcodeReaderGate">BarCodeReaderGate</label>
+                <table>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_safe" type="radio"><label for="coordinate_safe">Safe</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCardGate" type="radio"><label for="coordinate_smartCardGate">SmartCardGate</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCardReaderGate" type="radio"><label for="coordinate_smartCardReaderGate">SmartCardReaderGate</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCardReader" type="radio"><label for="coordinate_smartCardReader">SmartCardReader</label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_softKeyGate" type="radio"><label for="coordinate_softKeyGate">SoftKeyGate</label></td>
+                        <td><input name="coordinate" id="coordinate_pedKeyGate" type="radio"><label for="coordinate_pedKeyGate">PedKeyGate</label></td>
+                        <td><input name="coordinate" id="coordinate_touchScreenKeyGate" type="radio"><label for="coordinate_touchScreenKeyGate">TouchScreenKeyGate</label></td>
+                        <td><input name="coordinate" id="coordinate_assistKeyGate" type="radio"><label for="coordinate_assistKeyGate">AssistKeyGate</label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_contactlessReader" type="radio"><label for="coordinate_contactlessReader">ContactlessReader</label></td>
+                        <td><input name="coordinate" id="coordinate_contactlessReaderGate" type="radio"><label for="coordinate_contactlessReaderGate">ContactlessReaderGate</label></td>
+                        <td><input name="coordinate" id="coordinate_barcodeReader" type="radio"><label for="coordinate_barcodeReader">BarCodeReader</label></td>
+                        <td><input name="coordinate" id="coordinate_barcodeReaderGate" type="radio"><label for="coordinate_barcodeReaderGate">BarCodeReaderGate</label></td>
+                    </tr>
+                </table>
             </div>
+            <br>
             <div>
                 <label>SmartCards:</label><br>
-                <input name="coordinate" id="coordinate_smartCard_0" type="radio"><label for="coordinate_smartCard_0">0</label>
-                <input name="coordinate" id="coordinate_smartCard_1" type="radio"><label for="coordinate_smartCard_1">1</label>
-                <input name="coordinate" id="coordinate_smartCard_2" type="radio"><label for="coordinate_smartCard_2">2</label>
-                <input name="coordinate" id="coordinate_smartCard_3" type="radio"><label for="coordinate_smartCard_3">3</label>
-                <input name="coordinate" id="coordinate_smartCard_4" type="radio"><label for="coordinate_smartCard_4">4</label>
-                <input name="coordinate" id="coordinate_smartCard_5" type="radio"><label for="coordinate_smartCard_5">5</label>
-                <input name="coordinate" id="coordinate_smartCard_6" type="radio"><label for="coordinate_smartCard_6">6</label>
-                <input name="coordinate" id="coordinate_smartCard_7" type="radio"><label for="coordinate_smartCard_7">7</label>
-                <input name="coordinate" id="coordinate_smartCard_8" type="radio"><label for="coordinate_smartCard_8">8</label>
-                <input name="coordinate" id="coordinate_smartCard_9" type="radio"><label for="coordinate_smartCard_9">9</label><br>
-                <input name="coordinate" id="coordinate_smartCard_10" type="radio"><label for="coordinate_smartCard_10">10</label>
-                <input name="coordinate" id="coordinate_smartCard_11" type="radio"><label for="coordinate_smartCard_11">11</label>
-                <input name="coordinate" id="coordinate_smartCard_12" type="radio"><label for="coordinate_smartCard_12">12</label>
-                <input name="coordinate" id="coordinate_smartCard_13" type="radio"><label for="coordinate_smartCard_13">13</label>
-                <input name="coordinate" id="coordinate_smartCard_14" type="radio"><label for="coordinate_smartCard_14">14</label>
-                <input name="coordinate" id="coordinate_smartCard_15" type="radio"><label for="coordinate_smartCard_15">15</label>
-                <input name="coordinate" id="coordinate_smartCard_16" type="radio"><label for="coordinate_smartCard_16">16</label>
-                <input name="coordinate" id="coordinate_smartCard_17" type="radio"><label for="coordinate_smartCard_17">17</label>
-                <input name="coordinate" id="coordinate_smartCard_18" type="radio"><label for="coordinate_smartCard_18">18</label>
-                <input name="coordinate" id="coordinate_smartCard_19" type="radio"><label for="coordinate_smartCard_19">19</label><br>
-                <input name="coordinate" id="coordinate_smartCard_20" type="radio"><label for="coordinate_smartCard_20">20</label>
-                <input name="coordinate" id="coordinate_smartCard_21" type="radio"><label for="coordinate_smartCard_21">21</label>
-                <input name="coordinate" id="coordinate_smartCard_22" type="radio"><label for="coordinate_smartCard_22">22</label>
-                <input name="coordinate" id="coordinate_smartCard_23" type="radio"><label for="coordinate_smartCard_23">23</label>
-                <input name="coordinate" id="coordinate_smartCard_24" type="radio"><label for="coordinate_smartCard_24">24</label>
-                <input name="coordinate" id="coordinate_smartCard_25" type="radio"><label for="coordinate_smartCard_25">25</label>
-                <input name="coordinate" id="coordinate_smartCard_26" type="radio"><label for="coordinate_smartCard_26">26</label>
-                <input name="coordinate" id="coordinate_smartCard_27" type="radio"><label for="coordinate_smartCard_27">27</label>
-                <input name="coordinate" id="coordinate_smartCard_28" type="radio"><label for="coordinate_smartCard_28">28</label>
-                <input name="coordinate" id="coordinate_smartCard_29" type="radio"><label for="coordinate_smartCard_29">29</label><br>
-                <input name="coordinate" id="coordinate_smartCard_30" type="radio"><label for="coordinate_smartCard_30">30</label>
-                <input name="coordinate" id="coordinate_smartCard_31" type="radio"><label for="coordinate_smartCard_31">31</label>
-                <input name="coordinate" id="coordinate_smartCard_32" type="radio"><label for="coordinate_smartCard_32">32</label>
-                <input name="coordinate" id="coordinate_smartCard_33" type="radio"><label for="coordinate_smartCard_33">33</label>
-                <input name="coordinate" id="coordinate_smartCard_34" type="radio"><label for="coordinate_smartCard_34">34</label>
-                <input name="coordinate" id="coordinate_smartCard_35" type="radio"><label for="coordinate_smartCard_35">35</label>
-                <input name="coordinate" id="coordinate_smartCard_36" type="radio"><label for="coordinate_smartCard_36">36</label>
-                <input name="coordinate" id="coordinate_smartCard_37" type="radio"><label for="coordinate_smartCard_37">37</label>
-                <input name="coordinate" id="coordinate_smartCard_38" type="radio"><label for="coordinate_smartCard_38">38</label>
-                <input name="coordinate" id="coordinate_smartCard_39" type="radio"><label for="coordinate_smartCard_39">39</label><br>
-                <input name="coordinate" id="coordinate_smartCard_40" type="radio"><label for="coordinate_smartCard_40">40</label>
-                <input name="coordinate" id="coordinate_smartCard_41" type="radio"><label for="coordinate_smartCard_41">41</label>
-                <input name="coordinate" id="coordinate_smartCard_42" type="radio"><label for="coordinate_smartCard_42">42</label>
-                <input name="coordinate" id="coordinate_smartCard_43" type="radio"><label for="coordinate_smartCard_43">43</label>
-                <input name="coordinate" id="coordinate_smartCard_44" type="radio"><label for="coordinate_smartCard_44">44</label>
-                <input name="coordinate" id="coordinate_smartCard_45" type="radio"><label for="coordinate_smartCard_45">45</label>
-                <input name="coordinate" id="coordinate_smartCard_46" type="radio"><label for="coordinate_smartCard_46">46</label>
-                <input name="coordinate" id="coordinate_smartCard_47" type="radio"><label for="coordinate_smartCard_47">47</label>
-                <input name="coordinate" id="coordinate_smartCard_48" type="radio"><label for="coordinate_smartCard_48">48</label>
-                <input name="coordinate" id="coordinate_smartCard_49" type="radio"><label for="coordinate_smartCard_49">49</label><br>
-                <input name="coordinate" id="coordinate_smartCard_50" type="radio"><label for="coordinate_smartCard_50">50</label>
-                <input name="coordinate" id="coordinate_smartCard_51" type="radio"><label for="coordinate_smartCard_51">51</label>
-                <input name="coordinate" id="coordinate_smartCard_52" type="radio"><label for="coordinate_smartCard_52">52</label>
-                <input name="coordinate" id="coordinate_smartCard_53" type="radio"><label for="coordinate_smartCard_53">53</label>
-                <input name="coordinate" id="coordinate_smartCard_54" type="radio"><label for="coordinate_smartCard_54">54</label>
-                <input name="coordinate" id="coordinate_smartCard_55" type="radio"><label for="coordinate_smartCard_55">55</label>
-                <input name="coordinate" id="coordinate_smartCard_56" type="radio"><label for="coordinate_smartCard_56">56</label>
-                <input name="coordinate" id="coordinate_smartCard_57" type="radio"><label for="coordinate_smartCard_57">57</label>
-                <input name="coordinate" id="coordinate_smartCard_58" type="radio"><label for="coordinate_smartCard_58">58</label>
-                <input name="coordinate" id="coordinate_smartCard_59" type="radio"><label for="coordinate_smartCard_59">59</label><br>
-                <input name="coordinate" id="coordinate_smartCard_60" type="radio"><label for="coordinate_smartCard_60">60</label>
-                <input name="coordinate" id="coordinate_smartCard_61" type="radio"><label for="coordinate_smartCard_61">61</label>
-                <input name="coordinate" id="coordinate_smartCard_62" type="radio"><label for="coordinate_smartCard_62">62</label>
-                <input name="coordinate" id="coordinate_smartCard_63" type="radio"><label for="coordinate_smartCard_63">63</label>
-                <input name="coordinate" id="coordinate_smartCard_64" type="radio"><label for="coordinate_smartCard_64">64</label>
-                <input name="coordinate" id="coordinate_smartCard_65" type="radio"><label for="coordinate_smartCard_65">65</label>
-                <input name="coordinate" id="coordinate_smartCard_66" type="radio"><label for="coordinate_smartCard_66">66</label>
-                <input name="coordinate" id="coordinate_smartCard_67" type="radio"><label for="coordinate_smartCard_67">67</label>
-                <input name="coordinate" id="coordinate_smartCard_68" type="radio"><label for="coordinate_smartCard_68">68</label>
-                <input name="coordinate" id="coordinate_smartCard_69" type="radio"><label for="coordinate_smartCard_69">69</label>
+                <table>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCard_0" type="radio"><label for="coordinate_smartCard_0">0</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_1" type="radio"><label for="coordinate_smartCard_1">1</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_2" type="radio"><label for="coordinate_smartCard_2">2</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_3" type="radio"><label for="coordinate_smartCard_3">3</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_4" type="radio"><label for="coordinate_smartCard_4">4</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_5" type="radio"><label for="coordinate_smartCard_5">5</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_6" type="radio"><label for="coordinate_smartCard_6">6</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_7" type="radio"><label for="coordinate_smartCard_7">7</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_8" type="radio"><label for="coordinate_smartCard_8">8</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_9" type="radio"><label for="coordinate_smartCard_9">9</label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCard_10" type="radio"><label for="coordinate_smartCard_10">10</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_11" type="radio"><label for="coordinate_smartCard_11">11</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_12" type="radio"><label for="coordinate_smartCard_12">12</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_13" type="radio"><label for="coordinate_smartCard_13">13</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_14" type="radio"><label for="coordinate_smartCard_14">14</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_15" type="radio"><label for="coordinate_smartCard_15">15</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_16" type="radio"><label for="coordinate_smartCard_16">16</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_17" type="radio"><label for="coordinate_smartCard_17">17</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_18" type="radio"><label for="coordinate_smartCard_18">18</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_19" type="radio"><label for="coordinate_smartCard_19">19</label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCard_20" type="radio"><label for="coordinate_smartCard_20">20</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_21" type="radio"><label for="coordinate_smartCard_21">21</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_22" type="radio"><label for="coordinate_smartCard_22">22</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_23" type="radio"><label for="coordinate_smartCard_23">23</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_24" type="radio"><label for="coordinate_smartCard_24">24</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_25" type="radio"><label for="coordinate_smartCard_25">25</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_26" type="radio"><label for="coordinate_smartCard_26">26</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_27" type="radio"><label for="coordinate_smartCard_27">27</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_28" type="radio"><label for="coordinate_smartCard_28">28</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_29" type="radio"><label for="coordinate_smartCard_29">29</label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCard_30" type="radio"><label for="coordinate_smartCard_30">30</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_31" type="radio"><label for="coordinate_smartCard_31">31</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_32" type="radio"><label for="coordinate_smartCard_32">32</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_33" type="radio"><label for="coordinate_smartCard_33">33</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_34" type="radio"><label for="coordinate_smartCard_34">34</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_35" type="radio"><label for="coordinate_smartCard_35">35</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_36" type="radio"><label for="coordinate_smartCard_36">36</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_37" type="radio"><label for="coordinate_smartCard_37">37</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_38" type="radio"><label for="coordinate_smartCard_38">38</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_39" type="radio"><label for="coordinate_smartCard_39">39</label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCard_40" type="radio"><label for="coordinate_smartCard_40">40</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_41" type="radio"><label for="coordinate_smartCard_41">41</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_42" type="radio"><label for="coordinate_smartCard_42">42</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_43" type="radio"><label for="coordinate_smartCard_43">43</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_44" type="radio"><label for="coordinate_smartCard_44">44</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_45" type="radio"><label for="coordinate_smartCard_45">45</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_46" type="radio"><label for="coordinate_smartCard_46">46</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_47" type="radio"><label for="coordinate_smartCard_47">47</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_48" type="radio"><label for="coordinate_smartCard_48">48</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_49" type="radio"><label for="coordinate_smartCard_49">49</label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCard_50" type="radio"><label for="coordinate_smartCard_50">50</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_51" type="radio"><label for="coordinate_smartCard_51">51</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_52" type="radio"><label for="coordinate_smartCard_52">52</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_53" type="radio"><label for="coordinate_smartCard_53">53</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_54" type="radio"><label for="coordinate_smartCard_54">54</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_55" type="radio"><label for="coordinate_smartCard_55">55</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_56" type="radio"><label for="coordinate_smartCard_56">56</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_57" type="radio"><label for="coordinate_smartCard_57">57</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_58" type="radio"><label for="coordinate_smartCard_58">58</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_59" type="radio"><label for="coordinate_smartCard_59">59</label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCard_60" type="radio"><label for="coordinate_smartCard_60">60</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_61" type="radio"><label for="coordinate_smartCard_61">61</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_62" type="radio"><label for="coordinate_smartCard_62">62</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_63" type="radio"><label for="coordinate_smartCard_63">63</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_64" type="radio"><label for="coordinate_smartCard_64">64</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_65" type="radio"><label for="coordinate_smartCard_65">65</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_66" type="radio"><label for="coordinate_smartCard_66">66</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_67" type="radio"><label for="coordinate_smartCard_67">67</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_68" type="radio"><label for="coordinate_smartCard_68">68</label></td>
+                        <td><input name="coordinate" id="coordinate_smartCard_69" type="radio"><label for="coordinate_smartCard_69">69</label></td>
+                    </tr>
+                </table>
             </div>
             <div>
                 <label>PED Keys:</label><br>
-                <input name="coordinate" id="coordinate_pedKey_0" type="radio"><label for="coordinate_pedKey_0">1</label>
-                <input name="coordinate" id="coordinate_pedKey_1" type="radio"><label for="coordinate_pedKey_1">2</label>
-                <input name="coordinate" id="coordinate_pedKey_2" type="radio"><label for="coordinate_pedKey_2">3</label><br>
-                <input name="coordinate" id="coordinate_pedKey_3" type="radio"><label for="coordinate_pedKey_3">4</label>
-                <input name="coordinate" id="coordinate_pedKey_4" type="radio"><label for="coordinate_pedKey_4">5</label>
-                <input name="coordinate" id="coordinate_pedKey_5" type="radio"><label for="coordinate_pedKey_5">6</label><br>
-                <input name="coordinate" id="coordinate_pedKey_6" type="radio"><label for="coordinate_pedKey_6">7</label>
-                <input name="coordinate" id="coordinate_pedKey_7" type="radio"><label for="coordinate_pedKey_7">8</label>
-                <input name="coordinate" id="coordinate_pedKey_8" type="radio"><label for="coordinate_pedKey_8">9</label><br>
-                <input name="coordinate" id="coordinate_pedKey_9" type="radio"><label for="coordinate_pedKey_9">NO</label>
-                <input name="coordinate" id="coordinate_pedKey_10" type="radio"><label for="coordinate_pedKey_10">0</label>
-                <input name="coordinate" id="coordinate_pedKey_11" type="radio"><label for="coordinate_pedKey_11">YES</label><br>
-                <input name="coordinate" id="coordinate_pedKey_12" type="radio"><label for="coordinate_pedKey_12">X</label>
-                <input name="coordinate" id="coordinate_pedKey_13" type="radio"><label for="coordinate_pedKey_13">&lt;</label>
-                <input name="coordinate" id="coordinate_pedKey_14" type="radio"><label for="coordinate_pedKey_14">O</label>
+                <table>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_pedKey_0" type="radio"><label for="coordinate_pedKey_0">1</label></td>
+                        <td><input name="coordinate" id="coordinate_pedKey_1" type="radio"><label for="coordinate_pedKey_1">2</label></td>
+                        <td><input name="coordinate" id="coordinate_pedKey_2" type="radio"><label for="coordinate_pedKey_2">3</label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_pedKey_3" type="radio"><label for="coordinate_pedKey_3">4</label></td>
+                        <td><input name="coordinate" id="coordinate_pedKey_4" type="radio"><label for="coordinate_pedKey_4">5</label></td>
+                        <td><input name="coordinate" id="coordinate_pedKey_5" type="radio"><label for="coordinate_pedKey_5">6</label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_pedKey_6" type="radio"><label for="coordinate_pedKey_6">7</label></td>
+                        <td><input name="coordinate" id="coordinate_pedKey_7" type="radio"><label for="coordinate_pedKey_7">8</label></td>
+                        <td><input name="coordinate" id="coordinate_pedKey_8" type="radio"><label for="coordinate_pedKey_8">9</label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_pedKey_9" type="radio"><label for="coordinate_pedKey_9">NO</label></td>
+                        <td><input name="coordinate" id="coordinate_pedKey_10" type="radio"><label for="coordinate_pedKey_10">0</label></td>
+                        <td><input name="coordinate" id="coordinate_pedKey_11" type="radio"><label for="coordinate_pedKey_11">YES</label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_pedKey_12" type="radio"><label for="coordinate_pedKey_12">X</label></td>
+                        <td><input name="coordinate" id="coordinate_pedKey_13" type="radio"><label for="coordinate_pedKey_13">&lt;</label></td>
+                        <td><input name="coordinate" id="coordinate_pedKey_14" type="radio"><label for="coordinate_pedKey_14">O</label></td>
+                    </tr>
+                </table>
             </div>
             <div>
                 <label>SoftKeys:</label><br>
@@ -598,23 +647,39 @@
 
             </div>
             <div>
+                <label>--------------------------------------</label><br>
                 <input name="coordinate_key_state" id="coordinate_keyState_0" type="radio"><label for="coordinate_keyState_0">UP</label>
                 <input name="coordinate_key_state" id="coordinate_keyState_1" type="radio"><label for="coordinate_keyState_1">DOWN</label>
             </div>
+            <br>
             <div>
                 <label>Offsets:</label><br>
-                <input name="coordinate" id="coordinate_smartCardSlowlyPlaceStartZ" type="radio"><label for="coordinate_smartCardSlowlyPlaceStartZ">SmartCardSlowlyPlaceStartZ</label>
-                <input type="number" id="smartCardSlowlyPlaceStartZ" min="0" max="65535" size="5"></input><br>
-                <input name="coordinate" id="coordinate_smartCardSlowlyPlaceEndZ" type="radio"><label for="coordinate_smartCardSlowlyPlaceEndZ">SmartCardSlowlyPlaceEndZ</label>
-                <input type="number" id="smartCardSlowlyPlaceEndZ" min="0" max="65535" size="5"></input><br>
-                <input name="coordinate" id="coordinate_smartCardFetchOffset" type="radio"><label for="coordinate_smartCardFetchOffset">SmartCardFetchOffset</label>
-                <input type="number" id="smartCardFetchOffset" min="0" max="65535" size="5"></input><br>
-                <input name="coordinate" id="coordinate_smartCardReleaseOffsetZ" type="radio"><label for="coordinate_smartCardReleaseOffsetZ">SmartCardReleaseOffsetZ</label>
-                <input type="number" id="smartCardReleaseOffsetZ" min="0" max="65535" size="5"></input><br>
-                <input name="coordinate" id="coordinate_smartCardInsertExtra" type="radio"><label for="coordinate_smartCardInsertExtra">SmartCardInsertExtra</label>
-                <input type="number" id="smartCardInsertExtra" min="0" max="65535" size="5"></input><br>
-                <input name="coordinate" id="coordinate_smartCardReaderSlowInsertEndY" type="radio"><label for="coordinate_smartCardReaderSlowInsertEndY">SmartCardReaderSlowInsertEndY</label>
-                <input type="number" id="smartCardReaderSlowInsertEndY" min="0" max="65535" size="5"></input><br>
+                <table>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCardSlowlyPlaceStartZ" type="radio"><label for="coordinate_smartCardSlowlyPlaceStartZ">SmartCardSlowlyPlaceStartZ</label></td>
+                        <td><input type="number" id="smartCardSlowlyPlaceStartZ" min="0" max="65535" size="5"></label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCardSlowlyPlaceEndZ" type="radio"><label for="coordinate_smartCardSlowlyPlaceEndZ">SmartCardSlowlyPlaceEndZ</label></td>
+                        <td><input type="number" id="smartCardSlowlyPlaceEndZ" min="0" max="65535" size="5"></label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCardFetchOffset" type="radio"><label for="coordinate_smartCardFetchOffset">SmartCardFetchOffset</label></td>
+                        <td><input type="number" id="smartCardFetchOffset" min="0" max="65535" size="5"></label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCardReleaseOffsetZ" type="radio"><label for="coordinate_smartCardReleaseOffsetZ">SmartCardReleaseOffsetZ</label></td>
+                        <td><input type="number" id="smartCardReleaseOffsetZ" min="0" max="65535" size="5"></label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCardInsertExtra" type="radio"><label for="coordinate_smartCardInsertExtra">SmartCardInsertExtra</label></td>
+                        <td><input type="number" id="smartCardInsertExtra" min="0" max="65535" size="5"></label></td>
+                    </tr>
+                    <tr>
+                        <td><input name="coordinate" id="coordinate_smartCardReaderSlowInsertEndY" type="radio"><label for="coordinate_smartCardReaderSlowInsertEndY">SmartCardReaderSlowInsertEndY</label></td>
+                        <td><input type="number" id="smartCardReaderSlowInsertEndY" min="0" max="65535" size="5"></label></td>
+                    </tr>
+                </table>
             </div>
             <div>
                 <label>Maximum:</label><br>
@@ -624,6 +689,7 @@
                 <input name="coordinate" id="coordinate_maximum_3" type="radio"><label for="coordinate_maximum_3">Maximum-4 </label>
             </div>
         </div>
+        <br>
         <div>
             <button type="button" id="coordinate_save">Save coordinate</button>
         </div>
@@ -631,42 +697,44 @@
 
     <div class="functionZone">
         <h2>BDCs</h2>
-        <div>
-            <label>SmartCardClamp: </label>
-            <input name="bdc0" id="bdc_0_Release" type="radio"><label for="bdc_0_Release">Release</label>
-            <input name="bdc0" id="bdc_0_Forward" type="radio"><label for="bdc_0_Forward">Close</label>
-            <input name="bdc0" id="bdc_0_Reverse" type="radio"><label for="bdc_0_Reverse">Open</label>
-        </div>
-        <div>
-            <label>SmartCardArm: </label>
-            <input name="bdc1" id="bdc_1_Release" type="radio"><label for="bdc_1_Release">Release</label>
-            <input name="bdc1" id="bdc_1_Forward" type="radio"><label for="bdc_1_Forward">Put Down</label>
-            <input name="bdc1" id="bdc_1_Reverse" type="radio"><label for="bdc_1_Reverse">Push Up</label>
-        </div>
-        <div>
-            <label>bdc2: </label>
-            <input name="bdc2" id="bdc_2_Release" type="radio"><label for="bdc_2_Release">Release</label>
-            <input name="bdc2" id="bdc_2_Forward" type="radio"><label for="bdc_2_Forward">Forward</label>
-            <input name="bdc2" id="bdc_2_Reverse" type="radio"><label for="bdc_2_Reverse">Reverse</label>
-        </div>
-        <div>
-            <label>bdc3: </label>
-            <input name="bdc3" id="bdc_3_Release" type="radio"><label for="bdc_3_Release">Release</label>
-            <input name="bdc3" id="bdc_3_Forward" type="radio"><label for="bdc_3_Forward">Forward</label>
-            <input name="bdc3" id="bdc_3_Reverse" type="radio"><label for="bdc_3_Reverse">Reverse</label>
-        </div>
-        <div>
-            <label>bdc4: </label>
-            <input name="bdc4" id="bdc_4_Release" type="radio"><label for="bdc_4_Release">Release</label>
-            <input name="bdc4" id="bdc_4_Forward" type="radio"><label for="bdc_4_Forward">Forward</label>
-            <input name="bdc4" id="bdc_4_Reverse" type="radio"><label for="bdc_4_Reverse">Reverse</label>
-        </div>
-        <div>
-            <label>bdc5: </label>
-            <input name="bdc5" id="bdc_5_Release" type="radio"><label for="bdc_5_Release">Release</label>
-            <input name="bdc5" id="bdc_5_Forward" type="radio"><label for="bdc_5_Forward">Forward</label>
-            <input name="bdc5" id="bdc_5_Reverse" type="radio"><label for="bdc_5_Reverse">Reverse</label>
-        </div>
+        <table>
+            <tr>
+                <td><label>SmartCardClamp: </label></td>
+                <td><input name="bdc0" id="bdc_0_Release" type="radio"><label for="bdc_0_Release">Release</label></td>
+                <td><input name="bdc0" id="bdc_0_Forward" type="radio"><label for="bdc_0_Forward">Close</label></td>
+                <td><input name="bdc0" id="bdc_0_Reverse" type="radio"><label for="bdc_0_Reverse">Open</label></td>
+            </tr>
+            <tr>
+                <td><label>SmartCardArm: </label></td>
+                <td><input name="bdc1" id="bdc_1_Release" type="radio"><label for="bdc_1_Release">Release</label></td>
+                <td><input name="bdc1" id="bdc_1_Forward" type="radio"><label for="bdc_1_Forward">Put Down</label></td>
+                <td><input name="bdc1" id="bdc_1_Reverse" type="radio"><label for="bdc_1_Reverse">Push Up</label></td>
+            </tr>
+            <tr>
+                <td><label>bdc2: </label></td>
+                <td><input name="bdc2" id="bdc_2_Release" type="radio"><label for="bdc_2_Release">Release</label></td>
+                <td><input name="bdc2" id="bdc_2_Forward" type="radio"><label for="bdc_2_Forward">Forward</label></td>
+                <td><input name="bdc2" id="bdc_2_Reverse" type="radio"><label for="bdc_2_Reverse">Reverse</label></td>
+            </tr>
+            <tr>
+                <td><label>bdc3: </label></td>
+                <td><input name="bdc3" id="bdc_3_Release" type="radio"><label for="bdc_3_Release">Release</label></td>
+                <td><input name="bdc3" id="bdc_3_Forward" type="radio"><label for="bdc_3_Forward">Forward</label></td>
+                <td><input name="bdc3" id="bdc_3_Reverse" type="radio"><label for="bdc_3_Reverse">Reverse</label></td>
+            </tr>
+            <tr>
+                <td><label>bdc4: </label></td>
+                <td><input name="bdc4" id="bdc_4_Release" type="radio"><label for="bdc_4_Release">Release</label></td>
+                <td><input name="bdc4" id="bdc_4_Forward" type="radio"><label for="bdc_4_Forward">Forward</label></td>
+                <td><input name="bdc4" id="bdc_4_Reverse" type="radio"><label for="bdc_4_Reverse">Reverse</label></td>
+            </tr>
+            <tr>
+                <td><label>bdc5: </label></td>
+                <td><input name="bdc5" id="bdc_5_Release" type="radio"><label for="bdc_5_Release">Release</label></td>
+                <td><input name="bdc5" id="bdc_5_Forward" type="radio"><label for="bdc_5_Forward">Forward</label></td>
+                <td><input name="bdc5" id="bdc_5_Reverse" type="radio"><label for="bdc_5_Reverse">Reverse</label></td>
+            </tr>
+        </table>
     </div>
 
     <div class="functionZone">
@@ -713,89 +781,6 @@
         <div>
             Steppers are powered: <input type="checkbox" id="steppersPowered">
         </div>
-    </div>
-
-    <h1>intelligent Finger</h1>
-    <div class="functionZone">
-        <h2>PED keys</h2>
-        <table>
-            <tr>
-                <td><button type="button" id="iFinger_key_0"> 1 </button></td>
-                <td><button type="button" id="iFinger_key_1"> 2 </button></td>
-                <td><button type="button" id="iFinger_key_2"> 3 </button></td>
-            </tr>
-            <tr>
-                <td><button type="button" id="iFinger_key_3"> 4 </button></td>
-                <td><button type="button" id="iFinger_key_4"> 5 </button></td>
-                <td><button type="button" id="iFinger_key_5"> 6 </button></td>
-            </tr>
-            <tr>
-                <td><button type="button" id="iFinger_key_6"> 7 </button></td>
-                <td><button type="button" id="iFinger_key_7"> 8 </button></td>
-                <td><button type="button" id="iFinger_key_8"> 9 </button></td>
-            </tr>
-            <tr>
-                <td><button type="button" id="iFinger_key_9"> * </button></td>
-                <td><button type="button" id="iFinger_key_10"> 0 </button></td>
-                <td><button type="button" id="iFinger_key_11"> # </button></td>
-            </tr>
-            <tr>
-                <td><button type="button" id="iFinger_key_12"> X </button></td>
-                <td><button type="button" id="iFinger_key_13"> &lt </button></td>
-                <td><button type="button" id="iFinger_key_14"> O </button></td>
-            </tr>
-        </table>
-    </div>
-    <div class="functionZone">
-        <h2>Soft keys</h2>
-        <table>
-            <tr>
-                <td><button type="button" id="iFinger_key_15"> Left 1 </button></td>
-                <td><button type="button" id="iFinger_key_16"> Right 1 </button></td>
-            </tr>
-            <tr>
-                <td><button type="button" id="iFinger_key_17"> Left 2 </button></td>
-                <td><button type="button" id="iFinger_key_18"> Right 2 </button></td>
-            </tr>
-            <tr>
-                <td><button type="button" id="iFinger_key_19"> Left 3 </button></td>
-                <td><button type="button" id="iFinger_key_20"> Right 3 </button></td>
-            </tr>
-            <tr>
-                <td><button type="button" id="iFinger_key_21"> Left 4 </button></td>
-                <td><button type="button" id="iFinger_key_22"> Right 4 </button></td>
-            </tr>
-        </table>
-    </div>
-    <div class="functionZone">
-        <h2>ADA keys</h2>
-        <table>
-            <tr>
-                <td><button type="button" id="iFinger_key_23"> Left 1 </button></td>
-                <td></td>
-                <td><button type="button" id="iFinger_key_24"> Right 1 </button></td>
-            </tr>
-            <tr>
-                <td><button type="button" id="iFinger_key_25"> Left 2 </button></td>
-                <td></td>
-                <td><button type="button" id="iFinger_key_26"> Right 2 </button></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td><button type="button" id="iFinger_key_31"> HELP </button></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td><button type="button" id="iFinger_key_27"> Left 3 </button></td>
-                <td></td>
-                <td><button type="button" id="iFinger_key_28"> Right 3 </button></td>
-            </tr>
-            <tr>
-                <td><button type="button" id="iFinger_key_29"> Left 4 </button></td>
-                <td></td>
-                <td><button type="button" id="iFinger_key_30"> Right 4 </button></td>
-            </tr>
-        </table>
     </div>
 
     <script src="/scripts/scs.js"></script>
