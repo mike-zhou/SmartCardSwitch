@@ -43,3 +43,13 @@
 .touchScreenTableConsole td:nth-child(odd) {
     vertical-align: top;
 }
+.touchScreenTableConsole,
+.touchScreenTableConsole th,
+.touchScreenTableConsole td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+.touchScreenTableConsole select {
+    width: 100%;
+}
