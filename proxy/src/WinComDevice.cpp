@@ -195,7 +195,7 @@ bool WinComDevice::receiveData()
 			{
 				std::string content;
 
-				pLogger->LogInfo("WinComDevice::receiveData received " + std::to_string(amount) + " bytes");
+				pLogger->LogInfo("WinComDevice::receiveData received " + std::to_string(amount) + " bytes from " + _name);
 				for (unsigned int i = 0; i < amount; i++) {
 					content.push_back(buffer[i]);
 					_inputQueue.push_back(buffer[i]);
@@ -245,7 +245,7 @@ bool WinComDevice::sendData()
 	if (rc)
 	{
 		std::string content;
-		pLogger->LogInfo("WinComDevice::sendData wrote " + std::to_string(amount) + " bytes");
+		pLogger->LogInfo("WinComDevice::sendData wrote " + std::to_string(amount) + " bytes to " + _name);
 		for (unsigned int i = 0; i < amount; i++) 
 		{
 			unsigned char c = _outputQueue[0];
@@ -257,7 +257,7 @@ bool WinComDevice::sendData()
 	else
 	{
 		auto errorCode = GetLastError();
-		pLogger->LogError("WinComDevice::sendData error code: " + std::to_string(errorCode));
+		pLogger->LogError("WinComDevice::sendData error code: " + std::to_string(errorCode) + " to " + _name);
 		if (_outputQueue.size() > MAXIMUM_QUEUE_SIZE) {
 			pLogger->LogError("WinComDevice::sendData discard " + std::to_string(_outputQueue.size()) + " bytes");
 			_outputQueue.clear();
