@@ -23,6 +23,9 @@ const logFileSize = 5000000; // 5M bytes
 var logBuffer = "";
 var logMaintancePeriod = 60000; //60000 milliseconds
 
+//frames root folder
+const framesRootFolder = "data/frames/";
+
 const _cardSlotMappingFile = "data/cardSlotMapping.json";
 const _touchScreenMappingFile = "data/touchScreenMapping.json";
 
@@ -802,11 +805,101 @@ function onAdjustStepperW(request, response)
     });   
 }
 
+function onFrameQuery(request, rsponse)
+{
+    let body = [];
+
+    request.on('data', (chunk) => {
+        body.push(chunk);
+    }).on('end', () => {
+        body = Buffer.concat(body).toString();
+        let cmdObj = JSON.parse(body);
+        
+        let milliseconds = cmdObj.milliseconds;
+
+        fs.readdir(framesRootFolder, function(err, folders) {
+            if(err) {
+                response.statusCode = 400;
+                response.end();
+                return;
+            }
+            if(folders.length < 1) {
+                //empty folder
+                response.statusCode = 400;
+                response.end();
+                return;
+            }
+
+            folders = folders.sort();
+            let minutes = milliseconds / 60000;
+            let folder = "";
+            for(var i=folders.length; i>0; i--)
+            {
+                if(Number.parseInt(folders[i-1]) < minutes) {
+                    folder = folders[i-1];
+                    break;
+                }
+            }
+            if(folder.length === "") {
+                folder = folders[0];
+            }
+
+            fs.readfir(framesRootFolder + "/" + folder + "/", function(err, files) {
+                if(err) {
+                    response.statusCode = 400;
+                    response.end();
+                    return;
+                }
+                if(files.length < 1) {
+                    //empty folder
+                    response.statusCode = 400;
+                    response.end();
+                    return;
+                }
+    
+                files = files.sort();
+                let file = "";
+                for(var i = files.length; i>0; i--) {
+                    if(Number.parseInt(files[i-1]) < milliseconds) {
+                        file = files[i-1];
+                        break;
+                    }
+                }
+                if(file === "") {
+                    file = files[0];
+                }
+
+                let reply = {};
+
+                response.statusCode = 200;
+                reply.pathFile = folder + "/" + file;
+                response.end(JSON.stringify(reply));
+            });
+        });
+    });
+}
+
+function onFrameRetrive(request, rsponse)
+{
+
+}
+
 function onHttpRequest(request, response) 
 {
-    appLog("onHttpRequest: " + request.url);
-
     var url = request.url;
+    
+    if(url === "/frameQuery") {
+        onFrameQuery(request, rsponse);
+        return;
+    }
+    else if(url.indexOf("/frames/") === 0) {
+        // URL: /frames/...
+        appLog("onHttpRequest: " + request.url);
+        onFrameRetrive(request, rsponse);
+        return;
+    }
+
+    appLog("onHttpRequest: " + request.url);
 
     if (url === "/stepperMove") {
         onPostRequest_SCS(request, response);
