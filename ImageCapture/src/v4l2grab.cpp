@@ -68,6 +68,7 @@
 #include "Poco/Exception.h"
 #include "Poco/Path.h"
 #include "Poco/File.h"
+#include "Poco/DirectoryIterator.h"
 
 #include "Logger.h"
 
@@ -108,6 +109,7 @@ static unsigned char _jpegQuality;
 static std::string _deviceFile;
 static unsigned char * _pYUV422Buffer;
 static Poco::Path _framesRootFolder;
+static unsigned int _record_period_hours = 1;
 
 /**
 	Do ioctl and retry if error was EINTR ("A signal was caught during the ioctl() operation."). Parameters are the same as on ioctl.
@@ -201,15 +203,22 @@ static void imageProcess(const void* p)
 
 	frameFolder.pushDirectory(folderName);
 
-	Poco::File folder (frameFolder);
-	if(!folder.exists()) {
-		folder.createDirectories();
-	}
+	try
+	{
+		Poco::File folder (frameFolder);
+		if(!folder.exists()) {
+			pLogger->LogInfo("create folder: " + folder.path());
+			folder.createDirectories();
+		}
 
-	frameFolder.setFileName(fileName);
-	sprintf(fileName, "%s", frameFolder.toString().c_str());
-	// write jpeg
-	jpegWrite(_pYUV422Buffer, fileName);
+		frameFolder.setFileName(fileName);
+		sprintf(fileName, "%s", frameFolder.toString().c_str());
+		// write jpeg
+		jpegWrite(_pYUV422Buffer, fileName);
+	}
+	catch(...) {
+		//do nothing.
+	}
 }
 
 /**
@@ -451,6 +460,55 @@ public:
 	CaptureTask():Task("ImageCapture") {}
 	
 private:
+	Poco::Timestamp _lastFolderDeletionTime;
+
+	void deleteObsoleteFrames()
+	{
+		Poco::Timestamp curTime;
+
+		//delete obsolete folders every 1 minute
+		if((curTime - _lastFolderDeletionTime) < 60000000) {
+			return;
+		}
+		_lastFolderDeletionTime.update();
+
+		std::vector<std::string> directoryNames;
+
+		Poco::DirectoryIterator it(_framesRootFolder) ;
+		Poco::DirectoryIterator end;
+		long curMilliseconds = curTime.raw()/1000;
+		int earliestMinutes = curMilliseconds/60000 - _record_period_hours*60;
+
+		//find the directories to delete
+		for(; it != end; it++) {
+			if(it->isDirectory()) {
+				int minutes = std::atoi(it.name().c_str());
+				if(minutes > earliestMinutes) {
+					continue;
+				}
+				directoryNames.push_back(it.name());
+			}
+		}
+		//delete directories.
+		for(int i=0; i<directoryNames.size(); i++)
+		{
+			Poco::Path frameFolder = _framesRootFolder;
+
+			frameFolder.pushDirectory(directoryNames[i]);
+			try
+			{
+				Poco::File folder (frameFolder);
+				if(folder.exists()) {
+					pLogger->LogInfo("delete folder: " + folder.path());
+					folder.remove(true); //delete this folder
+				}
+			}
+			catch(...) {
+				//do nothing
+			}
+		}
+	}
+
 	void runTask()
 	{
 		_pYUV422Buffer = (unsigned char*)malloc(_width*_height*3*sizeof(char));
@@ -473,9 +531,11 @@ private:
 				}
 				else
 				{
-					// process frames
+					// capture a frame
 					captureImage();
 				}
+
+				deleteObsoleteFrames();
 			}
 
 			// close device
@@ -596,6 +656,7 @@ protected:
 				_fps = config().getInt("fps", 30);
 				_jpegQuality = config().getUInt("quality", 70);
 				_framesRootFolder = config().getString("output_folder");
+				_record_period_hours = config().getUInt("record_period_hours");
 			}
 			catch(Poco::NotFoundException& e)
 			{
