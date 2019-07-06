@@ -4,6 +4,7 @@ RemoteSystemsTempFiles/
 *.o
 proxy/Debug/proxy
 proxy/Release/proxy
+nodejs/data/frames/
 
 VC/Invenco/Debug/
 VC/Invenco/Logger/Debug/

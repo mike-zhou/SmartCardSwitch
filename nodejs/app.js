@@ -805,7 +805,7 @@ function onAdjustStepperW(request, response)
     });   
 }
 
-function onFrameQuery(request, rsponse)
+function onFrameQuery(request, response)
 {
     let body = [];
 
@@ -844,7 +844,7 @@ function onFrameQuery(request, rsponse)
                 folder = folders[0];
             }
 
-            fs.readfir(framesRootFolder + "/" + folder + "/", function(err, files) {
+            fs.readdir(framesRootFolder + "/" + folder + "/", function(err, files) {
                 if(err) {
                     response.statusCode = 400;
                     response.end();
@@ -879,9 +879,26 @@ function onFrameQuery(request, rsponse)
     });
 }
 
-function onFrameRetrive(request, rsponse)
+function onFrameRetrive(request, response)
 {
+    var fileName = "data" + request.url;
+    fs.stat(fileName, function(error, stats) {
+        if (error) {
+            response.statusCode = 400;
+            response.end();
+            return;
+        }
 
+        if (stats.isFile()) {
+            var stream = fs.createReadStream(fileName);
+            response.statusCode = 200;
+            //response.setHeader('Content-Type', fileType);
+            stream.pipe(response);
+        } else {
+            response.statusCode = 400;
+            response.end();
+        }
+    });
 }
 
 function onHttpRequest(request, response) 
@@ -889,13 +906,13 @@ function onHttpRequest(request, response)
     var url = request.url;
     
     if(url === "/frameQuery") {
-        onFrameQuery(request, rsponse);
+        onFrameQuery(request, response);
         return;
     }
     else if(url.indexOf("/frames/") === 0) {
         // URL: /frames/...
-        appLog("onHttpRequest: " + request.url);
-        onFrameRetrive(request, rsponse);
+        //appLog("onHttpRequest: " + request.url);
+        onFrameRetrive(request, response);
         return;
     }
 

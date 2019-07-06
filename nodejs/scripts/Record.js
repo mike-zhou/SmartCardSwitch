@@ -1,8 +1,8 @@
-const frameRetrievingInterval = 100;
-const imageWidth = 1280;
-const imageHeight = 720;
+const FRAME_RETRIEVING_INTERVAL = 100;
+const IMAGE_WIDTH = 1280;
+const IMAGE_HEIGHT = 720;
 
-var currentFrameName = "";
+var _currentFrameName = "";
 
 function frameUpdateTimer()
 {
@@ -21,7 +21,15 @@ function frameUpdateTimer()
         if (xhr.readyState === DONE) {
             if (xhr.status === OK) {
                 let reply = xhr.response;
-                document.getElementById("videoFrame").src = "/frames/" + reply.pathFile;
+                reply = JSON.parse(reply);
+                if(reply.pathFile !== _currentFrameName) {
+                    _currentFrameName = reply.pathFile;
+                    
+                    let image = document.getElementById("videoFrame");
+                    image.src = "/frames/" + reply.pathFile;
+                    image.width = window.innerWidth;
+                    image.height = image.width * IMAGE_HEIGHT / IMAGE_WIDTH;
+                }
             }
         }
     };
@@ -32,12 +40,12 @@ function initRecordPage()
 {
     let html;
 
-    html = "<img id=\"videoFrame\" src=\"/frames/123.jpg\">";
+    html = "<img id=\"videoFrame\">";
     document.getElementById("videoFrameContainer").innerHTML = html;
-    document.getElementById("videoFrame").width = imageWidth;
-    document.getElementById("videoFrame").height = imageHeight;
+    document.getElementById("videoFrame").width = IMAGE_WIDTH;
+    document.getElementById("videoFrame").height = IMAGE_HEIGHT;
 
-    setInterval(frameUpdateTimer, frameRetrievingInterval);
+    setInterval(frameUpdateTimer, FRAME_RETRIEVING_INTERVAL);
 }
 
 document.addEventListener("DOMContentLoaded", initRecordPage);

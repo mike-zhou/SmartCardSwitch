@@ -107,6 +107,7 @@ static int _fps;
 static unsigned char _jpegQuality;
 static std::string _deviceFile;
 static unsigned char * _pYUV422Buffer;
+static Poco::Path _framesRootFolder;
 
 /**
 	Do ioctl and retry if error was EINTR ("A signal was caught during the ioctl() operation."). Parameters are the same as on ioctl.
@@ -185,16 +186,28 @@ static void jpegWrite(unsigned char* img, char* jpegFilename)
 */
 static void imageProcess(const void* p)
 {
-	char fileName[128];
+	char fileName[256];
+	char folderName[32];
 	unsigned char* src = (unsigned char*)p;
 	Poco::Timestamp curTime;
-
-
+	long milliseconds = curTime.raw()/1000;
+	int minutes = milliseconds/60000;
+	Poco::Path frameFolder = _framesRootFolder;
 
 	YUV420toYUV444(_width, _height, src, _pYUV422Buffer);
 
-	sprintf(fileName, "%s", Poco::DateTimeFormatter::format(curTime, "%Y-%m-%d_%h-%M-%S.%i.jpg").c_str());
+	sprintf(folderName, "%010d", minutes);
+	sprintf(fileName, "%010ld.jpg", milliseconds);
 
+	frameFolder.pushDirectory(folderName);
+
+	Poco::File folder (frameFolder);
+	if(!folder.exists()) {
+		folder.createDirectories();
+	}
+
+	frameFolder.setFileName(fileName);
+	sprintf(fileName, "%s", frameFolder.toString().c_str());
 	// write jpeg
 	jpegWrite(_pYUV422Buffer, fileName);
 }
@@ -582,6 +595,7 @@ protected:
 				_height = config().getUInt("height", 480);
 				_fps = config().getInt("fps", 30);
 				_jpegQuality = config().getUInt("quality", 70);
+				_framesRootFolder = config().getString("output_folder");
 			}
 			catch(Poco::NotFoundException& e)
 			{
