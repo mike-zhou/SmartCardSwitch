@@ -44,9 +44,18 @@ function initRecordPage()
     document.getElementById("videoFrameContainer").innerHTML = html;
     document.getElementById("videoFrame").width = IMAGE_WIDTH;
     document.getElementById("videoFrame").height = IMAGE_HEIGHT;
+    document.getElementById("framePosition").width =window.innerWidth;
 
     setInterval(frameUpdateTimer, FRAME_RETRIEVING_INTERVAL);
 }
 
+function onWindowSize()
+{
+    let image = document.getElementById("videoFrame");
+    image.width = window.innerWidth;
+    image.height = image.width * IMAGE_HEIGHT / IMAGE_WIDTH;
+}
+
+window.addEventListener("resize", onWindowSize);
 document.addEventListener("DOMContentLoaded", initRecordPage);
 
