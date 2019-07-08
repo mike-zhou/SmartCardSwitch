@@ -817,63 +817,107 @@ function onFrameQuery(request, response)
         
         let milliseconds = cmdObj.milliseconds;
 
-        fs.readdir(framesRootFolder, function(err, folders) {
+        fs.readdir(framesRootFolder, function(err, frameFolders) {
             if(err) {
                 response.statusCode = 400;
                 response.end();
                 return;
             }
-            if(folders.length < 1) {
+            if(frameFolders.length < 1) {
                 //empty folder
                 response.statusCode = 400;
                 response.end();
                 return;
             }
 
-            folders = folders.sort();
-            let minutes = milliseconds / 60000;
-            let folder = "";
-            for(var i=folders.length; i>0; i--)
-            {
-                if(Number.parseInt(folders[i-1]) < minutes) {
-                    folder = folders[i-1];
-                    break;
-                }
-            }
-            if(folder.length === "") {
-                folder = folders[0];
-            }
+            frameFolders = frameFolders.sort();
 
-            fs.readdir(framesRootFolder + "/" + folder + "/", function(err, files) {
+            //find the earliest frame
+            fs.readdir(framesRootFolder + "/" + frameFolders[0] + "/", function(err, earliestFiles) {
+                let earliestFile;
+
                 if(err) {
                     response.statusCode = 400;
                     response.end();
                     return;
                 }
-                if(files.length < 1) {
+                if(earliestFiles.length < 1) {
                     //empty folder
                     response.statusCode = 400;
                     response.end();
                     return;
                 }
-    
-                files = files.sort();
-                let file = "";
-                for(var i = files.length; i>0; i--) {
-                    if(Number.parseInt(files[i-1]) < milliseconds) {
-                        file = files[i-1];
-                        break;
+
+                earliestFiles.sort();
+                earliestFile = earliestFiles[0];
+
+                //find the latest file
+                fs.readdir(framesRootFolder + "/" + frameFolders[frameFolders.length-1] + "/", function(err, latestFiles) {
+                    let latestFile;
+
+                    if(err) {
+                        response.statusCode = 400;
+                        response.end();
+                        return;
                     }
-                }
-                if(file === "") {
-                    file = files[0];
-                }
+                    if(earliestFiles.length < 1) {
+                        //empty folder
+                        response.statusCode = 400;
+                        response.end();
+                        return;
+                    }
+                    
+                    latestFiles.sort();
+                    latestFile = latestFiles[latestFiles.length-1];
 
-                let reply = {};
-
-                response.statusCode = 200;
-                reply.pathFile = folder + "/" + file;
-                response.end(JSON.stringify(reply));
+                    //find the designated file
+                    let minutes = milliseconds / 60000;
+                    let folder = "";
+                    for(var i=frameFolders.length; i>0; i--)
+                    {
+                        if(Number.parseInt(frameFolders[i-1]) < minutes) {
+                            folder = frameFolders[i-1];
+                            break;
+                        }
+                    }
+                    if(folder.length === "") {
+                        folder = frameFolders[0];
+                    }
+                    fs.readdir(framesRootFolder + "/" + folder + "/", function(err, files) {
+                        if(err) {
+                            response.statusCode = 400;
+                            response.end();
+                            return;
+                        }
+                        if(files.length < 1) {
+                            //empty folder
+                            response.statusCode = 400;
+                            response.end();
+                            return;
+                        }
+            
+                        files = files.sort();
+                        let file = "";
+                        for(var i = files.length; i>0; i--) {
+                            if(Number.parseInt(files[i-1]) < milliseconds) {
+                                file = files[i-1];
+                                break;
+                            }
+                        }
+                        if(file === "") {
+                            file = files[0];
+                        }
+        
+                        let reply = {};
+        
+                        reply.firstFile = earliestFile;
+                        reply.queriedFile = file;
+                        reply.lastFile = latestFile;
+                        reply.pathFile = folder + "/" + file;
+                        response.statusCode = 200;
+                        response.end(JSON.stringify(reply));
+                    });                    
+                });
             });
         });
     });
