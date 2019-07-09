@@ -880,7 +880,7 @@ function onFrameQuery(request, response)
                             break;
                         }
                     }
-                    if(folder.length === "") {
+                    if(folder === "") {
                         folder = frameFolders[0];
                     }
                     fs.readdir(framesRootFolder + "/" + folder + "/", function(err, files) {

@@ -1,4 +1,4 @@
-const FRAME_RETRIEVING_INTERVAL = 10;
+const FRAME_RETRIEVING_INTERVAL = 100;
 const IMAGE_WIDTH = 1280;
 const IMAGE_HEIGHT = 720;
 
@@ -26,8 +26,8 @@ function frameUpdateTimer()
         let anchor = _anchorPosition;
         let offset = _speed * (date.getTime() - _anchorTime.getTime());
         frameInfo.milliseconds = anchor + offset;
-        // console.log("_anchorPosition: " + _anchorPosition + " offset: " + offset);
-        // console.log("frameInfo.milliseconds: " + frameInfo.milliseconds);
+        console.log("_anchorPosition: " + _anchorPosition + " offset: " + offset);
+        console.log("frameInfo.milliseconds: " + frameInfo.milliseconds);
     }
 
     var xhr = new XMLHttpRequest();
@@ -54,10 +54,16 @@ function frameUpdateTimer()
                 _lastFrameName = reply.lastFile;
                 if(!_isDragging) {
                     let frameCtl = document.getElementById("framePosition");
+
+                    console.log("returned: " + reply.queriedFile);
                     frameCtl.max = Number.parseInt(_lastFrameName);
                     frameCtl.value = Number.parseInt(reply.queriedFile);
-                    //console.log("returned: " + reply.queriedFile);
                     frameCtl.min = Number.parseInt(_firstFrameName);
+
+                    if(_anchorPosition == 1) {
+                        _anchorPosition = Number.parseInt(reply.queriedFile);
+                        _anchorTime = new Date();
+                    }
                 }
             }
         }
@@ -112,7 +118,38 @@ function onWindowSize()
 
 function onElementClicked()
 {
+    let elementId = document.activeElement.id;
 
+    if(elementId === "toFirstFrame") {
+        _anchorPosition = 1; //to get the earliest frame
+        _anchorTime = new Date();
+        _speed = 1;
+   }
+    else if(elementId === "fastBackWard") {
+        _speed = _speed - 1;
+    }
+    else if(elementId === "fastForward") {
+        _speed = _speed + 1;
+    }
+    else if(elementId === "toLastFrame") {
+        _anchorPosition = 0; //to get frame at this time
+        _anchorTime = new Date();
+        _speed = 1;
+    }
+
+    let speedStr;
+    
+    if(_speed > 0) {
+        speedStr = "+" + _speed.toString();
+    }
+    else if(_speed == 0) {
+        speedStr = "0";
+    }
+    else {
+        speedStr = _speed.toString();
+    }
+
+    document.getElementById("speed").innerText = speedStr;
 }
 
 window.addEventListener("resize", onWindowSize);
