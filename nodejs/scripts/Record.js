@@ -11,6 +11,23 @@ var _speed = 1;
 var _anchorPosition = 0;
 var _anchorTime = new Date();
 
+function padString(str, width, pad)
+{
+    pad = pad || '0';
+    str = str + '';
+    return (str.length >= width)?str:(new Array(width - str.length + 1).join(pad) + str);
+}
+
+function getTimeString(date)
+{
+    let str = "";
+
+    str = date.getFullYear() + "-" + padString(date.getMonth() + 1, 2) + "-" + padString(date.getDate(), 2) + " ";
+    str = str + padString(date.getHours(), 2) + ":" + padString(date.getMinutes(), 2) + ":" + padString(date.getSeconds(), 2) + "." + padString(date.getMilliseconds(), 3);
+
+    return str;
+}
+
 function frameUpdateTimer()
 {
     var date = new Date();
@@ -78,6 +95,14 @@ function frameUpdateTimer()
                         document.getElementById("speed").innerText = "+1";
                     }
                 }
+
+                //update time stamps
+                let timeStampBegin = new Date(Number.parseInt(_firstFrameName));
+                let timeStampCurrent = new Date(Number.parseInt(reply.queriedFile));
+                let timeStampEnd = new Date(Number.parseInt(_lastFrameName));
+                document.getElementById("timeStampBegin").innerText = getTimeString(timeStampBegin);
+                document.getElementById("timeStampCurrent").innerText = getTimeString(timeStampCurrent);
+                document.getElementById("timeStampEnd").innerText = getTimeString(timeStampEnd);
             }
         }
     };
