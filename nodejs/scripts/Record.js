@@ -5,6 +5,7 @@ const IMAGE_HEIGHT = 720;
 var _firstFrameName = "";
 var _currentFrameName = "";
 var _lastFrameName = "";
+var _currentFramePathFile = "";
 var _isDragging = false;
 var _speed = 1;
 var _anchorPosition = 0;
@@ -26,8 +27,8 @@ function frameUpdateTimer()
         let anchor = _anchorPosition;
         let offset = _speed * (date.getTime() - _anchorTime.getTime());
         frameInfo.milliseconds = anchor + offset;
-        console.log("_anchorPosition: " + _anchorPosition + " offset: " + offset);
-        console.log("frameInfo.milliseconds: " + frameInfo.milliseconds);
+        // console.log("_anchorPosition: " + _anchorPosition + " offset: " + offset);
+        // console.log("frameInfo.milliseconds: " + frameInfo.milliseconds);
     }
 
     var xhr = new XMLHttpRequest();
@@ -41,8 +42,8 @@ function frameUpdateTimer()
             if (xhr.status === OK) {
                 let reply = xhr.response;
 
-                if(reply.pathFile !== _currentFrameName) {
-                    _currentFrameName = reply.pathFile;
+                if(reply.pathFile !== _currentFramePathFile) {
+                    _currentFramePathFile = reply.pathFile;
                     
                     let image = document.getElementById("videoFrame");
                     image.src = "/frames/" + reply.pathFile;
@@ -52,17 +53,29 @@ function frameUpdateTimer()
 
                 _firstFrameName = reply.firstFile;
                 _lastFrameName = reply.lastFile;
+                _currentFrameName = reply.queriedFile;
                 if(!_isDragging) {
                     let frameCtl = document.getElementById("framePosition");
 
-                    console.log("returned: " + reply.queriedFile);
+                    //console.log("returned: " + reply.queriedFile);
                     frameCtl.max = Number.parseInt(_lastFrameName);
                     frameCtl.value = Number.parseInt(reply.queriedFile);
                     frameCtl.min = Number.parseInt(_firstFrameName);
 
-                    if(_anchorPosition == 1) {
-                        _anchorPosition = Number.parseInt(reply.queriedFile);
-                        _anchorTime = new Date();
+                    if(_currentFrameName === _firstFrameName) {
+                        //backward to the beginning
+                        _anchorPosition = Number.parseInt(_firstFrameName);
+                        //the 5000 (5 seconds) prevents _anchorPosition from being reset when frame inverval is larger than polling period.
+                        _anchorTime = new Date(); 
+                        _anchorTime = new Date(_anchorTime.getTime() - 5000);
+                        _speed = 1;
+                        document.getElementById("speed").innerText = "+1";
+                    }
+                    else if(_currentFrameName === _lastFrameName) {
+                        //forward to the end
+                        _anchorPosition = 0;
+                        _speed = 1;
+                        document.getElementById("speed").innerText = "+1";
                     }
                 }
             }
@@ -121,19 +134,22 @@ function onElementClicked()
     let elementId = document.activeElement.id;
 
     if(elementId === "toFirstFrame") {
-        _anchorPosition = 1; //to get the earliest frame
+        _anchorPosition = Number.parseInt(_firstFrameName); //to get the earliest frame
         _anchorTime = new Date();
         _speed = 1;
    }
     else if(elementId === "fastBackWard") {
+        _anchorPosition = Number.parseInt(_currentFrameName);
+        _anchorTime = new Date();
         _speed = _speed - 1;
     }
     else if(elementId === "fastForward") {
+        _anchorPosition = Number.parseInt(_currentFrameName);
+        _anchorTime = new Date();
         _speed = _speed + 1;
     }
     else if(elementId === "toLastFrame") {
         _anchorPosition = 0; //to get frame at this time
-        _anchorTime = new Date();
         _speed = 1;
     }
 
