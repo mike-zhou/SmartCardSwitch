@@ -151,6 +151,9 @@ private:
 
 	std::vector<struct Device> _devices;
 
+	void lockMutex(const std::string & functionName, const std::string & purpose);
+	void unlockMutex();
+
 	void onReply(struct Device& device, const std::string& reply);
 	void onDeviceCanBeRead(struct Device& device, std::deque<unsigned char> & reply);
 	void onDeviceCanBeWritten(struct Device& device, ILowlevelDevice * pLowlevelDevice);
