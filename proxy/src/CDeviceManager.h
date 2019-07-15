@@ -48,7 +48,9 @@ private:
 	void runTask();
 
 private:
+	const int MUTEX_TIMEOUT = 100; //100 milliseconds
 	Poco::Mutex _mutex;
+	std::string _lockMutexFor;
 
 	const char ILLEGAL_CHARACTER_REPLACEMENT = '?';
 	const char * COMMAND_QUERY_NAME = "C 1 0";

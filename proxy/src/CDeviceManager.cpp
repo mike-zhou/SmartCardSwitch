@@ -98,20 +98,30 @@ void CDeviceManager::SendCommand(const std::string& deviceName, const std::strin
 		}
 	}
 
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	if(_mutex.tryLock(MUTEX_TIMEOUT))
+	{
+		_lockMutexFor = "CDeviceManager::SendCommand enqueue command: " + deviceName + " : " + command;
 
-	auto it = _devices.begin();
-	for(; it != _devices.end(); it++) {
-		if(it->state == DeviceState::ACTIVE) {
-			if(it->deviceName == deviceName) {
-				pLogger->LogDebug("CDeviceManager enqueue command: " + deviceName + ":" + command);
-				enqueueCommand(*it, command);
-				break;
+		auto it = _devices.begin();
+		for(; it != _devices.end(); it++) {
+			if(it->state == DeviceState::ACTIVE) {
+				if(it->deviceName == deviceName) {
+					pLogger->LogDebug("CDeviceManager enqueue command: " + deviceName + ":" + command);
+					enqueueCommand(*it, command);
+					break;
+				}
 			}
 		}
+		if(it == _devices.end()) {
+			pLogger->LogError("CDeviceManager::SendCommand failed in sending: " + deviceName + ":" + command);
+		}
+
+		_lockMutexFor.clear();
+		_mutex.unlock();
 	}
-	if(it == _devices.end()) {
-		pLogger->LogError("CDeviceManager::SendCommand failed in sending: " + deviceName + ":" + command);
+	else
+	{
+		pLogger->LogError("CDeviceManager::SendCommand failed to lock mutex: " + _lockMutexFor);
 	}
 }
 
@@ -744,28 +754,50 @@ void CDeviceManager::onLowlevelDeviceState(const std::string & deviceName, const
 
 void CDeviceManager::onLowlevelDeviceWritable(const std::string & deviceName, ILowlevelDevice * pLowlevelDevice)
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-	for(auto it = _devices.begin(); it != _devices.end(); it++)
+	if(_mutex.tryLock(MUTEX_TIMEOUT))
 	{
-		if(deviceName == it->fileName)
+		_lockMutexFor = "CDeviceManager::onLowlevelDeviceWritable " + deviceName;
+
+		for(auto it = _devices.begin(); it != _devices.end(); it++)
 		{
-			it->writeStamp.update();
-			onDeviceCanBeWritten(*it, pLowlevelDevice);
-			break;
+			if(deviceName == it->fileName)
+			{
+				it->writeStamp.update();
+				onDeviceCanBeWritten(*it, pLowlevelDevice);
+				break;
+			}
 		}
+
+		_lockMutexFor.clear();
+		_mutex.unlock();
+	}
+	else
+	{
+		pLogger->LogError("CDeviceManager::onLowlevelDeviceWritable failed to lock mutex: " + _lockMutexFor);
 	}
 }
 
 void CDeviceManager::onLowlevelDeviceReply(const std::string & deviceName, std::deque<unsigned char> & data)
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-	for(auto it = _devices.begin(); it != _devices.end(); it++)
+	if(_mutex.tryLock(MUTEX_TIMEOUT))
 	{
-		if(deviceName == it->fileName)
+		_lockMutexFor = "CDeviceManager::onLowlevelDeviceReply " + deviceName;
+
+		for(auto it = _devices.begin(); it != _devices.end(); it++)
 		{
-			onDeviceCanBeRead(*it, data);
-			break;
+			if(deviceName == it->fileName)
+			{
+				onDeviceCanBeRead(*it, data);
+				break;
+			}
 		}
+
+		_lockMutexFor.clear();
+		_mutex.unlock();
+	}
+	else
+	{
+		pLogger->LogError("CDeviceManager::onLowlevelDeviceReply failed to lock mutex: " + _lockMutexFor);
 	}
 }
 
@@ -793,23 +825,34 @@ void CDeviceManager::pollDevices()
 
 	//remove the device having an error
 	{
-		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-		for(auto deviceIt = _devices.begin(); deviceIt != _devices.end(); )
+		if(_mutex.tryLock(MUTEX_TIMEOUT))
 		{
-			if(deviceIt->state == DeviceState::DEVICE_ERROR)
+			_lockMutexFor = "CDeviceManager::pollDevices unplug device";
+
+			for(auto deviceIt = _devices.begin(); deviceIt != _devices.end(); )
 			{
-				//notify observers of device's unavailability
-				if(!deviceIt->deviceName.empty()) {
-					//this device has been fully enumerated.
-					_pObserver->OnDeviceUnplugged(deviceIt->deviceName);
+				if(deviceIt->state == DeviceState::DEVICE_ERROR)
+				{
+					//notify observers of device's unavailability
+					if(!deviceIt->deviceName.empty()) {
+						//this device has been fully enumerated.
+						_pObserver->OnDeviceUnplugged(deviceIt->deviceName);
+					}
+					//erase this device
+					deviceIt = _devices.erase(deviceIt);
 				}
-				//erase this device
-				deviceIt = _devices.erase(deviceIt);
+				else
+				{
+					deviceIt++;
+				}
 			}
-			else
-			{
-				deviceIt++;
-			}
+
+			_lockMutexFor.clear();
+			_mutex.unlock();
+		}
+		else
+		{
+			pLogger->LogError("CDeviceManager::pollDevices failed to lock mutex: " + _lockMutexFor);
 		}
 	}
 }
@@ -854,9 +897,21 @@ void CDeviceManager::runTask()
 		{
 			bool noObserver = false;
 			{
-				Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-				if(_pObserver == NULL) {
-					noObserver = true;
+				if(_mutex.tryLock(MUTEX_TIMEOUT))
+				{
+					_lockMutexFor = "CDeviceManager::runTask check observer";
+
+					if(_pObserver == NULL) {
+						noObserver = true;
+					}
+
+					_lockMutexFor.clear();
+					_mutex.unlock();
+				}
+				else
+				{
+					pLogger->LogError("CDeviceManager::runTask failed to lock mutex: " + _lockMutexFor);
+					continue;
 				}
 			}
 			if(noObserver) {
