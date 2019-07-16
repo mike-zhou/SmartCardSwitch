@@ -52,10 +52,12 @@ private:
 	void runTask();
 
 private:
+	const int MUTEX_TIMEOUT = 100; //100 milliseconds
 	Poco::Mutex _mutex;
+	std::string _lockMutexFor;
 
-	const long long INVALID_SOCKET_ID = -1;
-	const long long STARTING_SOCKET_ID = 1;
+	static const long INVALID_SOCKET_ID = -1;
+	static const long STARTING_SOCKET_ID = 1;
 	long long _lastSocketId;
 
 	//a map of socket id and socket object
@@ -66,7 +68,7 @@ private:
 	};
 	struct SocketWrapper
 	{
-		long socketId;
+		long socketId = INVALID_SOCKET_ID;
 		StreamSocket socket;
 		enum SocketState state;
 		std::deque<unsigned char> incoming;//reception stage to save partial command from socket
@@ -78,7 +80,7 @@ private:
 	//device has a 1:1 relationship to socket
 	struct DeviceData
 	{
-		long long socketId;//which socket this device bonds to
+		long socketId = INVALID_SOCKET_ID;//which socket this device bonds to
 		std::deque<std::string> replyPool; //to save information from device.
 	};
 	std::map<std::string, struct DeviceData> _deviceMap;
@@ -93,6 +95,8 @@ private:
 	void moveReplyToSocket(long long socketId, const std::string& reply);
 	void processReplies();
 
+	void lockMutex(const std::string & functionName, const std::string & purpose);
+	void unlockMutex();
 
 	//retrieve commands from data
 	void retrieveCommands(std::deque<unsigned char>& data, std::vector<std::string>& commands);
