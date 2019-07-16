@@ -17,10 +17,8 @@ public:
 	const std::string UserCmdCheckResetPressed = "check reset pressed";
 	const std::string UserCmdCheckResetReleased = "check reset released";
 	const std::string UserCmdResetDevice = "reset device";
-	const std::string UserCmdPullUpSmartCard = "pull up smart card";
 	const std::string UserCmdAdjustStepperW = "adjust stepper w";
 	const std::string UserCmdFinishStepperWAdjustment = "finish stepper w adjustment";
-	const std::string UsesrCmdPutBackSmartCard = "put back smart card";
 	const std::string UserCmdInsertSmartCard = "insert smart card";
 	const std::string UserCmdRemoveSmartCard = "remove smart card";
 	const std::string UserCmdSwipeSmartCard = "swipe smart card";
@@ -35,6 +33,18 @@ public:
 	const std::string UserCmdPowerOffOpt = "power off opt";
 	const std::string UserCmdPowerOnDcm = "power on dcm";
 	const std::string UserCmdPowerOffDcm = "power off dcm";
+
+	//sub commands
+	const std::string UserCmdCardFromBayToSmartCardGate = "move card from bay to smartCardGate";
+	const std::string UserCmdCardFromSmartCardGateToSmartCardReaderGate = "move card from smartCardGate to smartCardReaderGate";
+	const std::string UserCmdCardFromSmartCardReaderGateToSmartCardReader = "move card from smartCardReaderGate to smartCardReader";
+	const std::string UserCmdCardFromSmartCardReaderToSmartCardReaderGate = "move card from smartCardReader to smartCardReaderGate";
+	const std::string UserCmdCardFromSmartCardReaderGateToSmartCardGate = "move card from smartCardReaderGate to smartCardGate";
+	const std::string UserCmdCardFromSmartCardGateToBarcodeReaderGate = "move card from smartCardGate to barcodeReaderGate";
+	const std::string UserCmdCardFromBarcodeReaderGateToBarcodeReader = "move card from barcodeReaderGate to barcodeReader";
+	const std::string UserCmdCardFromBarcodeReaderToBarcodeReaderGate = "move card from barcodeReader to barcodeReaderGate";
+	const std::string UserCmdCardFromBarcodeReaderGateToSmartCardGate = "move card from barcodeReaderGate to smartCardGate";
+	const std::string UserCmdCardFromSmartCardGateToBay = "move card from smartCardGate to bay";
 
 	const std::string ErrorDeviceNotAvailable = "device hans't been connected";
 	const std::string ErrorDeviceNotPowered = "device is not powered";
@@ -55,6 +65,11 @@ public:
 	const std::string ErrorSmartCardReaderEmpty = "no card in smart card reader";
 	const std::string ErrorFailedToRunConsoleCommand = "failed to run console command";
 	const std::string ErrorFailedToRunUserCommand = "failed to run user command";
+	const std::string ErrorSmartCardHasBeenFetched = "smart card has been fetched";
+	const std::string ErrorSmartCardNotInSmartCardGate = "no card is in smart card gate";
+	const std::string ErrorSmartCardNotInSmartCardReaderGate = "no card is in smart card reader gate";
+	const std::string ErrorSmartCardNotInBarcodeReaderGate = "no card is in barcode reader gate";
+	const std::string ErrorSmartCardNotInBarcodeReader = "no card is in barcode reader";
 
 	const std::string UserCmdStatusOnGoing = "ongoing";
 	const std::string UserCmdStatusFailed = "failed";
@@ -217,6 +232,66 @@ public:
  * 	"userCommand":"back to home",
  * 	"commandId":"uniqueCommandId"
  * }
+ *
+ *	{
+ *		"userCommand":"move card from bay to smartCardGate",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card from smartCardGate to smartCardReaderGate",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card from smartCardReaderGate to smartCardReader",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card from smartCardReader to smartCardReaderGate",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card from smartCardReaderGate to smartCardGate",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card from smartCardGate to barcodeReaderGate",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card from barcodeReaderGate to barcodeReader",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card from barcodeReader to barcodeReaderGate",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card from barcodeReaderGate to smartCardGate",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card from smartCardGate to bay",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
  *
  */
 

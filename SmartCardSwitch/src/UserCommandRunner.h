@@ -127,6 +127,18 @@ private:
 		Succeeded
 	};
 
+	enum class CardState
+	{
+		InBay = 0,
+		InSmartCardGate,
+		InSmartCardReaderGate,
+		InSmartCardReader,
+		InContactlessReaderGate,
+		InContactlessReader,
+		InBarcodeReaderGate,
+		InBarcodeReader
+	};
+
 	//command details
 	struct ExpandedUserCommand
 	{
@@ -155,7 +167,7 @@ private:
 		unsigned int dcmIndex;
 
 		//---- user command result ----
-		bool smartCardReaderSlotOccupied;
+		CardState cardState;
 	};
 	ExpandedUserCommand _userCommand;
 
@@ -167,7 +179,6 @@ private:
 	};
 	ClampState _clampState;
 
-	bool _smartCardSlotWithCard;
 	bool _deviceHomePositioned;
 
 	void notifyObservers(const std::string& cmdId, CommandState state, const std::string& errorInfo);
@@ -201,9 +212,7 @@ private:
 	void executeUserCmdCheckResetPressed();
 	void executeUserCmdCheckResetReleased();
 	void executeUserCmdResetDevice();
-	void executeUserCmdPullUpSmartCard();
 	void executeUserCmdAdjustStepperW();
-	void executeUserCmdPutBackSmartCard();
 	void executeUserCmdFinishStepperWAdjustment();
 	void executeUserCmdInsertSmartCard();
 	void executeUserCmdRemoveSmartCard();
@@ -214,6 +223,17 @@ private:
 	void executeUserCmdPressSoftKey();
 	void executeUserCmdPressAssistKey();
 	void executeUserCmdTouchScreen();
+	//	sub user commands
+	void executeUserCmdPullUpSmartCard();
+	void executeUserCmdCardFromSmartCardGateToSmartCardReaderGate();
+	void executeUserCmdCardFromSmartCardReaderGateToSmartCardReader();
+	void executeUserCmdCardFromSmartCardReaderToSmartCardReaderGate();
+	void executeUserCmdCardFromSmartCardReaderGateToSmartCardGate();
+	void executeUserCmdCardFromSmartCardGateToBarcodeReaderGate();
+	void executeUserCmdCardFromBarcodeReaderGateToBarcodeReader();
+	void executeUserCmdCardFromBarcodeReaderToBarcodeReaderGate();
+	void executeUserCmdCardFromBarcodeReaderGateToSmartCardGate();
+	void executeUserCmdPutBackSmartCard();
 
 	enum class Position
 	{
