@@ -218,7 +218,7 @@ private:
 	void executeUserCmdRemoveSmartCard();
 	void executeUserCmdSwipeSmartCard();
 	void executeUserCmdTapSmartCard();
-	void executeUserCmdShowBarCode();
+	void executeUserCmdTapBarCode();
 	void executeUserCmdPressPedKey();
 	void executeUserCmdPressSoftKey();
 	void executeUserCmdPressAssistKey();

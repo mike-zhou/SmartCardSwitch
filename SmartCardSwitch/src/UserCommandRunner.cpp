@@ -1999,7 +1999,7 @@ void UserCommandRunner::gate_barcodeReader()
 	moveStepperY(curY, finalY);
 }
 
-void UserCommandRunner::executeUserCmdShowBarCode()
+void UserCommandRunner::executeUserCmdTapBarCode()
 {
 	toSmartCardGate();
 	openClamp();
@@ -2776,7 +2776,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		else if(_userCommand.command == UserCmdTapSmartCard) {
 			parseUserCmdTapSmartCard(ds);
 		}
-		else if(_userCommand.command == UserCmdShowBarCode) {
+		else if(_userCommand.command == UserCmdTapBarCode) {
 			parseUserCmdBarCode(ds);
 		}
 		else if(_userCommand.command == UserCmdPressPedKey) {
@@ -3925,8 +3925,8 @@ void UserCommandRunner::runTask()
 				else if(_userCommand.command == UserCmdTapSmartCard) {
 					executeUserCmdTapSmartCard();
 				}
-				else if(_userCommand.command == UserCmdShowBarCode) {
-					executeUserCmdShowBarCode();
+				else if(_userCommand.command == UserCmdTapBarCode) {
+					executeUserCmdTapBarCode();
 				}
 				else if(_userCommand.command == UserCmdPressPedKey) {
 					executeUserCmdPressPedKey();

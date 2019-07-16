@@ -23,7 +23,7 @@ public:
 	const std::string UserCmdRemoveSmartCard = "remove smart card";
 	const std::string UserCmdSwipeSmartCard = "swipe smart card";
 	const std::string UserCmdTapSmartCard = "tap smart card";
-	const std::string UserCmdShowBarCode = "show bar code";
+	const std::string UserCmdTapBarCode = "tap bar code";
 	const std::string UserCmdPressPedKey = "press PED key";
 	const std::string UserCmdPressSoftKey = "press soft key";
 	const std::string UserCmdPressAssistKey = "press assist key";

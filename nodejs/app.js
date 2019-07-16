@@ -572,7 +572,7 @@ function onCardAccess(request, response)
                     else if(cmd.command === "tapBarcode") {
                         var scsCommand = {};
                         
-                        scsCommand["userCommand"] = "show bar code";
+                        scsCommand["userCommand"] = "tap bar code";
                         scsCommand["commandId"] = newCommandId();
                         scsCommand["smartCardNumber"] = slotNumber;
                         scsCommand["downPeriod"] = cmd.downPeriod;
