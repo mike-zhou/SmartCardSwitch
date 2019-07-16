@@ -2752,6 +2752,9 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		else if(_userCommand.command == UserCmdAdjustStepperW) {
 			parseUserCmdAjustStepperW(ds);
 		}
+		else if(_userCommand.command == UserCmdCardFromSmartCardGateToBay) {
+			parseUserCmdSmartCard(ds);
+		}
 		else if(_userCommand.command == UserCmdFinishStepperWAdjustment) {
 			parseUserCmdFinishStepperWAdjustment(ds);
 		}
@@ -2808,9 +2811,6 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		else if(_userCommand.command == UserCmdPowerOffDcm) {
 			parseUserCmdDcm(ds);
 		}
-		else if(_userCommand.command == UserCmdCardFromBayToSmartCardGate) {
-			parseUserCmdSmartCard(ds);
-		}
 		else if(_userCommand.command == UserCmdCardFromSmartCardGateToSmartCardReaderGate) {
 			parseUserCmdSmartCard(ds);
 		}
@@ -2833,9 +2833,6 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 			parseUserCmdSmartCard(ds);
 		}
 		else if(_userCommand.command == UserCmdCardFromBarcodeReaderGateToSmartCardGate) {
-			parseUserCmdSmartCard(ds);
-		}
-		else if(_userCommand.command == UserCmdCardFromSmartCardGateToBay) {
 			parseUserCmdSmartCard(ds);
 		}
 		else {
