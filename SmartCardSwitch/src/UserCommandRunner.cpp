@@ -2788,8 +2788,13 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		else if(_userCommand.command == UserCmdTouchScreen) {
 			parseUserCmdTouchScreenKeys(ds);
 		}
-		else if(_userCommand.command == UserCmdBackToHome) {
-			//no further parameters to parse
+		else if(_userCommand.command == UserCmdBackToHome)
+		{
+			if(_userCommand.cardState != CardState::InBay) {
+				errorInfo = ErrorCardIsBeingAccessed;
+				pLogger->LogError("UserCommandRunner::RunCommand " + errorInfo);
+				return;
+			}
 		}
 		else if(_userCommand.command == UserCmdPowerOnOpt) {
 			//no further parameters to parse

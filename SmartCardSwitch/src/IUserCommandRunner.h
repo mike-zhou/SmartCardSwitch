@@ -51,6 +51,7 @@ public:
 	const std::string ErrorResetIsNotPressed = "reset is not pressed";
 	const std::string ErrorResetIsNotReleased = "reset is not released";
 	const std::string ErrorDeviceNotHomePositioned = "device hasn't been home positioned";
+	const std::string ErrorCardIsBeingAccessed = "a smart card is being accessed";
 	const std::string ErrorUserCommandOnGoing = "a user command is running";
 	const std::string ErrorInvalidJsonUserCommand = "user command cannot be parsed";
 	const std::string ErrorStepperWNotAdjusted = "stepper W hasn't been adjusted";

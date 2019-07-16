@@ -16,7 +16,7 @@ const iFingerHostName = "127.0.0.1";
 const iFingerHostPort = 60004;
 
 //log relevant setting
-const logFolder = "./logs";
+const logFolder = "~/Temp/logs/nodejs";
 const logFileName = "log";
 const logFileAmount = 10;
 const logFileSize = 5000000; // 5M bytes
@@ -219,7 +219,8 @@ function onPostRequest_SCS(request, response) {
 function onPostRequest_iFinger(request, response) {
     let body = [];
 
-    if(_isPressingkey == true) {
+    if(_isPressingkey == true) 
+    {
         appLog("onPostRequest_iFinger key is being pressed");
         response.statusCode = 400;
         response.setHeader('Content-Type', 'text/plain');
@@ -469,7 +470,9 @@ function onCardAccess(request, response)
 {
     appLog("onCardAccess");
 
-    if(_isAccessingCard == true) {
+    if(_isAccessingCard == true) 
+    {
+        appLog("onCardAccess card is being accessed");
         response.statusCode = 400;
         response.setHeader('Content-Type', 'text/plain');
         response.write("a card is being accessed");
@@ -759,7 +762,7 @@ function onAdjustStepperW(request, response)
         {
             var scsCommand = {};
             
-            scsCommand["userCommand"] = "pull up smart card";
+            scsCommand["userCommand"] = "move card from bay to smartCardGate";
             scsCommand["commandId"] = newCommandId();
             scsCommand["smartCardNumber"] = cmd.index;
 
@@ -779,7 +782,7 @@ function onAdjustStepperW(request, response)
         {
             var scsCommand = {};
             
-            scsCommand["userCommand"] = "put back smart card";
+            scsCommand["userCommand"] = "move card from smartCardGate to bay";
             scsCommand["commandId"] = newCommandId();
             scsCommand["smartCardNumber"] = cmd.index;
 
