@@ -517,7 +517,7 @@ void UserCommandRunner::executeUserCmdFinishStepperWAdjustment()
 	_userCommand.wAdjusted = true;
 }
 
-void UserCommandRunner::executeUserCmdCardFromSmartCardGateToSmartCardReaderGate()
+void UserCommandRunner::executeUserCmd_Card_from_SmartCardGate_to_SmartCardReaderGate()
 {
 	if(getCurrentPosition() != Position::SmartCardGate) {
 		throwError("UserCommandRunner::executeUserCmdCardFromSmartCardGateToSmartCardReaderGate not in Position::SmartCardGate");
@@ -529,7 +529,7 @@ void UserCommandRunner::executeUserCmdCardFromSmartCardGateToSmartCardReaderGate
 	toSmartCardReaderGate();
 }
 
-void UserCommandRunner::executeUserCmdCardFromSmartCardReaderGateToSmartCardReader()
+void UserCommandRunner::executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardReader()
 {
 	if(getCurrentPosition() != Position::SmartCardReaderGate) {
 		throwError("UserCommandRunner::executeUserCmdCardFromSmartCardReaderGateToSmartCardReader not in Position::SmartCardReaderGate");
@@ -542,7 +542,7 @@ void UserCommandRunner::executeUserCmdCardFromSmartCardReaderGateToSmartCardRead
 	openClamp();
 }
 
-void UserCommandRunner::executeUserCmdCardFromSmartCardReaderToSmartCardReaderGate()
+void UserCommandRunner::executeUserCmd_Card_from_SmartCardReader_to_SmartCardReaderGate()
 {
 	if(_userCommand.cardState != CardState::InSmartCardReader) {
 		throwError("UserCommandRunner::executeUserCmdCardFromSmartCardReaderToSmartCardReaderGate no card in smart card reader");
@@ -552,7 +552,7 @@ void UserCommandRunner::executeUserCmdCardFromSmartCardReaderToSmartCardReaderGa
 	smartCardReader_gate_withCard();
 }
 
-void UserCommandRunner::executeUserCmdCardFromSmartCardReaderGateToSmartCardGate()
+void UserCommandRunner::executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardGate()
 {
 	if(getCurrentPosition() != Position::SmartCardReaderGate) {
 		throwError("UserCommandRunner::executeUserCmdCardFromSmartCardReaderGateToSmartCardGate not in Position::SmartCardReaderGate");
@@ -564,24 +564,49 @@ void UserCommandRunner::executeUserCmdCardFromSmartCardReaderGateToSmartCardGate
 	toSmartCardGate();
 }
 
-void UserCommandRunner::executeUserCmdCardFromSmartCardGateToBarcodeReaderGate()
+void UserCommandRunner::executeUserCmd_Card_from_SmartCardGate_to_BarcodeReaderGate()
 {
+	if(getCurrentPosition() != Position::SmartCardGate) {
+		throwError("UserCommandRunner::executeUserCmdCardFromSmartCardGateToBarcodeReaderGate not in Position::SmartCardReaderGate");
+	}
+	if(_userCommand.cardState != CardState::InSmartCardGate) {
+		throwError("UserCommandRunner::executeUserCmdCardFromSmartCardGateToBarcodeReaderGate no card in smart card reader gate");
+	}
 
+	toBarcodeReaderGate();
 }
 
-void UserCommandRunner::executeUserCmdCardFromBarcodeReaderGateToBarcodeReader()
+void UserCommandRunner::executeUserCmd_Card_from_BarcodeReaderGate_to_BarcodeReader()
 {
+	if(getCurrentPosition() != Position::BarCodeReaderGate) {
+		throwError("UserCommandRunner::executeUserCmdCardFromBarcodeReaderGateToBarcodeReader not in Position::SmartCardReaderGate");
+	}
+	if(_userCommand.cardState != CardState::InBarcodeReaderGate) {
+		throwError("UserCommandRunner::executeUserCmdCardFromBarcodeReaderGateToBarcodeReader no card in smart card reader gate");
+	}
 
+	gate_barcodeReader();;
 }
 
-void UserCommandRunner::executeUserCmdCardFromBarcodeReaderToBarcodeReaderGate()
+void UserCommandRunner::executeUserCmd_Card_from_BarcodeReader_to_BarcodeReaderGate()
 {
+	if(_userCommand.cardState != CardState::InBarcodeReader) {
+		throwError("UserCommandRunner::executeUserCmdCardFromBarcodeReaderGateToBarcodeReader no card in smart card reader gate");
+	}
 
+	barcodeReader_gate();;
 }
 
-void UserCommandRunner::executeUserCmdCardFromBarcodeReaderGateToSmartCardGate()
+void UserCommandRunner::executeUserCmd_Card_from_BarcodeReaderGate_to_SmartCardGate()
 {
+	if(getCurrentPosition() != Position::BarCodeReaderGate) {
+		throwError("UserCommandRunner::executeUserCmdCardFromBarcodeReaderGateToSmartCardGate not in Position::SmartCardReaderGate");
+	}
+	if(_userCommand.cardState != CardState::InBarcodeReaderGate) {
+		throwError("UserCommandRunner::executeUserCmdCardFromBarcodeReaderGateToSmartCardGate no card in smart card reader gate");
+	}
 
+	toSmartCardGate();
 }
 
 void UserCommandRunner::executeUserCmdPutBackSmartCard()
@@ -3972,7 +3997,7 @@ void UserCommandRunner::runTask()
 						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
 					}
 					else {
-						executeUserCmdCardFromSmartCardGateToSmartCardReaderGate();
+						executeUserCmd_Card_from_SmartCardGate_to_SmartCardReaderGate();
 					}
 				}
 				else if(_userCommand.command == UserCmdCardFromSmartCardReaderGateToSmartCardReader)
@@ -3982,7 +4007,7 @@ void UserCommandRunner::runTask()
 						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
 					}
 					else {
-						executeUserCmdCardFromSmartCardReaderGateToSmartCardReader();
+						executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardReader();
 					}
 				}
 				else if(_userCommand.command == UserCmdCardFromSmartCardReaderToSmartCardReaderGate)
@@ -3992,7 +4017,7 @@ void UserCommandRunner::runTask()
 						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
 					}
 					else {
-						executeUserCmdCardFromSmartCardReaderToSmartCardReaderGate();
+						executeUserCmd_Card_from_SmartCardReader_to_SmartCardReaderGate();
 					}
 				}
 				else if(_userCommand.command == UserCmdCardFromSmartCardReaderGateToSmartCardGate)
@@ -4002,7 +4027,7 @@ void UserCommandRunner::runTask()
 						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
 					}
 					else {
-						executeUserCmdCardFromSmartCardReaderGateToSmartCardGate();
+						executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardGate();
 					}
 				}
 				else if(_userCommand.command == UserCmdCardFromSmartCardGateToBarcodeReaderGate)
@@ -4012,7 +4037,7 @@ void UserCommandRunner::runTask()
 						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
 					}
 					else {
-						executeUserCmdCardFromSmartCardGateToBarcodeReaderGate();
+						executeUserCmd_Card_from_SmartCardGate_to_BarcodeReaderGate();
 					}
 				}
 				else if(_userCommand.command == UserCmdCardFromBarcodeReaderGateToBarcodeReader)
@@ -4022,7 +4047,7 @@ void UserCommandRunner::runTask()
 						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
 					}
 					else {
-						executeUserCmdCardFromBarcodeReaderGateToBarcodeReader();
+						executeUserCmd_Card_from_BarcodeReaderGate_to_BarcodeReader();
 					}
 				}
 				else if(_userCommand.command == UserCmdCardFromBarcodeReaderToBarcodeReaderGate)
@@ -4032,7 +4057,7 @@ void UserCommandRunner::runTask()
 						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
 					}
 					else {
-						executeUserCmdCardFromBarcodeReaderToBarcodeReaderGate();
+						executeUserCmd_Card_from_BarcodeReader_to_BarcodeReaderGate();
 					}
 				}
 				else if(_userCommand.command == UserCmdCardFromBarcodeReaderGateToSmartCardGate)
@@ -4042,7 +4067,7 @@ void UserCommandRunner::runTask()
 						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
 					}
 					else {
-						executeUserCmdCardFromBarcodeReaderGateToSmartCardGate();
+						executeUserCmd_Card_from_BarcodeReaderGate_to_SmartCardGate();
 					}
 				}
 				else if(_userCommand.command == UserCmdCardFromSmartCardGateToBay)

@@ -225,14 +225,14 @@ private:
 	void executeUserCmdTouchScreen();
 	//	sub user commands
 	void executeUserCmdPullUpSmartCard();
-	void executeUserCmdCardFromSmartCardGateToSmartCardReaderGate();
-	void executeUserCmdCardFromSmartCardReaderGateToSmartCardReader();
-	void executeUserCmdCardFromSmartCardReaderToSmartCardReaderGate();
-	void executeUserCmdCardFromSmartCardReaderGateToSmartCardGate();
-	void executeUserCmdCardFromSmartCardGateToBarcodeReaderGate();
-	void executeUserCmdCardFromBarcodeReaderGateToBarcodeReader();
-	void executeUserCmdCardFromBarcodeReaderToBarcodeReaderGate();
-	void executeUserCmdCardFromBarcodeReaderGateToSmartCardGate();
+	void executeUserCmd_Card_from_SmartCardGate_to_SmartCardReaderGate();
+	void executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardReader();
+	void executeUserCmd_Card_from_SmartCardReader_to_SmartCardReaderGate();
+	void executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardGate();
+	void executeUserCmd_Card_from_SmartCardGate_to_BarcodeReaderGate();
+	void executeUserCmd_Card_from_BarcodeReaderGate_to_BarcodeReader();
+	void executeUserCmd_Card_from_BarcodeReader_to_BarcodeReaderGate();
+	void executeUserCmd_Card_from_BarcodeReaderGate_to_SmartCardGate();
 	void executeUserCmdPutBackSmartCard();
 
 	enum class Position
