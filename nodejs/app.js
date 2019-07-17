@@ -579,9 +579,106 @@ function onCardAccess(request, response)
                         
                         sendSCSCommand(JSON.stringify(scsCommand), response);
                     }
-                    // else if(cmd.command === "touchScreen") {
-
-                    // }
+                    else if(cmd.command === "move card from bay to smartCardGate")
+                    {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "move card from bay to smartCardGate";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
+                        
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
+                    }
+                    else if(cmd.command === "move card from smartCardGate to smartCardReaderGate")
+                    {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "move card from smartCardGate to smartCardReaderGate";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
+                        
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
+                    }
+                    else if(cmd.command === "move card from smartCardReaderGate to smartCardReader")
+                    {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "move card from smartCardReaderGate to smartCardReader";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
+                        
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
+                    }
+                    else if(cmd.command === "move card from smartCardReader to smartCardReaderGate")
+                    {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "move card from smartCardReader to smartCardReaderGate";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
+                        
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
+                    }
+                    else if(cmd.command === "move card from smartCardReaderGate to smartCardGate")
+                    {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "move card from smartCardReaderGate to smartCardGate";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
+                        
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
+                    }
+                    else if(cmd.command === "move card from smartCardGate to barcodeReaderGate")
+                    {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "move card from smartCardGate to barcodeReaderGate";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
+                        
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
+                    }
+                    else if(cmd.command === "move card from barcodeReaderGate to barcodeReader")
+                    {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "move card from barcodeReaderGate to barcodeReader";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
+                        
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
+                    }
+                    else if(cmd.command === "move card from barcodeReader to barcodeReaderGate")
+                    {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "move card from barcodeReader to barcodeReaderGate";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
+                        
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
+                    }
+                    else if(cmd.command === "move card from barcodeReaderGate to smartCardGate")
+                    {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "move card from barcodeReaderGate to smartCardGate";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
+                        
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
+                    }
+                    else if(cmd.command === "move card from smartCardGate to bay")
+                    {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "move card from smartCardGate to bay";
+                        scsCommand["commandId"] = newCommandId();
+                        scsCommand["smartCardNumber"] = slotNumber;
+                        
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
+                    }
                     else {
                         appLog("onCardAccess unsupported command: " + command);
                         response.statusCode = 400;
