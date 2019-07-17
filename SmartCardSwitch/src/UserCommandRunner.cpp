@@ -539,7 +539,6 @@ void UserCommandRunner::executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCar
 	}
 
 	gate_smartCardReader_withCard();
-	openClamp();
 }
 
 void UserCommandRunner::executeUserCmd_Card_from_SmartCardReader_to_SmartCardReaderGate()
@@ -548,7 +547,6 @@ void UserCommandRunner::executeUserCmd_Card_from_SmartCardReader_to_SmartCardRea
 		throwError("UserCommandRunner::executeUserCmdCardFromSmartCardReaderToSmartCardReaderGate no card in smart card reader");
 	}
 
-	closeClamp();
 	smartCardReader_gate_withCard();
 }
 
