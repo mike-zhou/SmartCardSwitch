@@ -16,7 +16,7 @@ const iFingerHostName = "127.0.0.1";
 const iFingerHostPort = 60004;
 
 //log relevant setting
-const logFolder = "~/Temp/logs/nodejs";
+const logFolder = "/home/user1/Temp/logs/nodejs";
 const logFileName = "log";
 const logFileAmount = 10;
 const logFileSize = 5000000; // 5M bytes
@@ -64,7 +64,7 @@ function maintainLog()
     {
         fs.appendFile(logFolder + "/" + fileName, logBuffer, function(error) {
             if(error) {
-                console.log("ERROR: maintainLog error: " + error);
+                console.log("ERROR: persistLog error: " + error);
             }
         });
         logBuffer = ""; //clear logBuffer
@@ -131,8 +131,21 @@ function maintainLog()
                         }
 
                         {
-                            let fileName = logFileName + "_" + max_index;
-                            persistLog(fileName);
+                            let filePathName = logFolder + "/" + logFileName + "_" + max_index;
+                            //get file size
+                            fs.stat(filePathName, function(err, stats) {
+                                if(err) {
+                                    console.log("ERROR: failed to get file size of " + filePathName);
+                                }
+                                else {
+                                    if(stats["size"] < logFileSize) {
+                                        persistLog(logFileName + "_" + max_index); //save log to current file
+                                    }
+                                    else {
+                                        persistLog(logFileName + "_" + (max_index + 1)); //save log to new file
+                                    }
+                                }
+                            });
                         }
                     }
                 }
