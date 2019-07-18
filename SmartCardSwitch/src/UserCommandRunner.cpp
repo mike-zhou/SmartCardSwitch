@@ -2732,12 +2732,6 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 
 	pCoordinateStorage->ReloadCoordinate();
 
-//	if(_deviceHomePositioned == false) {
-//		errorInfo = ErrorDeviceNotHomePositioned;
-//		pLogger->LogError("UserCommandRunner::RunCommand device not home positioned, denied: " + jsonCmd);
-//		return;
-//	}
-
 	if(_userCommand.state != CommandState::Idle) {
 		errorInfo = ErrorUserCommandOnGoing;
 		pLogger->LogError("UserCommandRunner::RunCommand command ongoing, denied: " + jsonCmd);
@@ -2817,7 +2811,9 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		}
 		else if(_userCommand.command == UserCmdBackToHome)
 		{
-			if(_userCommand.cardState != CardState::InBay) {
+			if(_userCommand.cardState != CardState::InBay)
+			{
+				//there is a card on its way, cannot back to home
 				errorInfo = ErrorCardIsBeingAccessed;
 				pLogger->LogError("UserCommandRunner::RunCommand " + errorInfo);
 				return;
