@@ -1100,6 +1100,7 @@ void UserCommandRunner::toHome()
 		curV = currentV();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::Home, x, y, z, w);
 		v = 0;
+		moveStepperV(curV, v);
 		moveStepperW(curW, w);
 		moveStepperX(curX, x);
 		moveStepperY(curY, y);
