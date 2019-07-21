@@ -163,15 +163,41 @@ function onElementClicked()
         _anchorTime = new Date();
         _speed = 1;
    }
-    else if(elementId === "fastBackWard") {
+    else if(elementId === "fastBackWard") 
+    {
         _anchorPosition = Number.parseInt(_currentFrameName);
         _anchorTime = new Date();
-        _speed = _speed - 1;
+
+        if(_speed > 1) {
+            _speed = _speed / 2;
+        }
+        else if(_speed == 1) {
+            _speed = 0;
+        }
+        else if(_speed == 0) {
+            _speed = -1;
+        }
+        else {
+            _speed = _speed * 2;
+        }
     }
-    else if(elementId === "fastForward") {
+    else if(elementId === "fastForward") 
+    {
         _anchorPosition = Number.parseInt(_currentFrameName);
         _anchorTime = new Date();
-        _speed = _speed + 1;
+
+        if(_speed < -1) {
+            _speed = _speed / 2;
+        }
+        else if(_speed == -1) {
+            _speed = 0;
+        }
+        else if(_speed == 0) {
+            _speed = 1;
+        }
+        else {
+            _speed = _speed * 2;
+        }
     }
     else if(elementId === "toLastFrame") {
         _anchorPosition = 0; //to get frame at this time
