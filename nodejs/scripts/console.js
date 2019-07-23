@@ -12,14 +12,14 @@ function getSelectedMappingName()
 }
 
 function updateCardSlotMappingTable(mapping) {
-    var html = "<table class=\"cardSlotAccessTable\">";
+    let html = "<table class=\"cardSlotAccessTable\">";
 
     //header
     html = html + "<tr><th>Card Name</th><th>Slot</th><th>Action</th></tr>";
 
     //mappings
-    for (var i = 0; i < mapping.length; i++) {
-        var row;
+    for (let i = 0; i < mapping.length; i++) {
+        let row;
 
         row = "<tr>";
         row = row + "<td><input name=\"cardIndicator\" id=\"cardAccess_indicator_" + i +"\" type=\"radio\">" + mapping[i].cardName + "</td>";
@@ -39,6 +39,12 @@ function updateCardSlotMappingTable(mapping) {
     html = html + "</table>";
 
     document.getElementById("cardAccess").innerHTML = html;
+
+    html = "";
+    for(let i=0; i<mapping.length; i++) {
+        html = html + "<option>" + mapping[i].cardName + "</option>";
+    }
+    document.getElementById("subCommand_cardSelection").innerHTML = html;
 }
 
 function loadMapping(mappingName)
@@ -309,6 +315,62 @@ function onCardTapBarcode(index)
     xhr.send(JSON.stringify(command));
 }
 
+function onSubCommand(action)
+{
+    let cardName = document.getElementById("subCommand_cardSelection").value;
+    let cmdStr = "";
+
+    if(action === "bayToSmartCardGate") {
+        cmdStr = "move card from bay to smartCardGate";
+    }
+    else if(action === "smartCardGateToSmartCardReaderGate") {
+        cmdStr = "move card from smartCardGate to smartCardReaderGate";
+    }
+    else if(action === "smartCardReaderGateToSmartCardReader") {
+        cmdStr = "move card from smartCardReaderGate to smartCardReader";
+    }
+    else if(action === "smartCardReaderToSmartCardReaderGate") {
+        cmdStr = "move card from smartCardReader to smartCardReaderGate";
+    }
+    else if(action === "smartCardReaderGateToSmartCardGate") {
+        cmdStr = "move card from smartCardReaderGate to smartCardGate";
+    }
+    else if(action === "smartCardGateToBay") {
+        cmdStr = "move card from smartCardGate to bay";
+    }
+    else if(action === "cardSelection") {
+        return;
+    }
+    else {
+        alert("Error: unknown subCommand action: " + action);
+        return;
+    }
+
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = "text/plain";
+    xhr.open('POST', '/cardAccess');
+
+    var command = {};
+    command["command"] = cmdStr;
+    command["name"] = cardName;
+
+    xhr.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                console.log(cardName + ": " + cmdStr);
+            } else {
+                alert('Error: ' + xhr.status + ":" + xhr.statusText + ":" + xhr.response); // An error occurred during the request.
+            }
+        }
+    };
+    xhr.send(JSON.stringify(command));
+}
+
 function onAddTouchScreenArea()
 {
     var areaName = document.getElementById("touchScreen_areas").value;
@@ -474,6 +536,12 @@ function onElementClicked()
         else {
             alert("unknown action: " + action);
         }
+    }
+    else if(group === "subCommand") 
+    {
+        let action = paraArray[1];
+
+        onSubCommand(action);
     }
     else if(group === "touchScreen") {
         var action = paraArray[1];
