@@ -247,8 +247,11 @@ static int frameRead(void)
 
 /**
 	mainloop: read frames and process them
+	return value:
+		true: 	a frame is processed successfully
+		false:	error occurs
 */
-static void captureImage(void)
+static bool captureImage(void)
 {	
 	for (;;)
 	{
@@ -269,18 +272,22 @@ static void captureImage(void)
 			if (EINTR == errno)
 				continue;
 
-			throw Poco::Exception("error in waiting device file");
+			pLogger->LogError("error in waiting device file");
+			return false;
 		}
 
 		if (0 == r)
 		{
-			throw Poco::Exception("device time out");
+			pLogger->LogError("device time out");
+			return false;
 		}
 
 		frameRead();
 
 		break;
 	}
+
+	return true;
 }
 
 static void deviceUninit(void)
@@ -519,6 +526,8 @@ private:
 
 		try
 		{
+			bool errorOccured = false;
+
 			// open and initialize device
 			deviceOpen();
 			deviceInit();
@@ -531,8 +540,19 @@ private:
 				}
 				else
 				{
+					if(errorOccured)
+					{
+						deviceOpen();
+						deviceInit();
+					}
 					// capture a frame
-					captureImage();
+					if(captureImage() == false)
+					{
+						deviceUninit();
+						deviceClose();
+						errorOccured = true;
+						sleep(5000);
+					}
 				}
 
 				deleteObsoleteFrames();
