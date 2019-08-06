@@ -2855,6 +2855,9 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		else if(_userCommand.command == UserCmdCardFromBarcodeReaderGateToSmartCardGate) {
 			parseUserCmdSmartCard(ds);
 		}
+		else if(_userCommand.command == UserCmdReturnSmartCard) {
+			;
+		}
 		else {
 			errorInfo = ErrorUnSupportedCommand;
 			pLogger->LogError("UserCommandRunner::RunCommand unsupported command, denied: " + jsonCmd);
@@ -4073,6 +4076,48 @@ void UserCommandRunner::runTask()
 					}
 					else {
 						executeUserCmdPutBackSmartCard();
+					}
+				}
+				else if(_userCommand.command == UserCmdReturnSmartCard)
+				{
+					switch(_userCommand.cardState)
+					{
+						case CardState::InBarcodeReader:
+						case CardState::InBarcodeReaderGate:
+						case CardState::InSmartCardReader:
+						case CardState::InSmartCardReaderGate:
+						case CardState::InBay:
+							break; //legal state
+						default:
+						{
+							errorInfo = ErrorSmartCardNotInPredefinedPosition;
+							pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
+							break;
+						}
+					}
+
+					if(errorInfo.empty())
+					{
+						if(_userCommand.cardState == CardState::InSmartCardReader) {
+							executeUserCmd_Card_from_SmartCardReader_to_SmartCardReaderGate();
+							_userCommand.cardState = CardState::InSmartCardReaderGate;
+						}
+						if(_userCommand.cardState == CardState::InSmartCardReaderGate) {
+							executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardGate();
+							_userCommand.cardState = CardState::InSmartCardGate;
+						}
+						if(_userCommand.cardState == CardState::InBarcodeReader) {
+							executeUserCmd_Card_from_BarcodeReader_to_BarcodeReaderGate();
+							_userCommand.cardState = CardState::InBarcodeReaderGate;
+						}
+						if(_userCommand.cardState == CardState::InBarcodeReaderGate) {
+							executeUserCmd_Card_from_BarcodeReaderGate_to_SmartCardGate();
+							_userCommand.cardState = CardState::InSmartCardGate;
+						}
+						if(_userCommand.cardState == CardState::InSmartCardGate) {
+							executeUserCmdPutBackSmartCard();
+							_userCommand.cardState = CardState::InBay;
+						}
 					}
 				}
 				else {

@@ -19,11 +19,7 @@ public:
 	const std::string UserCmdResetDevice = "reset device";
 	const std::string UserCmdAdjustStepperW = "adjust stepper w";
 	const std::string UserCmdFinishStepperWAdjustment = "finish stepper w adjustment";
-	const std::string UserCmdInsertSmartCard = "insert smart card";
-	const std::string UserCmdRemoveSmartCard = "remove smart card";
-	const std::string UserCmdSwipeSmartCard = "swipe smart card";
 	const std::string UserCmdTapSmartCard = "tap smart card";
-	const std::string UserCmdTapBarCode = "tap bar code";
 	const std::string UserCmdPressPedKey = "press PED key";
 	const std::string UserCmdPressSoftKey = "press soft key";
 	const std::string UserCmdPressAssistKey = "press assist key";
@@ -34,6 +30,13 @@ public:
 	const std::string UserCmdPowerOnDcm = "power on dcm";
 	const std::string UserCmdPowerOffDcm = "power off dcm";
 
+	//use either power commands or sub commands to insert, remove, swipe smart card or tap bar code.
+	const std::string UserCmdReturnSmartCard = "return smart card";
+	//power commands
+	const std::string UserCmdInsertSmartCard = "insert smart card";
+	const std::string UserCmdRemoveSmartCard = "remove smart card";
+	const std::string UserCmdSwipeSmartCard = "swipe smart card";
+	const std::string UserCmdTapBarCode = "tap bar code";
 	//sub commands
 	const std::string UserCmdCardFromBayToSmartCardGate = "move card from bay to smartCardGate";
 	const std::string UserCmdCardFromSmartCardGateToSmartCardReaderGate = "move card from smartCardGate to smartCardReaderGate";
@@ -71,6 +74,7 @@ public:
 	const std::string ErrorSmartCardNotInSmartCardReaderGate = "no card is in smart card reader gate";
 	const std::string ErrorSmartCardNotInBarcodeReaderGate = "no card is in barcode reader gate";
 	const std::string ErrorSmartCardNotInBarcodeReader = "no card is in barcode reader";
+	const std::string ErrorSmartCardNotInPredefinedPosition = "card is not in predefined position";
 
 	const std::string UserCmdStatusOnGoing = "ongoing";
 	const std::string UserCmdStatusFailed = "failed";
