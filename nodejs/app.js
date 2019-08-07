@@ -692,6 +692,15 @@ function onCardAccess(request, response)
                         
                         sendSCSCommand(JSON.stringify(scsCommand), response);
                     }
+                    else if(cmd.command === "return card") 
+                    {
+                        var scsCommand = {};
+                        
+                        scsCommand["userCommand"] = "return smart card";
+                        scsCommand["commandId"] = newCommandId();
+                        
+                        sendSCSCommand(JSON.stringify(scsCommand), response);
+                    }
                     else {
                         appLog("onCardAccess unsupported command: " + command);
                         response.statusCode = 400;
