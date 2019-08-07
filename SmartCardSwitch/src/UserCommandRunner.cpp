@@ -4086,6 +4086,7 @@ void UserCommandRunner::runTask()
 						case CardState::InBarcodeReaderGate:
 						case CardState::InSmartCardReader:
 						case CardState::InSmartCardReaderGate:
+						case CardState::InSmartCardGate:
 						case CardState::InBay:
 							break; //legal state
 						default:
