@@ -74,6 +74,7 @@
 #include "Poco/Net/HTTPClientSession.h"
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTMLForm.h"
+#include "Poco/Net/HTTPResponse.h"
 #include "Poco/Net/FilePartSource.h"
 #include "Poco/ThreadPool.h"
 
@@ -603,6 +604,7 @@ private:
 			Poco::Net::HTTPClientSession session(_hostServerIp, _hostServerPort);
 			Poco::Net::HTTPRequest request;
 			Poco::Net::HTMLForm form;
+			Poco::Net::HTTPResponse response;
 
 			request.setURI(_hostServerApi);
 			request.setMethod(Poco::Net::HTTPRequest::HTTP_POST);
@@ -619,6 +621,7 @@ private:
 			form.write(outputStream);
 
 			//http response is ignored.
+			session.receiveResponse(response);
 		}
 		catch(Poco::Exception & e)
 		{
