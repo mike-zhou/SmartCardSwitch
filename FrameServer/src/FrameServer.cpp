@@ -52,10 +52,10 @@ using Poco::NullOutputStream;
 using Poco::StreamCopier;
 
 
-class MyPartHandler: public Poco::Net::PartHandler
+class FrameFileHandler: public Poco::Net::PartHandler
 {
 public:
-	MyPartHandler():
+	FrameFileHandler():
 		_length(0)
 	{
 	}
@@ -106,11 +106,11 @@ private:
 };
 
 
-class FormRequestHandler: public HTTPRequestHandler
+class UploadRequestHandler: public HTTPRequestHandler
 	/// Return a HTML document with the current date and time.
 {
 public:
-	FormRequestHandler()
+	UploadRequestHandler()
 	{
 	}
 
@@ -119,7 +119,7 @@ public:
 		Application& app = Application::instance();
 		app.logger().information("Request from " + request.clientAddress().toString());
 
-		MyPartHandler partHandler;
+		FrameFileHandler partHandler;
 		HTMLForm form(request, request.stream(), partHandler);
 
 		response.setChunkedTransferEncoding(true);
@@ -187,21 +187,21 @@ public:
 };
 
 
-class FormRequestHandlerFactory: public HTTPRequestHandlerFactory
+class UploadRequestHandlerFactory: public HTTPRequestHandlerFactory
 {
 public:
-	FormRequestHandlerFactory()
+	UploadRequestHandlerFactory()
 	{
 	}
 
 	HTTPRequestHandler* createRequestHandler(const HTTPServerRequest& request)
 	{
-		return new FormRequestHandler;
+		return new UploadRequestHandler;
 	}
 };
 
 
-class HTTPFormServer: public Poco::Util::ServerApplication
+class FrameServer: public Poco::Util::ServerApplication
 	/// The main application class.
 	///
 	/// This class handles command-line arguments and
@@ -221,11 +221,11 @@ class HTTPFormServer: public Poco::Util::ServerApplication
 	/// To test the FormServer you can use any web browser (http://localhost:9980/).
 {
 public:
-	HTTPFormServer(): _helpRequested(false)
+	FrameServer(): _helpRequested(false)
 	{
 	}
 
-	~HTTPFormServer()
+	~FrameServer()
 	{
 	}
 
@@ -281,7 +281,7 @@ protected:
 			// set-up a server socket
 			ServerSocket svs(port);
 			// set-up a HTTPServer instance
-			HTTPServer srv(new FormRequestHandlerFactory, svs, new HTTPServerParams);
+			HTTPServer srv(new UploadRequestHandlerFactory, svs, new HTTPServerParams);
 			// start the HTTPServer
 			srv.start();
 			// wait for CTRL-C or kill
@@ -299,6 +299,6 @@ private:
 
 int main(int argc, char** argv)
 {
-	HTTPFormServer app;
+	FrameServer app;
 	return app.run(argc, argv);
 }
