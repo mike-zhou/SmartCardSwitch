@@ -69,6 +69,13 @@
 #include "Poco/Path.h"
 #include "Poco/File.h"
 #include "Poco/DirectoryIterator.h"
+#include "Poco/Mutex.h"
+#include "Poco/Semaphore.h"
+#include "Poco/Net/HTTPClientSession.h"
+#include "Poco/Net/HTTPRequest.h"
+#include "Poco/Net/HTMLForm.h"
+#include "Poco/Net/FilePartSource.h"
+#include "Poco/ThreadPool.h"
 
 #include "Logger.h"
 
@@ -93,13 +100,46 @@ typedef enum {
         IO_METHOD_READ,
 } io_method;
 
-struct buffer {
-        void *                  start;
-        size_t                  length;
+enum FrameDataState
+{
+	IDLE = 0,
+	CAPTURING,
+	RAW_DATA_READY,
+	DECODING
 };
 
-static int              fd              = -1;
-struct buffer *         buffers         = NULL;
+struct FrameData
+{
+	enum FrameDataState state;
+
+	int dataSize;
+	void * pRawFrame;
+	void * pDecodedFrame;
+
+	Poco::Timestamp stamp;
+};
+
+struct FrameCache
+{
+	FrameCache()
+	{
+		pSemaphore = NULL;
+		frameAmount = 0;
+		pFrames = NULL;
+	}
+
+	~FrameCache()
+	{
+		delete pSemaphore;
+	}
+
+	Poco::Mutex mutex;
+	Poco::Semaphore * pSemaphore;
+	int frameAmount;
+	struct FrameData * pFrames;
+} _frameCache;
+
+static int _fd = -1;
 
 // global settings
 static unsigned int _width;
@@ -107,14 +147,17 @@ static unsigned int _height;
 static int _fps;
 static unsigned char _jpegQuality;
 static std::string _deviceFile;
-static unsigned char * _pYUV422Buffer;
-static Poco::Path _framesRootFolder;
-static unsigned int _record_period_hours = 1;
+std::string _ramdiskFolder;
+std::string _hostServerIp;
+int _hostServerPort;
+std::string _hostServerApi;
+std::string _monitorId;
+int _uploadTimeout;
 
 /**
 	Do ioctl and retry if error was EINTR ("A signal was caught during the ioctl() operation."). Parameters are the same as on ioctl.
 
-	\param fd file descriptor
+	\param _fd file descriptor
 	\param request request
 	\param argp argument
 	\returns result from ioctl
@@ -134,7 +177,7 @@ static int xioctl(int fd, int request, void* argp)
 
 	\param img image to write
 */
-static void jpegWrite(unsigned char* img, char* jpegFilename)
+static void jpegWrite(unsigned char* img, const char* jpegFilename)
 {
 	struct jpeg_compress_struct cinfo;
 	struct jpeg_error_mgr jerr;
@@ -184,63 +227,60 @@ static void jpegWrite(unsigned char* img, char* jpegFilename)
 }
 
 /**
-	process image read
-*/
-static void imageProcess(const void* p)
-{
-	char fileName[256];
-	char folderName[32];
-	unsigned char* src = (unsigned char*)p;
-	Poco::Timestamp curTime;
-	long milliseconds = curTime.raw()/1000;
-	int minutes = milliseconds/60000;
-	Poco::Path frameFolder = _framesRootFolder;
-
-	YUV420toYUV444(_width, _height, src, _pYUV422Buffer);
-
-	sprintf(folderName, "%010d", minutes);
-	sprintf(fileName, "%010ld.jpg", milliseconds);
-
-	frameFolder.pushDirectory(folderName);
-
-	try
-	{
-		Poco::File folder (frameFolder);
-		if(!folder.exists()) {
-			pLogger->LogInfo("create folder: " + folder.path());
-			folder.createDirectories();
-		}
-
-		frameFolder.setFileName(fileName);
-		sprintf(fileName, "%s", frameFolder.toString().c_str());
-		// write jpeg
-		jpegWrite(_pYUV422Buffer, fileName);
-	}
-	catch(...) {
-		//do nothing.
-	}
-}
-
-/**
 	read single frame
 */
 static int frameRead(void)
 {
-	if (-1 == v4l2_read(fd, buffers[0].start, buffers[0].length)) {
-		switch (errno) {
-			case EAGAIN:
-				return 0;
+	struct FrameData * pFrameData = NULL;
 
-			case EIO:
-				// Could ignore EIO, see spec.
-				// fall through
-
-			default:
-				throw Poco::Exception("failed to read from device");
+	{
+		Poco::ScopedLock<Poco::Mutex> lock(_frameCache.mutex);
+		for(int i=0; i<_frameCache.frameAmount; i++)
+		{
+			if(_frameCache.pFrames[i].state == IDLE)
+			{
+				pFrameData = &(_frameCache.pFrames[i]);
+				pFrameData->state = CAPTURING;
+				break;
+			}
 		}
 	}
 
-	imageProcess(buffers[0].start);
+	if(pFrameData == NULL) {
+		pLogger->LogError("frameRead no idle frame cache");
+	}
+	else
+	{
+		if (-1 == v4l2_read(_fd, pFrameData->pRawFrame, pFrameData->dataSize))
+		{
+			{
+				Poco::ScopedLock<Poco::Mutex> lock(_frameCache.mutex);
+
+				pFrameData->state = IDLE;
+				memset(pFrameData->pRawFrame, 0, pFrameData->dataSize);
+			}
+
+			switch (errno) {
+				case EAGAIN:
+					return 0;
+
+				case EIO:
+					// Could ignore EIO, see spec.
+					// fall through
+
+				default:
+					throw Poco::Exception("failed to read from device");
+			}
+		}
+		else
+		{
+			Poco::ScopedLock<Poco::Mutex> lock(_frameCache.mutex);
+
+			pFrameData->stamp.update();
+			pFrameData->state = RAW_DATA_READY;
+			_frameCache.pSemaphore->set();//trigger an uploading task.
+		}
+	}
 
 	return 1;
 }
@@ -260,13 +300,13 @@ static bool captureImage(void)
 		int r;
 
 		FD_ZERO(&fds);
-		FD_SET(fd, &fds);
+		FD_SET(_fd, &fds);
 
 		/* Timeout. */
 		tv.tv_sec = 1;
 		tv.tv_usec = 0;
 
-		r = select(fd + 1, &fds, NULL, NULL, &tv);
+		r = select(_fd + 1, &fds, NULL, NULL, &tv);
 
 		if (-1 == r) {
 			if (EINTR == errno)
@@ -290,31 +330,6 @@ static bool captureImage(void)
 	return true;
 }
 
-static void deviceUninit(void)
-{
-	free(buffers[0].start);
-	free(buffers);
-}
-
-static void readInit(unsigned int buffer_size)
-{
-	buffers = (struct buffer *)calloc(1, sizeof(*buffers));
-
-	if (!buffers)
-	{
-		throw Poco::Exception("Out of memory");
-	}
-
-	buffers[0].length = buffer_size;
-	buffers[0].start = malloc(buffer_size);
-
-	if (!buffers[0].start) {
-		throw Poco::Exception("Out of memory");
-	}
-}
-
-
-
 /**
 	initialize device
 */
@@ -327,7 +342,7 @@ static void deviceInit(void)
 	struct v4l2_streamparm frameint;
 	unsigned int min;
 
-	if (-1 == xioctl(fd, VIDIOC_QUERYCAP, &cap)) {
+	if (-1 == xioctl(_fd, VIDIOC_QUERYCAP, &cap)) {
 		if (EINVAL == errno) {
 			throw Poco::Exception("none v4l2 device");
 		} else {
@@ -348,11 +363,11 @@ static void deviceInit(void)
 
 	cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-	if (0 == xioctl(fd, VIDIOC_CROPCAP, &cropcap)) {
+	if (0 == xioctl(_fd, VIDIOC_CROPCAP, &cropcap)) {
 		crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 		crop.c = cropcap.defrect; /* reset to default */
 
-		if (-1 == xioctl(fd, VIDIOC_S_CROP, &crop)) {
+		if (-1 == xioctl(_fd, VIDIOC_S_CROP, &crop)) {
 			switch (errno) {
 				case EINVAL:
 					/* Cropping not supported. */
@@ -375,7 +390,7 @@ static void deviceInit(void)
 	fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
 	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
 
-	if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt)){
+	if (-1 == xioctl(_fd, VIDIOC_S_FMT, &fmt)){
 		throw Poco::Exception("VIDIOC_S_FMT");
 	}
 
@@ -405,21 +420,11 @@ static void deviceInit(void)
 		frameint.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 		frameint.parm.capture.timeperframe.numerator = 1;
 		frameint.parm.capture.timeperframe.denominator = _fps;
-		if (-1 == xioctl(fd, VIDIOC_S_PARM, &frameint))
+		if (-1 == xioctl(_fd, VIDIOC_S_PARM, &frameint))
 		{
 		   pLogger->LogError("failed to set fps to: " + std::to_string(_fps));
 		}
 	}
-
-	/* Buggy driver paranoia. */
-	min = fmt.fmt.pix.width * 2;
-	if (fmt.fmt.pix.bytesperline < min)
-		fmt.fmt.pix.bytesperline = min;
-	min = fmt.fmt.pix.bytesperline * fmt.fmt.pix.height;
-	if (fmt.fmt.pix.sizeimage < min)
-		fmt.fmt.pix.sizeimage = min;
-
-	readInit(fmt.fmt.pix.sizeimage);
 }
 
 /**
@@ -427,12 +432,12 @@ static void deviceInit(void)
 */
 static void deviceClose(void)
 {
-	if (-1 == v4l2_close(fd))
+	if (-1 == v4l2_close(_fd))
 	{
 		pLogger->LogError("failed to close device file");
 	}
 
-	fd = -1;
+	_fd = -1;
 }
 
 /**
@@ -453,10 +458,10 @@ static void deviceOpen(void)
 	}
 
 	// open device
-	fd = v4l2_open(_deviceFile.c_str(), O_RDWR /* required */ | O_NONBLOCK, 0);
+	_fd = v4l2_open(_deviceFile.c_str(), O_RDWR /* required */ | O_NONBLOCK, 0);
 
 	// check if opening was successful
-	if (-1 == fd) {
+	if (-1 == _fd) {
 		throw Poco::Exception("failed to open device: " + _deviceFile);;
 	}
 }
@@ -469,61 +474,8 @@ public:
 private:
 	Poco::Timestamp _lastFolderDeletionTime;
 
-	void deleteObsoleteFrames()
-	{
-		Poco::Timestamp curTime;
-
-		//delete obsolete folders every 1 minute
-		if((curTime - _lastFolderDeletionTime) < 60000000) {
-			return;
-		}
-		_lastFolderDeletionTime.update();
-
-		std::vector<std::string> directoryNames;
-
-		Poco::DirectoryIterator it(_framesRootFolder) ;
-		Poco::DirectoryIterator end;
-		long curMilliseconds = curTime.raw()/1000;
-		int earliestMinutes = curMilliseconds/60000 - _record_period_hours*60;
-
-		//find the directories to delete
-		for(; it != end; it++) {
-			if(it->isDirectory()) {
-				int minutes = std::atoi(it.name().c_str());
-				if(minutes > earliestMinutes) {
-					continue;
-				}
-				directoryNames.push_back(it.name());
-			}
-		}
-		//delete directories.
-		for(int i=0; i<directoryNames.size(); i++)
-		{
-			Poco::Path frameFolder = _framesRootFolder;
-
-			frameFolder.pushDirectory(directoryNames[i]);
-			try
-			{
-				Poco::File folder (frameFolder);
-				if(folder.exists()) {
-					pLogger->LogInfo("delete folder: " + folder.path());
-					folder.remove(true); //delete this folder
-				}
-			}
-			catch(...) {
-				//do nothing
-			}
-		}
-	}
-
 	void runTask()
 	{
-		_pYUV422Buffer = (unsigned char*)malloc(_width*_height*3*sizeof(char));
-		if(NULL == _pYUV422Buffer) {
-			pLogger->LogError("CaptureTask failed to allocate memory");
-			return;
-		}
-
 		try
 		{
 			bool errorOccured = false;
@@ -548,18 +500,15 @@ private:
 					// capture a frame
 					if(captureImage() == false)
 					{
-						deviceUninit();
 						deviceClose();
 						errorOccured = true;
 						sleep(5000);
 					}
 				}
 
-				deleteObsoleteFrames();
 			}
 
 			// close device
-			deviceUninit();
 			deviceClose();
 		}
 		catch(Poco::Exception &e)
@@ -574,14 +523,118 @@ private:
 		{
 			pLogger->LogError("CaptureTask unknown exception");
 		}
-
-		if(_pYUV422Buffer != NULL) {
-			free(_pYUV422Buffer);
-		}
-
 		pLogger->LogInfo("CaptureTask terminates");
 	}
 };
+
+class UploadingTask: public Poco::Task
+{
+public:
+	UploadingTask():Task("uploading")
+	{
+	}
+
+private:
+	virtual void runTask() override
+	{
+		for(;;)
+		{
+			struct FrameData * pFrame = NULL;
+			long milliseconds;
+			char fileName[64];
+			Poco::Path jpegFilePath = _ramdiskFolder;
+
+			_frameCache.pSemaphore->wait();
+
+			if(isCancelled()) {
+				break;
+			}
+
+			//find a pending frame
+			{
+				Poco::ScopedLock<Poco::Mutex> lock(_frameCache.mutex);
+				for(int i=0; i<_frameCache.frameAmount; i++) {
+					if(_frameCache.pFrames[i].state == RAW_DATA_READY) {
+						pFrame = &(_frameCache.pFrames[i]);
+						_frameCache.pFrames[i].state = DECODING;
+						break;
+					}
+				}
+			}
+
+			if(pFrame == NULL) {
+				pLogger->LogError("UploadingTask: no raw frame is ready");
+				continue;
+			}
+
+			//transcoding
+			YUV420toYUV444(_width, _height, (unsigned char *)(pFrame->pRawFrame), (unsigned char *)(pFrame->pDecodedFrame));
+
+			//write to JPEG file
+			milliseconds = pFrame->stamp.raw()/1000;
+			sprintf(fileName, "%010ld.jpg", milliseconds);
+			jpegFilePath.setFileName(fileName);
+			jpegWrite((unsigned char *)(pFrame->pDecodedFrame), jpegFilePath.toString().c_str());
+
+			//upload JPEG file
+			Poco::File jpegFile(jpegFilePath);
+			if(jpegFile.exists()) {
+				uploadFile(jpegFilePath.toString());
+				jpegFile.remove(false); //delete the file
+			}
+			else {
+				pLogger->LogError("UploadingTask: failed to save jpeg file: " + jpegFilePath.toString());
+			}
+
+			//reset frame data
+			memset(pFrame->pRawFrame, 0, pFrame->dataSize);
+			memset(pFrame->pDecodedFrame, 0, pFrame->dataSize);
+			pFrame->state = IDLE;
+		}
+
+		pLogger->LogInfo("uploading task exit");
+	}
+
+	void uploadFile(const std::string & fileName)
+	{
+		try
+		{
+			Poco::Path path(fileName);
+			Poco::Net::HTTPClientSession session(_hostServerIp, _hostServerPort);
+			Poco::Net::HTTPRequest request;
+			Poco::Net::HTMLForm form;
+
+			request.setURI(_hostServerApi);
+			request.setMethod(Poco::Net::HTTPRequest::HTTP_POST);
+			request.setContentType("application/octet-stream");
+
+			form.setEncoding(Poco::Net::HTMLForm::ENCODING_MULTIPART);
+			form.addPart("file", new Poco::Net::FilePartSource(fileName));
+			form.add("monitorId", _monitorId);
+			form.add("frameName", path.getFileName());
+			form.prepareSubmit(request);
+
+			session.setTimeout(Poco::Timespan(_uploadTimeout, 0));
+			std::ostream & outputStream = session.sendRequest(request);
+			form.write(outputStream);
+
+			//http response is ignored.
+		}
+		catch(Poco::Exception & e)
+		{
+			pLogger->LogError("uploadFile exception: " + e.displayText());
+		}
+		catch(std::exception & e)
+		{
+			pLogger->LogError("uploadFile exception: " + std::string(e.what()));
+		}
+		catch(...)
+		{
+			pLogger->LogError("uploadFile unknown exception");
+		}
+	}
+};
+
 
 class ImageCapture: public ServerApplication
 {
@@ -637,69 +690,198 @@ protected:
 
 	int main(const ArgVec& args)
 	{
-		if (!_helpRequested)
+		if(_helpRequested) {
+			return Application::EXIT_OK;
+		}
+
+		Poco::ThreadPool uploadThreadPool(1, 64);
+		TaskManager tmLogger;
+		TaskManager tm(uploadThreadPool);
+		std::string logFolder;
+		std::string logFile;
+		std::string logFileSize;
+		std::string logFileAmount;
+		int cacheSize;
+		bool bMemoryShortage = false;
+
+		//use the designated configuration if it exist
+		if(args.size() > 0)
 		{
-			TaskManager tmLogger;
-			TaskManager tm;
-			std::string logFolder;
-			std::string logFile;
-			std::string logFileSize;
-			std::string logFileAmount;
+			std::string configFile = args[0];
+			Poco::Path path(configFile);
 
-			//use the designated configuration if it exist
-			if(args.size() > 0)
+			if(path.isFile())
 			{
-				std::string configFile = args[0];
-				Poco::Path path(configFile);
+				Poco::File file(path);
 
-				if(path.isFile())
-				{
-					Poco::File file(path);
-
-					if(file.exists() && file.canRead()) {
-						loadConfiguration(configFile);
-					}
+				if(file.exists() && file.canRead()) {
+					loadConfiguration(configFile);
 				}
 			}
+		}
 
-			try
-			{
-				//logs
-				logFolder = config().getString("log_file_folder", "./logs/ImageCapture");
-				logFile = config().getString("log_file_name", "ImageCapture");
-				logFileSize = config().getString("log_file_size", "1M");
-				logFileAmount = config().getString("log_file_amount", "10");
+		try
+		{
+			//logs
+			logFolder = config().getString("log_file_folder", "./logs/ImageCapture");
+			logFile = config().getString("log_file_name", "ImageCapture");
+			logFileSize = config().getString("log_file_size", "1M");
+			logFileAmount = config().getString("log_file_amount", "10");
 
-				_deviceFile = config().getString("device_file", "/dev/video0");
-				_width = config().getUInt("width", 640);
-				_height = config().getUInt("height", 480);
-				_fps = config().getInt("fps", 30);
-				_jpegQuality = config().getUInt("quality", 70);
-				_framesRootFolder = config().getString("output_folder");
-				_record_period_hours = config().getUInt("record_period_hours");
-			}
-			catch(Poco::NotFoundException& e)
+			_deviceFile = config().getString("device_file", "/dev/video0");
+			_width = config().getUInt("width", 640);
+			_height = config().getUInt("height", 480);
+			_fps = config().getInt("fps", 30);
+			_jpegQuality = config().getUInt("quality", 70);
+
+			cacheSize = config().getInt("frame_cache_size", 30);
+			_ramdiskFolder = config().getString("ramdisk_folder");
+
+			_hostServerIp = config().getString("host_server_ip");
+			_hostServerPort = config().getInt("host_server_port");
+			_hostServerApi = config().getString("host_server_api");
+			_uploadTimeout = config().getInt("upload_time_out");
+
+			_monitorId = config().getString("monitor_id");
+		}
+		catch(Poco::NotFoundException& e)
+		{
+			logger().error("Config NotFoundException: " + e.displayText());
+		}
+		catch(Poco::SyntaxException& e)
+		{
+			logger().error("Config SyntaxException: " + e.displayText());
+		}
+		catch(Poco::Exception& e)
+		{
+			logger().error("Config Exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			logger().error("Config unknown exception");
+		}
+
+		//start the logger
+		pLogger = new Logger(logFolder, logFile, logFileSize, logFileAmount);
+		pLogger->CopyToConsole(true);
+		tmLogger.start(pLogger);
+		pLogger->LogInfo("**** ImageCapture version 1.0.0 ****");
+
+		try
+		{
+			_frameCache.pSemaphore = new Poco::Semaphore(0, cacheSize);
+		}
+		catch(Poco::Exception & e)
+		{
+			pLogger->LogError("failed to create semaphore: " + e.displayText());
+		}
+		catch(std::exception & e)
+		{
+			pLogger->LogError("failed to create semaphore: " + std::string(e.what()));
+		}
+		catch(...)
+		{
+			pLogger->LogError("failed to create semaphore");
+		}
+		//allocate memory
+		_frameCache.frameAmount = cacheSize;
+		_frameCache.pFrames = (FrameData *)malloc(sizeof(FrameData) * cacheSize);
+		if(_frameCache.pFrames == NULL)
+		{
+			bMemoryShortage = true;
+			pLogger->LogError("Not enough memory");
+		}
+		else
+		{
+			for(int i=0; i<cacheSize; i++)
 			{
-				logger().error("Config NotFoundException: " + e.displayText());
-			}
-			catch(Poco::SyntaxException& e)
-			{
-				logger().error("Config SyntaxException: " + e.displayText());
-			}
-			catch(Poco::Exception& e)
-			{
-				logger().error("Config Exception: " + e.displayText());
-			}
-			catch(...)
-			{
-				logger().error("Config unknown exception");
+				_frameCache.pFrames[i].pRawFrame = NULL;
+				_frameCache.pFrames[i].pDecodedFrame = NULL;
 			}
 
-			//start the logger
-			pLogger = new Logger(logFolder, logFile, logFileSize, logFileAmount);
-			pLogger->CopyToConsole(true);
-			tmLogger.start(pLogger);
-			pLogger->LogInfo("**** ImageCapture version 1.0.0 ****");
+			for(int i=0; i<cacheSize; i++)
+			{
+				_frameCache.pFrames[i].dataSize = _width * _height * 4;
+
+				_frameCache.pFrames[i].pRawFrame = malloc(_frameCache.pFrames[i].dataSize);
+				if(_frameCache.pFrames[i].pRawFrame == NULL) {
+					bMemoryShortage = true;
+					pLogger->LogError("Not enough memory");
+					break;
+				}
+
+				_frameCache.pFrames[i].pDecodedFrame = malloc(_frameCache.pFrames[i].dataSize);
+				if(_frameCache.pFrames[i].pDecodedFrame == NULL) {
+					bMemoryShortage = true;
+					pLogger->LogError("Not enough memory");
+					break;
+				}
+
+				_frameCache.pFrames[i].state = IDLE;
+			}
+		}
+
+		//clean up frames in _ramdiskFolder
+		{
+			std::vector<std::string> frameFiles;
+			Poco::DirectoryIterator it(_ramdiskFolder);
+			Poco::DirectoryIterator end;
+
+			for(; it != end; it++) {
+				frameFiles.push_back(it.name());
+			}
+			for(int i=0; i<frameFiles.size(); i++)
+			{
+				pLogger->LogInfo("delete obsolete frame file: " + frameFiles[i]);
+
+				if(frameFiles[i].empty()) {
+					continue;
+				}
+				Poco::Path path(_ramdiskFolder);
+
+				path.setFileName(frameFiles[i]);
+				Poco::File file(path);
+				if(file.exists()) {
+					file.remove(false);
+				}
+			}
+		}
+
+		if(!bMemoryShortage)
+		{
+			//start upload tasks
+			for(int i=0; i<cacheSize; i++)
+			{
+				bool exceptionOccured = false;
+				UploadingTask * pTask = NULL;
+				try
+				{
+					pTask = new UploadingTask;
+
+					if(pTask == NULL) {
+						pLogger->LogError("Failed to allocate uploading task");
+						exceptionOccured = true;
+					}
+					else {
+						tm.start(pTask);
+					}
+				}
+				catch(Poco::Exception &e)
+				{
+					pLogger->LogError("Exception in creating uploading task: " + e.displayText());
+					exceptionOccured = true;
+				}
+				catch(...)
+				{
+					pLogger->LogError("Unknown exception in creating uploading task");
+					exceptionOccured = true;
+				}
+
+				if(exceptionOccured) {
+					pLogger->LogInfo("Uploading task amount: " + std::to_string(i));
+					break;
+				}
+			}
 
 			//start the CaptureTask
 			CaptureTask * pTask = new CaptureTask();
@@ -710,11 +892,31 @@ protected:
 			//stop tasks
 			pLogger->LogInfo("**** ImageCapture Exiting ****");
 			tm.cancelAll();
+			for(int i=0; i<_frameCache.frameAmount; i++) {
+				_frameCache.pSemaphore->set(); //to terminate all uploading tasks.
+			}
 			tm.joinAll();
+
 			//stop logger
 			tmLogger.cancelAll();
 			tmLogger.joinAll();
+
+			//free memory
+			if(_frameCache.pFrames != NULL)
+			{
+				for(int i=0; i<cacheSize; i++)
+				{
+					if(_frameCache.pFrames[i].pRawFrame != NULL) {
+						free(_frameCache.pFrames[i].pRawFrame);
+					}
+					if(_frameCache.pFrames[i].pDecodedFrame != NULL) {
+						free(_frameCache.pFrames[i].pDecodedFrame);
+					}
+				}
+				free(_frameCache.pFrames);
+			}
 		}
+
 		return Application::EXIT_OK;
 	}
 
