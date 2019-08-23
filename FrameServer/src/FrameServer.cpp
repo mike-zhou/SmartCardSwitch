@@ -9,6 +9,7 @@
 // SPDX-License-Identifier:	BSL-1.0
 //
 
+#include <iostream>
 
 #include "Poco/Net/HTTPServer.h"
 #include "Poco/Net/HTTPRequestHandler.h"
@@ -29,8 +30,10 @@
 #include "Poco/Util/Option.h"
 #include "Poco/Util/OptionSet.h"
 #include "Poco/Util/HelpFormatter.h"
-#include <iostream>
+#include "Poco/Semaphore.h"
+#include "Poco/TaskManager.h"
 
+#include "Logger.h"
 
 using Poco::Net::ServerSocket;
 using Poco::Net::HTTPRequestHandler;
@@ -51,6 +54,161 @@ using Poco::CountingInputStream;
 using Poco::NullOutputStream;
 using Poco::StreamCopier;
 
+class PersistanceTask;
+
+struct PendingFile
+{
+	enum PendingFileState
+	{
+		IDLE = 0,
+		WRITING,
+		READY,
+		PERSISTING
+	};
+
+	PendingFileState state;
+	std::string clientId;
+	std::string fileName;
+	unsigned char * pData;
+	unsigned int actualSize;
+	unsigned int maxSize;
+
+	PendingFile()
+	{
+		state = IDLE;
+		pData = NULL;
+		maxSize = 0;
+		actualSize = 0;
+	}
+};
+
+struct PendingFileCache
+{
+	Poco::Mutex mutex;
+	Poco::Semaphore * pFrameAvailableSemaphore;
+
+	std::vector<PendingFile *> pendingFilePtrArray;
+	std::deque<int> availableFrameIndexes;
+};
+
+static PendingFileCache * _pCache = NULL;
+static std::string _frameRootFolder;
+static std::vector<std::string> _clientIds;
+static std::vector<PersistanceTask *> _persistanceTaskList;
+
+Logger * pLogger;
+
+class PersistanceTask: public Poco::Task
+{
+public:
+	PersistanceTask(const std::string & clientId) : Task(clientId) {}
+
+	void AddPendingFileIndex(int index)
+	{
+		Poco::ScopedLock<Poco::Mutex> lock(mutex);
+		pendingFileIndexes.push_back(index);
+		event.set(); //trigger the persistance
+	}
+
+private:
+	Poco::Mutex mutex;
+	std::deque<int> pendingFileIndexes;
+	Poco::Event event;
+
+	virtual void runTask() override
+	{
+		int index;
+
+		pLogger->LogInfo("PersistanceTask " + name() + "starts");
+
+		for(;;)
+		{
+			if(isCancelled()) {
+				break;
+			}
+			event.tryWait(1000); //try to wait for 1 seconds
+
+			for(;!pendingFileIndexes.empty();)
+			{
+				{
+					Poco::ScopedLock<Poco::Mutex> lock(mutex);
+					index = pendingFileIndexes[0];
+					pendingFileIndexes.pop_front();
+				}
+
+			}
+
+			deleteObsoleteFiles();
+		}
+
+		pLogger->LogInfo("PersistanceTask " + name() + "exits");
+	}
+
+	void deleteObsoleteFiles()
+	{
+
+	}
+};
+
+class PersistanceAllocator: public Poco::Task
+{
+public:
+	PersistanceAllocator(): Task("PersistanceAllocator") { }
+
+private:
+
+	virtual void runTask() override
+	{
+		pLogger->LogInfo("PersistanceAllocator " + name() + "starts");
+
+		for(;;)
+		{
+			if(isCancelled()) {
+				break;
+			}
+			if(_pCache->pFrameAvailableSemaphore->tryWait(1000) == false) {
+				continue;
+			}
+
+			{
+				Poco::ScopedLock<Poco::Mutex> lock(_pCache->mutex);
+				for(; _pCache->availableFrameIndexes.empty() == false;)
+				{
+					auto frameIndex = _pCache->availableFrameIndexes[0];
+					auto pFrame = _pCache->pendingFilePtrArray[frameIndex];
+
+					_pCache->availableFrameIndexes.pop_front();
+
+					if(pFrame->state == PendingFile::READY)
+					{
+						int taskIndex;
+						pFrame->state = PendingFile::PERSISTING;
+
+						//assign it to corresponding persistence task
+						for(taskIndex=0; taskIndex<_persistanceTaskList.size(); taskIndex++)
+						{
+							auto pTask = _persistanceTaskList[taskIndex];
+							if(pFrame->clientId == pTask->name()) {
+								pTask->AddPendingFileIndex(frameIndex);
+								break;
+							}
+						}
+						if(taskIndex == _persistanceTaskList.size()) {
+							//no available task is found
+							pFrame->state = PendingFile::IDLE; //ignore the frame data.
+						}
+					}
+					else
+					{
+						pLogger->LogError("PersistanceAllocator frame state not ready: " + std::to_string(pFrame->state));
+					}
+				}
+			}
+		}
+
+		pLogger->LogInfo("PersistanceAllocator " + name() + "exits");
+	}
+};
 
 class FrameFileHandler: public Poco::Net::PartHandler
 {
@@ -268,6 +426,28 @@ protected:
 		helpFormatter.format(std::cout);
 	}
 
+	void freeCache()
+	{
+		if(_pCache != nullptr)
+		{
+			if(_pCache->pFrameAvailableSemaphore != nullptr) {
+				delete _pCache->pFrameAvailableSemaphore;
+			}
+
+			for(int i=0; i<_pCache->pendingFilePtrArray.size(); i++)
+			{
+				auto p = _pCache->pendingFilePtrArray[i];
+				if(p->pData != NULL) {
+					free(p->pData);
+				}
+				delete p;
+			}
+
+			delete _pCache;
+			_pCache = nullptr;
+		}
+	}
+
 	int main(const std::vector<std::string>& args)
 	{
 		if (_helpRequested)
@@ -276,18 +456,129 @@ protected:
 		}
 		else
 		{
-			unsigned short port = (unsigned short) config().getInt("HTTPFormServer.port", 9980);
+			unsigned short port;
+			int requestServiceThreadAmount;
+			int maxQueuedRequest;
+			unsigned int maxPendingFileAmount;
+			unsigned int maxFileSize;
+			bool bException = false;
+			bool bMemoryShortage = false;
+			HTTPServerParams * pServerParams;
 
-			// set-up a server socket
-			ServerSocket svs(port);
-			// set-up a HTTPServer instance
-			HTTPServer srv(new UploadRequestHandlerFactory, svs, new HTTPServerParams);
-			// start the HTTPServer
-			srv.start();
-			// wait for CTRL-C or kill
-			waitForTerminationRequest();
-			// Stop the HTTPServer
-			srv.stop();
+			std::string logFolder;
+			std::string logFile;
+			std::string logFileSize;
+			std::string logFileAmount;
+
+			Poco::TaskManager tmLogger;
+
+			//retrieve configuration
+			try
+			{
+				port = (unsigned short) config().getInt("server_port.port", 9980);
+				requestServiceThreadAmount = config().getInt("max_request_service_thread_amount");
+				maxQueuedRequest = config().getInt("max_queued_request");
+				maxPendingFileAmount = config().getInt("max_pending_file_amount");
+				maxFileSize = config().getInt("max_file_size");
+
+				_frameRootFolder = config().getString("frames_root_folder");
+
+				for(int i=0; ;i++)
+				{
+					std::string key = "client_id_" + std::to_string(i);
+					if(config().has(key))
+					{
+						std::string id = config().getString(key);
+						_clientIds.push_back(id);
+					}
+					else {
+						break;
+					}
+				}
+				if(_clientIds.empty()) {
+					std::cout << "No client is specified in configuration" << "\r\n";
+					return Application::EXIT_CONFIG;
+				}
+
+				logFolder = config().getString("log_file_folder", "./logs/ImageCapture");
+				logFile = config().getString("log_file_name", "ImageCapture");
+				logFileSize = config().getString("log_file_size", "1M");
+				logFileAmount = config().getString("log_file_amount", "10");
+			}
+			catch(Poco::Exception & e)
+			{
+				std::cout << "Exception: " << e.displayText() << "\r\n";
+				bException = true;
+			}
+			if(bException) {
+				return Application::EXIT_CONFIG;
+			}
+
+			//start the logger
+			pLogger = new Logger(logFolder, logFile, logFileSize, logFileAmount);
+			pLogger->CopyToConsole(true);
+			tmLogger.start(pLogger);
+			pLogger->LogInfo("**** FrameServer version 1.0.0 ****");
+
+			//init _pCache
+			bMemoryShortage = false;
+			try
+			{
+				_pCache = new PendingFileCache;
+				if(_pCache == nullptr) {
+					throw Poco::Exception("memory shortage");
+				}
+
+				_pCache->pFrameAvailableSemaphore = new Poco::Semaphore(0, maxPendingFileAmount);
+				if(_pCache->pFrameAvailableSemaphore == nullptr) {
+					throw Poco::Exception("memory shortage");
+				}
+
+				for(int i=0; i<maxPendingFileAmount; i++)
+				{
+					PendingFile * p = new PendingFile;
+					if(p == nullptr) {
+						throw Poco::Exception("memory shortage");
+					}
+					p->maxSize = maxFileSize;
+					p->pData = (unsigned char *)malloc(maxFileSize);
+					if(p->pData == NULL) {
+						throw Poco::Exception("memory shortage");
+					}
+					_pCache->pendingFilePtrArray.push_back(p);
+				}
+			}
+			catch(Poco::Exception & e)
+			{
+				bMemoryShortage = true;
+				pLogger->LogError("FrameServer memory shortage in cache initialization");
+			}
+			if(bMemoryShortage) {
+				freeCache();
+			}
+			else
+			{
+				pServerParams = new HTTPServerParams;
+				pServerParams->setMaxThreads(requestServiceThreadAmount);
+				pServerParams->setMaxQueued(maxQueuedRequest);
+
+				// set-up a server socket
+				ServerSocket svs(port);
+				// set-up a HTTPServer instance
+				HTTPServer srv(new UploadRequestHandlerFactory, svs, pServerParams);
+				// start the HTTPServer
+				srv.start();
+				// wait for CTRL-C or kill
+				waitForTerminationRequest();
+				// Stop the HTTPServer
+				srv.stop();
+			}
+
+			//stop logger
+			tmLogger.cancelAll();
+			tmLogger.joinAll();
+
+			freeCache();
 		}
 		return Application::EXIT_OK;
 	}
