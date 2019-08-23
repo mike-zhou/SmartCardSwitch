@@ -583,11 +583,23 @@ protected:
 				bMemoryShortage = true;
 				pLogger->LogError("FrameServer memory shortage in cache initialization");
 			}
+
 			if(bMemoryShortage) {
 				freeCache();
 			}
 			else
 			{
+				Poco::ThreadPool persistTaskPool(1, 1 + _clientIds.size());
+				Poco::TaskManager persistTaskManager(persistTaskPool);
+
+				for(int i=0; i<_clientIds.size(); i++)
+				{
+					auto p = new PersistanceTask(_clientIds[i]);
+					_persistanceTaskList.push_back(p);
+					persistTaskManager.start(p);
+				}
+				persistTaskManager.start(new PersistanceAllocator);
+
 				pServerParams = new HTTPServerParams;
 				pServerParams->setMaxThreads(requestServiceThreadAmount);
 				pServerParams->setMaxQueued(maxQueuedRequest);
@@ -602,6 +614,9 @@ protected:
 				waitForTerminationRequest();
 				// Stop the HTTPServer
 				srv.stop();
+
+				persistTaskManager.cancelAll();
+				persistTaskManager.joinAll();
 			}
 
 			//stop logger
