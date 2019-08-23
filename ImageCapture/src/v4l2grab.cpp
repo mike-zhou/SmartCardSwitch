@@ -573,7 +573,7 @@ private:
 
 			//write to JPEG file
 			milliseconds = pFrame->stamp.raw()/1000;
-			sprintf(fileName, "%010ld.jpg", milliseconds);
+			sprintf(fileName, "%010ld", milliseconds);
 			jpegFilePath.setFileName(fileName);
 			jpegWrite((unsigned char *)(pFrame->pDecodedFrame), jpegFilePath.toString().c_str());
 

@@ -317,54 +317,58 @@ private:
 class FrameFileHandler: public Poco::Net::PartHandler
 {
 public:
-	FrameFileHandler():
-		_length(0)
-	{
-	}
+	FrameFileHandler() { }
 
 	void handlePart(const MessageHeader& header, std::istream& stream)
 	{
-		_type = header.get("Content-Type", "(unspecified)");
 		if (header.has("Content-Disposition"))
 		{
 			std::string disp;
 			NameValueCollection params;
 			MessageHeader::splitParameters(header["Content-Disposition"], disp, params);
-			_name = params.get("name", "(unnamed)");
-			_fileName = params.get("filename", "(unnamed)");
+			std::string clientId;
+			std::string fileName;
+			PendingFile * pFrame = NULL;
+
+			if(params.has("monitorId") == false) {
+				return;
+			}
+			if(params.has("frameName") == false) {
+				return;
+			}
+			clientId = params.get("monitorId");
+			fileName = params.get("frameName");
+
+			{
+				Poco::ScopedLock<Poco::Mutex> lock(_pCache->mutex);
+				for(int i=0; i<_pCache->pendingFilePtrArray.size(); i++)
+				{
+					auto p = _pCache->pendingFilePtrArray[i];
+					if(p->state != PendingFile::IDLE) {
+						continue;
+					}
+					p->state = PendingFile::WRITING;
+					p->clientId = clientId;
+					p->fileName = fileName;
+					p->actualSize = 0;
+					pFrame = p;
+					break;
+				}
+				if(pFrame == NULL) {
+					pLogger->LogError("FrameFileHandler no available pending file slot");
+					return;
+				}
+			}
+
+			stream.read((char *)(pFrame->pData), pFrame->maxSize);
+			pFrame->actualSize = stream.gcount();
+
+			{
+				Poco::ScopedLock<Poco::Mutex> lock(_pCache->mutex);
+				pFrame->state = PendingFile::READY;
+			}
 		}
-
-		CountingInputStream istr(stream);
-		NullOutputStream ostr;
-		StreamCopier::copyStream(istr, ostr);
-		_length = istr.chars();
 	}
-
-	int length() const
-	{
-		return _length;
-	}
-
-	const std::string& name() const
-	{
-		return _name;
-	}
-
-	const std::string& fileName() const
-	{
-		return _fileName;
-	}
-
-	const std::string& contentType() const
-	{
-		return _type;
-	}
-
-private:
-	int _length;
-	std::string _type;
-	std::string _name;
-	std::string _fileName;
 };
 
 
@@ -378,73 +382,11 @@ public:
 
 	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
 	{
-		Application& app = Application::instance();
-		app.logger().information("Request from " + request.clientAddress().toString());
-
 		FrameFileHandler partHandler;
 		HTMLForm form(request, request.stream(), partHandler);
 
-		response.setChunkedTransferEncoding(true);
-		response.setContentType("text/html");
-
-		std::ostream& ostr = response.send();
-
-		ostr <<
-			"<html>\n"
-			"<head>\n"
-			"<title>POCO Form Server Sample</title>\n"
-			"</head>\n"
-			"<body>\n"
-			"<h1>POCO Form Server Sample</h1>\n"
-			"<h2>GET Form</h2>\n"
-			"<form method=\"GET\" action=\"/form\">\n"
-			"<input type=\"text\" name=\"text\" size=\"31\">\n"
-			"<input type=\"submit\" value=\"GET\">\n"
-			"</form>\n"
-			"<h2>POST Form</h2>\n"
-			"<form method=\"POST\" action=\"/form\">\n"
-			"<input type=\"text\" name=\"text\" size=\"31\">\n"
-			"<input type=\"submit\" value=\"POST\">\n"
-			"</form>\n"
-			"<h2>File Upload</h2>\n"
-			"<form method=\"POST\" action=\"/form\" enctype=\"multipart/form-data\">\n"
-			"<input type=\"file\" name=\"file\" size=\"31\"> \n"
-			"<input type=\"submit\" value=\"Upload\">\n"
-			"</form>\n";
-
-		ostr << "<h2>Request</h2><p>\n";
-		ostr << "Method: " << request.getMethod() << "<br>\n";
-		ostr << "URI: " << request.getURI() << "<br>\n";
-		NameValueCollection::ConstIterator it = request.begin();
-		NameValueCollection::ConstIterator end = request.end();
-		for (; it != end; ++it)
-		{
-			ostr << it->first << ": " << it->second << "<br>\n";
-		}
-		ostr << "</p>";
-
-		if (!form.empty())
-		{
-			ostr << "<h2>Form</h2><p>\n";
-			it = form.begin();
-			end = form.end();
-			for (; it != end; ++it)
-			{
-				ostr << it->first << ": " << it->second << "<br>\n";
-			}
-			ostr << "</p>";
-		}
-
-		if (!partHandler.name().empty())
-		{
-			ostr << "<h2>Upload</h2><p>\n";
-			ostr << "Name: " << partHandler.name() << "<br>\n";
-			ostr << "File Name: " << partHandler.fileName() << "<br>\n";
-			ostr << "Type: " << partHandler.contentType() << "<br>\n";
-			ostr << "Size: " << partHandler.length() << "<br>\n";
-			ostr << "</p>";
-		}
-		ostr << "</body>\n";
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+		response.send();
 	}
 };
 
@@ -464,23 +406,6 @@ public:
 
 
 class FrameServer: public Poco::Util::ServerApplication
-	/// The main application class.
-	///
-	/// This class handles command-line arguments and
-	/// configuration files.
-	/// Start the HTTPFormServer executable with the help
-	/// option (/help on Windows, --help on Unix) for
-	/// the available command line options.
-	///
-	/// To use the sample configuration file (HTTPFormServer.properties),
-	/// copy the file to the directory where the HTTPFormServer executable
-	/// resides. If you start the debug version of the HTTPFormServer
-	/// (HTTPFormServerd[.exe]), you must also create a copy of the configuration
-	/// file named HTTPFormServerd.properties. In the configuration file, you
-	/// can specify the port on which the server is listening (default
-	/// 9980) and the format of the date/Form string sent back to the client.
-	///
-	/// To test the FormServer you can use any web browser (http://localhost:9980/).
 {
 public:
 	FrameServer(): _helpRequested(false)
