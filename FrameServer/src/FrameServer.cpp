@@ -32,6 +32,9 @@
 #include "Poco/Util/HelpFormatter.h"
 #include "Poco/Semaphore.h"
 #include "Poco/TaskManager.h"
+#include "Poco/Path.h"
+#include "Poco/File.h"
+#include "Poco/DirectoryIterator.h"
 
 #include "Logger.h"
 
@@ -68,7 +71,7 @@ struct PendingFile
 
 	PendingFileState state;
 	std::string clientId;
-	std::string fileName;
+	std::string fileName; //time stamp of frame creation in unit of millisecond
 	unsigned char * pData;
 	unsigned int actualSize;
 	unsigned int maxSize;
@@ -95,29 +98,37 @@ static PendingFileCache * _pCache = NULL;
 static std::string _frameRootFolder;
 static std::vector<std::string> _clientIds;
 static std::vector<PersistanceTask *> _persistanceTaskList;
+static int _maxFramePeriods;
 
 Logger * pLogger;
 
 class PersistanceTask: public Poco::Task
 {
 public:
-	PersistanceTask(const std::string & clientId) : Task(clientId) {}
+	PersistanceTask(const std::string & clientId) : Task(clientId)
+	{
+		frameFolder = _frameRootFolder;
+		frameFolder.pushDirectory(clientId);
+	}
 
 	void AddPendingFileIndex(int index)
 	{
 		Poco::ScopedLock<Poco::Mutex> lock(mutex);
-		pendingFileIndexes.push_back(index);
+		pendingFrameIndexes.push_back(index);
 		event.set(); //trigger the persistance
 	}
 
 private:
 	Poco::Mutex mutex;
-	std::deque<int> pendingFileIndexes;
+	std::deque<int> pendingFrameIndexes;
 	Poco::Event event;
+	Poco::Path frameFolder;
+	Poco::Timestamp obsoleteFolderCheckTime;
+	const long obsoleteFolderCheckInterval = 60000000; //1 minute
 
 	virtual void runTask() override
 	{
-		int index;
+		int frameIndex;
 
 		pLogger->LogInfo("PersistanceTask " + name() + "starts");
 
@@ -128,14 +139,66 @@ private:
 			}
 			event.tryWait(1000); //try to wait for 1 seconds
 
-			for(;!pendingFileIndexes.empty();)
+			//persist pending frames
+			for(;pendingFrameIndexes.empty() == false;)
 			{
 				{
 					Poco::ScopedLock<Poco::Mutex> lock(mutex);
-					index = pendingFileIndexes[0];
-					pendingFileIndexes.pop_front();
+					frameIndex = pendingFrameIndexes[0];
+					pendingFrameIndexes.pop_front();
 				}
 
+				auto pFrame = _pCache->pendingFilePtrArray[frameIndex];
+				if(pFrame->state != PendingFile::PERSISTING) {
+					//wrong frame state
+					continue;
+				}
+
+				try
+				{
+					char buf[64];
+					long minute = std::stol(pFrame->fileName)/60000;//change milliseconds to minutes
+					FILE * pF;
+					int count;
+
+					Poco::Path folderPath = frameFolder;
+					sprintf(buf, "%010ld", minute);
+					folderPath.pushDirectory(buf);
+					Poco::File folder(folderPath);
+					if(folder.exists() == false) {
+						folder.createDirectories();
+					}
+
+					Poco::Path filePath = folderPath;
+					filePath.setFileName(pFrame->fileName + ".jpg");
+					pF = fopen(filePath.toString().c_str(), "wb");
+					if(pF == NULL) {
+						pLogger->LogError("PersistanceTask failed to create: " + filePath.toString());
+						throw Poco::Exception("failed to create file: " + filePath.toString());
+					}
+					count = fwrite(pFrame->pData, pFrame->actualSize, 1, pF);
+					if(count != pFrame->actualSize) {
+						pLogger->LogError("PersistanceTask partial persistence: " + std::to_string(count) + "/" + std::to_string(pFrame->actualSize));
+					}
+					fclose(pF);
+				}
+				catch(Poco::Exception & e)
+				{
+					pLogger->LogError("PersistanceTask exception: " + e.displayText());
+				}
+				catch(std::exception & e)
+				{
+					pLogger->LogError("PersistanceTask exception: " + std::string(e.what()));
+				}
+				catch(...)
+				{
+					pLogger->LogError("PersistanceTask unknown exception");
+				}
+
+				{
+					Poco::ScopedLock<Poco::Mutex> lock(mutex);
+					pFrame->state = PendingFile::IDLE;
+				}
 			}
 
 			deleteObsoleteFiles();
@@ -146,7 +209,48 @@ private:
 
 	void deleteObsoleteFiles()
 	{
+		if(obsoleteFolderCheckTime.elapsed() < obsoleteFolderCheckInterval)
+			return;
 
+		std::vector<std::string> folderNames;
+
+		obsoleteFolderCheckTime.update();
+		long earliestMinute = obsoleteFolderCheckTime.epochMicroseconds()/60000000 - _maxFramePeriods * 60;
+
+		Poco::Path folderPath = _frameRootFolder;
+		folderPath.pushDirectory(name());
+		Poco::DirectoryIterator it(folderPath);
+		Poco::DirectoryIterator end;
+
+		for(; it!=end; it++)
+		{
+			if(it->isDirectory() == false) {
+				continue;
+			}
+
+			int minute = std::atoi(it.name().c_str());
+			if(minute > earliestMinute) {
+				continue;
+			}
+			folderNames.push_back(it.name());
+		}
+
+		for(int i=0; i<folderNames.size(); i++)
+		{
+			Poco::Path folderToDelete = folderPath;
+			folderToDelete.pushDirectory(folderNames[i]);
+			try
+			{
+				Poco::File folder(folderToDelete);
+				if(folder.exists()) {
+					pLogger->LogInfo("delete folder: " + folderToDelete.toString());
+					folder.remove(true);
+				}
+			}
+			catch(...) {
+				//do nothing
+			}
+		}
 	}
 };
 
@@ -482,6 +586,7 @@ protected:
 				maxFileSize = config().getInt("max_file_size");
 
 				_frameRootFolder = config().getString("frames_root_folder");
+				_maxFramePeriods = config().getInt("max_frame_period_hours");
 
 				for(int i=0; ;i++)
 				{
