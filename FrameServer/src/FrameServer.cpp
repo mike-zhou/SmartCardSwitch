@@ -329,6 +329,7 @@ public:
 			std::string clientId;
 			std::string fileName;
 			PendingFile * pFrame = NULL;
+			bool validClient;
 
 			if(params.has("monitorId") == false) {
 				return;
@@ -338,6 +339,18 @@ public:
 			}
 			clientId = params.get("monitorId");
 			fileName = params.get("frameName");
+
+			validClient = false;
+			for(int i=0; i<_clientIds.size(); i++)
+			{
+				if(clientId == _clientIds[i]) {
+					validClient = true;
+					break;
+				}
+			}
+			if(!validClient) {
+				return;
+			}
 
 			{
 				Poco::ScopedLock<Poco::Mutex> lock(_pCache->mutex);
