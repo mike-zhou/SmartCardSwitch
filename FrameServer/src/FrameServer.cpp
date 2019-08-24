@@ -99,6 +99,7 @@ static std::string _frameRootFolder;
 static std::vector<std::string> _clientIds;
 static std::vector<PersistanceTask *> _persistanceTaskList;
 static int _maxFramePeriods;
+static std::string _serverURI;
 
 Logger * pLogger;
 
@@ -130,7 +131,7 @@ private:
 	{
 		int frameIndex;
 
-		pLogger->LogInfo("PersistanceTask " + name() + "starts");
+		pLogger->LogInfo("PersistanceTask " + name() + " starts");
 
 		for(;;)
 		{
@@ -204,7 +205,7 @@ private:
 			deleteObsoleteFiles();
 		}
 
-		pLogger->LogInfo("PersistanceTask " + name() + "exits");
+		pLogger->LogInfo("PersistanceTask " + name() + " exits");
 	}
 
 	void deleteObsoleteFiles()
@@ -263,7 +264,7 @@ private:
 
 	virtual void runTask() override
 	{
-		pLogger->LogInfo("PersistanceAllocator " + name() + "starts");
+		pLogger->LogInfo("PersistanceAllocator " + name() + " starts");
 
 		for(;;)
 		{
@@ -310,7 +311,7 @@ private:
 			}
 		}
 
-		pLogger->LogInfo("PersistanceAllocator " + name() + "exits");
+		pLogger->LogInfo("PersistanceAllocator " + name() + " exits");
 	}
 };
 
@@ -395,10 +396,16 @@ public:
 
 	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
 	{
-		FrameFileHandler partHandler;
-		HTMLForm form(request, request.stream(), partHandler);
-
-		response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+		const std::string & uri = request.getURI();
+		if(uri != _serverURI) {
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		}
+		else
+		{
+			FrameFileHandler partHandler;
+			HTMLForm form(request, request.stream(), partHandler);
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+		}
 		response.send();
 	}
 };
@@ -517,7 +524,8 @@ protected:
 			//retrieve configuration
 			try
 			{
-				port = (unsigned short) config().getInt("server_port.port", 9980);
+				port = (unsigned short) config().getInt("server_port");
+				_serverURI = config().getString("server_uri");
 				requestServiceThreadAmount = config().getInt("max_request_service_thread_amount");
 				maxQueuedRequest = config().getInt("max_queued_request");
 				maxPendingFileAmount = config().getInt("max_pending_file_amount");
