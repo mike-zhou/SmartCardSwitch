@@ -178,8 +178,8 @@ private:
 						throw Poco::Exception("failed to create file: " + filePath.toString());
 					}
 					count = fwrite(pFrame->pData, pFrame->actualSize, 1, pF);
-					if(count != pFrame->actualSize) {
-						pLogger->LogError("PersistanceTask partial persistence: " + std::to_string(count) + "/" + std::to_string(pFrame->actualSize));
+					if(count != 1) {
+						pLogger->LogError("PersistanceTask persistence return code: " + std::to_string(count));
 					}
 					fclose(pF);
 				}
@@ -318,71 +318,24 @@ private:
 class FrameFileHandler: public Poco::Net::PartHandler
 {
 public:
-	FrameFileHandler() { }
+	FrameFileHandler(PendingFile * p)
+	{
+		pFrame = p;
+	}
 
 	void handlePart(const MessageHeader& header, std::istream& stream)
 	{
-		if (header.has("Content-Disposition"))
-		{
-			std::string disp;
-			NameValueCollection params;
-			MessageHeader::splitParameters(header["Content-Disposition"], disp, params);
-			std::string clientId;
-			std::string fileName;
-			PendingFile * pFrame = NULL;
-			bool validClient;
-
-			if(params.has("monitorId") == false) {
-				return;
-			}
-			if(params.has("frameName") == false) {
-				return;
-			}
-			clientId = params.get("monitorId");
-			fileName = params.get("frameName");
-
-			validClient = false;
-			for(int i=0; i<_clientIds.size(); i++)
-			{
-				if(clientId == _clientIds[i]) {
-					validClient = true;
-					break;
-				}
-			}
-			if(!validClient) {
-				return;
-			}
-
-			{
-				Poco::ScopedLock<Poco::Mutex> lock(_pCache->mutex);
-				for(int i=0; i<_pCache->pendingFilePtrArray.size(); i++)
-				{
-					auto p = _pCache->pendingFilePtrArray[i];
-					if(p->state != PendingFile::IDLE) {
-						continue;
-					}
-					p->state = PendingFile::WRITING;
-					p->clientId = clientId;
-					p->fileName = fileName;
-					p->actualSize = 0;
-					pFrame = p;
-					break;
-				}
-				if(pFrame == NULL) {
-					pLogger->LogError("FrameFileHandler no available pending file slot");
-					return;
-				}
-			}
-
-			stream.read((char *)(pFrame->pData), pFrame->maxSize);
-			pFrame->actualSize = stream.gcount();
-
-			{
-				Poco::ScopedLock<Poco::Mutex> lock(_pCache->mutex);
-				pFrame->state = PendingFile::READY;
-			}
+		if(pFrame == nullptr) {
+			return;
 		}
+
+		stream.read((char *)(pFrame->pData) + pFrame->actualSize, pFrame->maxSize - pFrame->actualSize);
+		pFrame->actualSize += stream.gcount();
 	}
+
+private:
+	FrameFileHandler(): pFrame(nullptr) { }
+	PendingFile * pFrame;
 };
 
 
@@ -402,9 +355,73 @@ public:
 		}
 		else
 		{
-			FrameFileHandler partHandler;
-			HTMLForm form(request, request.stream(), partHandler);
-			response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+			int slotIndex;
+			PendingFile * pFrame = nullptr;
+			{
+				//find an IDLE frame slot
+				Poco::ScopedLock<Poco::Mutex> lock(_pCache->mutex);
+				for(int i=0; i<_pCache->pendingFilePtrArray.size(); i++)
+				{
+					auto p = _pCache->pendingFilePtrArray[i];
+					if(p->state != PendingFile::IDLE) {
+						continue;
+					}
+					p->state = PendingFile::WRITING;
+					p->clientId.clear();
+					p->fileName.clear();
+					p->actualSize = 0;
+					pFrame = p;
+					slotIndex = i;
+					break;
+				}
+			}
+			if(pFrame == nullptr) {
+				pLogger->LogError("FrameFileHandler no available pending file slot");
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_TOO_MANY_REQUESTS);
+			}
+			else
+			{
+				std::string clientId;
+				std::string fileName;
+
+				FrameFileHandler partHandler(pFrame);
+				HTMLForm form(request, request.stream(), partHandler);
+
+				for(auto it=form.begin(); it!=form.end(); it++)
+				{
+					if(it->first == "monitorId") {
+						clientId =it->second;
+					}
+					else if(it->first == "frameName") {
+						fileName = it->second;
+					}
+				}
+
+				bool validClient = false;
+				for(int i=0; i<_clientIds.size(); i++)
+				{
+					if(clientId == _clientIds[i]) {
+						validClient = true;
+						break;
+					}
+				}
+				if(validClient == false) {
+					pFrame->state = PendingFile::IDLE;
+					response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_ACCEPTABLE);
+				}
+				else
+				{
+					{
+						Poco::ScopedLock<Poco::Mutex> lock(_pCache->mutex);
+						pFrame->clientId = clientId;
+						pFrame->fileName = fileName;
+						pFrame->state = PendingFile::READY;
+						_pCache->availableFrameIndexes.push_back(slotIndex);
+						_pCache->pFrameAvailableSemaphore->set();
+					}
+					response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				}
+			}
 		}
 		response.send();
 	}
