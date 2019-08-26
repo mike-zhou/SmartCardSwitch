@@ -341,7 +341,6 @@ static void deviceInit(void)
 	struct v4l2_crop crop;
 	struct v4l2_format fmt;
 	struct v4l2_streamparm frameint;
-	unsigned int min;
 
 	if (-1 == xioctl(_fd, VIDIOC_QUERYCAP, &cap)) {
 		if (EINVAL == errno) {
@@ -541,7 +540,7 @@ private:
 		for(;;)
 		{
 			struct FrameData * pFrame = NULL;
-			long milliseconds;
+			long long milliseconds;
 			char fileName[64];
 			Poco::Path jpegFilePath = _ramdiskFolder;
 
@@ -573,7 +572,7 @@ private:
 
 			//write to JPEG file
 			milliseconds = pFrame->stamp.raw()/1000;
-			sprintf(fileName, "%010ld", milliseconds);
+			sprintf(fileName, "%020lld", milliseconds);
 			jpegFilePath.setFileName(fileName);
 			jpegWrite((unsigned char *)(pFrame->pDecodedFrame), jpegFilePath.toString().c_str());
 
@@ -590,7 +589,10 @@ private:
 			//reset frame data
 			memset(pFrame->pRawFrame, 0, pFrame->dataSize);
 			memset(pFrame->pDecodedFrame, 0, pFrame->dataSize);
-			pFrame->state = IDLE;
+			{
+				Poco::ScopedLock<Poco::Mutex> lock(_frameCache.mutex);
+				pFrame->state = IDLE;
+			}
 		}
 
 		pLogger->LogInfo("uploading task exit");
@@ -833,7 +835,7 @@ protected:
 			for(; it != end; it++) {
 				frameFiles.push_back(it.name());
 			}
-			for(int i=0; i<frameFiles.size(); i++)
+			for(unsigned int i=0; i<frameFiles.size(); i++)
 			{
 				pLogger->LogInfo("delete obsolete frame file: " + frameFiles[i]);
 
