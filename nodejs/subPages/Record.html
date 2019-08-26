@@ -8,9 +8,12 @@
 </head>
 
 <body onclick="onElementClicked()">
-    <h1>Test case recorder</h1>
+    <div>
+        <h1>Record source:</h1>
+        <div id="recordSource"></div>
+    </div><br>
     <div id="videoFrameContainer">
-    </div>
+    </div> <br>
     <div class="tooltip" style="width:100%">
         <input type="range" id="framePosition" min="0" max="100" class="frameSlider"></input>
         <span class="tooltiptext">drag or click to reposition video frame</span>

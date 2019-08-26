@@ -33,6 +33,18 @@ function frameUpdateTimer()
     var date = new Date();
     var frameInfo = {};
     
+    let client = "";
+    let clients = document.getElementsByName("clientId");
+    for(let i=0; i<clients.length; i++) {
+        if(clients[i].checked) {
+            client = clients[i].value;
+            break;
+        }
+    }
+    if(client === "") {
+        return; //no client is selected.
+    }
+
     if(_anchorPosition == 0) {
         //query frame at current time
         frameInfo.milliseconds = date.getTime();
@@ -47,6 +59,7 @@ function frameUpdateTimer()
         // console.log("_anchorPosition: " + _anchorPosition + " offset: " + offset);
         // console.log("frameInfo.milliseconds: " + frameInfo.milliseconds);
     }
+    frameInfo["client"] = client;
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
@@ -63,7 +76,7 @@ function frameUpdateTimer()
                     _currentFramePathFile = reply.pathFile;
                     
                     let image = document.getElementById("videoFrame");
-                    image.src = "/frames/" + reply.pathFile;
+                    image.src = reply.pathFile;
                     image.width = window.innerWidth;
                     image.height = image.width * IMAGE_HEIGHT / IMAGE_WIDTH;
                 }
@@ -143,6 +156,37 @@ function initRecordPage()
     document.getElementById("framePosition").addEventListener("mousedown", onFramePositionMouseDown);
     document.getElementById("framePosition").addEventListener("mouseup", onFramePositionMouseUp);
     document.getElementById("framePosition").addEventListener("mousemove", onFramePositionMouseMove);
+
+    //retrieve set of record sources.
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open('POST', '/recordSourceQuery');
+    xhr.onreadystatechange = function() {
+        let DONE = 4; // readyState 4 means the request is done.
+        let OK = 200; // status 200 is a successful return.
+
+        if(xhr.readyState !== DONE) {
+            return;
+        }
+        if(xhr.status !== OK) {
+            console.log("initRecordPage: failed to retrieve record source: " + xhr.status);
+            return;
+        }
+
+        let reply = xhr.response;
+        if(Array.isArray(reply) == false) {
+            console.log("initRecordPage: no clients is returned: " + reply);
+            return;
+        }
+        
+        let html = "";
+        for(let i=0; i<reply.length; i++) {
+            html += "<input type=\"radio\" id=\"clientId_" + reply[i] + "\" name=\"clientId\" value=\"" + reply[i] + "\"> " + reply[i] + "</input>";
+        }
+        document.getElementById("recordSource").innerHTML = html;
+        document.getElementById("clientId_" + reply[0]).checked = true; //select the first client by default.
+    };
+    xhr.send();
 
     setInterval(frameUpdateTimer, FRAME_RETRIEVING_INTERVAL);
 }

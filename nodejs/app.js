@@ -941,8 +941,9 @@ function onFrameQuery(request, response)
         let cmdObj = JSON.parse(body);
         
         let milliseconds = cmdObj.milliseconds;
+        let clientFolder = framesRootFolder + cmdObj.client + "/";
 
-        fs.readdir(framesRootFolder, function(err, frameFolders) {
+        fs.readdir(clientFolder, function(err, frameFolders) {
             if(err) {
                 response.statusCode = 400;
                 response.end();
@@ -958,7 +959,7 @@ function onFrameQuery(request, response)
             frameFolders = frameFolders.sort();
 
             //find the earliest frame
-            fs.readdir(framesRootFolder + "/" + frameFolders[0] + "/", function(err, earliestFiles) {
+            fs.readdir(clientFolder + "/" + frameFolders[0] + "/", function(err, earliestFiles) {
                 let earliestFile;
 
                 if(err) {
@@ -977,7 +978,7 @@ function onFrameQuery(request, response)
                 earliestFile = earliestFiles[0];
 
                 //find the latest file
-                fs.readdir(framesRootFolder + "/" + frameFolders[frameFolders.length-1] + "/", function(err, latestFiles) {
+                fs.readdir(clientFolder + "/" + frameFolders[frameFolders.length-1] + "/", function(err, latestFiles) {
                     let latestFile;
 
                     if(err) {
@@ -1008,7 +1009,7 @@ function onFrameQuery(request, response)
                     if(folder === "") {
                         folder = frameFolders[0];
                     }
-                    fs.readdir(framesRootFolder + "/" + folder + "/", function(err, files) {
+                    fs.readdir(clientFolder + "/" + folder + "/", function(err, files) {
                         if(err) {
                             response.statusCode = 400;
                             response.end();
@@ -1038,7 +1039,7 @@ function onFrameQuery(request, response)
                         reply.firstFile = earliestFile;
                         reply.queriedFile = file;
                         reply.lastFile = latestFile;
-                        reply.pathFile = folder + "/" + file;
+                        reply.pathFile = "/frames/" + cmdObj.client + "/" + folder + "/" + file;
                         response.statusCode = 200;
                         response.end(JSON.stringify(reply));
                     });                    
@@ -1067,6 +1068,35 @@ function onFrameRetrive(request, response)
             response.statusCode = 400;
             response.end();
         }
+    });
+}
+
+function onRecordSourceQuery(request, response)
+{
+    appLog("onRecordSourceQuery");
+
+    fs.readdir(framesRootFolder, function(err, clientFolders) {
+        if(err) {
+            response.statusCode = 400;
+            response.end();
+            return;
+        }
+        if(clientFolders.length < 1) {
+            //empty folder
+            response.statusCode = 400;
+            response.end();
+            return;
+        }
+
+        clientFolders = clientFolders.sort();
+        
+        let clients = [];
+        for(let i=0; i<clientFolders.length; i++)
+        {
+            clients.push(clientFolders[i]);
+        }
+        response.statusCode = 200;
+        response.end(JSON.stringify(clients));
     });
 }
 
@@ -1125,6 +1155,8 @@ function onHttpRequest(request, response)
         onTouchScreen(request, response);
     } else if (url === "/adjustStepperW") {
         onAdjustStepperW(request, response);
+    } else if (url === "/recordSourceQuery") {
+        onRecordSourceQuery(request, response);
     } else if (url === "/") {
         onDefaultPage(request, response);
     } else if (url.indexOf("/subPages/") === 0) {
