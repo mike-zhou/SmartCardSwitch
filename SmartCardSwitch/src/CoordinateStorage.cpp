@@ -68,6 +68,7 @@ void CoordinateStorage::ReloadCoordinate()
 	_assistKeys.clear();
 	_assistKeysPressed.clear();
 	_smartCardOffsets.clear();
+	_barCodeReaderExtraPositions.clear();
 
 	if(_filePathName.empty()) {
 		pLogger->LogError("CoordinateStorage::CoordinateStorage empty file path & name");
@@ -313,6 +314,20 @@ void CoordinateStorage::ReloadCoordinate()
 			_barCodeReader.y = ds["barCodeReader"]["reader"]["y"];
 			_barCodeReader.z = ds["barCodeReader"]["reader"]["z"];
 			_barCodeReader.w = ds["barCodeReader"]["reader"]["w"];
+			auto barCodeReaderExtraPositionsAmount = ds["barCodeReader"]["extraPositions"].size();
+			for(unsigned int i=0; i<barCodeReaderExtraPositionsAmount; i++)
+			{
+				long x, y, z, w;
+				long index;
+
+				index = ds["barCodeReader"]["extraPositions"][i]["index"];
+				x = ds["barCodeReader"]["extraPositions"][i]["value"]["x"];
+				y = ds["barCodeReader"]["extraPositions"][i]["value"]["y"];
+				z = ds["barCodeReader"]["extraPositions"][i]["value"]["z"];
+				w = ds["barCodeReader"]["extraPositions"][i]["value"]["w"];
+
+				SetCoordinate(Type::BarCodeReaderExtraPosition, x, y, z, w, index);
+			}
 
 			//safe
 //			_safe.x = ds["safe"]["x"];
@@ -487,7 +502,16 @@ bool CoordinateStorage::PersistToFile()
 	//bar code reader
 	json = json + ",\"barCodeReader\": {";
 	json = json + "\"gate\":" + _barCodeReaderGate.ToJsonObj() + ",";
-	json = json + "\"reader\":" + _barCodeReader.ToJsonObj();
+	json = json + "\"reader\":" + _barCodeReader.ToJsonObj() + ",";
+	json = json + "\"extraPositions\":["; //start of extra positions
+	for(unsigned int i=0; i<_barCodeReaderExtraPositions.size(); i++)
+	{
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _barCodeReaderExtraPositions[i].ToJsonObj() + "},";
+	}
+	if(!_barCodeReaderExtraPositions.empty()) {
+		json.pop_back(); //delete the extra ','
+	}
+	json = json + "]";//end of extra positions
 	json = json + "}";
 
 	//safe
@@ -818,8 +842,6 @@ bool CoordinateStorage::SetCoordinate(Type type,
 		}
 		break;
 
-
-
 		case Type::Home:
 		{
 			_home = value;
@@ -845,6 +867,27 @@ bool CoordinateStorage::SetCoordinate(Type type,
 		{
 			_safe = value;
 			rc = true;
+		}
+		break;
+
+		case Type::BarCodeReaderExtraPosition:
+		{
+			if(index < BAR_CODE_READER_EXTRA_POSITION_AMOUNT)
+			{
+				if(index >= _barCodeReaderExtraPositions.size())
+				{
+					Coordinate tmp;
+					// fill _assistKeys
+					for(; index >= _barCodeReaderExtraPositions.size(); ) {
+						_barCodeReaderExtraPositions.push_back(tmp);
+					}
+					_barCodeReaderExtraPositions[index] = value;
+					rc = true;
+				}
+			}
+			else {
+				pLogger->LogError("CoordinateStorage::SetCoordinate bar code extra position index out of range: " + std::to_string(index));
+			}
 		}
 		break;
 
@@ -1086,6 +1129,20 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	{
 		value = _safe;
 		rc = true;
+	}
+	break;
+
+	case Type::BarCodeReaderExtraPosition:
+	{
+		if(index < _barCodeReaderExtraPositions.size())
+		{
+			value = _barCodeReaderExtraPositions[index];
+			rc = true;
+		}
+		else
+		{
+			pLogger->LogError("CoordinateStorage::GetCoordinate bar code extra positions index out of range: " + std::to_string(index));
+		}
 	}
 	break;
 
