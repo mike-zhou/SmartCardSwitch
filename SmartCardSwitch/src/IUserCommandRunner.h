@@ -45,6 +45,7 @@ public:
 	const std::string UserCmdCardFromSmartCardReaderGateToSmartCardGate = "move card from smartCardReaderGate to smartCardGate";
 	const std::string UserCmdCardFromSmartCardGateToBarcodeReaderGate = "move card from smartCardGate to barcodeReaderGate";
 	const std::string UserCmdCardFromBarcodeReaderGateToBarcodeReader = "move card from barcodeReaderGate to barcodeReader";
+	const std::string UserCmdCardBarcodeToExtraPosition = "move card barcode to extra position";
 	const std::string UserCmdCardFromBarcodeReaderToBarcodeReaderGate = "move card from barcodeReader to barcodeReaderGate";
 	const std::string UserCmdCardFromBarcodeReaderGateToSmartCardGate = "move card from barcodeReaderGate to smartCardGate";
 	const std::string UserCmdCardFromSmartCardGateToBay = "move card from smartCardGate to bay";
@@ -278,6 +279,12 @@ public:
  *		"userCommand":"move card from barcodeReaderGate to barcodeReader",
  *		"commandId":"uniqueCommandId",
  *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card barcode to extra position",
+ *		"commandId":"uniqueCommandId",
+ *		"positionIndex":0
  *	}
  *
  *	{

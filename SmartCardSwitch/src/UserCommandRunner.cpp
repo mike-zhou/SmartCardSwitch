@@ -237,6 +237,10 @@ void UserCommandRunner::finishUserCommand(CommandState consoleCmdState, const st
 		{
 			_userCommand.cardState = CardState::InBarcodeReader;
 		}
+		else if(_userCommand.command == UserCmdCardBarcodeToExtraPosition)
+		{
+			_userCommand.cardState = CardState::InBarcodeReader;
+		}
 		else if(_userCommand.command == UserCmdCardFromBarcodeReaderToBarcodeReaderGate)
 		{
 			_userCommand.cardState = CardState::InBarcodeReaderGate;
@@ -586,13 +590,22 @@ void UserCommandRunner::executeUserCmd_Card_from_BarcodeReaderGate_to_BarcodeRea
 	gate_barcodeReader();;
 }
 
+void UserCommandRunner::executeUserCmd_Card_barcode_to_extraPosition()
+{
+	if(_userCommand.cardState != CardState::InBarcodeReader) {
+		throwError("UserCommandRunner::executeUserCmdCardFromBarcodeReaderGateToBarcodeReader no card in smart card reader gate");
+	}
+
+	barcodeReader_extraPosition();
+}
+
 void UserCommandRunner::executeUserCmd_Card_from_BarcodeReader_to_BarcodeReaderGate()
 {
 	if(_userCommand.cardState != CardState::InBarcodeReader) {
 		throwError("UserCommandRunner::executeUserCmdCardFromBarcodeReaderGateToBarcodeReader no card in smart card reader gate");
 	}
 
-	barcodeReader_gate();;
+	barcodeReader_gate();
 }
 
 void UserCommandRunner::executeUserCmd_Card_from_BarcodeReaderGate_to_SmartCardGate()
@@ -632,6 +645,17 @@ void UserCommandRunner::parseUserCmdSmartCard(Poco::DynamicStruct& ds)
 	}
 
 	_userCommand.smartCardNumber = number;
+}
+
+void UserCommandRunner::parseUserCmdBarcodeToExtraPosition(Poco::DynamicStruct& ds)
+{
+	unsigned int positionIndex = ds["positionIndex"];
+	if(positionIndex >= pCoordinateStorage->BarcodeReaderExtraPositionsAmount())
+	{
+		throwError("UserCommandRunner::parseUserCmdBarcodeToExtraPosition position amount of range: " + std::to_string(positionIndex));
+	}
+
+	_userCommand.barcodeExtraPositionIndex = positionIndex;
 }
 
 void UserCommandRunner::parseUserCmdSwipeSmartCard(Poco::DynamicStruct& ds)
@@ -1993,12 +2017,56 @@ void UserCommandRunner::barcodeReader_gate()
 	if(rc == false) {
 		throwError("UserCommandRunner::barcodeReader_gate failed to retrieve bar code reader");
 	}
-	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReader, curX, curY, curZ, curW);
-	if(rc == false) {
-		throwError("UserCommandRunner::barcodeReader_gate failed to retrieve bar code reader gate");
+
+	curX = currentX();
+	curY = currentY();
+	curZ = currentZ();
+	curW = currentW();
+
+	moveStepperX(curX, finalX);
+	moveStepperY(curY, finalY);
+	moveStepperZ(curZ, finalZ);
+	moveStepperW(curW, finalW);
+}
+
+void UserCommandRunner::barcodeReader_extraPosition()
+{
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::barcodeReader_toExtraPosition ++++ ");
+		pLogger->LogInfo(buf);
 	}
 
-	moveStepperY(curY, finalY);
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReaderExtraPosition, finalX, finalY, finalZ, finalW, _userCommand.barcodeExtraPositionIndex);
+	if(rc == false) {
+		throwError("UserCommandRunner::barcodeReader_gate failed to retrieve bar code reader");
+	}
+	if((finalX == -1) || (finalY == -1) || (finalZ == -1) || (finalW == -1)) {
+		throwError("UserCommandRunner::barcodeReader_extraPosition illegal extra position: " + std::to_string(_userCommand.barcodeExtraPositionIndex));
+	}
+
+	curX = currentX();
+	curY = currentY();
+	curZ = currentZ();
+	curW = currentW();
+
+	if(curZ < finalZ) {
+		//move up
+		moveStepperX(curX, finalX);
+		moveStepperY(curY, finalY);
+		moveStepperW(curW, finalW);
+		moveStepperZ(curZ, finalZ);
+	}
+	else {
+		//move down
+		moveStepperX(curX, finalX);
+		moveStepperZ(curZ, finalZ);
+		moveStepperW(curW, finalW);
+		moveStepperY(curY, finalY);
+	}
 }
 
 void UserCommandRunner::gate_barcodeReader()
@@ -2848,6 +2916,9 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		}
 		else if(_userCommand.command == UserCmdCardFromBarcodeReaderGateToBarcodeReader) {
 			parseUserCmdSmartCard(ds);
+		}
+		else if(_userCommand.command == UserCmdCardBarcodeToExtraPosition) {
+			parseUserCmdBarcodeToExtraPosition(ds);
 		}
 		else if(_userCommand.command == UserCmdCardFromBarcodeReaderToBarcodeReaderGate) {
 			parseUserCmdSmartCard(ds);
@@ -4046,6 +4117,16 @@ void UserCommandRunner::runTask()
 					}
 					else {
 						executeUserCmd_Card_from_BarcodeReaderGate_to_BarcodeReader();
+					}
+				}
+				else if(_userCommand.command == UserCmdCardBarcodeToExtraPosition)
+				{
+					if(_userCommand.cardState != CardState::InBarcodeReader) {
+						errorInfo = ErrorSmartCardNotInBarcodeReader;
+						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
+					}
+					else {
+						executeUserCmd_Card_barcode_to_extraPosition();
 					}
 				}
 				else if(_userCommand.command == UserCmdCardFromBarcodeReaderToBarcodeReaderGate)

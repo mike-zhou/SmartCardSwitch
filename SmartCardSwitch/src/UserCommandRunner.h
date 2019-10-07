@@ -165,6 +165,8 @@ private:
 		std::vector<unsigned int> keyNumbers;
 		//dcm
 		unsigned int dcmIndex;
+		//barcode
+		unsigned int barcodeExtraPositionIndex;
 
 		//---- user command result ----
 		CardState cardState;
@@ -198,6 +200,7 @@ private:
 	void parseUserCmdAjustStepperW(Poco::DynamicStruct& ds);
 	void parseUserCmdFinishStepperWAdjustment(Poco::DynamicStruct& ds);
 	void parseUserCmdSmartCard(Poco::DynamicStruct& ds);
+	void parseUserCmdBarcodeToExtraPosition(Poco::DynamicStruct& ds);
 	void parseUserCmdSwipeSmartCard(Poco::DynamicStruct& ds);
 	void parseUserCmdTapSmartCard(Poco::DynamicStruct& ds);
 	void parseUserCmdBarCode(Poco::DynamicStruct& ds);
@@ -231,6 +234,7 @@ private:
 	void executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardGate();
 	void executeUserCmd_Card_from_SmartCardGate_to_BarcodeReaderGate();
 	void executeUserCmd_Card_from_BarcodeReaderGate_to_BarcodeReader();
+	void executeUserCmd_Card_barcode_to_extraPosition();
 	void executeUserCmd_Card_from_BarcodeReader_to_BarcodeReaderGate();
 	void executeUserCmd_Card_from_BarcodeReaderGate_to_SmartCardGate();
 	void executeUserCmdPutBackSmartCard();
@@ -322,6 +326,7 @@ private:
 	void gate_contactlessReader();
 	//movement between barcode reader and gate
 	void barcodeReader_gate();
+	void barcodeReader_extraPosition();
 	void gate_barcodeReader();
 	//from Gate to Gate
 	void gateToGate(unsigned int fromX, unsigned int fromY, unsigned int fromZ, unsigned int fromW,
