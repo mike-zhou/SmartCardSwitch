@@ -633,6 +633,17 @@ function onCardAccess(request, response)
                             
                             sendSCSCommand(JSON.stringify(scsCommand), response);
                         }
+                        else if(cmd.command === "move card barcode to extra position")
+                        {
+                            var scsCommand = {};
+                            
+                            scsCommand["userCommand"] = "move card barcode to extra position";
+                            scsCommand["commandId"] = newCommandId();
+                            scsCommand["smartCardNumber"] = slotNumber;
+                            scsCommand["positionIndex"] = cmd["positionIndex"];
+                            
+                            sendSCSCommand(JSON.stringify(scsCommand), response);
+                        }
                         else if(cmd.command === "move card from smartCardReader to smartCardReaderGate")
                         {
                             var scsCommand = {};
