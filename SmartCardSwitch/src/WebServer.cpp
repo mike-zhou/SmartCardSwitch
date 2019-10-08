@@ -2523,6 +2523,20 @@ bool WebServer::SaveCoordinate(const std::string & coordinateType, unsigned int 
 			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
 		}
 	}
+	else if(coordinateType == "barCodeReaderExtra")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::BarCodeReaderExtraPosition,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of bar code reader extra position: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
 	else if(coordinateType == "barcodeReaderGate")
 	{
 		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::BarCodeReaderGate,

@@ -718,6 +718,7 @@ function saveCoordinate() {
             break;
 
         case "smartCard":
+        case "barCodeReaderExtra":
             command["data"] = selectedRadio["index"];
             break;
 
