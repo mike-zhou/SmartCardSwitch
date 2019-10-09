@@ -881,9 +881,9 @@ bool CoordinateStorage::SetCoordinate(Type type,
 					for(; index >= _barCodeReaderExtraPositions.size(); ) {
 						_barCodeReaderExtraPositions.push_back(tmp);
 					}
-					_barCodeReaderExtraPositions[index] = value;
-					rc = true;
 				}
+				_barCodeReaderExtraPositions[index] = value;
+				rc = true;
 			}
 			else {
 				pLogger->LogError("CoordinateStorage::SetCoordinate bar code extra position index out of range: " + std::to_string(index));
