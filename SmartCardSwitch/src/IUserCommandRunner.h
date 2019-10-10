@@ -284,6 +284,7 @@ public:
  *	{
  *		"userCommand":"move card barcode to extra position",
  *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
  *		"positionIndex":0
  *	}
  *
