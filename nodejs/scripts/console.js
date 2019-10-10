@@ -45,6 +45,13 @@ function updateCardSlotMappingTable(mapping) {
         html = html + "<option>" + mapping[i].cardName + "</option>";
     }
     document.getElementById("subCommand_cardSelection").innerHTML = html;
+
+    document.getElementById("barCodeExtra_cardSelection").innerHTML = html;
+    html = "";
+    for(let i=0; i<128; i++) {
+        html = html + "<option>" + i + "</option>";
+    }
+    document.getElementById("barCodeExtra_extraPosition").innerHTML = html;
 }
 
 function loadMapping(mappingName)
@@ -480,6 +487,50 @@ function onActivateTouchScreenMapping()
     xhr.send(JSON.stringify(globalTouchScreenMappings));
 }
 
+function onBarCodeExtra(action)
+{
+    let cardName = document.getElementById("barCodeExtra_cardSelection").value;
+    let cmdStr = "";
+    let command = {};
+
+    command["name"] = cardName;
+    if(action === "show") {
+        cmdStr = "";
+    }
+    else if(action === "move") {
+        let positionIndex = document.getElementById("barCodeExtra_extraPosition").value;
+        command["command"] = "move card barcode to extra position";
+        command["positionIndex"] = positionIndex;
+    }
+    else if(action === "return") {
+        cmdStr = "";
+    }
+    else {
+        alert("Error: unknown subCommand action: " + action);
+        return;
+    }
+
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = "text/plain";
+    xhr.open('POST', '/cardAccess');
+
+    xhr.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                console.log(cardName + ": " + cmdStr);
+            } else {
+                alert('Error: ' + xhr.status + ":" + xhr.statusText + ":" + xhr.response); // An error occurred during the request.
+            }
+        }
+    };
+    xhr.send(JSON.stringify(command));
+}
+
 function onElementClicked() 
 {
     //element id is in the format of group_action_XXX
@@ -561,6 +612,10 @@ function onElementClicked()
     }
     else if(group === "iFinger") {
         onKey(paraArray[2]);
+    }
+    else if(group === "barCodeExtra") {
+        let action = paraArray[1];
+        onBarCodeExtra(action);
     }
 }
 
