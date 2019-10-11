@@ -8,6 +8,7 @@
     border-width: 1px;
     border-color: blue;
     border-radius: 5px;
+    margin-bottom: 5px;
 }
 
 .functionZone:hover {
@@ -110,3 +111,19 @@
     visibility: visible;
 }
   
+.navigation {
+    position: sticky;
+    top:0;
+    padding: 5px;
+    background-color: gray;
+}
+
+.navigation a {
+    margin-right: 10px;
+    text-decoration: none;
+    color: blue;
+}
+
+.navigation a:hover {
+    background-color: greenyellow;
+}
