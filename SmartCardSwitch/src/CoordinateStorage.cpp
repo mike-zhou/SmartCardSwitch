@@ -902,6 +902,62 @@ bool CoordinateStorage::SetCoordinate(Type type,
 }
 
 
+bool CoordinateStorage::SetCoordinateEx(Type type,
+				unsigned int x,
+				unsigned int y,
+				unsigned int z,
+				unsigned int w,
+				unsigned int u,
+				unsigned int index = 0)
+{
+	bool rc = false;
+
+	Coordinate value;
+	value.x = x;
+	value.y = y;
+	value.z = z;
+	value.w = w;
+
+	switch(type)
+	{
+		case Type::MobileBarcodeGate:
+		{
+			_mobileBarcodeGate = value;
+			rc = true;
+		}
+		break;
+
+		case Type::MobileBarcodePosition:
+		{
+			if(index < MOBILE_BARCODE_POSITION_AMOUNT)
+			{
+				if(index >= _mobileBarcodePositions.size())
+				{
+					Coordinate tmp;
+					for(; index >= _mobileBarcodePositions.size();) {
+						_mobileBarcodePositions.push_back(tmp);
+					}
+				}
+				_mobileBarcodePositions[index] = value;
+				rc = true;
+			}
+			else {
+				pLogger->LogError("CoordinateStorage::SetCoordinateEx mobile barcode position index out of range: " + std::to_string(index));
+			}
+		}
+		break;
+
+		default:
+		{
+			pLogger->LogError("CoordinateStorage::SetCoordinateEx unknown type: " + std::to_string(type));
+			rc = false;
+		}
+		break;
+	}
+
+	return rc;
+}
+
 bool CoordinateStorage::GetCoordinate(Type type,
 				int& x,
 				int& y,
@@ -910,7 +966,6 @@ bool CoordinateStorage::GetCoordinate(Type type,
 				unsigned int index)
 {
 	bool rc = false;
-
 	Coordinate value;
 
 	switch(type)
@@ -1162,9 +1217,63 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	return rc;
 }
 
+bool CoordinateStorage::GetCoordinateEx(Type type,
+				int& x,
+				int& y,
+				int& z,
+				int& w,
+				int& u,
+				unsigned int index = 0)
+{
+	bool rc = false;
+	Coordinate value;
+
+	switch(type)
+	{
+		case Type::MobileBarcodeGate:
+		{
+			value = _mobileBarcodeGate;
+			rc = true;
+		}
+		break;
+
+		case Type::MobileBarcodePosition:
+		{
+			if(index < _mobileBarcodePositions.size())
+			{
+				value = _mobileBarcodePositions[index];
+				rc = true;
+			}
+			else
+			{
+				pLogger->LogError("CoordinateStorage::GetCoordinateEx mobile barcode positions index out of range: " + std::to_string(index));
+			}
+		}
+		break;
+
+		default:
+		{
+			pLogger->LogError("CoordinateStorage::GetCoordinateEx unknown type: " + std::to_string(type));
+		}
+		break;
+	}
+
+	if(rc)
+	{
+		x = value.x;
+		y = value.y;
+		z = value.z;
+		w = value.w + _wAdjustment;
+		u = value.u;
+	}
+
+	return rc;
+}
+
+
 CoordinateStorage::Coordinate::Coordinate()
 {
-	x = y = z = w = -1;
+	x = y = z = w = u = -1;
 }
 
 std::string CoordinateStorage::Coordinate::ToJsonObj()
@@ -1175,7 +1284,8 @@ std::string CoordinateStorage::Coordinate::ToJsonObj()
 	json = json + "\"x\":" + std::to_string(x) + ",";
 	json = json + "\"y\":" + std::to_string(y) + ",";
 	json = json + "\"z\":" + std::to_string(z) + ",";
-	json = json + "\"w\":" + std::to_string(w);
+	json = json + "\"w\":" + std::to_string(w) + ",";
+	json = json + "\"u\":" + std::to_string(u);
 	json = json + "}";
 
 	return json;

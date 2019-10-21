@@ -41,7 +41,9 @@ public:
 		ContactlessReaderGate = 19,
 		ContactlessReader = 20,
 		Safe = 21,
-		BarCodeReaderExtraPosition = 22
+		BarCodeReaderExtraPosition = 22,
+		MobileBarcodeGate = 23,
+		MobileBarcodePosition = 24
 	};
 
 	unsigned int SmartCardsAmount() { return _smartCards.size(); }
@@ -61,11 +63,27 @@ public:
 					unsigned int w,
 					unsigned int index = 0);
 
+	bool SetCoordinateEx(Type type,
+					unsigned int x,
+					unsigned int y,
+					unsigned int z,
+					unsigned int w,
+					unsigned int u,
+					unsigned int index = 0);
+
 	bool GetCoordinate(Type type,
 					int& x,
 					int& y,
 					int& z,
 					int& w,
+					unsigned int index = 0);
+
+	bool GetCoordinateEx(Type type,
+					int& x,
+					int& y,
+					int& z,
+					int& w,
+					int& u,
 					unsigned int index = 0);
 
 	void SetSmartCardSlowlyPlaceStartZ(long zPosition);
@@ -102,6 +120,7 @@ private:
 	const unsigned int SOFT_KEYS_AMOUNT = 8;
 	const unsigned int TOUCH_SCREEN_KEYS_AMOUNT = 64;
 	const unsigned int ASSIST_KEYS_AMOUNT = 9;
+	const unsigned int MOBILE_BARCODE_POSITION_AMOUNT = 128;
 
 	int _wAdjustment;
 
@@ -109,7 +128,7 @@ private:
 
 	struct Coordinate
 	{
-		long x, y, z, w;
+		long x, y, z, w, u;
 
 		Coordinate();
 		std::string ToJsonObj(); //return a json object standing for this struct.
@@ -163,6 +182,10 @@ private:
 	Coordinate _barCodeReaderGate;
 	Coordinate _barCodeReader;
 	std::vector<Coordinate> _barCodeReaderExtraPositions;
+
+	//mobile barcode
+	Coordinate _mobileBarcodeGate;
+	std::vector<Coordinate> _mobileBarcodePositions;
 
 	//safe
 	Coordinate _safe;
