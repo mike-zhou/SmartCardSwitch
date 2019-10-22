@@ -329,6 +329,33 @@ void CoordinateStorage::ReloadCoordinate()
 				SetCoordinate(Type::BarCodeReaderExtraPosition, x, y, z, w, index);
 			}
 
+			//mobile barcode
+			_mobileBarcodeGate.x = ds["mobileBarcode"]["gate"]["x"];
+			_mobileBarcodeGate.y = ds["mobileBarcode"]["gate"]["y"];
+			_mobileBarcodeGate.z = ds["mobileBarcode"]["gate"]["z"];
+			_mobileBarcodeGate.w = ds["mobileBarcode"]["gate"]["w"];
+			_mobileBarcodeGate.u = ds["mobileBarcode"]["gate"]["u"];
+			_mobileBarcodeBay.x = ds["mobileBarcode"]["bay"]["x"];
+			_mobileBarcodeBay.y = ds["mobileBarcode"]["bay"]["y"];
+			_mobileBarcodeBay.z = ds["mobileBarcode"]["bay"]["z"];
+			_mobileBarcodeBay.w = ds["mobileBarcode"]["bay"]["w"];
+			_mobileBarcodeBay.u = ds["mobileBarcode"]["bay"]["u"];
+			auto mobileBarcodePositionAmount = ds["mobileBarcode"]["positions"].size();
+			for(unsigned int i=0; i<mobileBarcodePositionAmount; i++)
+			{
+				long x, y, z, w, u;
+				long index;
+
+				index = ds["mobileBarcode"]["positions"][i]["index"];
+				x = ds["mobileBarcode"]["positions"][i]["value"]["x"];
+				y = ds["mobileBarcode"]["positions"][i]["value"]["y"];
+				z = ds["mobileBarcode"]["positions"][i]["value"]["z"];
+				w = ds["mobileBarcode"]["positions"][i]["value"]["w"];
+				u = ds["mobileBarcode"]["positions"][i]["value"]["u"];
+
+				SetCoordinateEx(Type::MobileBarcodePosition, x, y, z, w, u, index);
+			}
+
 			//safe
 //			_safe.x = ds["safe"]["x"];
 //			_safe.y = ds["safe"]["y"];
@@ -512,6 +539,21 @@ bool CoordinateStorage::PersistToFile()
 		json.pop_back(); //delete the extra ','
 	}
 	json = json + "]";//end of extra positions
+	json = json + "}";
+
+	//mobileBarcode
+	json = json + ",\"mobileBarcode\":{";
+	json = json + "\"gate\":" + _mobileBarcodeGate.ToJsonObj() + ",";
+	json = json + "\"bay\":" + _mobileBarcodeBay.ToJsonObj() + ",";
+	json = json + "\"positions\":["; //start of positions
+	for(unsigned int i=0; i<_mobileBarcodePositions.size(); i++)
+	{
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _mobileBarcodePositions[i].ToJsonObj() + "},";
+	}
+	if(!_mobileBarcodePositions.empty()) {
+		json.pop_back(); //delete the extra ','
+	}
+	json = json + "]";//end of positions
 	json = json + "}";
 
 	//safe
@@ -927,6 +969,13 @@ bool CoordinateStorage::SetCoordinateEx(Type type,
 		}
 		break;
 
+		case Type::MobileBarcodeBay:
+		{
+			_mobileBarcodeBay = value;
+			rc = true;
+		}
+		break;
+
 		case Type::MobileBarcodePosition:
 		{
 			if(index < MOBILE_BARCODE_POSITION_AMOUNT)
@@ -1233,6 +1282,13 @@ bool CoordinateStorage::GetCoordinateEx(Type type,
 		case Type::MobileBarcodeGate:
 		{
 			value = _mobileBarcodeGate;
+			rc = true;
+		}
+		break;
+
+		case Type::MobileBarcodeBay:
+		{
+			value = _mobileBarcodeBay;
 			rc = true;
 		}
 		break;

@@ -43,7 +43,8 @@ public:
 		Safe = 21,
 		BarCodeReaderExtraPosition = 22,
 		MobileBarcodeGate = 23,
-		MobileBarcodePosition = 24
+		MobileBarcodeBay = 24,
+		MobileBarcodePosition = 25
 	};
 
 	unsigned int SmartCardsAmount() { return _smartCards.size(); }
@@ -185,6 +186,7 @@ private:
 
 	//mobile barcode
 	Coordinate _mobileBarcodeGate;
+	Coordinate _mobileBarcodeBay;
 	std::vector<Coordinate> _mobileBarcodePositions;
 
 	//safe
