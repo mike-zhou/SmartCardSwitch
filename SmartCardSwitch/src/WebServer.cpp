@@ -3414,6 +3414,29 @@ std::string WebServer::DeviceStatus()
 		}
 	}
 	json += "},";
+	//barcode extra positions
+	json += "\"coordinateBarcodeReaderExtraPositions\":[";
+	for(unsigned int i=0; i < pCoordinateStorage->BarcodeReaderExtraPositionsAmount(); i++)
+	{
+		int x, y, z, w;
+
+		json += "{";
+		if(pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReaderExtraPosition, x, y, z, w, i)) {
+			json += "\"index\":" + std::to_string(i) + ",";
+			json += "\"x\":" + std::to_string(x) + ",";
+			json += "\"y\":" + std::to_string(y) + ",";
+			json += "\"z\":" + std::to_string(z) + ",";
+			json += "\"w\":" + std::to_string(w);
+		}
+		else {
+			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of barcode reader extra position: " + std::to_string(i));
+		}
+		json += "},";
+	}
+	if(pCoordinateStorage->BarcodeReaderExtraPositionsAmount()) {
+		json.pop_back();//remove the last ','
+	}
+	json += "],";
 	//mobileBarcodeGate
 	json += "\"coordinateMobileBarcodeGate\":{";
 	{
