@@ -950,7 +950,7 @@ bool CoordinateStorage::SetCoordinateEx(Type type,
 				unsigned int z,
 				unsigned int w,
 				unsigned int u,
-				unsigned int index = 0)
+				unsigned int index)
 {
 	bool rc = false;
 
@@ -1272,7 +1272,7 @@ bool CoordinateStorage::GetCoordinateEx(Type type,
 				int& z,
 				int& w,
 				int& u,
-				unsigned int index = 0)
+				unsigned int index)
 {
 	bool rc = false;
 	Coordinate value;
