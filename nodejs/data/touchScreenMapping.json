@@ -39,7 +39,7 @@
 	},
 	{
 		"name": "car wash",
-		"active": true,
+		"active": false,
 		"mapping": [
 			{
 				"areaName": "car wash 1",
@@ -74,5 +74,44 @@
 				"index": 7
 			}
 		]
+	},
+	{
+		"name": "BladeRunner",
+		"active": true,
+		"mapping": [
+			{
+				"areaName": "AREA LEFT 0",
+				"index": 0
+			},
+			{
+				"areaName": "AREA RIGHT 0",
+				"index": 1
+			},
+			{
+				"areaName": "AREA LEFT 1",
+				"index": 2
+			},
+			{
+				"areaName": "AREA RIGHT 1",
+				"index": 3
+			},
+			{
+				"areaName": "AREA LEFT 2",
+				"index": 4
+			},
+			{
+				"areaName": "AREA RIGHT 2",
+				"index": 5
+			},
+			{
+				"areaName": "AREA LEFT 3",
+				"index": 6
+			},
+			{
+				"areaName": "AREA RIGHT 3",
+				"index": 7
+			}
+		]
 	}
+
 ]

@@ -1,7 +1,7 @@
 [
 	{
 		"name": "General",
-		"active": true,
+		"active": false,
 		"mapping": [
 			{
 				"cardName": "card 0",
@@ -294,6 +294,48 @@
 			{
 				"cardName": "Barcode 1",
 				"slotNumber": 1
+			}
+		]
+	},
+	{
+		"name": "BladeRunner",
+		"active": true,
+		"mapping": [
+			{
+				"cardName": "1234567890",
+				"slotNumber": 59
+			},
+			{
+				"cardName": "UL TEST CARD 01",
+				"slotNumber": 1
+			},
+			{
+				"cardName": "UL TEST CARD 07",
+				"slotNumber": 7
+			},
+			{
+				"cardName": "UL TEST CARD 12",
+				"slotNumber": 12
+			},
+			{
+				"cardName": "UL TEST CARD 02",
+				"slotNumber": 2
+			},
+			{
+				"cardName": "UL TEST CARD 16",
+				"slotNumber": 16
+			},
+			{
+				"cardName": "UL TEST CARD 20",
+				"slotNumber": 20
+			},
+			{
+				"cardName": "UL TEST CARD 19",
+				"slotNumber": 19
+			},
+			{
+				"cardName": "UL TEST CARD 15",
+				"slotNumber": 15
 			}
 		]
 	}
