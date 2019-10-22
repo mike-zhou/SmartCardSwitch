@@ -2551,6 +2551,51 @@ bool WebServer::SaveCoordinate(const std::string & coordinateType, unsigned int 
 			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
 		}
 	}
+	else if(coordinateType == "mobileBarcodeGate")
+	{
+		auto rc = pCoordinateStorage->SetCoordinateEx(CoordinateStorage::Type::MobileBarcodeGate,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				_consoleCommand.resultSteppers[4].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of mobile barcode gate";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "mobileBarcodeBay")
+	{
+		auto rc = pCoordinateStorage->SetCoordinateEx(CoordinateStorage::Type::MobileBarcodeBay,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				_consoleCommand.resultSteppers[4].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of mobile barcode bay";
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
+	else if(coordinateType == "mobileBarcodePosition")
+	{
+		auto rc = pCoordinateStorage->SetCoordinateEx(CoordinateStorage::Type::MobileBarcodePosition,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				_consoleCommand.resultSteppers[4].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of mobile barcode position: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
 	else if(coordinateType == "contactlessReader")
 	{
 		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::ContactlessReader,
@@ -3369,6 +3414,64 @@ std::string WebServer::DeviceStatus()
 		}
 	}
 	json += "},";
+	//mobileBarcodeGate
+	json += "\"coordinateMobileBarcodeGate\":{";
+	{
+		int x, y, z, w, u;
+
+		if(pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeGate, x, y, z, w, u, 0)) {
+			json += "\"x\":" + std::to_string(x) + ",";
+			json += "\"y\":" + std::to_string(y) + ",";
+			json += "\"z\":" + std::to_string(z) + ",";
+			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"u\":" + std::to_string(u);
+		}
+		else {
+			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of mobile barcode gate");
+		}
+	}
+	json += "},";
+	//mobileBarcodeBay
+	json += "\"coordinateMobileBarcodeBay\":{";
+	{
+		int x, y, z, w, u;
+
+		if(pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeBay, x, y, z, w, u, 0)) {
+			json += "\"x\":" + std::to_string(x) + ",";
+			json += "\"y\":" + std::to_string(y) + ",";
+			json += "\"z\":" + std::to_string(z) + ",";
+			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"u\":" + std::to_string(u);
+		}
+		else {
+			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of mobile barcode bay");
+		}
+	}
+	json += "},";
+	//mobileBarcodePositions
+	json += "\"coordinateMobileBarcodePositions\":[";
+	for(unsigned int i=0; i < pCoordinateStorage->MobileBarcodePositionsAmount(); i++)
+	{
+		int x, y, z, w, u;
+
+		json += "{";
+		if(pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodePosition, x, y, z, w, u, i)) {
+			json += "\"index\":" + std::to_string(i) + ",";
+			json += "\"x\":" + std::to_string(x) + ",";
+			json += "\"y\":" + std::to_string(y) + ",";
+			json += "\"z\":" + std::to_string(z) + ",";
+			json += "\"w\":" + std::to_string(w) + ",";
+			json += "\"u\":" + std::to_string(u);
+		}
+		else {
+			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of mobile barcode position: " + std::to_string(i));
+		}
+		json += "},";
+	}
+	if(pCoordinateStorage->MobileBarcodePositionsAmount()) {
+		json.pop_back();//remove the last ','
+	}
+	json += "],";
 	//contactlessReaderGate
 	json += "\"coordinateContactlessReaderGate\":{";
 	{

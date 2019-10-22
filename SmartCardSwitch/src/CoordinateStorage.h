@@ -53,6 +53,7 @@ public:
 	unsigned int TouchScreenKeysAmount() { return _touchScreenKeys.size(); }
 	unsigned int AssistKeysAmount() { return _assistKeys.size(); }
 	unsigned int BarcodeReaderExtraPositionsAmount() { return _barCodeReaderExtraPositions.size(); }
+	unsigned int MobileBarcodePositionsAmount() { return _mobileBarcodePositions.size(); }
 
 	int GetWAdjustment();
 	void SetWAdjustment(int adjustment);
