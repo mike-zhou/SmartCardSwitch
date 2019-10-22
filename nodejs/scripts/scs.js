@@ -670,7 +670,8 @@ function onStepperConfigForwardClockwise(index) {
     xhr.send(JSON.stringify(parameters));
 }
 
-function saveCoordinate() {
+function saveCoordinate() 
+{
     console.log(">>saveCoordinate()");
     //find out which coordinate radio is selected
     var radioId = {};
@@ -686,7 +687,8 @@ function saveCoordinate() {
         alert("a coordinate type has to be selected");
         return;
     }
-    console.log(radioId + " is selected"); {
+    console.log(radioId + " is selected"); 
+    {
         var items = radioId.split("_");
         selectedRadio["signature"] = items[0];
         selectedRadio["coordinateType"] = items[1];
@@ -702,7 +704,8 @@ function saveCoordinate() {
     var command = {};
     command["coordinateType"] = selectedRadio.coordinateType;
     command["data"] = 0;
-    switch (selectedRadio.coordinateType) {
+    switch (selectedRadio.coordinateType) 
+    {
         case "safe":
         case "smartCardGate":
         case "smartCardReader":
@@ -715,10 +718,13 @@ function saveCoordinate() {
         case "contactlessReaderGate":
         case "barcodeReader":
         case "barcodeReaderGate":
+        case "mobileBarcodeGate":
+        case "mobileBarcodeBay":
             break;
 
         case "smartCard":
         case "barCodeReaderExtra":
+        case "mobileBarcodePosition":
             command["data"] = selectedRadio["index"];
             break;
 
@@ -726,21 +732,21 @@ function saveCoordinate() {
         case "softKey":
         case "assistKey":
         case "touchScreenKey":
-            {
-                var keyUp = document.getElementById("coordinate_keyState_0").checked;
-                var keyDown = document.getElementById("coordinate_keyState_1").checked;
+        {
+            var keyUp = document.getElementById("coordinate_keyState_0").checked;
+            var keyDown = document.getElementById("coordinate_keyState_1").checked;
 
-                if (!keyUp && !keyDown) {
-                    alert("UP or DOWN has to be selected");
-                    return;
-                }
-                //update coordinate type
-                if (keyDown) {
-                    command["coordinateType"] = command["coordinateType"] + "Pressed";
-                }
-                command["data"] = selectedRadio.index;
-                break;
+            if (!keyUp && !keyDown) {
+                alert("UP or DOWN has to be selected");
+                return;
             }
+            //update coordinate type
+            if (keyDown) {
+                command["coordinateType"] = command["coordinateType"] + "Pressed";
+            }
+            command["data"] = selectedRadio.index;
+            break;
+        }
 
         case "smartCardSlowlyPlaceStartZ":
         case "smartCardSlowlyPlaceEndZ":
