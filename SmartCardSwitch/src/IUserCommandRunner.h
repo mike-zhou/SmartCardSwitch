@@ -49,6 +49,9 @@ public:
 	const std::string UserCmdCardFromBarcodeReaderToBarcodeReaderGate = "move card from barcodeReader to barcodeReaderGate";
 	const std::string UserCmdCardFromBarcodeReaderGateToSmartCardGate = "move card from barcodeReaderGate to smartCardGate";
 	const std::string UserCmdCardFromSmartCardGateToBay = "move card from smartCardGate to bay";
+	const std::string UserCmdMobileBarcodeFromBayToPosition = "move mobile barcode from bay to position";
+	const std::string UserCmdMobileBarcodeFromPositionToPosition = "move mobile barcode from position to position";
+	const std::string UserCmdMobileBarcodeFromPositionToBay = "move mobile barcode from position to bay";
 
 	const std::string ErrorDeviceNotAvailable = "device hans't been connected";
 	const std::string ErrorDeviceNotPowered = "device is not powered";
@@ -304,6 +307,23 @@ public:
  *		"userCommand":"move card from smartCardGate to bay",
  *		"commandId":"uniqueCommandId",
  *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move mobile barcode from bay to position",
+ *		"commandId":"uniqueCommandId",
+ *		"positionIndex":0
+ *	}
+ *
+ * 	{
+ *		"userCommand":"move mobile barcode from position to position",
+ *		"commandId":"uniqueCommandId",
+ *		"positionIndex":0
+ *	}
+ *
+ * 	{
+ *		"userCommand":"move mobile barcode from position to bay",
+ *		"commandId":"uniqueCommandId"
  *	}
  *
  */

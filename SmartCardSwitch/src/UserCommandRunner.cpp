@@ -26,6 +26,7 @@ UserCommandRunner::UserCommandRunner() : Task("UserCommandRunner")
 	_currentPosition = CoordinateStorage::Type::Home;
 	_userCommand.state = CommandState::Idle;
 	_userCommand.cardState = CardState::InBay;
+	_userCommand.mobileBarcodeState = MobileBarcodeState::InMobileBarcodeBay;
 	_consoleCommand.state = CommandState::Idle;
 	_pConsoleOperator = nullptr;
 }
@@ -523,7 +524,7 @@ void UserCommandRunner::executeUserCmdFinishStepperWAdjustment()
 
 void UserCommandRunner::executeUserCmd_Card_from_SmartCardGate_to_SmartCardReaderGate()
 {
-	if(getCurrentPosition() != Position::SmartCardGate) {
+	if(getCurrentPosition() != ClampPosition::SmartCardGate) {
 		throwError("UserCommandRunner::executeUserCmdCardFromSmartCardGateToSmartCardReaderGate not in Position::SmartCardGate");
 	}
 	if(_userCommand.cardState != CardState::InSmartCardGate) {
@@ -535,7 +536,7 @@ void UserCommandRunner::executeUserCmd_Card_from_SmartCardGate_to_SmartCardReade
 
 void UserCommandRunner::executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardReader()
 {
-	if(getCurrentPosition() != Position::SmartCardReaderGate) {
+	if(getCurrentPosition() != ClampPosition::SmartCardReaderGate) {
 		throwError("UserCommandRunner::executeUserCmdCardFromSmartCardReaderGateToSmartCardReader not in Position::SmartCardReaderGate");
 	}
 	if(_userCommand.cardState != CardState::InSmartCardReaderGate) {
@@ -556,7 +557,7 @@ void UserCommandRunner::executeUserCmd_Card_from_SmartCardReader_to_SmartCardRea
 
 void UserCommandRunner::executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardGate()
 {
-	if(getCurrentPosition() != Position::SmartCardReaderGate) {
+	if(getCurrentPosition() != ClampPosition::SmartCardReaderGate) {
 		throwError("UserCommandRunner::executeUserCmdCardFromSmartCardReaderGateToSmartCardGate not in Position::SmartCardReaderGate");
 	}
 	if(_userCommand.cardState != CardState::InSmartCardReaderGate) {
@@ -568,7 +569,7 @@ void UserCommandRunner::executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCar
 
 void UserCommandRunner::executeUserCmd_Card_from_SmartCardGate_to_BarcodeReaderGate()
 {
-	if(getCurrentPosition() != Position::SmartCardGate) {
+	if(getCurrentPosition() != ClampPosition::SmartCardGate) {
 		throwError("UserCommandRunner::executeUserCmdCardFromSmartCardGateToBarcodeReaderGate not in Position::SmartCardReaderGate");
 	}
 	if(_userCommand.cardState != CardState::InSmartCardGate) {
@@ -580,7 +581,7 @@ void UserCommandRunner::executeUserCmd_Card_from_SmartCardGate_to_BarcodeReaderG
 
 void UserCommandRunner::executeUserCmd_Card_from_BarcodeReaderGate_to_BarcodeReader()
 {
-	if(getCurrentPosition() != Position::BarCodeReaderGate) {
+	if(getCurrentPosition() != ClampPosition::BarCodeReaderGate) {
 		throwError("UserCommandRunner::executeUserCmdCardFromBarcodeReaderGateToBarcodeReader not in Position::SmartCardReaderGate");
 	}
 	if(_userCommand.cardState != CardState::InBarcodeReaderGate) {
@@ -610,7 +611,7 @@ void UserCommandRunner::executeUserCmd_Card_from_BarcodeReader_to_BarcodeReaderG
 
 void UserCommandRunner::executeUserCmd_Card_from_BarcodeReaderGate_to_SmartCardGate()
 {
-	if(getCurrentPosition() != Position::BarCodeReaderGate) {
+	if(getCurrentPosition() != ClampPosition::BarCodeReaderGate) {
 		throwError("UserCommandRunner::executeUserCmdCardFromBarcodeReaderGateToSmartCardGate not in Position::SmartCardReaderGate");
 	}
 	if(_userCommand.cardState != CardState::InBarcodeReaderGate) {
@@ -622,7 +623,7 @@ void UserCommandRunner::executeUserCmd_Card_from_BarcodeReaderGate_to_SmartCardG
 
 void UserCommandRunner::executeUserCmdPutBackSmartCard()
 {
-	if(getCurrentPosition() != Position::SmartCardGate) {
+	if(getCurrentPosition() != ClampPosition::SmartCardGate) {
 		throwError("UserCommandRunner::executeUserCmdPutBackSmartCard not in Position::SmartCardGate");
 	}
 	if(_userCommand.cardState != CardState::InSmartCardGate) {
@@ -729,64 +730,64 @@ int UserCommandRunner::currentV()
 	return _consoleCommand.resultSteppers[4].homeOffset;
 }
 
-UserCommandRunner::Position UserCommandRunner::getPosition(int x, int y, int z, int w)
+UserCommandRunner::ClampPosition UserCommandRunner::getPosition(int x, int y, int z, int w)
 {
 	int gateX, gateY, gateZ, gateW;
 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::Home, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
-		return Position::Home;
+		return ClampPosition::Home;
 	}
 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
-		return Position::SmartCardGate;
+		return ClampPosition::SmartCardGate;
 	}
 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::PedKeyGate, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
-		return Position::PedKeyGate;
+		return ClampPosition::PedKeyGate;
 	}
 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SoftKeyGate, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
-		return Position::SoftKeyGate;
+		return ClampPosition::SoftKeyGate;
 	}
 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::AssistKeyGate, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
-		return Position::AssistKeyGate;
+		return ClampPosition::AssistKeyGate;
 	}
 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::TouchScreenKeyGate, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
-		return Position::TouchScreenGate;
+		return ClampPosition::TouchScreenGate;
 	}
 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
-		return Position::SmartCardReaderGate;
+		return ClampPosition::SmartCardReaderGate;
 	}
 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReaderGate, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
-		return Position::BarCodeReaderGate;
+		return ClampPosition::BarCodeReaderGate;
 	}
 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::ContactlessReaderGate, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
-		return Position::ContactlessReaderGate;
+		return ClampPosition::ContactlessReaderGate;
 	}
 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, gateX, gateY, z, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
-		return Position::SmartCardGate;
+		return ClampPosition::SmartCardGate;
 	}
 
 	throw Poco::Exception("UserCommandRunner::getPosition unknown position");
 }
 
-UserCommandRunner::Position UserCommandRunner::getCurrentPosition()
+UserCommandRunner::ClampPosition UserCommandRunner::getCurrentPosition()
 {
 	int x, y, z, w;
 
@@ -885,11 +886,11 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 	auto sourceGate = getPosition(fromX, fromY, fromZ, fromW);
 	auto targetGate = getPosition(toX, toY, toZ, toW);
 
-	if(sourceGate == Position::Unknown)
+	if(sourceGate == ClampPosition::Unknown)
 	{
 		throwError("UserCommandRunner::gateToGate current position is not a gate");
 	}
-	if(targetGate == Position::Unknown)
+	if(targetGate == ClampPosition::Unknown)
 	{
 		throwError("UserCommandRunner::gateToGate target position is not a gate");
 	}
@@ -898,14 +899,14 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 		return;
 	}
 
-	if(sourceGate == Position::Home)
+	if(sourceGate == ClampPosition::Home)
 	{
 		switch(targetGate)
 		{
-			case Position::Home:
+			case ClampPosition::Home:
 				break; //nothing to be done
 
-			case Position::SmartCardGate:
+			case ClampPosition::SmartCardGate:
 			{
 				moveStepperZ(fromZ, toZ);
 				moveStepperY(fromY, toY);
@@ -920,11 +921,11 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 		}
 	}
-	else if(sourceGate == Position::SmartCardGate)
+	else if(sourceGate == ClampPosition::SmartCardGate)
 	{
 		switch(targetGate)
 		{
-			case Position::Home:
+			case ClampPosition::Home:
 			{
 				int curV = currentV();
 
@@ -936,10 +937,10 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 			break;
 
-			case Position::SmartCardGate:
+			case ClampPosition::SmartCardGate:
 				break; //nothing to be done
 
-			case Position::SmartCardReaderGate:
+			case ClampPosition::SmartCardReaderGate:
 			{
 				int tmpW = (fromW + toW)/2;
 
@@ -951,7 +952,7 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 			break;
 
-			case Position::BarCodeReaderGate:
+			case ClampPosition::BarCodeReaderGate:
 			{
 				moveStepperY(fromY, toY);
 				moveStepperW(fromW, toW);
@@ -960,7 +961,7 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 			break;
 
-			case Position::ContactlessReaderGate:
+			case ClampPosition::ContactlessReaderGate:
 			{
 				moveStepperW(fromW, toW);
 				moveStepperY(fromY, toY);
@@ -969,7 +970,7 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 			break;
 
-			case Position::TouchScreenGate:
+			case ClampPosition::TouchScreenGate:
 			{
 				moveStepperY(fromY, toY);
 				moveStepperX(fromX, toX);
@@ -984,11 +985,11 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 		}
 	}
-	else if(sourceGate == Position::SmartCardReaderGate)
+	else if(sourceGate == ClampPosition::SmartCardReaderGate)
 	{
 		switch(targetGate)
 		{
-			case Position::SmartCardGate:
+			case ClampPosition::SmartCardGate:
 			{
 				int tmpW = (fromW + toW)/2;
 
@@ -1000,10 +1001,10 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 			break;
 
-			case Position::SmartCardReaderGate:
+			case ClampPosition::SmartCardReaderGate:
 				break; //nothing to be done
 
-			case Position::TouchScreenGate:
+			case ClampPosition::TouchScreenGate:
 			{
 				moveStepperY(fromY, toY);
 				moveStepperX(fromX, toX);
@@ -1018,11 +1019,11 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 		}
 	}
-	else if(sourceGate == Position::BarCodeReaderGate)
+	else if(sourceGate == ClampPosition::BarCodeReaderGate)
 	{
 		switch(targetGate)
 		{
-			case Position::SmartCardGate:
+			case ClampPosition::SmartCardGate:
 			{
 				moveStepperZ(fromZ, toZ);
 				moveStepperX(fromX, toX);
@@ -1037,11 +1038,11 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 		}
 	}
-	else if(sourceGate == Position::ContactlessReaderGate)
+	else if(sourceGate == ClampPosition::ContactlessReaderGate)
 	{
 		switch(targetGate)
 		{
-			case Position::SmartCardGate:
+			case ClampPosition::SmartCardGate:
 			{
 				moveStepperZ(fromZ, toZ);
 				moveStepperX(fromX, toX);
@@ -1056,11 +1057,11 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 		}
 	}
-	else if(sourceGate == Position::TouchScreenGate)
+	else if(sourceGate == ClampPosition::TouchScreenGate)
 	{
 		switch(targetGate)
 		{
-			case Position::SmartCardReaderGate:
+			case ClampPosition::SmartCardReaderGate:
 			{
 				moveStepperW(fromW, toW);
 				moveStepperY(fromY, toY);
@@ -1069,7 +1070,7 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 			break;
 
-			case Position::SmartCardGate:
+			case ClampPosition::SmartCardGate:
 			{
 				moveStepperW(fromW, toW);
 				moveStepperZ(fromZ, toZ);
@@ -1097,16 +1098,16 @@ void UserCommandRunner::toHome()
 	auto currentPosition = getCurrentPosition();
 
 
-	if(currentPosition == Position::Unknown)
+	if(currentPosition == ClampPosition::Unknown)
 	{
 		throwError("UserCommandRunner::toHome unknown current position");
 	}
 
-	if(currentPosition == Position::Home) {
+	if(currentPosition == ClampPosition::Home) {
 		return;
 	}
 
-	if(currentPosition != Position::SmartCardGate) {
+	if(currentPosition != ClampPosition::SmartCardGate) {
 		//to smart card gate firstly, then to home, so that carriage runs in safe area.
 		toSmartCardGate();
 	}
@@ -1154,16 +1155,16 @@ void UserCommandRunner::toPedKeyGate()
 
 	auto currentPosition = getCurrentPosition();
 
-	if(currentPosition == Position::Unknown)
+	if(currentPosition == ClampPosition::Unknown)
 	{
 		throwError("UserCommandRunner::toPedKeyGate unknown current position");
 	}
-	if(currentPosition == Position::Home)
+	if(currentPosition == ClampPosition::Home)
 	{
 		toSmartCardGate();
 	}
 
-	if(currentPosition != Position::PedKeyGate)
+	if(currentPosition != ClampPosition::PedKeyGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
@@ -1184,16 +1185,16 @@ void UserCommandRunner::toSoftKeyGate()
 
 	auto currentPosition = getCurrentPosition();
 
-	if(currentPosition == Position::Unknown)
+	if(currentPosition == ClampPosition::Unknown)
 	{
 		throwError("UserCommandRunner::toSoftKeyGate unknown current position");
 	}
-	if(currentPosition == Position::Home)
+	if(currentPosition == ClampPosition::Home)
 	{
 		toSmartCardGate();
 	}
 
-	if(currentPosition != Position::SoftKeyGate)
+	if(currentPosition != ClampPosition::SoftKeyGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
@@ -1214,16 +1215,16 @@ void UserCommandRunner::toAssistKeyGate()
 
 	auto currentPosition = getCurrentPosition();
 
-	if(currentPosition == Position::Unknown)
+	if(currentPosition == ClampPosition::Unknown)
 	{
 		throwError("UserCommandRunner::toAssistKeyGate unknown current position");
 	}
-	if(currentPosition == Position::Home)
+	if(currentPosition == ClampPosition::Home)
 	{
 		toSmartCardGate();
 	}
 
-	if(currentPosition != Position::AssistKeyGate)
+	if(currentPosition != ClampPosition::AssistKeyGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
@@ -1244,16 +1245,16 @@ void UserCommandRunner::toTouchScreenGate()
 
 	auto currentPosition = getCurrentPosition();
 
-	if(currentPosition == Position::Unknown)
+	if(currentPosition == ClampPosition::Unknown)
 	{
 		throwError("UserCommandRunner::toTouchScreenGate unknown current position");
 	}
-	if(currentPosition == Position::Home)
+	if(currentPosition == ClampPosition::Home)
 	{
 		toSmartCardGate();
 	}
 
-	if(currentPosition != Position::TouchScreenGate)
+	if(currentPosition != ClampPosition::TouchScreenGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
@@ -1290,16 +1291,16 @@ void UserCommandRunner::toContactlessReaderGate()
 
 	auto currentPosition = getCurrentPosition();
 
-	if(currentPosition == Position::Unknown)
+	if(currentPosition == ClampPosition::Unknown)
 	{
 		throwError("UserCommandRunner::toContactlessReaderGate unknown current position");
 	}
-	if(currentPosition == Position::Home)
+	if(currentPosition == ClampPosition::Home)
 	{
 		toSmartCardGate();
 	}
 
-	if(currentPosition != Position::ContactlessReaderGate)
+	if(currentPosition != ClampPosition::ContactlessReaderGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;
@@ -1320,16 +1321,16 @@ void UserCommandRunner::toBarcodeReaderGate()
 
 	auto currentPosition = getCurrentPosition();
 
-	if(currentPosition == Position::Unknown)
+	if(currentPosition == ClampPosition::Unknown)
 	{
 		throwError("UserCommandRunner::toBarcodeReaderGate unknown current position");
 	}
-	if(currentPosition == Position::Home)
+	if(currentPosition == ClampPosition::Home)
 	{
 		toSmartCardGate();
 	}
 
-	if(currentPosition != Position::BarCodeReaderGate)
+	if(currentPosition != ClampPosition::BarCodeReaderGate)
 	{
 		int curX, curY, curZ, curW;
 		int x, y, z, w;

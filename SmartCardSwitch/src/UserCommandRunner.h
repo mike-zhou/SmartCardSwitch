@@ -139,6 +139,13 @@ private:
 		InBarcodeReader
 	};
 
+	enum class MobileBarcodeState
+	{
+		InMobileBarcodeBay = 0,
+		InMobileBarcodeGate,
+		InMobileBarcodePosition
+	};
+
 	//command details
 	struct ExpandedUserCommand
 	{
@@ -170,6 +177,7 @@ private:
 
 		//---- user command result ----
 		CardState cardState;
+		MobileBarcodeState mobileBarcodeState;
 	};
 	ExpandedUserCommand _userCommand;
 
@@ -239,7 +247,7 @@ private:
 	void executeUserCmd_Card_from_BarcodeReaderGate_to_SmartCardGate();
 	void executeUserCmdPutBackSmartCard();
 
-	enum class Position
+	enum class ClampPosition
 	{
 		Unknown = 0,
 		Home,
@@ -251,10 +259,11 @@ private:
 		TouchScreenGate,
 		SmartCardReaderGate,
 		ContactlessReaderGate,
-		BarCodeReaderGate
+		BarCodeReaderGate,
+		MobileBarcodeGate
 	};
-	Position getCurrentPosition();
-	Position getPosition(int x, int y, int z, int w);
+	ClampPosition getCurrentPosition();
+	ClampPosition getPosition(int x, int y, int z, int w);
 
 	int currentX();
 	int currentY();
