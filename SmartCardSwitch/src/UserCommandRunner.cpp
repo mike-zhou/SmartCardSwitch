@@ -2003,6 +2003,14 @@ void UserCommandRunner::parseUserCmdDcm(Poco::DynamicStruct& ds)
 	}
 }
 
+void UserCommandRunner::parseUserCmdMobileBarcode(Poco::DynamicStruct& ds)
+{
+	_userCommand.mobileBarcodePositionIndex = ds["positionIndex"];
+	if(_userCommand.mobileBarcodePositionIndex >= pCoordinateStorage->MobileBarcodePositionsAmount()) {
+		throwError("UserCommandRunner::parseUserCmdMobileBarcode mobile barcode position index out of range: " + std::to_string(_userCommand.mobileBarcodePositionIndex));
+	}
+}
+
 void UserCommandRunner::barcodeReader_gate()
 {
 	int curX, curY, curZ, curW;
@@ -2926,6 +2934,15 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		}
 		else if(_userCommand.command == UserCmdCardFromBarcodeReaderGateToSmartCardGate) {
 			parseUserCmdSmartCard(ds);
+		}
+		else if(_userCommand.command == UserCmdMobileBarcodeFromBayToPosition) {
+			parseUserCmdMobileBarcode(ds);
+		}
+		else if(_userCommand.command == UserCmdMobileBarcodeFromPositionToPosition) {
+			parseUserCmdMobileBarcode(ds);
+		}
+		else if(_userCommand.command == UserCmdMobileBarcodeFromPositionToBay) {
+			;
 		}
 		else if(_userCommand.command == UserCmdReturnSmartCard) {
 			;
@@ -3932,6 +3949,21 @@ void UserCommandRunner::runConsoleCommand(const std::string& cmd)
 	}
 }
 
+void UserCommandRunner::executeUserCmdMoveMobileBarcodeFromBayToPosition()
+{
+
+}
+
+void UserCommandRunner::executeUserCmdMoveMobileBarcodeFromPositionToPosition()
+{
+
+}
+
+void UserCommandRunner::executeUserCmdMoveMobileBarcodeFromPositionToBay()
+{
+
+}
+
 void UserCommandRunner::runTask()
 {
 	while(1)
@@ -4158,6 +4190,36 @@ void UserCommandRunner::runTask()
 					}
 					else {
 						executeUserCmdPutBackSmartCard();
+					}
+				}
+				else if(_userCommand.command == UserCmdMobileBarcodeFromBayToPosition)
+				{
+					if(_userCommand.mobileBarcodeState != MobileBarcodeState::InMobileBarcodeBay) {
+						errorInfo = ErrorMobileBarcodeNotInBay;
+						pLogger->LogError("UserCommandRunner::runTask mobile barcode state: " + std::to_string((int)_userCommand.mobileBarcodeState));
+					}
+					else {
+						executeUserCmdMoveMobileBarcodeFromBayToPosition();
+					}
+				}
+				else if(_userCommand.command == UserCmdMobileBarcodeFromPositionToPosition)
+				{
+					if(_userCommand.mobileBarcodeState != MobileBarcodeState::InMobileBarcodePosition) {
+						errorInfo = ErrorMobileBarcodeNotInBay;
+						pLogger->LogError("UserCommandRunner::runTask mobile barcode state: " + std::to_string((int)_userCommand.mobileBarcodeState));
+					}
+					else {
+						executeUserCmdMoveMobileBarcodeFromPositionToPosition();
+					}
+				}
+				else if(_userCommand.command == UserCmdMobileBarcodeFromPositionToBay)
+				{
+					if(_userCommand.mobileBarcodeState != MobileBarcodeState::InMobileBarcodePosition) {
+						errorInfo = ErrorMobileBarcodeNotInBay;
+						pLogger->LogError("UserCommandRunner::runTask mobile barcode state: " + std::to_string((int)_userCommand.mobileBarcodeState));
+					}
+					else {
+						executeUserCmdMoveMobileBarcodeFromPositionToBay();
 					}
 				}
 				else if(_userCommand.command == UserCmdReturnSmartCard)

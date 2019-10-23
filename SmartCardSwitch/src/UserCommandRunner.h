@@ -142,7 +142,6 @@ private:
 	enum class MobileBarcodeState
 	{
 		InMobileBarcodeBay = 0,
-		InMobileBarcodeGate,
 		InMobileBarcodePosition
 	};
 
@@ -174,6 +173,8 @@ private:
 		unsigned int dcmIndex;
 		//barcode
 		unsigned int barcodeExtraPositionIndex;
+		//mobile barcode
+		unsigned int mobileBarcodePositionIndex;
 
 		//---- user command result ----
 		CardState cardState;
@@ -217,6 +218,7 @@ private:
 	void parseUserCmdTouchScreenKeys(Poco::DynamicStruct& ds);
 	void parseUserCmdAdaKeys(Poco::DynamicStruct& ds);
 	void parseUserCmdDcm(Poco::DynamicStruct& ds);
+	void parseUserCmdMobileBarcode(Poco::DynamicStruct& ds);
 
 	//fulfill user command with console commands
 	void executeUserCmdConnectDevice();
@@ -246,6 +248,9 @@ private:
 	void executeUserCmd_Card_from_BarcodeReader_to_BarcodeReaderGate();
 	void executeUserCmd_Card_from_BarcodeReaderGate_to_SmartCardGate();
 	void executeUserCmdPutBackSmartCard();
+	void executeUserCmdMoveMobileBarcodeFromBayToPosition();
+	void executeUserCmdMoveMobileBarcodeFromPositionToPosition();
+	void executeUserCmdMoveMobileBarcodeFromPositionToBay();
 
 	enum class ClampPosition
 	{

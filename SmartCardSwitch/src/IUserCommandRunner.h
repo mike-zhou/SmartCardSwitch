@@ -79,6 +79,8 @@ public:
 	const std::string ErrorSmartCardNotInBarcodeReaderGate = "no card is in barcode reader gate";
 	const std::string ErrorSmartCardNotInBarcodeReader = "no card is in barcode reader";
 	const std::string ErrorSmartCardNotInPredefinedPosition = "card is not in predefined position";
+	const std::string ErrorMobileBarcodeNotInBay = "mobile barcode is not in bay";
+	const std::string ErrorMobileBarcodeNotInPosition = "mobile barcode is not in position";
 
 	const std::string UserCmdStatusOnGoing = "ongoing";
 	const std::string UserCmdStatusFailed = "failed";
