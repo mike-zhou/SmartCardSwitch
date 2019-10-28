@@ -778,7 +778,7 @@ UserCommandRunner::Position UserCommandRunner::getPosition(int x, int y, int z, 
 		return Position::ContactlessReaderGate;
 	}
 
-	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, gateX, gateY, z, gateW);
+	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
 		return Position::SmartCardGate;
 	}
