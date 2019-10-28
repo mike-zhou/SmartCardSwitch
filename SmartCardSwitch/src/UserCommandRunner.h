@@ -248,9 +248,9 @@ private:
 	void executeUserCmd_Card_from_BarcodeReader_to_BarcodeReaderGate();
 	void executeUserCmd_Card_from_BarcodeReaderGate_to_SmartCardGate();
 	void executeUserCmdPutBackSmartCard();
-	void executeUserCmdMoveMobileBarcodeFromBayToPosition();
-	void executeUserCmdMoveMobileBarcodeFromPositionToPosition();
-	void executeUserCmdMoveMobileBarcodeFromPositionToBay();
+	void executeUserCmd_moveMobileBarcode_from_Bay_to_Position();
+	void executeUserCmd_moveMobileBarcode_from_Position_to_Position();
+	void executeUserCmd_moveMobileBarcode_from_Position_to_Bay();
 
 	enum class ClampPosition
 	{
@@ -354,6 +354,7 @@ private:
 	void toSmartCardReaderGate();
 	void toContactlessReaderGate();
 	void toBarcodeReaderGate();
+	void toMobileBarcodeGate();
 
 	void powerOnOpt(bool on);
 	void powerOnDcm(bool on, unsigned int index);

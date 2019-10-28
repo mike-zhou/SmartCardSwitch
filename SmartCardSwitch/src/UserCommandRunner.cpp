@@ -254,6 +254,18 @@ void UserCommandRunner::finishUserCommand(CommandState consoleCmdState, const st
 		{
 			_userCommand.cardState = CardState::InBay;
 		}
+		else if(_userCommand.command == UserCmdMobileBarcodeFromBayToPosition)
+		{
+			_userCommand.mobileBarcodeState = MobileBarcodeState::InMobileBarcodePosition;
+		}
+		else if(_userCommand.command == UserCmdMobileBarcodeFromPositionToPosition)
+		{
+			_userCommand.mobileBarcodeState = MobileBarcodeState::InMobileBarcodePosition;
+		}
+		else if(_userCommand.command == UserCmdMobileBarcodeFromPositionToBay)
+		{
+			_userCommand.mobileBarcodeState = MobileBarcodeState::InMobileBarcodeBay;
+		}
 	}
 
 	//update user command firstly, then notify observers.
@@ -732,7 +744,7 @@ int UserCommandRunner::currentV()
 
 UserCommandRunner::ClampPosition UserCommandRunner::getPosition(int x, int y, int z, int w)
 {
-	int gateX, gateY, gateZ, gateW;
+	int gateX, gateY, gateZ, gateW, gateU;
 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::Home, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
@@ -779,9 +791,14 @@ UserCommandRunner::ClampPosition UserCommandRunner::getPosition(int x, int y, in
 		return ClampPosition::ContactlessReaderGate;
 	}
 
-	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, gateX, gateY, z, gateW);
+	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
 		return ClampPosition::SmartCardGate;
+	}
+
+	pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeGate, gateX, gateY, gateZ, gateW, gateU);
+	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) { //ignore gateU.
+		return ClampPosition::MobileBarcodeGate;
 	}
 
 	throw Poco::Exception("UserCommandRunner::getPosition unknown position");
@@ -979,6 +996,15 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			}
 			break;
 
+			case ClampPosition::MobileBarcodeGate:
+			{
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
+				moveStepperW(fromW, toW);
+				moveStepperZ(fromZ, toZ);
+			}
+			break;
+
 			default:
 			{
 				throwError("UserCommandRunner::gateToGate target position is not supported");
@@ -1009,6 +1035,15 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 				moveStepperY(fromY, toY);
 				moveStepperX(fromX, toX);
 				moveStepperZ(fromZ, toZ);
+				moveStepperW(fromW, toW);
+			}
+			break;
+
+			case ClampPosition::MobileBarcodeGate:
+			{
+				moveStepperZ(fromZ, toZ);
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
 				moveStepperW(fromW, toW);
 			}
 			break;
@@ -1076,6 +1111,43 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 				moveStepperZ(fromZ, toZ);
 				moveStepperY(fromY, toY);
 				moveStepperX(fromX, toX);
+			}
+			break;
+
+			case ClampPosition::MobileBarcodeGate:
+			{
+				moveStepperZ(fromZ, toZ);
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
+				moveStepperW(fromW, toW);
+			}
+			break;
+
+			default:
+			{
+				throwError("UserCommandRunner::gateToGate target position is not supported");
+			}
+		}
+	}
+	else if(sourceGate == ClampPosition::MobileBarcodeGate)
+	{
+		switch(targetGate)
+		{
+			case ClampPosition::SmartCardGate:
+			{
+				moveStepperZ(fromZ, toZ);
+				moveStepperW(fromW, toW);
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
+			}
+			break;
+
+			case ClampPosition::SmartCardReaderGate:
+			{
+				moveStepperW(fromW, toW);
+				moveStepperY(fromY, toY);
+				moveStepperX(fromX, toX);
+				moveStepperZ(fromZ, toZ);
 			}
 			break;
 
@@ -1340,6 +1412,36 @@ void UserCommandRunner::toBarcodeReaderGate()
 		curZ = currentZ();
 		curW = currentW();
 		pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::BarCodeReaderGate, x, y, z, w);
+
+		gateToGate(curX, curY, curZ, curW, x, y, z, w);
+	}
+}
+
+void UserCommandRunner::toMobileBarcodeGate()
+{
+	pLogger->LogInfo("UserCommandRunner::toMobileBarcodeGate ++++");
+
+	auto currentPosition = getCurrentPosition();
+
+	if(currentPosition == ClampPosition::Unknown)
+	{
+		throwError("UserCommandRunner::toMobileBarcodeGate unknown current position");
+	}
+	if(currentPosition == ClampPosition::Home)
+	{
+		toSmartCardGate();
+	}
+
+	if(currentPosition != ClampPosition::MobileBarcodeGate)
+	{
+		int curX, curY, curZ, curW, curU;
+		int x, y, z, w, u;
+
+		curX = currentX();
+		curY = currentY();
+		curZ = currentZ();
+		curW = currentW();
+		pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeGate, x, y, z, w, u);
 
 		gateToGate(curX, curY, curZ, curW, x, y, z, w);
 	}
@@ -3949,19 +4051,24 @@ void UserCommandRunner::runConsoleCommand(const std::string& cmd)
 	}
 }
 
-void UserCommandRunner::executeUserCmdMoveMobileBarcodeFromBayToPosition()
+void UserCommandRunner::executeUserCmd_moveMobileBarcode_from_Bay_to_Position()
 {
-
+	toMobileBarcodeGate();
+	gate_bay_withoutMobileBarcode();
+	bay_gate_withMobileBarCode();
+	gate_position_mobileBarcode();
 }
 
-void UserCommandRunner::executeUserCmdMoveMobileBarcodeFromPositionToPosition()
+void UserCommandRunner::executeUserCmd_moveMobileBarcode_from_Position_to_Position()
 {
-
+	position_position_mobileBarcode();
 }
 
-void UserCommandRunner::executeUserCmdMoveMobileBarcodeFromPositionToBay()
+void UserCommandRunner::executeUserCmd_moveMobileBarcode_from_Position_to_Bay()
 {
-
+	position_gate_mobileBarcode();
+	gate_bay_withMobileBarcode();
+	bay_gate_withoutMobileBarcode();
 }
 
 void UserCommandRunner::runTask()
@@ -4199,7 +4306,7 @@ void UserCommandRunner::runTask()
 						pLogger->LogError("UserCommandRunner::runTask mobile barcode state: " + std::to_string((int)_userCommand.mobileBarcodeState));
 					}
 					else {
-						executeUserCmdMoveMobileBarcodeFromBayToPosition();
+						executeUserCmd_moveMobileBarcode_from_Bay_to_Position();
 					}
 				}
 				else if(_userCommand.command == UserCmdMobileBarcodeFromPositionToPosition)
@@ -4209,7 +4316,7 @@ void UserCommandRunner::runTask()
 						pLogger->LogError("UserCommandRunner::runTask mobile barcode state: " + std::to_string((int)_userCommand.mobileBarcodeState));
 					}
 					else {
-						executeUserCmdMoveMobileBarcodeFromPositionToPosition();
+						executeUserCmd_moveMobileBarcode_from_Position_to_Position();
 					}
 				}
 				else if(_userCommand.command == UserCmdMobileBarcodeFromPositionToBay)
@@ -4219,7 +4326,7 @@ void UserCommandRunner::runTask()
 						pLogger->LogError("UserCommandRunner::runTask mobile barcode state: " + std::to_string((int)_userCommand.mobileBarcodeState));
 					}
 					else {
-						executeUserCmdMoveMobileBarcodeFromPositionToBay();
+						executeUserCmd_moveMobileBarcode_from_Position_to_Bay();
 					}
 				}
 				else if(_userCommand.command == UserCmdReturnSmartCard)
