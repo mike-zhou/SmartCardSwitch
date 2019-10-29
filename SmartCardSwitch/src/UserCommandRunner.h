@@ -275,6 +275,7 @@ private:
 	int currentZ();
 	int currentW();
 	int currentV();
+	int currentU() { return currentV(); }
 
 	//append commands to configure stepper movement
 	void configStepperMovement(unsigned int index,
@@ -292,6 +293,7 @@ private:
 	void moveStepperZ(unsigned int initialPos, unsigned int finalPos) { moveStepper(2, initialPos, finalPos); }
 	void moveStepperW(unsigned int initialPos, unsigned int finalPos) { moveStepper(3, initialPos, finalPos); }
 	void moveStepperV(unsigned int initialPos, unsigned int finalPos) { moveStepper(4, initialPos, finalPos); }
+	void moveStepperU(unsigned int initialPos, unsigned int finalPos) { moveStepper(4, initialPos, finalPos); } //temporarily same as stepper V
 
 	//smart card bay
 	void moveSmartCardCarriage(unsigned int cardNumber);
@@ -355,6 +357,14 @@ private:
 	void toContactlessReaderGate();
 	void toBarcodeReaderGate();
 	void toMobileBarcodeGate();
+	//movement of mobileBarcode
+	void gate_bay_withoutMobileBarcode();
+	void bay_gate_withMobileBarCode();
+	void gate_position_mobileBarcode();
+	void position_position_mobileBarcode();
+	void position_gate_mobileBarcode();
+	void gate_bay_withMobileBarcode();
+	void bay_gate_withoutMobileBarcode();
 
 	void powerOnOpt(bool on);
 	void powerOnDcm(bool on, unsigned int index);

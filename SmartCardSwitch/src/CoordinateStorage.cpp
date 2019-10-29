@@ -47,6 +47,7 @@ void CoordinateStorage::ReloadCoordinate()
 	_smartCardReaderSlowInsertEnd = -1;
 	_smartCardReleaseOffset = -1;
 	_smartCardInsertExtra = -1;
+	_mobileBarcodeSlowlyPlaceEnd = -1;
 
 	_maximumX = -1;
 	_maximumY = -1;
@@ -369,6 +370,7 @@ void CoordinateStorage::ReloadCoordinate()
 			_smartCardReaderSlowInsertEnd = ds["smartCardReaderSlowInsertEnd"];
 			_smartCardReleaseOffset = ds["smartCardReleaseOffset"];
 			_smartCardInsertExtra = ds["smartCardInsertExtra"];
+			_mobileBarcodeSlowlyPlaceEnd = ds["mobileBarcodeSlowlyPlaceEnd"];
 //
 //			//maximum
 //			_maximumX = ds["maximumX"];
@@ -566,6 +568,7 @@ bool CoordinateStorage::PersistToFile()
 	json = json + ",\"smartCardReleaseOffset\":" + std::to_string(_smartCardReleaseOffset);
 	json = json + ", \"smartCardReaderSlowInsertEnd\":" + std::to_string(_smartCardReaderSlowInsertEnd);
 	json = json + ",\"smartCardInsertExtra\":" + std::to_string(_smartCardInsertExtra);
+	json = json + ",\"mobileBarcodeSlowlyPlaceEnd\":" + std::to_string(_mobileBarcodeSlowlyPlaceEnd);
 
 	//maximum
 	json = json + ",\"maximumX\":" + std::to_string(_maximumX);
@@ -1419,6 +1422,16 @@ bool CoordinateStorage::GetSmartCardInsertExtra(long & offset)
 	}
 
 	offset = _smartCardInsertExtra;
+	return true;
+}
+
+bool CoordinateStorage::GetMobileBarcodeSlowlyPlaceEnd(long & offset)
+{
+	if(_mobileBarcodeSlowlyPlaceEnd < 0) {
+		return false;
+	}
+
+	offset = _mobileBarcodeSlowlyPlaceEnd;
 	return true;
 }
 

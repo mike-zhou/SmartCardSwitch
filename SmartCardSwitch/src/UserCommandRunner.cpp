@@ -1434,7 +1434,7 @@ void UserCommandRunner::toMobileBarcodeGate()
 
 	if(currentPosition != ClampPosition::MobileBarcodeGate)
 	{
-		int curX, curY, curZ, curW, curU;
+		int curX, curY, curZ, curW;
 		int x, y, z, w, u;
 
 		curX = currentX();
@@ -4049,6 +4049,221 @@ void UserCommandRunner::runConsoleCommand(const std::string& cmd)
 			throw Poco::Exception(errorInfo);
 		}
 	}
+}
+
+void UserCommandRunner::gate_bay_withoutMobileBarcode()
+{
+	int curX, curY, curZ, curW, curU;
+	int finalX, finalY, finalZ, finalW, finalU;
+	long offset;
+	bool rc;
+
+	rc = pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeGate, curX, curY, curZ, curW, curU);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_bay_withoutMobileBarcode failed to retrieve mobile barcode gate's coordinates");
+	}
+	rc = pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeBay, finalX, finalY, finalZ, finalW, finalU);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_bay_withoutMobileBarcode failed to retrieve mobile barcode bay's coordinates");
+	}
+	rc = pCoordinateStorage->GetSmartCardFetchOffset(offset);
+	if(rc == false)
+	{
+		throwError("UserCommandRunner::gate_bay_withoutMobileBarcode failed to retrieve fetch offset");
+	}
+
+	moveStepperX(curX, finalX);
+	moveStepperU(curU, finalU);
+	moveStepperW(curW, finalW);
+	moveStepperY(curY, finalY - offset);
+	openClamp();
+	moveStepperZ(curZ, finalZ);
+	moveStepperY(finalY - offset, finalY);
+	closeClamp();
+}
+
+void UserCommandRunner::bay_gate_withMobileBarCode()
+{
+	int curX, curY, curZ, curW, curU;
+	int finalX, finalY, finalZ, finalW, finalU;
+	bool rc;
+
+	rc = pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeBay, curX, curY, curZ, curW, curU);
+	if(rc == false) {
+		throwError("UserCommandRunner::bay_gate_withMobileBarCode failed to retrieve mobile barcode bay's coordinates");
+	}
+	rc = pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeGate, finalX, finalY, finalZ, finalW, finalU);
+	if(rc == false) {
+		throwError("UserCommandRunner::bay_gate_withMobileBarCode failed to retrieve mobile barcode gate's coordinates");
+	}
+
+	moveStepperZ(curZ, finalZ);
+	moveStepperY(curY, finalY);
+	moveStepperX(curX, finalX);
+	moveStepperW(curW, finalW);
+	moveStepperU(curU, finalU);
+}
+
+void UserCommandRunner::gate_position_mobileBarcode()
+{
+	int curX, curY, curZ, curW, curU;
+	int finalX, finalY, finalZ, finalW, finalU;
+	bool rc;
+	auto index = _userCommand.mobileBarcodePositionIndex;
+
+	rc = pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeGate, curX, curY, curZ, curW, curU);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_position_mobileBarcode failed to retrieve mobile barcode gate's coordinates");
+	}
+	rc = pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodePosition, finalX, finalY, finalZ, finalW, finalU, index);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_position_mobileBarcode failed to retrieve mobile barcode position's coordinates: " + std::to_string(index));
+	}
+
+	moveStepperY(curY, finalY);
+	moveStepperW(curW, finalW);
+	moveStepperX(curX, finalX);
+	moveStepperU(curU, finalU);
+	moveStepperZ(curZ, finalZ);
+}
+
+void UserCommandRunner::position_position_mobileBarcode()
+{
+	int curX, curY, curZ, curW, curU;
+	int finalX, finalY, finalZ, finalW, finalU;
+	bool rc;
+	auto index = _userCommand.mobileBarcodePositionIndex;
+
+	curX = currentX();
+	curY = currentY();
+	curZ = currentZ();
+	curW = currentW();
+	curU = currentU();
+
+	rc = pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodePosition, finalX, finalY, finalZ, finalW, finalU, index);
+	if(rc == false) {
+		throwError("UserCommandRunner::position_position_mobileBarcode failed to retrieve mobile barcode position's coordinates: " + std::to_string(index));
+	}
+
+	if(finalZ < curZ) {
+		//move down
+		moveStepperY(curY, finalY);
+		moveStepperW(curW, finalW);
+		moveStepperX(curX, finalX);
+		moveStepperU(curU, finalU);
+		moveStepperZ(curZ, finalZ); //move down lastly
+	}
+	else {
+		//move up
+		moveStepperZ(curZ, finalZ); //move up firstly
+		moveStepperY(curY, finalY);
+		moveStepperW(curW, finalW);
+		moveStepperX(curX, finalX);
+		moveStepperU(curU, finalU);
+	}
+}
+
+void UserCommandRunner::position_gate_mobileBarcode()
+{
+	int curX, curY, curZ, curW, curU;
+	int finalX, finalY, finalZ, finalW, finalU;
+	bool rc;
+
+	curX = currentX();
+	curY = currentY();
+	curZ = currentZ();
+	curW = currentW();
+	curU = currentU();
+
+	rc = pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeGate, finalX, finalY, finalZ, finalW, finalU);
+	if(rc == false) {
+		throwError("UserCommandRunner::position_gate_mobileBarcode failed to retrieve mobile barcode gate's coordinates");
+	}
+
+	moveStepperZ(curZ, finalZ);
+	moveStepperW(curW, finalW);
+	moveStepperU(curU, finalU);
+	moveStepperX(curX, finalX);
+	moveStepperY(curY, finalY);
+}
+
+void UserCommandRunner::gate_bay_withMobileBarcode()
+{
+	int curX, curY, curZ, curW, curU;
+	int finalX, finalY, finalZ, finalW, finalU;
+	long offset;
+	bool rc;
+	long lowClks;
+	long highClks;
+	long accelerationBuffer;
+	long accelerationBufferDecrement;
+	long decelerationBuffer;
+	long decelerationBufferIncrement;
+
+
+	rc = pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeGate, curX, curY, curZ, curW, curU);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_bay_withMobileBarcode failed to retrieve mobile barcode gate's coordinates");
+	}
+	rc = pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeBay, finalX, finalY, finalZ, finalW, finalU);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_bay_withMobileBarcode failed to retrieve mobile barcode bay's coordinates");
+	}
+	rc = pCoordinateStorage->GetMobileBarcodeSlowlyPlaceEnd(offset);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_bay_withMobileBarcode failed to retrieve place end offset");
+	}
+	rc = pMovementConfiguration->GetStepperCardInsert(lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_bay_withMobileBarcode failed to retrieve stepper card slow insert");
+	}
+
+	moveStepperX(curX, finalX);
+	moveStepperY(curY, finalY);
+	moveStepperW(curW, finalW);
+	moveStepperU(curU, finalU);
+
+	//slow insertion
+	configStepperMovement(STEPPER_Z, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	moveStepperZ(curZ, curZ - offset);
+
+	//restore to normal speed
+	rc = pMovementConfiguration->GetStepperGeneral(STEPPER_Z, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_bay_withMobileBarcode failed to retrieve stepper card slow insert");
+	}
+	configStepperMovement(STEPPER_Z, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	moveStepperZ(curZ - offset, finalZ);
+}
+
+void UserCommandRunner::bay_gate_withoutMobileBarcode()
+{
+	int curX, curY, curZ, curW, curU;
+	int finalX, finalY, finalZ, finalW, finalU;
+	long offset;
+	bool rc;
+
+	rc = pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeBay, curX, curY, curZ, curW, curU);
+	if(rc == false) {
+		throwError("UserCommandRunner::bay_gate_withoutMobileBarcode failed to retrieve mobile barcode bay's coordinates");
+	}
+	rc = pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeGate, finalX, finalY, finalZ, finalW, finalU);
+	if(rc == false) {
+		throwError("UserCommandRunner::bay_gate_withoutMobileBarcode failed to retrieve mobile barcode gate's coordinates");
+	}
+	rc = pCoordinateStorage->GetSmartCardFetchOffset(offset);
+	if(rc == false)
+	{
+		throwError("UserCommandRunner::bay_gate_withoutMobileBarcode failed to retrieve fetch offset");
+	}
+
+	openClamp();
+	moveStepperY(curY, curY - offset);
+	moveStepperZ(curZ, finalZ);
+	moveStepperY(curY - offset, finalY);
+	moveStepperW(curW, finalW);
+	moveStepperU(curU, finalU);
+	releaseClamp();
 }
 
 void UserCommandRunner::executeUserCmd_moveMobileBarcode_from_Bay_to_Position()

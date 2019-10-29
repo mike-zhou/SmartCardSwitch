@@ -98,6 +98,7 @@ public:
 	bool GetSmartCardFetchOffset(long & offset);
 	bool GetSmartCardReleaseOffset(long & offset);
 	bool GetSmartCardInsertExtra(long & offset);
+	bool GetMobileBarcodeSlowlyPlaceEnd(long & offset);
 
 	void SetSmartCardReaderSlowInsertEndY(long yPosition);
 	bool GetSmartCardReaderSlowInsertEndY(long & yPosition);
@@ -186,6 +187,7 @@ private:
 	std::vector<Coordinate> _barCodeReaderExtraPositions;
 
 	//mobile barcode
+	long _mobileBarcodeSlowlyPlaceEnd;
 	Coordinate _mobileBarcodeGate;
 	Coordinate _mobileBarcodeBay;
 	std::vector<Coordinate> _mobileBarcodePositions;

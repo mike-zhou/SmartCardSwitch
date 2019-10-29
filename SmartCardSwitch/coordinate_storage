@@ -1203,6 +1203,7 @@
 	"smartCardReleaseOffset": 0,
 	"smartCardReaderSlowInsertEnd": 268,
 	"smartCardInsertExtra": 0,
+	"mobileBarcodeSlowlyPlaceEnd": 260,
 	"maximumX": -1,
 	"maximumY": -1,
 	"maximumZ": -1,
