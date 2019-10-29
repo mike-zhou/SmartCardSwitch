@@ -2768,7 +2768,7 @@ ICommandReception::CommandId CommandRunner::StepperSetState(unsigned int index, 
 		pLogger->LogError("CommandRunner::StepperSetState hasn't connected to any device");
 	}
 	else {
-		if(index >= LOCATOR_AMOUNT) {
+		if(index >= STEPPER_AMOUNT) {
 			pLogger->LogError("CommandRunner::StepperSetState invalid stepper index: " + std::to_string(index));
 		}
 		else
