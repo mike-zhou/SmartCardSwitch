@@ -164,6 +164,7 @@ public:
 
 	static std::string CmdStepperQuery(unsigned int index) 	{ return "75 " + std::to_string(index) + "\r\n"; }
 	static std::string CmdStepperForwardClockwise(unsigned int index, bool forwardClockwise) { return "77 " + std::to_string(index) + (forwardClockwise?" 1":" 0") + "\r\n"; }
+	static std::string CmdStepperSetKnownState(unsigned int index) { return "76 " + std::to_string(index) + " 4\r\n"; }
 	static std::string CmdLocatorQuery(unsigned int index) 	{ return "90 " + std::to_string(index) + "\r\n"; }
 
 	static Type GetCmdType(const std::string& consoleCmd);
