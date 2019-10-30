@@ -393,7 +393,6 @@ void UserCommandRunner::executeUserCmdResetDevice()
 	const unsigned int w = 3;
 	const unsigned int v = 4;
 
-
 	//power on steppers
 	cmd = ConsoleCommandFactory::CmdSteppersPowerOn();
 	runConsoleCommand(cmd);
@@ -406,8 +405,8 @@ void UserCommandRunner::executeUserCmdResetDevice()
 	runConsoleCommand(cmd);
 
 	//reset steppers
-	unsigned int stepperIndexes[STEPPER_AMOUNT] = {z, w, y, x, v};
-	for(unsigned int i=0; i<STEPPER_AMOUNT; i++)
+	unsigned int stepperIndexes[3] = {z, y, x};
+	for(unsigned int i=0; i<3; i++)
 	{
 		auto rc = pMovementConfiguration->GetStepperGoHome(lowClks,
 															highClks,
@@ -445,6 +444,14 @@ void UserCommandRunner::executeUserCmdResetDevice()
 		{
 			throwError("UserCommandRunner::executeUserCmdResetDevice failed to retrieve configuration for stepper: " + std::to_string(stepperIndexes[i]));
 		}
+	}
+	//set W and V to known position directly
+	{
+		cmd = ConsoleCommandFactory::CmdStepperSetKnownState(w);
+		runConsoleCommand(cmd);
+
+		cmd = ConsoleCommandFactory::CmdStepperSetKnownState(v);
+		runConsoleCommand(cmd);
 	}
 
 
@@ -485,7 +492,6 @@ void UserCommandRunner::executeUserCmdResetDevice()
 		runConsoleCommand(cmd);
 	}
 }
-
 
 void UserCommandRunner::parseUserCmdAjustStepperW(Poco::DynamicStruct& ds)
 {

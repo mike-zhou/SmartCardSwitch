@@ -64,8 +64,8 @@
 			"index": 4,
 			"value": {
 				"forwardClockwise": true,
-				"lowClks": 5,
-				"highClks": 5,
+				"lowClks": 10,
+				"highClks": 10,
 				"accelerationBuffer": 100,
 				"accelerationBufferDecrement": 1,
 				"decelerationBuffer": 100,
