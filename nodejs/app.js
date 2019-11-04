@@ -1150,6 +1150,8 @@ function onHttpRequest(request, response)
         onPostRequest_SCS(request, response);
     } else if (url === "/stepperConfigForwardClockwise") {
         onPostRequest_SCS(request, response);
+    } else if (url === "/stepperSetToHome") {
+        onPostRequest_SCS(request, response);
     } else if (url === "/key") {
         onPostRequest_iFinger(request, response);
     } else if (url === "/getCardSlotMappings") {

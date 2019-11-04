@@ -159,6 +159,14 @@ private:
 	//		"v":1
 	//	}
 	void onToSmartCardOffset(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
+	//request:
+	//	uri: /stepperSetToHome
+	// 	body:
+	//	{
+	//		"index":1
+	//	}
+	void onStepperSetToHome(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
 
 
@@ -207,6 +215,7 @@ public:
 						unsigned int decelerationBufferIncrement,
 						std::string & errorInfo);
 	bool StepperConfigForwardClockwise(unsigned int index, bool forwardClockwise, std::string & errorInfo);
+	bool StepperSetToHome(unsigned int index, std::string & errorInfo);
 	bool BdcForward(unsigned int index, std::string & errorInfo);
 	bool BdcReverse(unsigned int index, std::string & errorInfo);
 	bool BdcDeactivate(unsigned int index, std::string & errorInfo);

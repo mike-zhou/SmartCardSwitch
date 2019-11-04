@@ -909,6 +909,77 @@ void ScsRequestHandler::onToSmartCardOffset(Poco::Net::HTTPServerRequest& reques
 	}
 }
 
+void ScsRequestHandler::onStepperSetToHome(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onStepperSetToHome no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onStepperSetToHome command: " + command);
+		unsigned int index;
+		bool exceptionOccurred = true;
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			index = ds["index"];
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperSetToHome exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperSetToHome unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperSetToHome reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else
+		{
+			std::string errorInfo;
+
+			if(!_pWebServer->StepperSetToHome(index, errorInfo)) {
+				pLogger->LogError("ScsRequestHandler::onStepperSetToHome failed: " + errorInfo);
+			}
+
+			if(errorInfo.empty())
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				response.send();
+			}
+			else
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
+		}
+	}
+}
+
 void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	const std::string& uri = request.getURI();
@@ -946,6 +1017,9 @@ void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poc
 	}
 	else if(uri == "/toSmartCardOffset") {
 		onToSmartCardOffset(request, response);
+	}
+	else if(uri == "/stepperSetToHome") {
+		onStepperSetToHome(request, response);
 	}
 	else
 	{
@@ -2041,6 +2115,32 @@ bool WebServer::StepperConfigForwardClockwise(unsigned int index, bool forwardCl
 	//not implemented in webserver yet.
 
 	return false;
+}
+
+bool WebServer::StepperSetToHome(unsigned int index, std::string & errorInfo)
+{
+	errorInfo.clear();
+
+	if(index >= STEPPER_AMOUNT) {
+		errorInfo = "stepper index is out of range: " + std::to_string(index);
+	}
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperSetToHome " + errorInfo);
+		return false;
+	}
+
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
+
+	_consoleCommand.stepperIndex = index;
+
+	std::string command = ConsoleCommandFactory::CmdStepperSetKnownState(index);
+	runConsoleCommand(command, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperSetToHome failed to set home state : " + errorInfo);
+		return false;
+	}
+
+	return true;
 }
 
 bool WebServer::BdcForward(unsigned int index, std::string & errorInfo)

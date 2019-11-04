@@ -670,6 +670,35 @@ function onStepperConfigForwardClockwise(index) {
     xhr.send(JSON.stringify(parameters));
 }
 
+function onStepperSetToHome(index)
+{
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open('POST', '/stepperSetToHome');
+
+    xhr.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                var jsonObj = xhr.response;
+                console.log(JSON.stringify(jsonObj)); // 'This is the output.'
+                updatePage(jsonObj);
+            } else {
+                alert('Error: ' + xhr.status + ": " + xhr.statusText); // An error occurred during the request.
+            }
+        }
+    };
+
+    var parameters = {};
+    parameters["index"] = parseInt(index);
+
+    xhr.send(JSON.stringify(parameters));
+}
+
 function saveCoordinate() 
 {
     console.log(">>saveCoordinate()");
@@ -1119,6 +1148,8 @@ function onElementClicked() {
             onStepperConfigHome(index);
         } else if (action === "configForwardClockwise") {
             onStepperConfigForwardClockwise(index);
+        } else if (action === "setToHome") {
+            onStepperSetToHome(index);
         } else {
             alert("onElementClicked unknown action type: " + elementId);
         }
