@@ -1451,7 +1451,7 @@ void CommandRunner::onFeedbackStepperSetState(std::shared_ptr<ReplyTranslator::R
 			pLogger->LogError("CommandRunner::onFeedbackStepperSetState wrong index: " + std::to_string(replyPtr->index) + "; should be: " + std::to_string(_userCommand.stepperIndex));
 		}
 		else {
-			pLogger->LogInfo("CommandRunner::onFeedbackStepperSetState index: " + std::to_string(replyPtr->index) + ", steps: " + std::to_string(_userCommand.steps));
+			pLogger->LogInfo("CommandRunner::onFeedbackStepperSetState index: " + std::to_string(replyPtr->index));
 			success = true;
 		}
 	}

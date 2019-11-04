@@ -95,6 +95,7 @@ private:
 
 	virtual void OnStepperForwardClockwise(CommandId key, bool bSuccess) override;
 	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) override;
+	virtual void OnStepperSetState(CommandId key, bool bSuccess) override;
 
 private:
 	const unsigned int BDC_AMOUNT = 6;

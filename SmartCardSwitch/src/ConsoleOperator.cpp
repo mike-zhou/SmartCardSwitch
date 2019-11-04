@@ -1976,6 +1976,27 @@ void ConsoleOperator::OnLocatorQuery(CommandId key, bool bSuccess, unsigned int 
 	}
 }
 
+void ConsoleOperator::OnStepperSetState(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
+	if(_cmdKey == InvalidCommandId) {
+		return;
+	}
+	if(_cmdKey != key) {
+		pLogger->LogDebug("ConsoleOperator::OnStepperSetState unexpected cmdKey: " + std::to_string(key) + ", expected: " + std::to_string(_cmdKey));
+		return;
+	}
+
+	pLogger->LogInfo("ConsoleOperator::OnStepperSetState finished");
+	_bCmdSucceed = bSuccess;
+	_bCmdFinish = true;
+	_cmdKey = InvalidCommandId;
+
+	for(auto it=_observerPtrArray.begin(); it!=_observerPtrArray.end(); it++) {
+		(*it)->OnStepperSetState(key, bSuccess);
+	}
+}
 
 void ConsoleOperator::AddObserver(IResponseReceiver * pObserver)
 {

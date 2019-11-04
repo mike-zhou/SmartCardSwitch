@@ -3816,11 +3816,12 @@ void UserCommandRunner::OnStepperRun(CommandId key, bool bSuccess)
 		{
 			char buffer[256];
 
-			sprintf(buffer, "UserCommandRunner::OnStepperRun offsets: %d, %d, %d, %d",
+			sprintf(buffer, "UserCommandRunner::OnStepperRun offsets: %d, %d, %d, %d, %d",
 					_consoleCommand.resultSteppers[0].homeOffset,
 					_consoleCommand.resultSteppers[1].homeOffset,
 					_consoleCommand.resultSteppers[2].homeOffset,
-					_consoleCommand.resultSteppers[3].homeOffset);
+					_consoleCommand.resultSteppers[3].homeOffset,
+					_consoleCommand.resultSteppers[4].homeOffset);
 
 			pLogger->LogInfo(buffer);
 		}
@@ -3945,6 +3946,47 @@ void UserCommandRunner::OnLocatorQuery(CommandId key, bool bSuccess, unsigned in
 	}
 	else {
 		pLogger->LogError("UserCommandRunner::OnLocatorQuery failure command Id: " + std::to_string(_consoleCommand.cmdId));
+		_consoleCommand.state = CommandState::Failed;
+	}
+}
+
+void UserCommandRunner::OnStepperSetState(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lock(_consoleCommandMutex); //lock console cmd mutex
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess)
+	{
+		pLogger->LogInfo("UserCommandRunner::OnStepperSetState successful command Id: " + std::to_string(_consoleCommand.cmdId));
+
+		auto& stepperData = _consoleCommand.resultSteppers[_consoleCommand.stepperIndex];
+
+		stepperData.state = StepperState::KnownPosition;
+		stepperData.homeOffset = 0;
+		pLogger->LogInfo("UserCommandRunner::OnStepperSetState set to home position");
+		_consoleCommand.state = CommandState::Succeeded;
+
+		{
+			char buffer[256];
+
+			sprintf(buffer, "UserCommandRunner::OnStepperRun offsets: %d, %d, %d, %d, %d",
+					_consoleCommand.resultSteppers[0].homeOffset,
+					_consoleCommand.resultSteppers[1].homeOffset,
+					_consoleCommand.resultSteppers[2].homeOffset,
+					_consoleCommand.resultSteppers[3].homeOffset,
+					_consoleCommand.resultSteppers[4].homeOffset);
+
+			pLogger->LogInfo(buffer);
+		}
+	}
+	else {
+		pLogger->LogError("UserCommandRunner::OnStepperSetState failure command Id: " + std::to_string(_consoleCommand.cmdId));
 		_consoleCommand.state = CommandState::Failed;
 	}
 }
