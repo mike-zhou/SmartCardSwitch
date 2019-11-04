@@ -2771,6 +2771,9 @@ ICommandReception::CommandId CommandRunner::StepperSetState(unsigned int index, 
 		if(index >= STEPPER_AMOUNT) {
 			pLogger->LogError("CommandRunner::StepperSetState invalid stepper index: " + std::to_string(index));
 		}
+		else if(state != StepperState::KnownPosition) {
+			pLogger->LogError("CommandRunner::StepperSetState wrong state index: " + std::to_string(index) + " state: " + std::to_string((int)state));
+		}
 		else
 		{
 			cmdPtr = CommandFactory::StepperSetState(index, (unsigned int)state);

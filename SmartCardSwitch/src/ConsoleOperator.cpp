@@ -165,37 +165,6 @@ void ConsoleOperator::loadMovementConfig()
 	}
 }
 
-void ConsoleOperator::stepperSetState(unsigned int index, int state)
-{
-	ICommandReception::StepperState stepperState;
-
-	switch(state)
-	{
-	case 4:
-		stepperState = ICommandReception::StepperState::KnownPosition;
-		break;
-
-	default:
-		pLogger->LogError("ConsoleOperator::stepperSetState unsupported stepper state: " + std::to_string(state));
-		return;
-	}
-
-	prepareRunning();
-	{
-		Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
-		_cmdKey = _pCommandReception->StepperSetState(index, stepperState);
-	}
-	waitCommandFinish();
-
-	if(_bCmdSucceed) {
-		pLogger->LogInfo("ConsoleOperator::stepperSetState succeeded in setting stepper state to " + std::to_string(state));
-		_steppers[index].homeOffset = 0;
-	}
-	else {
-		pLogger->LogInfo("ConsoleOperator::stepperSetState failed in setting stepper state to " + std::to_string(state));
-	}
-}
-
 void ConsoleOperator::stepperMove(const unsigned int index, const bool forward, const unsigned int steps)
 {
 	long finalPos;
@@ -923,13 +892,15 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 
 		case ConsoleCommandFactory::Type::StepperSetState:
 		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
 			unsigned int index = d1;
 			int state = d2;
 
-			bCompositeCmd = true;
-
-			stepperSetState(index, state);
-			_cmdKey = InvalidCommandId;
+			_cmdKey = _pCommandReception->StepperSetState(index, (ICommandReception::StepperState)state);
+			if(_cmdKey != InvalidCommandId) {
+				_steppers[index].homeOffset = 0;
+			}
+			cmdId = _cmdKey;
 		}
 		break;
 

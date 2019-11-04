@@ -170,7 +170,6 @@ private:
 	void loadMovementConfig();
 
 	//compound commands
-	void stepperSetState(unsigned int index, int state);
 	void stepperMove(const unsigned int index, const bool forward, const unsigned int steps);
 };
 
