@@ -531,6 +531,21 @@ function onBarCodeExtra(action)
     xhr.send(JSON.stringify(command));
 }
 
+function onMobileBayToPosition(index)
+{
+
+}
+
+function onMobilePositionToPosition(index)
+{
+
+}
+
+function onMobilePositionToBay()
+{
+
+}
+
 function onElementClicked() 
 {
     //element id is in the format of group_action_XXX
@@ -616,6 +631,21 @@ function onElementClicked()
     else if(group === "barCodeExtra") {
         let action = paraArray[1];
         onBarCodeExtra(action);
+    }
+    else if(group === "mobile")
+    {
+        let action = paraArray[1];
+        let index = paraArray[2];
+
+        if(action === "bayToPosition") {
+            onMobileBayToPosition(index);
+        }
+        else if(action === "positionToPosition") {
+            onMobilePositionToPosition(index);
+        }
+        else if(action === "positionToBay") {
+            onMobilePositionToBay();
+        }
     }
 }
 

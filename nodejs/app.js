@@ -730,6 +730,11 @@ function onCardAccess(request, response)
     });
 }
 
+function onMobileBarcode(request, response)
+{
+
+}
+
 function onGetTouchScreenMappings(request, response)
 {
     appLog("onGetTouchScreenMappings");
@@ -1204,6 +1209,8 @@ function onHttpRequest(request, response)
         onSaveCardSlotMapping(request, response);
     } else if (url === "/cardAccess") {
         onCardAccess(request, response);
+    } else if (url === "/mobileBarcode") {
+        onMobileBarcode(request, response);
     } else if (url === "/getTouchScreenMappings") {
         onGetTouchScreenMappings(request, response);
     } else if (url === "/saveTouchScreenMappings") {
