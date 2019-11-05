@@ -941,6 +941,50 @@ function onAdjustStepperW(request, response)
     });   
 }
 
+function onAdjustStepperU(request, response)
+{
+    appLog("onAdjustStepperU");
+    let command = [];
+    
+    request.on('data', (chunk) => {
+        command.push(chunk);
+    }).on('end', () => {
+        command = Buffer.concat(command).toString();
+        appLog("onAdjustStepperU " + request.url + " : " + command);
+
+        var cmd = JSON.parse(command);
+
+        //direct the command to SCS
+        if(cmd.command === "setOffset") 
+        {
+            var scsCommand = {};
+            
+            scsCommand["userCommand"] = "adjust stepper u";
+            scsCommand["commandId"] = newCommandId();
+            scsCommand["adjustment"] = cmd.offset;
+
+            sendSCSCommand(JSON.stringify(scsCommand), response);
+        }
+        else if(cmd.command === "finish") 
+        {
+            var scsCommand = {};
+            
+            scsCommand["userCommand"] = "finish stepper u adjustment";
+            scsCommand["commandId"] = newCommandId();
+
+            sendSCSCommand(JSON.stringify(scsCommand), response);
+        }
+        else
+        {
+            appLog("onAdjustStepperU unsupported command: " + command);
+            response.statusCode = 400;
+            response.setHeader('Content-Type', 'text/plain');
+            response.write("onAdjustStepperU unsupported command: " + command);
+            response.end();
+        }
+    });   
+}
+
 function onFrameQuery(request, response)
 {
     let body = [];
@@ -1168,6 +1212,8 @@ function onHttpRequest(request, response)
         onTouchScreen(request, response);
     } else if (url === "/adjustStepperW") {
         onAdjustStepperW(request, response);
+    } else if (url === "/adjustStepperU") {
+        onAdjustStepperU(request, response);
     } else if (url === "/recordSourceQuery") {
         onRecordSourceQuery(request, response);
     } else if (url === "/") {
