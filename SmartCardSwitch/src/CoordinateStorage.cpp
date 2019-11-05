@@ -26,6 +26,7 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 {
 	_filePathName = filePathName;
 	_wAdjustment = 0;
+	_uAdjustment = 0;
 	ReloadCoordinate();
 }
 
@@ -37,6 +38,16 @@ int CoordinateStorage::GetWAdjustment()
 void CoordinateStorage::SetWAdjustment(int adjustment)
 {
 	_wAdjustment = adjustment;
+}
+
+int CoordinateStorage::GetUAdjustment()
+{
+	return _uAdjustment;
+}
+
+void CoordinateStorage::SetUAdjustment(int adjustment)
+{
+	_uAdjustment = adjustment;
 }
 
 void CoordinateStorage::ReloadCoordinate()
@@ -1323,7 +1334,7 @@ bool CoordinateStorage::GetCoordinateEx(Type type,
 		y = value.y;
 		z = value.z;
 		w = value.w + _wAdjustment;
-		u = value.u;
+		u = value.u + _uAdjustment;
 	}
 
 	return rc;

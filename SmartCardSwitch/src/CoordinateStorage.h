@@ -57,6 +57,8 @@ public:
 
 	int GetWAdjustment();
 	void SetWAdjustment(int adjustment);
+	int GetUAdjustment();
+	void SetUAdjustment(int adjustment);
 
 	bool SetCoordinate(Type type,
 					unsigned int x,
@@ -126,6 +128,7 @@ private:
 	const unsigned int MOBILE_BARCODE_POSITION_AMOUNT = 128;
 
 	int _wAdjustment;
+	int _uAdjustment;
 
 	std::string _filePathName;
 

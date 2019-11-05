@@ -19,6 +19,8 @@ public:
 	const std::string UserCmdResetDevice = "reset device";
 	const std::string UserCmdAdjustStepperW = "adjust stepper w";
 	const std::string UserCmdFinishStepperWAdjustment = "finish stepper w adjustment";
+	const std::string UserCmdAdjustStepperU = "adjust stepper u";
+	const std::string UserCmdFinishStepperUAdjustment = "finish stepper u adjustment";
 	const std::string UserCmdTapSmartCard = "tap smart card";
 	const std::string UserCmdPressPedKey = "press PED key";
 	const std::string UserCmdPressSoftKey = "press soft key";
@@ -62,6 +64,7 @@ public:
 	const std::string ErrorUserCommandOnGoing = "a user command is running";
 	const std::string ErrorInvalidJsonUserCommand = "user command cannot be parsed";
 	const std::string ErrorStepperWNotAdjusted = "stepper W hasn't been adjusted";
+	const std::string ErrorStepperUNotAdjusted = "stepper U hasn't been adjusted";
 	const std::string ErrorUnSupportedCommand = "command is not supported";
 	const std::string ErrorFailedExpandingConnectDevice = "failed in expanding connect device";
 	const std::string ErrorFailedExpandingCheckResetPressed = "failed in expanding check reset pressed";
@@ -152,6 +155,12 @@ public:
  * }
  *
  * {
+ * 	"userCommand":"adjust stepper u",
+ * 	"commandId":uniqueCommandId",
+ * 	"adjustment":0
+ * }
+ *
+ * {
  * 	"userCommand":"put back smart card",
  * 	"commandId":uniqueCommandId",
  * 	"smartCardNumber":0
@@ -159,6 +168,11 @@ public:
  *
  * {
  * 	"userCommand":"finish stepper w adjustment"
+ * 	"commandId":uniqueCommandId",
+ * }
+ *
+ * {
+ * 	"userCommand":"finish stepper u adjustment"
  * 	"commandId":uniqueCommandId",
  * }
  *

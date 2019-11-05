@@ -496,7 +496,6 @@ void UserCommandRunner::executeUserCmdResetDevice()
 void UserCommandRunner::parseUserCmdAjustStepperW(Poco::DynamicStruct& ds)
 {
 	_userCommand.wAdjustment = ds["adjustment"];
-
 }
 
 void UserCommandRunner::parseUserCmdFinishStepperWAdjustment(Poco::DynamicStruct& ds)
@@ -504,6 +503,15 @@ void UserCommandRunner::parseUserCmdFinishStepperWAdjustment(Poco::DynamicStruct
 	//nothing is done here
 }
 
+void UserCommandRunner::parseUserCmdAjustStepperU(Poco::DynamicStruct& ds)
+{
+	_userCommand.uAdjustment = ds["adjustment"];
+}
+
+void UserCommandRunner::parseUserCmdFinishStepperUAdjustment(Poco::DynamicStruct& ds)
+{
+	//nothing is done here
+}
 
 void UserCommandRunner::executeUserCmdPullUpSmartCard()
 {
@@ -525,11 +533,11 @@ void UserCommandRunner::executeUserCmdPullUpSmartCard()
 void UserCommandRunner::executeUserCmdAdjustStepperW()
 {
 	int curW = currentW();
-	int x, y, z, w;
+	int x, y, z, w, u;
 
 	pLogger->LogInfo("UserCommandRunner::executeUserCmdAdjustStepperW adjustment: " + std::to_string(_userCommand.wAdjustment));
 	pCoordinateStorage->SetWAdjustment(_userCommand.wAdjustment);
-	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, x, y, z, w);
+	pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeGate, x, y, z, w, u);
 
 	moveStepperW(curW, w);
 }
@@ -538,6 +546,23 @@ void UserCommandRunner::executeUserCmdFinishStepperWAdjustment()
 {
 	pLogger->LogInfo("UserCommandRunner::executeUserCmdFinishStepperWAdjustment stepperW adjustment finished");
 	_userCommand.wAdjusted = true;
+}
+
+void UserCommandRunner::executeUserCmdAdjustStepperU()
+{
+	int curU = currentU();
+	int x, y, z, w, u;
+
+	pLogger->LogInfo("UserCommandRunner::executeUserCmdAdjustStepperU adjustment: " + std::to_string(_userCommand.uAdjustment));
+	pCoordinateStorage->SetUAdjustment(_userCommand.uAdjustment);
+	pCoordinateStorage->GetCoordinateEx(CoordinateStorage::Type::MobileBarcodeGate, x, y, z, w, u);
+
+	moveStepperU(curU, u);
+}
+void UserCommandRunner::executeUserCmdFinishStepperUAdjustment()
+{
+	pLogger->LogInfo("UserCommandRunner::executeUserCmdFinishStepperUAdjustment stepperU adjustment finished");
+	_userCommand.uAdjusted = true;
 }
 
 void UserCommandRunner::executeUserCmd_Card_from_SmartCardGate_to_SmartCardReaderGate()
@@ -2961,9 +2986,21 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		else if(_userCommand.command == UserCmdFinishStepperWAdjustment) {
 			parseUserCmdFinishStepperWAdjustment(ds);
 		}
+		else if(_userCommand.command == UserCmdAdjustStepperU) {
+			parseUserCmdAjustStepperU(ds);
+		}
+		else if(_userCommand.command == UserCmdFinishStepperUAdjustment) {
+			parseUserCmdFinishStepperUAdjustment(ds);
+		}
 		//stop other command if stepper w hasn't been adjusted.
 		else if(_userCommand.wAdjusted == false) {
 			errorInfo = ErrorStepperWNotAdjusted;
+			pLogger->LogError("UserCommandRunner::RunCommand " + errorInfo);
+			return;
+		}
+		//stop other command if stepper u hasn't been adjusted.
+		else if(_userCommand.wAdjusted == false) {
+			errorInfo = ErrorStepperUNotAdjusted;
 			pLogger->LogError("UserCommandRunner::RunCommand " + errorInfo);
 			return;
 		}
@@ -4391,6 +4428,12 @@ void UserCommandRunner::runTask()
 				}
 				else if(_userCommand.command == UserCmdFinishStepperWAdjustment) {
 					executeUserCmdFinishStepperWAdjustment();
+				}
+				else if(_userCommand.command == UserCmdAdjustStepperU) {
+					executeUserCmdAdjustStepperU();
+				}
+				else if(_userCommand.command == UserCmdFinishStepperUAdjustment) {
+					executeUserCmdFinishStepperUAdjustment();
 				}
 				else if(_userCommand.command == UserCmdInsertSmartCard)
 				{

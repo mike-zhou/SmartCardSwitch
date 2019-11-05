@@ -161,6 +161,9 @@ private:
 		//stepper W
 		int wAdjustment = 0;
 		bool wAdjusted = false;
+		//stepper U
+		int uAdjustment = 0;
+		bool uAdjusted = false;
 		//smart card related command
 		unsigned int smartCardNumber;
 		//bar code related command
@@ -208,6 +211,8 @@ private:
 	void parseUserCmdResetDevice(Poco::DynamicStruct& ds);
 	void parseUserCmdAjustStepperW(Poco::DynamicStruct& ds);
 	void parseUserCmdFinishStepperWAdjustment(Poco::DynamicStruct& ds);
+	void parseUserCmdAjustStepperU(Poco::DynamicStruct& ds);
+	void parseUserCmdFinishStepperUAdjustment(Poco::DynamicStruct& ds);
 	void parseUserCmdSmartCard(Poco::DynamicStruct& ds);
 	void parseUserCmdBarcodeToExtraPosition(Poco::DynamicStruct& ds);
 	void parseUserCmdSwipeSmartCard(Poco::DynamicStruct& ds);
@@ -227,6 +232,8 @@ private:
 	void executeUserCmdResetDevice();
 	void executeUserCmdAdjustStepperW();
 	void executeUserCmdFinishStepperWAdjustment();
+	void executeUserCmdAdjustStepperU();
+	void executeUserCmdFinishStepperUAdjustment();
 	void executeUserCmdInsertSmartCard();
 	void executeUserCmdRemoveSmartCard();
 	void executeUserCmdSwipeSmartCard();
