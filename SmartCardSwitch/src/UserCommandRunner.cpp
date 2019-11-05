@@ -2940,7 +2940,7 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 
 	pLogger->LogInfo("UserCommandRunner::RunCommand parse command: ====== " + jsonCmd);
 
-	pCoordinateStorage->ReloadCoordinate();
+	//pCoordinateStorage->ReloadCoordinate();
 
 	if(_userCommand.state != CommandState::Idle) {
 		errorInfo = ErrorUserCommandOnGoing;
