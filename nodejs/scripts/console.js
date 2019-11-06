@@ -531,19 +531,124 @@ function onBarCodeExtra(action)
     xhr.send(JSON.stringify(command));
 }
 
-function onMobileBayToPosition(index)
+function onMobileBayToPosition()
 {
+    let index;
+    let radioId = {};
+    let selectedRadio = {};
+    let elements = document.getElementsByName("mobile");
+    for (let i = 0; i < elements.length; i++) {
+        if (elements[i].checked == true) {
+            radioId = elements[i].id;
+            break;
+        }
+    }
+    if (radioId.length < 1) {
+        alert("a mobile barcode position has to be selected");
+        return;
+    }
+    console.log(radioId + " is selected"); 
+    {
+        let items = radioId.split("_");
+        index = parseInt(items[2]);
+    }
 
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = "text/plain";
+    xhr.open('POST', '/mobileBarcode');
+
+    let command = {};
+    command["command"] = "bayToPosition";
+    command["positionIndex"] = index;
+
+    xhr.onreadystatechange = function() {
+        let DONE = 4; // readyState 4 means the request is done.
+        let OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                console.log("mobile barcode is moved to position: " + index);
+            } else {
+                alert('Error: ' + xhr.status + ":" + xhr.statusText + ":" + xhr.response); // An error occurred during the request.
+            }
+        }
+    };
+    xhr.send(JSON.stringify(command));
 }
 
-function onMobilePositionToPosition(index)
+function onMobilePositionToPosition()
 {
+    let index;
+    let radioId = {};
+    let selectedRadio = {};
+    let elements = document.getElementsByName("mobile");
+    for (let i = 0; i < elements.length; i++) {
+        if (elements[i].checked == true) {
+            radioId = elements[i].id;
+            break;
+        }
+    }
+    if (radioId.length < 1) {
+        alert("a mobile barcode position has to be selected");
+        return;
+    }
+    console.log(radioId + " is selected"); 
+    {
+        let items = radioId.split("_");
+        index = parseInt(items[2]);
+    }
+    
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = "text/plain";
+    xhr.open('POST', '/mobileBarcode');
 
+    let command = {};
+    command["command"] = "positionToPosition";
+    command["positionIndex"] = index;
+
+    xhr.onreadystatechange = function() {
+        let DONE = 4; // readyState 4 means the request is done.
+        let OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                console.log("mobile barcode is moved to position: " + index);
+            } else {
+                alert('Error: ' + xhr.status + ":" + xhr.statusText + ":" + xhr.response); // An error occurred during the request.
+            }
+        }
+    };
+    xhr.send(JSON.stringify(command));
 }
 
 function onMobilePositionToBay()
 {
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = "text/plain";
+    xhr.open('POST', '/mobileBarcode');
 
+    let command = {};
+    command["command"] = "positionToBay";
+
+    xhr.onreadystatechange = function() {
+        let DONE = 4; // readyState 4 means the request is done.
+        let OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                console.log("mobile barcode is moved to bay");
+            } else {
+                alert('Error: ' + xhr.status + ":" + xhr.statusText + ":" + xhr.response); // An error occurred during the request.
+            }
+        }
+    };
+    xhr.send(JSON.stringify(command));
 }
 
 function onElementClicked() 
@@ -635,13 +740,12 @@ function onElementClicked()
     else if(group === "mobile")
     {
         let action = paraArray[1];
-        let index = paraArray[2];
 
         if(action === "bayToPosition") {
-            onMobileBayToPosition(index);
+            onMobileBayToPosition();
         }
         else if(action === "positionToPosition") {
-            onMobilePositionToPosition(index);
+            onMobilePositionToPosition();
         }
         else if(action === "positionToBay") {
             onMobilePositionToBay();

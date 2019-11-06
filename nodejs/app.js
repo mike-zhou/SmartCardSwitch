@@ -732,7 +732,71 @@ function onCardAccess(request, response)
 
 function onMobileBarcode(request, response)
 {
+    appLog("onMobileBarcode");
 
+    if(_isAccessingCard == true) 
+    {
+        appLog("onMobileBarcode card is being accessed");
+        response.statusCode = 400;
+        response.setHeader('Content-Type', 'text/plain');
+        response.write("a card is being accessed");
+        response.end();
+        return;
+    }
+    else {
+        _isAccessingCard = true;
+    }
+
+    let command = [];
+
+    request.on('data', (chunk) => {
+        command.push(chunk);
+    }).on('end', () => {
+        command = Buffer.concat(command).toString(); //command changes to a string object.
+        appLog("onMobileBarcode " + request.url + " : " + command);
+        command = JSON.parse(command); //convert string to object.
+
+        let cmd = command["command"];
+        if(cmd === "bayToPosition")
+        {
+            let index = command["positionIndex"];
+            let scsCommand = {};
+                            
+            scsCommand["userCommand"] = "move mobile barcode from bay to position";
+            scsCommand["commandId"] = newCommandId();
+            scsCommand["positionIndex"] = index;
+            
+            sendSCSCommand(JSON.stringify(scsCommand), response);
+        }
+        else if(cmd === "positionToPosition")
+        {
+            let index = command["positionIndex"];
+            let scsCommand = {};
+                            
+            scsCommand["userCommand"] = "move mobile barcode from position to position";
+            scsCommand["commandId"] = newCommandId();
+            scsCommand["positionIndex"] = index;
+            
+            sendSCSCommand(JSON.stringify(scsCommand), response);
+        }
+        else if(cmd === "positionToBay")
+        {
+            let scsCommand = {};
+                            
+            scsCommand["userCommand"] = "move mobile barcode from position to bay";
+            scsCommand["commandId"] = newCommandId();
+            
+            sendSCSCommand(JSON.stringify(scsCommand), response);
+        }
+        else
+        {
+            appLog("onMobileBarcode unsupported command");
+            response.statusCode = 400;
+            response.setHeader('Content-Type', 'text/plain');
+            response.write("unsupported mobile barcode command");
+            response.end();
+        }
+    });
 }
 
 function onGetTouchScreenMappings(request, response)
