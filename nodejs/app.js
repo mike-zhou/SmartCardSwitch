@@ -733,25 +733,25 @@ function onCardAccess(request, response)
 
 function onQueryBarcodeImages(request, response)
 {
-    request.on('end', () => {
-        fs.readdir("data/barcodeImages/", function(err, images) {
-            let fileArrayString;
-            if(err) {
-                response.statusCode = 400;
-                response.end();
-                return;
-            }
-            if(images.length < 1) {
-                //empty folder
-                response.statusCode = 400;
-                response.end();
-                return;
-            }
+    fs.readdir("data/barcodeImages/", function(err, images) {
+        let fileArrayString;
+        if(err) {
+            appLog("onQueryBarcodeImages error in reading image list: " + err);
+            response.statusCode = 400;
+            response.end();
+            return;
+        }
+        if(images.length < 1) {
+            //empty folder
+            appLog("onQueryBarcodeImages empty image folder");
+            response.statusCode = 400;
+            response.end();
+            return;
+        }
 
-            images = images.sort();
-            response.statusCode = 200;
-            response.end(JSON.stringify(images));
-        });
+        images = images.sort();
+        response.statusCode = 200;
+        response.end(JSON.stringify(images));
     });
 }
 
@@ -759,18 +759,18 @@ function onMobileBarcode(request, response)
 {
     appLog("onMobileBarcode");
 
-    if(_isAccessingCard == true) 
-    {
-        appLog("onMobileBarcode card is being accessed");
-        response.statusCode = 400;
-        response.setHeader('Content-Type', 'text/plain');
-        response.write("a card is being accessed");
-        response.end();
-        return;
-    }
-    else {
-        _isAccessingCard = true;
-    }
+    // if(_isAccessingCard == true) 
+    // {
+    //     appLog("onMobileBarcode card is being accessed");
+    //     response.statusCode = 400;
+    //     response.setHeader('Content-Type', 'text/plain');
+    //     response.write("a card is being accessed");
+    //     response.end();
+    //     return;
+    // }
+    // else {
+    //     _isAccessingCard = true;
+    // }
 
     let command = [];
 

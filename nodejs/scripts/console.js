@@ -651,6 +651,36 @@ function onMobilePositionToBay()
     xhr.send(JSON.stringify(command));
 }
 
+function showBarcodeImageFile(fileName)
+{
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open('POST', '/mobileBarcode');
+
+    let command = {};
+
+    command["command"] = "showBarcodeImage";
+    command["name"] = fileName;
+
+    xhr.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                var jsonObj = xhr.response;
+                onCardSlotMappingArrived(jsonObj);
+                console.log("getCardSlotMappings succeeded");
+            } else {
+                alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
+            }
+        }
+    };
+    xhr.send(JSON.stringify(command));
+}
+
 function onElementClicked() 
 {
     //element id is in the format of group_action_XXX
@@ -751,6 +781,15 @@ function onElementClicked()
             onMobilePositionToBay();
         }
     }
+    else if(group === "mobileBarcodeImage") 
+    {
+        let index = paraArray[1];
+
+        let label = document.getElementById("mobileBarcodeName_" + index);
+        let fileName = label.innerText;
+
+        showBarcodeImageFile(fileName);
+    }
 }
 
 function onCardSlotMappingArrived(mappings) {
@@ -823,6 +862,30 @@ function onTouchScreenMappingArrived(mappings)
     document.getElementById("touchScreen_areas").size = itemAmount;
 }
 
+function onBarcodeImageList(imageArray)
+{
+    if(!Array.isArray(imageArray)) {
+        console.log("ERROR: onBarcodeImageList invalid parameter");
+        return;
+    }
+
+    if(imageArray.length < 1) {
+        console.log("ERROR: onBarcodeImageList empty image list");
+        return;
+    }
+
+    let html = "<table>";
+    for(let i=0; i<imageArray.length; i++) {
+        html = html + "<tr><td>";
+        html = html + "<input name=\"mobileBarcodeImage\" id=\"mobileBarcodeImage_" + i + "\" type=\"radio\">";
+        html = html + "<label id=\"mobileBarcodeName_" + i + "\" for=\"mobileBarcodeImage_" + i + "\">" + imageArray[i] + "</label>";
+        html = html + "</td></tr>";
+    }
+    html = html + "</table>";
+
+    document.getElementById("mobileBarcodeImages").innerHTML = html;
+}
+
 function askForMappings() {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
@@ -867,5 +930,30 @@ function askForMappings() {
         }
     };
     xhr2.send();
+
+    var xhr3 = new XMLHttpRequest();
+    xhr3.responseType = "json";
+    xhr3.open('POST', '/mobileBarcode');
+    let cmdQueryBarcodeImages = {};
+
+    xhr3.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr3.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr3.responseType);
+
+            if (xhr3.status === OK) {
+                var imageArray = xhr3.response;
+                onBarcodeImageList(imageArray);
+                console.log("onBarcodeImageList succeeded");
+            } else {
+                alert('Error: ' + xhr3.status + ":" + xhr3.statusText); // An error occurred during the request.
+            }
+        }
+    };
+    cmdQueryBarcodeImages["command"] = "queryBarcodeImages";
+    xhr3.send(JSON.stringify(cmdQueryBarcodeImages));
 }
+
 document.addEventListener("DOMContentLoaded", askForMappings);
