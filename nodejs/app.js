@@ -32,6 +32,7 @@ const _touchScreenMappingFile = "data/touchScreenMapping.json";
 var _isAccessingCard = false;
 var _isPressingkey = false;
 var _commandIdNumber = 0;
+var _barcodeImageName = "";
 
 function newCommandId()
 {
@@ -730,6 +731,30 @@ function onCardAccess(request, response)
     });
 }
 
+function onQueryBarcodeImages(request, response)
+{
+    request.on('end', () => {
+        fs.readdir("data/barcodeImages/", function(err, images) {
+            let fileArrayString;
+            if(err) {
+                response.statusCode = 400;
+                response.end();
+                return;
+            }
+            if(images.length < 1) {
+                //empty folder
+                response.statusCode = 400;
+                response.end();
+                return;
+            }
+
+            images = images.sort();
+            response.statusCode = 200;
+            response.end(JSON.stringify(images));
+        });
+    });
+}
+
 function onMobileBarcode(request, response)
 {
     appLog("onMobileBarcode");
@@ -787,6 +812,22 @@ function onMobileBarcode(request, response)
             scsCommand["commandId"] = newCommandId();
             
             sendSCSCommand(JSON.stringify(scsCommand), response);
+        }
+        else if(cmd === "queryBarcodeImages")
+        {
+            onQueryBarcodeImages(request, response);
+        }
+        else if(cmd === "showBarcodeImage") 
+        {
+            let name = command["name"];
+            if(name.length < 1) {
+                _barcodeImageName = "";
+            }
+            else {
+                _barcodeImageName = name;
+            }
+            response.statusCode = 200;
+            response.end();
         }
         else
         {
@@ -1173,7 +1214,7 @@ function onFrameQuery(request, response)
     });
 }
 
-function onFrameRetrive(request, response)
+function onDataFileRetrive(request, response)
 {
     var fileName = "data" + request.url;
     fs.stat(fileName, function(error, stats) {
@@ -1224,6 +1265,21 @@ function onRecordSourceQuery(request, response)
     });
 }
 
+function onBarcodeImageQuery(request, response)
+{
+    if(_barcodeImageName.length < 1) {
+        response.statusCode = 400;
+        response.end();
+    }
+    else {
+        let reply = {};
+
+        reply["barcodeName"] = "/barcodeImages/" + _barcodeImageName;
+        response.statusCode = 200;
+        response.end(JSON.stringify(reply));
+    }
+}
+
 function onHttpRequest(request, response) 
 {
     var url = request.url;
@@ -1232,10 +1288,20 @@ function onHttpRequest(request, response)
         onFrameQuery(request, response);
         return;
     }
+    else if(url === "/barcodeImageQuery") {
+        onBarcodeImageQuery(request, response);
+        return;
+    }
     else if(url.indexOf("/frames/") === 0) {
         // URL: /frames/...
         //appLog("onHttpRequest: " + request.url);
-        onFrameRetrive(request, response);
+        onDataFileRetrive(request, response);
+        return;
+    }
+    else if(url.indexOf("/barcodeImages/") === 0) {
+        // URL: /barcodeImages/fileName
+        appLog("onHttpRequest: " + request.url);
+        onDataFileRetrive(request, response);
         return;
     }
 
