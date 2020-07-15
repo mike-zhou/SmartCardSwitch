@@ -1027,6 +1027,7 @@ void CDeviceManager::DataOutputStage::SendData(std::deque<char>& dataQueue)
 	unsigned char c;
 	uint16_t crc;
 	unsigned char l4, h4;
+	unsigned char pktId;
 
 	//fill packet with application data
 	//Tag
@@ -1073,18 +1074,18 @@ void CDeviceManager::DataOutputStage::SendData(std::deque<char>& dataQueue)
 	for(unsigned int i=0; i<PACKET_SIZE; i++) {
 		buffer[i] = packet[i];
 	}
+	state = OUTPUT_SENDING;
+	sendingIndex = 0;
+
+	pktId = packetId;
+	IncreasePacketId();
 
 	{
 		char log[256];
 
-		sprintf(log, "CDeviceManager::DataOutputStage::SendData prepare data packet: %02x", UcharFromHex(buffer[3], buffer[2]));
+		sprintf(log, "CDeviceManager::DataOutputStage::SendData prepare data packet: %02x | %02x | %02x", UcharFromHex(buffer[3], buffer[2]), pktId, packetId);
 		pLogger->LogInfo(log);
 	}
-
-	state = OUTPUT_SENDING;
-	sendingIndex = 0;
-
-	IncreasePacketId();
 }
 
 
