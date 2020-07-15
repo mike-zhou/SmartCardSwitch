@@ -324,7 +324,7 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device, std::deque<unsigne
 						stage.previousId = curPacketId;
 						{
 							char log[256];
-							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x D %02x", stage.state, curPacketId);
+							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %s %02x D %02x", device.fileName.c_str(), stage.state, curPacketId);
 							pLogger->LogInfo(log);
 
 //							std::string packetStr = "CDeviceManager::onDeviceCanBeRead packet: ";
@@ -342,7 +342,7 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device, std::deque<unsigne
 						device.dataExchange.outputStage.OnAcknowledgment(curPacketId);
 						{
 							char log[256];
-							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %02x A %02x", stage.state, curPacketId);
+							sprintf(log, "CDeviceManager::onDeviceCanBeRead << %s %02x A %02x", device.fileName.c_str(), stage.state, curPacketId);
 							pLogger->LogInfo(log);
 
 //							std::string packetStr = "CDeviceManager::onDeviceCanBeRead packet: ";
@@ -355,13 +355,13 @@ void CDeviceManager::onDeviceCanBeRead(struct Device& device, std::deque<unsigne
 						}
 					}
 					else {
-						pLogger->LogError("CDeviceManager::onDeviceCanBeRead unknown packet: " + std::to_string(stage.buffer[0]));
+						pLogger->LogError("CDeviceManager::onDeviceCanBeRead unknown packet: " + std::to_string(stage.buffer[0]) + " from: " + device.fileName);
 					}
 				}
 				else
 				{
 					//corrupted packet
-					pLogger->LogError("CDeviceManager::onDeviceCanBeRead << corrupted packet");
+					pLogger->LogError("CDeviceManager::onDeviceCanBeRead << corrupted packet from " + device.fileName);
 				}
 
 				stage.byteAmount = 0;
@@ -467,7 +467,7 @@ void CDeviceManager::enqueueCommand(struct Device& device, const std::string com
 		return;
 	}
 
-	pLogger->LogDebug("CDeviceManager::enqueueCommand enqueue command: " + command + " : " + device.fileName);
+	pLogger->LogDebug("CDeviceManager::enqueueCommand enqueue command: " + device.fileName + " : " + command);
 	for(auto it=command.begin(); it!=command.end(); it++) {
 		device.outgoing.push_back(*it);
 	}
@@ -607,7 +607,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device, ILowlevelDevice
 			{
 				{
 					char buffer[256];
-					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x D %02x", stage.state, packetId);
+					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %s %02x D %02x", device.fileName.c_str(), stage.state, packetId);
 					pLogger->LogInfo(buffer);
 
 //					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
@@ -625,7 +625,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device, ILowlevelDevice
 			{
 				{
 					char buffer[256];
-					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x A %02x", stage.state, packetId);
+					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %s %02x A %02x", device.fileName.c_str(), stage.state, packetId);
 					pLogger->LogInfo(buffer);
 
 //					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
@@ -667,7 +667,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device, ILowlevelDevice
 				//no data packet can be sent while waiting for acknowledgment
 				{
 					char buffer[256];
-					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x D %02x", stage.state, packetId);
+					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %s %02x D %02x", device.fileName.c_str(), stage.state, packetId);
 					pLogger->LogInfo(buffer);
 
 //					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";
@@ -684,7 +684,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device, ILowlevelDevice
 			{
 				{
 					char buffer[256];
-					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %02x A %02x", stage.state, packetId);
+					sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten >> %s %02x A %02x", device.fileName.c_str(), stage.state, packetId);
 					pLogger->LogInfo(buffer);
 
 //					std::string packetStr = "CDeviceManager::onDeviceCanBeWritten packet: ";

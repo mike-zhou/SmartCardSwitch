@@ -165,7 +165,7 @@ bool LinuxComDevice::receiveData()
 			content.push_back((_inputBuffer[i]));
 		}
 		pLogger->LogInfo("LinuxComDevice::receiveData received " + std::to_string(amount) + " bytes from " + _name);
-		pLogger->LogInfo("LinuxComDevice::receiveData << " + content);
+		pLogger->LogInfo("LinuxComDevice::receiveData << " + _name + ": " + content);
 
 		_pObserver->onLowlevelDeviceReply(_name, _inputQueue);
 	}
@@ -238,7 +238,7 @@ bool LinuxComDevice::sendData()
 				for(int i=0; i<amount; i++) {
 					info.push_back(data[i]);
 				}
-				pLogger->LogInfo("LinuxComDevice::sendData >> " + info);
+				pLogger->LogInfo("LinuxComDevice::sendData >> " + _name + ": " + info);
 			}
 			else if(amount == 0)
 			{
