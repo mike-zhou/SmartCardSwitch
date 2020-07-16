@@ -93,8 +93,9 @@ protected:
 			std::string logFile;
 			std::string logFileSize;
 			std::string logFileAmount;
-			std::string monitorFile;
+			std::vector<std::string> monitorFileVec;
 			std::vector<std::string> controllingFileVec;
+			std::vector<CDeviceMonitor *> monitorPointerVec;
 
 			//use the designated configuration if it exist
 			if(args.size() > 0)
@@ -141,7 +142,21 @@ protected:
 					}
 				}
 				//monitorFile
-				monitorFile = config().getString("monitor_device_file", std::string());
+				for(int i=0; ; i++)
+				{
+					char keyBuf[128];
+					std::string monitorFile;
+
+					sprintf(keyBuf, "monitor_device_file__%d", i);
+					monitorFile = config().getString(keyBuf, std::string());
+
+					if(monitorFile.empty()) {
+						break;
+					}
+					else {
+						monitorFileVec.push_back(monitorFile);
+					}
+				}
 			}
 			catch(Poco::NotFoundException& e)
 			{
@@ -180,12 +195,23 @@ protected:
 			CListener * pListener = new CListener(pSocketManager);
 			pListener->Bind(serverAddress);
 
-			CDeviceMonitor * pMonitor = new CDeviceMonitor(monitorFile);
+			for(unsigned int i=0; i < monitorFileVec.size(); i++)
+			{
+				CDeviceMonitor * pMonitor = new CDeviceMonitor(monitorFileVec[i]);
+				if(pMonitor == nullptr) {
+					pLogger->LogError("failed to start monitor: " + monitorFileVec[i]);
+				}
+				else {
+					monitorPointerVec.push_back(pMonitor);
+				}
+			}
 
 			tm.start(pDeviceManager);
 			tm.start(pSocketManager);
 			tm.start(pListener);
-			tm.start(pMonitor);
+			for(unsigned int i=0; i<monitorPointerVec.size(); i++) {
+				tm.start(monitorPointerVec[i]);
+			}
 
 			waitForTerminationRequest();
 			//stop tasks
