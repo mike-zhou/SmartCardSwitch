@@ -806,7 +806,7 @@ void CDeviceManager::pollDevices()
 		return;
 	}
 
-	lockMutex("CDeviceManager::pollDevices", "unplug device");
+	lockMutex("CDeviceManager::pollDevices", "device maintenance");
 	{
 		for(size_t i=0; i<_devices.size(); i++)
 		{
