@@ -32,7 +32,7 @@ void CDeviceMonitor::onMonitorCanBeRead(std::deque<unsigned char> & reply)
 	}
 
 	if(amount == 0) {
-		pLogger->LogError("CDeviceMonitor::onMonitorCanBeRead ERROR: EOF is returned");
+		pLogger->LogError("CDeviceMonitor::onMonitorCanBeRead ERROR: EOF is returned " + _deviceFile);
 	}
 	else
 	{
@@ -45,14 +45,14 @@ void CDeviceMonitor::onMonitorCanBeRead(std::deque<unsigned char> & reply)
 //			outputStr = outputStr + std::string(buf);
 //		}
 //		pLogger->LogInfo("CDeviceMonitor::onMonitorCanBeRead hex content: " + outputStr);
-		pLogger->LogInfo("CDeviceMonitor::onMonitorCanBeRead char content: " + std::string((char *)_buffer));
+		pLogger->LogInfo("CDeviceMonitor::onMonitorCanBeRead " + _deviceFile + ", char content: " + std::string((char *)_buffer));
 	}
 }
 
 void CDeviceMonitor::onLowlevelDeviceState(const std::string & deviceName, const LowlevelDeviceState state, const std::string & info)
 {
 	if(state == LowlevelDeviceState::DeviceError) {
-		pLogger->LogError("CDeviceMonitor::onLowlevelDeviceState low level device error");
+		pLogger->LogError("CDeviceMonitor::onLowlevelDeviceState low level device error: " + _deviceFile);
 	}
 }
 
@@ -112,7 +112,7 @@ void CDeviceMonitor::runTask()
 			}
 		}
 
-		pLogger->LogInfo("CDeviceMonitor::runTask() stopping low level device...");
+		pLogger->LogInfo("CDeviceMonitor::runTask() stopping low level device " + _deviceFile);
 		_tm.cancelAll();
 		_tm.joinAll();
 	}
