@@ -806,6 +806,7 @@ void CDeviceManager::pollDevices()
 		return;
 	}
 
+	lockMutex("CDeviceManager::pollDevices", "unplug device");
 	{
 		for(size_t i=0; i<_devices.size(); i++)
 		{
@@ -824,8 +825,6 @@ void CDeviceManager::pollDevices()
 
 	//remove the device having an error
 	{
-		lockMutex("CDeviceManager::pollDevices", "unplug device");
-
 		for(auto deviceIt = _devices.begin(); deviceIt != _devices.end(); )
 		{
 			if(deviceIt->state == DeviceState::DEVICE_ERROR)
@@ -843,9 +842,8 @@ void CDeviceManager::pollDevices()
 				deviceIt++;
 			}
 		}
-
-		unlockMutex();
 	}
+	unlockMutex();
 }
 
 void CDeviceManager::runTask()
