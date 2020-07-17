@@ -722,6 +722,8 @@ void CDeviceManager::onLowlevelDeviceState(const std::string & deviceName, const
 	bool deviceFound = false;
 	pLogger->LogInfo("CDeviceManager::onLowlevelDeviceState device: " + deviceName + " state: " + std::to_string((int)state) + " info: " + info);
 
+	lockMutex("CDeviceManager::onLowlevelDeviceState", deviceName);
+
 	if(state == LowlevelDeviceState::DeviceNormal)
 	{
 		//check whether this device exists
@@ -765,6 +767,8 @@ void CDeviceManager::onLowlevelDeviceState(const std::string & deviceName, const
 			pLogger->LogError("CDeviceManager::onLowlevelDeviceState device not found: " + deviceName);
 		}
 	}
+
+	unlockMutex();
 }
 
 void CDeviceManager::onLowlevelDeviceWritable(const std::string & deviceName, ILowlevelDevice * pLowlevelDevice)
