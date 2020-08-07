@@ -336,6 +336,14 @@
 			{
 				"cardName": "UL TEST CARD 15",
 				"slotNumber": 15
+			},
+			{
+				"cardName": "VISA_CARD_01",
+				"slotNumber": 1
+			},
+			{
+				"cardName": "MC_CARD_07",
+				"slotNumber": 7
 			}
 		]
 	}
