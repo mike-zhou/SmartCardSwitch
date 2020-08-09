@@ -1801,6 +1801,7 @@ void UserCommandRunner::gate_contactlessReader()
 	}
 
 	moveStepperZ(curZ, finalZ);
+	moveStepperW(curW, finalW);
 }
 
 void UserCommandRunner::contactlessReader_gate()
@@ -1823,6 +1824,7 @@ void UserCommandRunner::contactlessReader_gate()
 		throwError("UserCommandRunner::contactlessReader_gate failed to retrieve contactless reader");
 	}
 
+	moveStepperW(curW, finalW);
 	moveStepperZ(curZ, finalZ);
 }
 
