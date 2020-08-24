@@ -41,7 +41,11 @@ public:
 	const std::string UserCmdCardFromBayToSmartCardGate = "move card from bay to smartCardGate";
 	const std::string UserCmdCardFromSmartCardGateToSmartCardReaderGate = "move card from smartCardGate to smartCardReaderGate";
 	const std::string UserCmdCardFromSmartCardReaderGateToSmartCardReader = "move card from smartCardReaderGate to smartCardReader";
+	const std::string UserCmdCardFromSmartCardReaderGateToSmartCardIntermediate = "move card from smartCardReaderGate to smartCardIntermediate";
+	const std::string UserCmdCardFromSmartCardIntermediateToSmartCardReader = "move card from smartCardIntermediate to smartCardReader";
 	const std::string UserCmdCardFromSmartCardReaderToSmartCardReaderGate = "move card from smartCardReader to smartCardReaderGate";
+	const std::string UserCmdCardFromSmartCardReaderToSmartCardIntermediate = "move card from smartCardReader to smartCardReaderIntermediate";
+	const std::string UserCmdCardFromSmartCardIntermediateToSmartCardReaderGate = "move card from smartCardReaderIntermediate to smartCardReaderGate";
 	const std::string UserCmdCardFromSmartCardReaderGateToSmartCardGate = "move card from smartCardReaderGate to smartCardGate";
 	const std::string UserCmdCardFromSmartCardGateToBarcodeReaderGate = "move card from smartCardGate to barcodeReaderGate";
 	const std::string UserCmdCardFromBarcodeReaderGateToBarcodeReader = "move card from barcodeReaderGate to barcodeReader";
@@ -68,11 +72,13 @@ public:
 	const std::string ErrorFailedExpandingResetDevice = "failed in expanding reset device";
 	const std::string ErrorSmartCardReaderSlotOccupied = "smart card reader is occupied";
 	const std::string ErrorSmartCardReaderEmpty = "no card in smart card reader";
+	const std::string ErrorSmartCardIntermediateEmpty = "no card in smart card intermediate";
 	const std::string ErrorFailedToRunConsoleCommand = "failed to run console command";
 	const std::string ErrorFailedToRunUserCommand = "failed to run user command";
 	const std::string ErrorSmartCardHasBeenFetched = "smart card has been fetched";
 	const std::string ErrorSmartCardNotInSmartCardGate = "no card is in smart card gate";
 	const std::string ErrorSmartCardNotInSmartCardReaderGate = "no card is in smart card reader gate";
+	const std::string ErrorSmartCardNotInSmartCardIntermediate = "no card is in smart card intermediate";
 	const std::string ErrorSmartCardNotInBarcodeReaderGate = "no card is in barcode reader gate";
 	const std::string ErrorSmartCardNotInBarcodeReader = "no card is in barcode reader";
 	const std::string ErrorSmartCardNotInPredefinedPosition = "card is not in predefined position";
@@ -258,7 +264,31 @@ public:
  *	}
  *
  *	{
+ *		"userCommand":"move card from smartCardReaderGate to smartCardIntermediate",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card from smartCardReaderIntermediate to smartCardReader",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
  *		"userCommand":"move card from smartCardReader to smartCardReaderGate",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card from smartCardReader to smartCardIntermediate",
+ *		"commandId":"uniqueCommandId",
+ *		"smartCardNumber":0
+ *	}
+ *
+ *	{
+ *		"userCommand":"move card from smartCardIntermediate to smartCardReaderGate",
  *		"commandId":"uniqueCommandId",
  *		"smartCardNumber":0
  *	}

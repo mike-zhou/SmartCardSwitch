@@ -221,7 +221,23 @@ void UserCommandRunner::finishUserCommand(CommandState consoleCmdState, const st
 		{
 			_userCommand.cardState = CardState::InSmartCardReader;
 		}
+		else if(_userCommand.command == UserCmdCardFromSmartCardReaderGateToSmartCardIntermediate)
+		{
+			_userCommand.cardState = CardState::InSmartCardIntermediate;
+		}
+		else if(_userCommand.command == UserCmdCardFromSmartCardIntermediateToSmartCardReader)
+		{
+			_userCommand.cardState = CardState::InSmartCardReader;
+		}
 		else if(_userCommand.command == UserCmdCardFromSmartCardReaderToSmartCardReaderGate)
+		{
+			_userCommand.cardState = CardState::InSmartCardReaderGate;
+		}
+		else if(_userCommand.command == UserCmdCardFromSmartCardReaderToSmartCardIntermediate)
+		{
+			_userCommand.cardState = CardState::InSmartCardIntermediate;
+		}
+		else if(_userCommand.command == UserCmdCardFromSmartCardIntermediateToSmartCardReaderGate)
 		{
 			_userCommand.cardState = CardState::InSmartCardReaderGate;
 		}
@@ -545,13 +561,64 @@ void UserCommandRunner::executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCar
 	gate_smartCardReader_withCard();
 }
 
+void UserCommandRunner::executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardIntermediate()
+{
+	if(getCurrentPosition() != Position::SmartCardReaderGate) {
+		throwError("UserCommandRunner::executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardIntermediate not in Position::SmartCardReaderGate");
+	}
+	if(_userCommand.cardState != CardState::InSmartCardReaderGate) {
+		throwError("UserCommandRunner::executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardIntermediate no card in smart card reader gate");
+	}
+
+	gate_smartCardIntermediate_withCard();
+}
+
+void UserCommandRunner::executeUserCmd_Card_from_SmartCardIntermediate_to_SmartCardReader()
+{
+	if(getCurrentPosition() != Position::SmartCardIntermediate) {
+		throwError("UserCommandRunner::executeUserCmd_Card_from_SmartCardIntermediate_to_SmartCardReader not in Position::SmartCardIntermediate");
+	}
+	if(_userCommand.cardState != CardState::InSmartCardIntermediate) {
+		throwError("UserCommandRunner::executeUserCmd_Card_from_SmartCardIntermediate_to_SmartCardReader no card in smart card reader intermediate");
+	}
+
+	smartCardIntermediate_smartCardReader_withCard();
+}
+
 void UserCommandRunner::executeUserCmd_Card_from_SmartCardReader_to_SmartCardReaderGate()
 {
+	if(getCurrentPosition() != Position::SmartCardReader) {
+		throwError("UserCommandRunner::executeUserCmd_Card_from_SmartCardReader_to_SmartCardReaderGate not in Position::SmartCardReader");
+	}
 	if(_userCommand.cardState != CardState::InSmartCardReader) {
 		throwError("UserCommandRunner::executeUserCmdCardFromSmartCardReaderToSmartCardReaderGate no card in smart card reader");
 	}
 
 	smartCardReader_gate_withCard();
+}
+
+void UserCommandRunner::executeUserCmd_Card_from_SmartCardReader_to_SmartCardIntermediate()
+{
+	if(getCurrentPosition() != Position::SmartCardReader) {
+		throwError("UserCommandRunner::executeUserCmd_Card_from_SmartCardReader_to_SmartCardIntermediate not in Position::SmartCardReader");
+	}
+	if(_userCommand.cardState != CardState::InSmartCardReader) {
+		throwError("UserCommandRunner::executeUserCmd_Card_from_SmartCardReader_to_SmartCardIntermediate no card in smart card reader");
+	}
+
+	smartCardReader_smartCardIntermediate_withCard();
+}
+
+void UserCommandRunner::executeUserCmd_Card_from_SmartCardIntermediate_to_SmartCardReaderGate()
+{
+	if(getCurrentPosition() != Position::SmartCardIntermediate) {
+		throwError("UserCommandRunner::executeUserCmd_Card_from_SmartCardIntermediate_to_SmartCardReaderGate not in Position::SmartCardReader");
+	}
+	if(_userCommand.cardState != CardState::InSmartCardIntermediate) {
+		throwError("UserCommandRunner::executeUserCmd_Card_from_SmartCardIntermediate_to_SmartCardReaderGate no card in smart card reader");
+	}
+
+	smartCardIntermediate_smartCardReaderGate_withCard();
 }
 
 void UserCommandRunner::executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardGate()
@@ -781,6 +848,16 @@ UserCommandRunner::Position UserCommandRunner::getPosition(int x, int y, int z, 
 	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardGate, gateX, gateY, gateZ, gateW);
 	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
 		return Position::SmartCardGate;
+	}
+
+	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardIntermediate, gateX, gateY, gateZ, gateW);
+	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
+		return Position::SmartCardIntermediate;
+	}
+
+	pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, gateX, gateY, gateZ, gateW);
+	if((x == gateX) && (y == gateY) && (z == gateZ) && (w == gateW)) {
+		return Position::SmartCardReader;
 	}
 
 	throw Poco::Exception("UserCommandRunner::getPosition unknown position");
@@ -1474,6 +1551,95 @@ void UserCommandRunner::gate_smartCardReader_withCard()
 	moveStepperY(finalY + insertExtra, finalY);
 }
 
+void UserCommandRunner::gate_smartCardIntermediate_withCard()
+{
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+	long slowInsertEnd;
+	long lowClks;
+	long highClks;
+	long accelerationBuffer;
+	long accelerationBufferDecrement;
+	long decelerationBuffer;
+	long decelerationBufferIncrement;
+	long insertExtra;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::gate_smartCardIntermediate_withCard ++++ ");
+		pLogger->LogInfo(buf);
+	}
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardIntermediate, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_smartCardIntermediate_withCard failed to retrieve smart card intermediate");
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, curX, curY, curZ, curW);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_smartCardIntermediate_withCard failed to retrieve smart card reader gate");
+	}
+	rc = pCoordinateStorage->GetSmartCardReaderSlowInsertEndY(slowInsertEnd);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_smartCardIntermediate_withCard failed to retrieve smart card reader slow insert end");
+	}
+	rc = pMovementConfiguration->GetStepperCardInsert(lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_smartCardIntermediate_withCard failed to retrieve stepper card slow insert");
+	}
+	rc = pCoordinateStorage->GetSmartCardInsertExtra(insertExtra);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_smartCardIntermediate_withCard failed to retrieve stepper card insert extra");
+	}
+
+	moveStepperX(finalX, finalX + 32);
+
+	//configure movement
+	configStepperMovement(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	//slow insertion
+	moveStepperY(curY, slowInsertEnd);
+
+	//restore to normal speed
+	rc = pMovementConfiguration->GetStepperGeneral(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	if(rc == false) {
+		throwError("UserCommandRunner::gate_smartCardIntermediate_withCard failed to retrieve stepper general");
+	}
+	//configure movement
+	configStepperMovement(STEPPER_Y, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	//move card
+	moveStepperX(finalX + 32, finalX);
+	moveStepperY(slowInsertEnd, finalY);
+}
+
+void UserCommandRunner::smartCardIntermediate_smartCardReader_withCard()
+{
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+	long insertExtra;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::smartCardIntermediate_smartCardReader_withCard ++++ ");
+		pLogger->LogInfo(buf);
+	}
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		throwError("UserCommandRunner::smartCardIntermediate_smartCardReader_withCard failed to retrieve smart card reader");
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardIntermediate, curX, curY, curZ, curW);
+	if(rc == false) {
+		throwError("UserCommandRunner::smartCardIntermediate_smartCardReader_withCard failed to retrieve smart card reader gate");
+	}
+	rc = pCoordinateStorage->GetSmartCardInsertExtra(insertExtra);
+	if(rc == false) {
+		throwError("UserCommandRunner::smartCardIntermediate_smartCardReader_withCard failed to retrieve stepper card insert extra");
+	}
+
+	//insert card
+	moveStepperY(curY, finalY + insertExtra);
+	moveStepperY(finalY + insertExtra, finalY);
+}
+
 void UserCommandRunner::smartCardReader_gate_withCard()
 {
 	int curX, curY, curZ, curW;
@@ -1495,6 +1661,53 @@ void UserCommandRunner::smartCardReader_gate_withCard()
 	}
 
 	moveStepperY(curY, finalY);
+}
+
+void UserCommandRunner::smartCardReader_smartCardIntermediate_withCard()
+{
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::smartCardReader_smartCardIntermediate_withCard ++++ ");
+		pLogger->LogInfo(buf);
+	}
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardIntermediate, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		throwError("UserCommandRunner::smartCardReader_smartCardIntermediate_withCard failed to retrieve smart card intermediate");
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReader, curX, curY, curZ, curW);
+	if(rc == false) {
+		throwError("UserCommandRunner::smartCardReader_smartCardIntermediate_withCard failed to retrieve smart card reader");
+	}
+
+	moveStepperY(curY, finalY);
+}
+
+void UserCommandRunner::smartCardIntermediate_smartCardReaderGate_withCard()
+{
+	int curX, curY, curZ, curW;
+	int finalX, finalY, finalZ, finalW;
+
+	{
+		char buf[256];
+		sprintf(buf, "UserCommandRunner::smartCardIntermediate_smartCardReaderGate_withCard ++++ ");
+		pLogger->LogInfo(buf);
+	}
+
+	auto rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardReaderGate, finalX, finalY, finalZ, finalW);
+	if(rc == false) {
+		throwError("UserCommandRunner::smartCardIntermediate_smartCardReaderGate_withCard failed to retrieve smart card reader gate");
+	}
+	rc = pCoordinateStorage->GetCoordinate(CoordinateStorage::Type::SmartCardIntermediate, curX, curY, curZ, curW);
+	if(rc == false) {
+		throwError("UserCommandRunner::smartCardIntermediate_smartCardReaderGate_withCard failed to retrieve smart card reader gate");
+	}
+
+	moveStepperY(curY, finalY);
+
 }
 
 void UserCommandRunner::smartCardReader_gate_withoutCard()
@@ -2907,7 +3120,19 @@ void UserCommandRunner::RunCommand(const std::string& jsonCmd, std::string& erro
 		else if(_userCommand.command == UserCmdCardFromSmartCardReaderGateToSmartCardReader) {
 			parseUserCmdSmartCard(ds);
 		}
+		else if(_userCommand.command == UserCmdCardFromSmartCardReaderGateToSmartCardIntermediate) {
+			parseUserCmdSmartCard(ds);
+		}
+		else if(_userCommand.command == UserCmdCardFromSmartCardIntermediateToSmartCardReader) {
+			parseUserCmdSmartCard(ds);
+		}
 		else if(_userCommand.command == UserCmdCardFromSmartCardReaderToSmartCardReaderGate) {
+			parseUserCmdSmartCard(ds);
+		}
+		else if(_userCommand.command == UserCmdCardFromSmartCardReaderToSmartCardIntermediate) {
+			parseUserCmdSmartCard(ds);
+		}
+		else if(_userCommand.command == UserCmdCardFromSmartCardIntermediateToSmartCardReaderGate) {
 			parseUserCmdSmartCard(ds);
 		}
 		else if(_userCommand.command == UserCmdCardFromSmartCardReaderGateToSmartCardGate) {
@@ -4081,6 +4306,26 @@ void UserCommandRunner::runTask()
 						executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardReader();
 					}
 				}
+				else if(_userCommand.command == UserCmdCardFromSmartCardReaderGateToSmartCardIntermediate)
+				{
+					if(_userCommand.cardState != CardState::InSmartCardReaderGate) {
+						errorInfo = ErrorSmartCardNotInSmartCardReaderGate;
+						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
+					}
+					else {
+						executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardIntermediate();
+					}
+				}
+				else if(_userCommand.command == UserCmdCardFromSmartCardIntermediateToSmartCardReader)
+				{
+					if(_userCommand.cardState != CardState::InSmartCardIntermediate) {
+						errorInfo = ErrorSmartCardNotInSmartCardIntermediate;
+						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
+					}
+					else {
+						executeUserCmd_Card_from_SmartCardIntermediate_to_SmartCardReader();
+					}
+				}
 				else if(_userCommand.command == UserCmdCardFromSmartCardReaderToSmartCardReaderGate)
 				{
 					if(_userCommand.cardState != CardState::InSmartCardReader) {
@@ -4089,6 +4334,26 @@ void UserCommandRunner::runTask()
 					}
 					else {
 						executeUserCmd_Card_from_SmartCardReader_to_SmartCardReaderGate();
+					}
+				}
+				else if(_userCommand.command == UserCmdCardFromSmartCardReaderToSmartCardIntermediate)
+				{
+					if(_userCommand.cardState != CardState::InSmartCardReader) {
+						errorInfo = ErrorSmartCardReaderEmpty;
+						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
+					}
+					else {
+						executeUserCmd_Card_from_SmartCardReader_to_SmartCardIntermediate();
+					}
+				}
+				else if(_userCommand.command == UserCmdCardFromSmartCardIntermediateToSmartCardReaderGate)
+				{
+					if(_userCommand.cardState != CardState::InSmartCardReader) {
+						errorInfo = ErrorSmartCardIntermediateEmpty;
+						pLogger->LogError("UserCommandRunner::runTask cardState: " + std::to_string((int)_userCommand.cardState));
+					}
+					else {
+						executeUserCmd_Card_from_SmartCardIntermediate_to_SmartCardReaderGate();
 					}
 				}
 				else if(_userCommand.command == UserCmdCardFromSmartCardReaderGateToSmartCardGate)
@@ -4168,6 +4433,7 @@ void UserCommandRunner::runTask()
 						case CardState::InBarcodeReader:
 						case CardState::InBarcodeReaderGate:
 						case CardState::InSmartCardReader:
+						case CardState::InSmartCardIntermediate:
 						case CardState::InSmartCardReaderGate:
 						case CardState::InSmartCardGate:
 						case CardState::InBay:
@@ -4184,6 +4450,10 @@ void UserCommandRunner::runTask()
 					{
 						if(_userCommand.cardState == CardState::InSmartCardReader) {
 							executeUserCmd_Card_from_SmartCardReader_to_SmartCardReaderGate();
+							_userCommand.cardState = CardState::InSmartCardReaderGate;
+						}
+						if(_userCommand.cardState == CardState::InSmartCardIntermediate) {
+							executeUserCmd_Card_from_SmartCardIntermediate_to_SmartCardReaderGate();
 							_userCommand.cardState = CardState::InSmartCardReaderGate;
 						}
 						if(_userCommand.cardState == CardState::InSmartCardReaderGate) {

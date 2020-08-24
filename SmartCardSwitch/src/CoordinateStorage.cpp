@@ -290,6 +290,10 @@ void CoordinateStorage::ReloadCoordinate()
 			_smartCardReaderGate.y = ds["smartCardReader"]["gate"]["y"];
 			_smartCardReaderGate.z = ds["smartCardReader"]["gate"]["z"];
 			_smartCardReaderGate.w = ds["smartCardReader"]["gate"]["w"];
+			_smartCardIntermediate.x = ds["smartCardReader"]["intermediate"]["x"];
+			_smartCardIntermediate.y = ds["smartCardReader"]["intermediate"]["y"];
+			_smartCardIntermediate.z = ds["smartCardReader"]["intermediate"]["z"];
+			_smartCardIntermediate.w = ds["smartCardReader"]["intermediate"]["w"];
 			_smartCardReader.x = ds["smartCardReader"]["reader"]["x"];
 			_smartCardReader.y = ds["smartCardReader"]["reader"]["y"];
 			_smartCardReader.z = ds["smartCardReader"]["reader"]["z"];
@@ -490,6 +494,7 @@ bool CoordinateStorage::PersistToFile()
 	//smart card reader
 	json = json + ",\"smartCardReader\": {";
 	json = json + "\"gate\":" + _smartCardReaderGate.ToJsonObj() + ",";
+	json = json + "\"intermediate\":" + _smartCardIntermediate.ToJsonObj() + ",";
 	json = json + "\"reader\":" + _smartCardReader.ToJsonObj();
 	json = json + "}";
 
@@ -821,6 +826,13 @@ bool CoordinateStorage::SetCoordinate(Type type,
 		}
 		break;
 
+		case Type::SmartCardIntermediate:
+		{
+			_smartCardIntermediate = value;
+			rc = true;
+		}
+		break;
+
 		case Type::SmartCardReader:
 		{
 			_smartCardReader = value;
@@ -1079,6 +1091,13 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	case Type::SmartCardReaderGate:
 	{
 		value = _smartCardReaderGate;
+		rc = true;
+	}
+	break;
+
+	case Type::SmartCardIntermediate:
+	{
+		value = _smartCardIntermediate;
 		rc = true;
 	}
 	break;

@@ -41,7 +41,8 @@ public:
 		ContactlessReaderGate = 19,
 		ContactlessReader = 20,
 		Safe = 21,
-		BarCodeReaderExtraPosition = 22
+		BarCodeReaderExtraPosition = 22,
+		SmartCardIntermediate = 23
 	};
 
 	unsigned int SmartCardsAmount() { return _smartCards.size(); }
@@ -153,6 +154,7 @@ private:
 	//smart card reader
 	Coordinate _smartCardReaderGate;
 	long _smartCardReaderSlowInsertEnd;
+	Coordinate _smartCardIntermediate;
 	Coordinate _smartCardReader;
 
 	//contactless reader

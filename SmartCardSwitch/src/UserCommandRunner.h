@@ -132,6 +132,7 @@ private:
 		InBay = 0,
 		InSmartCardGate,
 		InSmartCardReaderGate,
+		InSmartCardIntermediate,
 		InSmartCardReader,
 		InContactlessReaderGate,
 		InContactlessReader,
@@ -230,7 +231,11 @@ private:
 	void executeUserCmdPullUpSmartCard();
 	void executeUserCmd_Card_from_SmartCardGate_to_SmartCardReaderGate();
 	void executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardReader();
+	void executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardIntermediate();
+	void executeUserCmd_Card_from_SmartCardIntermediate_to_SmartCardReader();
 	void executeUserCmd_Card_from_SmartCardReader_to_SmartCardReaderGate();
+	void executeUserCmd_Card_from_SmartCardReader_to_SmartCardIntermediate();
+	void executeUserCmd_Card_from_SmartCardIntermediate_to_SmartCardReaderGate();
 	void executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardGate();
 	void executeUserCmd_Card_from_SmartCardGate_to_BarcodeReaderGate();
 	void executeUserCmd_Card_from_BarcodeReaderGate_to_BarcodeReader();
@@ -251,7 +256,9 @@ private:
 		TouchScreenGate,
 		SmartCardReaderGate,
 		ContactlessReaderGate,
-		BarCodeReaderGate
+		BarCodeReaderGate,
+		SmartCardIntermediate,
+		SmartCardReader
 	};
 	Position getCurrentPosition();
 	Position getPosition(int x, int y, int z, int w);
@@ -318,8 +325,12 @@ private:
 	void gate_touchScreenKey(unsigned int keyNumber);
 	//movement between smart card reader and gate
 	void smartCardReader_gate_withCard();
+	void smartCardReader_smartCardIntermediate_withCard();
+	void smartCardIntermediate_smartCardReaderGate_withCard();
 	void smartCardReader_gate_withoutCard();
 	void gate_smartCardReader_withCard();
+	void gate_smartCardIntermediate_withCard();
+	void smartCardIntermediate_smartCardReader_withCard();
 	void gate_smartCardReader_withoutCard();
 	//movement between contactless reader and gate
 	void contactlessReader_gate();
