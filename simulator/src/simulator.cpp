@@ -40,6 +40,11 @@
 #include "Poco/Path.h"
 #include "Poco/File.h"
 #include "Poco/DirectoryIterator.h"
+#include "Poco/JSON/Parser.h"
+#include "Poco/Dynamic/Var.h"
+#include "Poco/JSON/Object.h"
+#include "Poco/JSON/JSONException.h"
+#include "Poco/Dynamic/Struct.h"
 
 #include "Logger.h"
 
@@ -168,48 +173,87 @@ public:
 		}
 		else
 		{
+			int nozzleIndex, action;
+			bool exceptionOccurred = true;
+			std::string command = getJsonCommand(request);
+
+			try
 			{
-				std::string nozzleIndexStr;
-				std::string actionStr;
+				Poco::JSON::Parser parser;
+				Poco::Dynamic::Var result = parser.parse(command);
+				Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+				Poco::DynamicStruct ds = *objectPtr;
 
-				HTMLForm form(request, request.stream());
+				nozzleIndex = ds["index"];
+				action = ds["action"];
+				exceptionOccurred = false;
+			}
+			catch(Poco::Exception &e)
+			{
+				pLogger->LogError("UserRequestHandler exception: " + e.displayText());
+			}
+			catch(...)
+			{
+				pLogger->LogError("UserRequestHandler unknown exception occurred");
+			}
 
-				for(auto it=form.begin(); it!=form.end(); it++)
-				{
-					if(it->first == "nozzleIndex") {
-						nozzleIndexStr =it->second;
-					}
-					else if(it->first == "action") {
-						actionStr = it->second;
-					}
-				}
+			//reply to request
+			if(exceptionOccurred)
+			{
+				pLogger->LogError("UserRequestHandler bad request");
 
-				if(nozzleIndexStr.empty() || actionStr.empty()) {
-					pLogger->LogError("UserRequestHandler empty nozzle index");
-					response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
-				}
-				else if(actionStr.empty()) {
-					pLogger->LogError("UserRequestHandler empty action");
-					response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
-				}
-				else {
-					if(nozzleIndexStr == "0") {
-						if(actionStr == "0") {
-							liftNozzle(0);
-						}
-						else {
-							putdownNozzle(0);
-						}
-						response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+				response.setReason("wrong parameter in: " + command);
+				response.send();
+			}
+			else
+			{
+				if(nozzleIndex == 0) {
+					if(action == 0) {
+						liftNozzle(0);
 					}
 					else {
-						pLogger->LogError("UserRequestHandler invalid nozzle index");
-						response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+						putdownNozzle(0);
 					}
+					response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				}
+				else {
+					pLogger->LogError("UserRequestHandler invalid nozzle index");
+					response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
 				}
 			}
 		}
 		response.send();
+	}
+
+private:
+	std::string getJsonCommand(Poco::Net::HTTPServerRequest& request)
+	{
+		auto& iStream = request.stream();
+		std::string json;
+
+		//read body of request
+		for(;;)
+		{
+			char c;
+
+			iStream.read(&c, 1);
+			if(iStream.eof()) {
+				break;
+			}
+			else if(iStream.bad()) {
+				pLogger->LogError("UserRequestHandler::getJsonCommand stream bad");
+				break;
+			}
+			else if(iStream.fail()) {
+				pLogger->LogError("UserRequestHandler::getJsonCommand stream fail");
+				break;
+			}
+
+			json.push_back(c);
+		}
+
+		return json;
 	}
 };
 
@@ -324,7 +368,7 @@ protected:
 			tmLogger.start(pLogger);
 			pLogger->LogInfo("**** simulator version 1.0.0 ****");
 
-			setup_io();
+			//setup_io();
 
 			pServerParams = new HTTPServerParams;
 			pServerParams->setMaxThreads(30);
