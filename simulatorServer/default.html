@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Simulator Remote Access</title>
+</head>
+
+<body onclick="onElementClicked()">
+    <div>
+        <label>FramePerSecond: </label>
+        <select id="fps">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+        </select>
+    </div><br>
+    <div>
+        <img id="videoFrame" src="/frames/lastFrame">
+    </div> <br>
+    <div>
+        <button id="nozzle_0_0">Put down nozzle 0</button>
+        <button id="nozzle_0_1">Pick up nozzle 0</button>
+    </div>
+
+    <script src="/scripts/default.js"></script>
+</body>
+
+</html>
