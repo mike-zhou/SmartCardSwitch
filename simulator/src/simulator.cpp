@@ -338,6 +338,7 @@ protected:
 			std::string logFile;
 			std::string logFileSize;
 			std::string logFileAmount;
+			Poco::Net::SocketAddress socAddr ("0.0.0.0:8080");
 
 			Poco::TaskManager tmLogger;
 
@@ -368,18 +369,20 @@ protected:
 			tmLogger.start(pLogger);
 			pLogger->LogInfo("**** simulator version 1.0.0 ****");
 
-			//setup_io();
+			setup_io();
 
 			pServerParams = new HTTPServerParams;
 			pServerParams->setMaxThreads(30);
 			pServerParams->setMaxQueued(64);
 
 			// set-up a server socket
-			ServerSocket svs(port);
+			ServerSocket svs(socAddr);
 			// set-up a HTTPServer instance
 			HTTPServer srv(new UserRequestHandlerFactory, svs, pServerParams);
 			// start the HTTPServer
 			srv.start();
+			pLogger->LogInfo("simulator is listening on: " + svs.address().toString());
+			
 			// wait for CTRL-C or kill
 			waitForTerminationRequest();
 			// Stop the HTTPServer
