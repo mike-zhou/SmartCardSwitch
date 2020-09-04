@@ -44,8 +44,8 @@ public:
 	const std::string UserCmdCardFromSmartCardReaderGateToSmartCardIntermediate = "move card from smartCardReaderGate to smartCardIntermediate";
 	const std::string UserCmdCardFromSmartCardIntermediateToSmartCardReader = "move card from smartCardIntermediate to smartCardReader";
 	const std::string UserCmdCardFromSmartCardReaderToSmartCardReaderGate = "move card from smartCardReader to smartCardReaderGate";
-	const std::string UserCmdCardFromSmartCardReaderToSmartCardIntermediate = "move card from smartCardReader to smartCardReaderIntermediate";
-	const std::string UserCmdCardFromSmartCardIntermediateToSmartCardReaderGate = "move card from smartCardReaderIntermediate to smartCardReaderGate";
+	const std::string UserCmdCardFromSmartCardReaderToSmartCardIntermediate = "move card from smartCardReader to smartCardIntermediate";
+	const std::string UserCmdCardFromSmartCardIntermediateToSmartCardReaderGate = "move card from smartCardIntermediate to smartCardReaderGate";
 	const std::string UserCmdCardFromSmartCardReaderGateToSmartCardGate = "move card from smartCardReaderGate to smartCardGate";
 	const std::string UserCmdCardFromSmartCardGateToBarcodeReaderGate = "move card from smartCardGate to barcodeReaderGate";
 	const std::string UserCmdCardFromBarcodeReaderGateToBarcodeReader = "move card from barcodeReaderGate to barcodeReader";
