@@ -77,7 +77,7 @@
                                     									
                                     <listOptionValue builtIn="false" value="/home/user1/Poco/poco-1.9.0/lib"/>
                                     									
-                                    <listOptionValue builtIn="false" value="/home/mikez/Developments/invenco/Logger/Debug"/>
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/Logger/Debug}&quot;"/>
                                     								
                                 </option>
                                 								
