@@ -45,7 +45,7 @@ void LinuxRS232::openDevice()
 	if (_fd < 0) {
 		auto errorNumber = errno;
 		//cannot open device file
-		pLogger->LogError("LinuxComDevice::openDevice cannot open: " + _name + ", reason: " + std::string(strerror(errorNumber)));
+		pLogger->LogError("LinuxRS232::openDevice cannot open: " + _name + ", reason: " + std::string(strerror(errorNumber)));
 		return;
 	}
 
@@ -58,7 +58,7 @@ void LinuxRS232::openDevice()
 		if (0 != rc)
 		{
 			auto e = errno;
-			pLogger->LogError("LinuxComDevice::openDevice tcgetattr errno: " + std::to_string(e));
+			pLogger->LogError("LinuxRS232::openDevice tcgetattr errno: " + std::to_string(e));
 			close(_fd);
 			return;
 		}
@@ -66,7 +66,7 @@ void LinuxRS232::openDevice()
 		if (0 != rc)
 		{
 			auto e = errno;
-			pLogger->LogError("LinuxComDevice::openDevice cfsetspeed errno: " + std::to_string(e));
+			pLogger->LogError("LinuxRS232::openDevice cfsetspeed errno: " + std::to_string(e));
 			close(_fd);
 			return;
 		}
@@ -114,13 +114,13 @@ void LinuxRS232::openDevice()
 		if (0 != rc)
 		{
 			auto e = errno;
-			pLogger->LogError("LinuxComDevice::openDevice tcsetattr errno: " + std::to_string(e));
+			pLogger->LogError("LinuxRS232::openDevice tcsetattr errno: " + std::to_string(e));
 			close(_fd);
 			return;
 		}
 	}
 
-	pLogger->LogInfo("LinuxComDevice::openDevice file is opened: " + _name);
+	pLogger->LogInfo("LinuxRS232::openDevice file is opened: " + _name);
 	_state = DeviceState::DeviceNormal;
 }
 
@@ -140,12 +140,12 @@ bool LinuxRS232::receiveData()
 	}
 	if(rc < 0)
 	{
-		pLogger->LogError("LinuxComDevice::receiveData error in poll: " + _name + " errno: " + std::to_string(errorNumber));
+		pLogger->LogError("LinuxRS232::receiveData error in poll: " + _name + " errno: " + std::to_string(errorNumber));
 		_state = DeviceState::DeviceError;
 		return false;
 	}
 	if((desc.events & POLLERR) && (errorNumber > 0)) {
-		pLogger->LogError("LinuxComDevice::receiveData error in poll: " + _name + " errno: " + std::to_string(errorNumber));
+		pLogger->LogError("LinuxRS232::receiveData error in poll: " + _name + " errno: " + std::to_string(errorNumber));
 		_state = DeviceState::DeviceError;
 		return false;
 	}
@@ -154,11 +154,11 @@ bool LinuxRS232::receiveData()
 	errorNumber = errno;
 
 	if(amount < 0) {
-		pLogger->LogError("LinuxComDevice::receiveData failed in reading device: " + _name + " errno: " + std::to_string(errorNumber));
+		pLogger->LogError("LinuxRS232::receiveData failed in reading device: " + _name + " errno: " + std::to_string(errorNumber));
 		_state = DeviceState::DeviceError;
 	}
 	else if (amount == 0) {
-		pLogger->LogError("LinuxComDevice::receiveData no data is read from device: " + _name + " errno: " + std::to_string(errorNumber));
+		pLogger->LogError("LinuxRS232::receiveData no data is read from device: " + _name + " errno: " + std::to_string(errorNumber));
 	}
 	else if(amount > 0)
 	{
@@ -167,7 +167,7 @@ bool LinuxRS232::receiveData()
 			for(unsigned int i=0; i<amount; i++) {
 				_inputQueue.push_back(_inputBuffer[i]);
 			}
-			pLogger->LogInfo("LinuxComDevice::receiveData received " + std::to_string(amount) + " bytes from " + _name);
+			pLogger->LogInfo("LinuxRS232::receiveData received " + std::to_string(amount) + " bytes from " + _name);
 		}
 		catch(...)
 		{
@@ -206,18 +206,18 @@ bool LinuxRS232::sendData()
 
 		if(rc == 0)
 		{
-			pLogger->LogError("LinuxComDevice::sendData device not respond: " + _name);
+			pLogger->LogError("LinuxRS232::sendData device not respond: " + _name);
 			_state = DeviceState::DeviceError;
 			return false;
 		}
 		if(rc < 0)
 		{
-			pLogger->LogError("LinuxComDevice::sendData error in polling: " + _name);
+			pLogger->LogError("LinuxRS232::sendData error in polling: " + _name);
 			_state = DeviceState::DeviceError;
 			return false;
 		}
 		if((desc.events & POLLERR) && (errorNumber > 0)) {
-			pLogger->LogError("LinuxComDevice::sendData error in events: " + _name + " errno: " + std::to_string((int)errorNumber));
+			pLogger->LogError("LinuxRS232::sendData error in events: " + _name + " errno: " + std::to_string((int)errorNumber));
 			_state = DeviceState::DeviceError;
 			return false;
 		}
@@ -229,17 +229,17 @@ bool LinuxRS232::sendData()
 
 			if(amount < 0)
 			{
-				pLogger->LogError("LinuxComDevice::sendData error in sending: " + _name + " errno: " + std::to_string((int)errorNumber));
+				pLogger->LogError("LinuxRS232::sendData error in sending: " + _name + " errno: " + std::to_string((int)errorNumber));
 				_state = DeviceState::DeviceError;
 				return false;
 			}
 			else if(amount > 0)
 			{
-				pLogger->LogInfo("LinuxComDevice::sendData wrote " + std::to_string(amount) + " bytes to " + _name);
+				pLogger->LogInfo("LinuxRS232::sendData wrote " + std::to_string(amount) + " bytes to " + _name);
 			}
 			else if(amount == 0)
 			{
-				pLogger->LogError("LinuxComDevice::sendData failed in writing device: " + _name);
+				pLogger->LogError("LinuxRS232::sendData failed in writing device: " + _name);
 			}
 		}
 	}
@@ -254,7 +254,7 @@ bool LinuxRS232::sendData()
 
 void LinuxRS232::runTask()
 {
-	pLogger->LogInfo("LinuxComDevice::runTask runs for: " + _name);
+	pLogger->LogInfo("LinuxRS232::runTask runs for: " + _name);
 
 	for(;;)
 	{
@@ -298,14 +298,15 @@ void LinuxRS232::runTask()
 					_state = DeviceState::DeviceConnected;
 				}
 				else {
-					sleep(1000); //continue to check device existence 1 second later.
+					pLogger->LogError("LinuxRS232::runTask device not connect: " + _name);
+					sleep(5000); //continue to check device existence 1 second later.
 				}
 			}
 			break;
 
 			default:
 			{
-				pLogger->LogError("LinuxComDevice::runTask wrong device state in " + _name + " : " + std::to_string((int)_state));
+				pLogger->LogError("LinuxRS232::runTask wrong device state in " + _name + " : " + std::to_string((int)_state));
 				_bExit = true;
 			}
 			break;
@@ -314,7 +315,7 @@ void LinuxRS232::runTask()
 		processReceivedData();
 	}
 
-	pLogger->LogInfo("LinuxComDevice::runTask for " + _name + " existed");
+	pLogger->LogInfo("LinuxRS232::runTask for " + _name + " existed");
 }
 
 void LinuxRS232::Send(const unsigned char * pData, const unsigned int amount)
