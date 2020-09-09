@@ -35,19 +35,13 @@ public:
 private:
 	void runTask() override;
 	void Send(const unsigned char * pData, const unsigned int amount) override;
-	virtual void Connect (IDataExchange * pInterface) override;
+	void Connect (IDataExchange * pInterface) override;
 
 private:
 	std::string _name;
 	IDataExchange * _pPeer;
 
 	static const unsigned int MAX_OUTPUT_QUEUE_SIZE = 0x10000;
-	const std::string DEVICE_NOT_CONNECTED = "device not connected";
-	const std::string DEVICE_NOT_NORMAL = "device not normal";
-	const std::string DEVICE_ERROR = "device error";
-	const std::string DEVICE_NOT_ACCEPT_FURTHER_DATA = "device not accept further data";
-	const std::string EMPTY_COMMAND = "empty command";
-
 	const unsigned int WRITING_TIMEOUT = 1; // 1 milliseconds
 	const unsigned int READING_TIMEOUT = 10; // 10 milliseconds
 

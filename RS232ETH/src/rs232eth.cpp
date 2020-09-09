@@ -43,6 +43,7 @@
 #include "Poco/Dynamic/Struct.h"
 
 #include "Logger.h"
+#include "IClientEvent.h"
 
 using Poco::Net::ServerSocket;
 using Poco::Net::HTTPRequestHandler;
@@ -138,7 +139,7 @@ public:
 };
 
 
-class Rs232Eth: public Poco::Util::ServerApplication
+class Rs232Eth: public Poco::Util::ServerApplication, public IClientEvent
 {
 public:
 	Rs232Eth(): _helpRequested(false)
@@ -186,6 +187,11 @@ protected:
 		helpFormatter.setUsage("OPTIONS");
 		helpFormatter.setHeader("A web server that shows how to work with HTML forms.");
 		helpFormatter.format(std::cout);
+	}
+
+	void OnClientDisconnected() override
+	{
+		_clientIp.clear();
 	}
 
 	int main(const std::vector<std::string>& args)
@@ -248,23 +254,30 @@ protected:
 			tmLogger.start(pLogger);
 			pLogger->LogInfo("**** RS232ETH version 1.0.0 ****");
 
-			pServerParams = new HTTPServerParams;
-			pServerParams->setMaxThreads(30);
-			pServerParams->setMaxQueued(64);
+			if(bClient)
+			{
 
-			// set-up a server socket
-			socAddr = Poco::Net::SocketAddress (httpServerIp + ":" + std::to_string(httpServerPort));
-			ServerSocket svs(socAddr);
-			// set-up a HTTPServer instance
-			HTTPServer srv(new UserRequestHandlerFactory, svs, pServerParams);
-			// start the HTTPServer
-			srv.start();
-			pLogger->LogInfo("RS232ETH HTTP server is listening on: " + svs.address().toString());
+			}
+			else
+			{
+				pServerParams = new HTTPServerParams;
+				pServerParams->setMaxThreads(30);
+				pServerParams->setMaxQueued(64);
 
-			// wait for CTRL-C or kill
-			waitForTerminationRequest();
-			// Stop the HTTPServer
-			srv.stop();
+				// set-up a server socket
+				socAddr = Poco::Net::SocketAddress (httpServerIp + ":" + std::to_string(httpServerPort));
+				ServerSocket svs(socAddr);
+				// set-up a HTTPServer instance
+				HTTPServer srv(new UserRequestHandlerFactory, svs, pServerParams);
+				// start the HTTPServer
+				srv.start();
+				pLogger->LogInfo("RS232ETH HTTP server is listening on: " + svs.address().toString());
+
+				// wait for CTRL-C or kill
+				waitForTerminationRequest();
+				// Stop the HTTPServer
+				srv.stop();
+			}
 
 			//stop logger
 			tmLogger.cancelAll();
