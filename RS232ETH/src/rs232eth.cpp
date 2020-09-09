@@ -189,9 +189,9 @@ protected:
 		helpFormatter.format(std::cout);
 	}
 
-	void OnClientDisconnected() override
+	void OnClientSocketAddress(const std::string addrStr) override
 	{
-		_clientIp.clear();
+		_clientIp = addrStr;
 	}
 
 	int main(const std::vector<std::string>& args)
