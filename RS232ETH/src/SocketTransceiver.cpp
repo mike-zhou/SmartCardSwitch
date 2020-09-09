@@ -33,6 +33,7 @@ bool SocketTransceiver::SetSocket(Poco::Net::StreamSocket& socket)
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	if(_socketValid) {
+		pLogger->LogError("SocketTransceiver::SetSocket cannot accept socket: " + socket.address().toString());
 		return false;
 	}
 	else

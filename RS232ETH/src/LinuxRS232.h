@@ -31,11 +31,11 @@ class LinuxRS232: public IDataExchange, public Poco::Task
 public:
 	LinuxRS232(const std::string devicePath);
 	~LinuxRS232();
+	void Send(const unsigned char * pData, const unsigned int amount) override;
+	void Connect(IDataExchange * pInterface) override;
 
 private:
 	void runTask() override;
-	void Send(const unsigned char * pData, const unsigned int amount) override;
-	void Connect (IDataExchange * pInterface) override;
 
 private:
 	std::string _name;

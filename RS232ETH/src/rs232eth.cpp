@@ -44,6 +44,9 @@
 
 #include "Logger.h"
 #include "IClientEvent.h"
+#include "ClientListener.h"
+#include "SocketTransceiver.h"
+#include "LinuxRS232.h"
 
 using Poco::Net::ServerSocket;
 using Poco::Net::HTTPRequestHandler;
@@ -207,7 +210,6 @@ protected:
 			unsigned short httpServerPort;
 			std::string httpServerIp;
 			bool bException = false;
-			HTTPServerParams * pServerParams;
 
 			unsigned short comServerPort;
 			std::string comServerIp;
@@ -220,6 +222,7 @@ protected:
 			Poco::Net::SocketAddress socAddr;
 
 			Poco::TaskManager tmLogger;
+			Poco::TaskManager tm;
 
 			//retrieve configuration
 			try
@@ -252,19 +255,34 @@ protected:
 			pLogger = new Logger(logFolder, logFile, logFileSize, logFileAmount);
 			pLogger->CopyToConsole(true);
 			tmLogger.start(pLogger);
-			pLogger->LogInfo("**** RS232ETH version 1.0.0 ****");
 
 			if(bClient)
 			{
+				pLogger->LogInfo("**** RS232ETH version 1.0.0 starts as client ****");
 
+
+
+
+
+				pLogger->LogInfo("**** RS232ETH version 1.0.0 client stops ****");
 			}
 			else
 			{
+				pLogger->LogInfo("**** RS232ETH version 1.0.0 starts as server ****");
+
+				HTTPServerParams * pServerParams;
+				ClientListener * pListener;
+				SocketTransceiver * pTransceiver;
+#if defined(_WIN32) || defined(_WIN64)
+#else
+				LinuxRS232 * pRs232;
+#endif
+
 				pServerParams = new HTTPServerParams;
 				pServerParams->setMaxThreads(30);
 				pServerParams->setMaxQueued(64);
 
-				// set-up a server socket
+				// start the HTTP server to provide IP address of the peer socket
 				socAddr = Poco::Net::SocketAddress (httpServerIp + ":" + std::to_string(httpServerPort));
 				ServerSocket svs(socAddr);
 				// set-up a HTTPServer instance
@@ -273,16 +291,34 @@ protected:
 				srv.start();
 				pLogger->LogInfo("RS232ETH HTTP server is listening on: " + svs.address().toString());
 
+				//start the RS232 over Ethernet services
+#if defined(_WIN32) || defined(_WIN64)
+#else
+				pRs232 = new LinuxRS232(comDevicePath);
+#endif
+				pTransceiver = new SocketTransceiver(this);
+				pListener = new ClientListener(comServerIp, comServerPort);
+				pRs232->Connect(pTransceiver);
+				pTransceiver->Connect(pRs232);
+				pListener->SetTransceiver(pTransceiver);
+				tm.start(pRs232);
+				tm.start(pTransceiver);
+				tm.start(pListener);
+
 				// wait for CTRL-C or kill
 				waitForTerminationRequest();
 				// Stop the HTTPServer
 				srv.stop();
+				//stop RS232 over Ethernet services.
+				tm.cancelAll();
+				tm.joinAll();
+
+				pLogger->LogInfo("**** RS232ETH server stops ****");
 			}
 
 			//stop logger
 			tmLogger.cancelAll();
 			tmLogger.joinAll();
-
 		}
 		return Application::EXIT_OK;
 	}

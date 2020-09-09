@@ -28,11 +28,11 @@ public:
 	~SocketTransceiver();
 
 	bool SetSocket(Poco::Net::StreamSocket& socket);
+	void Connect (IDataExchange * pInterface) override;
+	void Send(const unsigned char * pData, const unsigned int amount) override;
 
 private:
 	void runTask() override;
-	void Connect (IDataExchange * pInterface) override;
-	void Send(const unsigned char * pData, const unsigned int amount) override;
 
 private:
 	IClientEvent * _pClientEventListener;

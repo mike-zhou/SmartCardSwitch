@@ -4,16 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/ClientListener.cpp \
 ../src/LinuxRS232.cpp \
 ../src/SocketTransceiver.cpp \
 ../src/rs232eth.cpp 
 
 OBJS += \
+./src/ClientListener.o \
 ./src/LinuxRS232.o \
 ./src/SocketTransceiver.o \
 ./src/rs232eth.o 
 
 CPP_DEPS += \
+./src/ClientListener.d \
 ./src/LinuxRS232.d \
 ./src/SocketTransceiver.d \
 ./src/rs232eth.d 
