@@ -33,17 +33,21 @@ private:
 
     static const unsigned int MAX_BUFFER_SIZE = 0x10000;
     const unsigned int READING_TIMEOUT = 10; // 10 milliseconds
+    const unsigned int WRITING_TIMEOUT = 10; // 10 milliseconds
 
     Poco::Mutex _mutex;
 
     HANDLE _handle;;
     bool _bExit;
     DeviceState _state;
-    bool _comEventHappened;
-    bool _comWriteFinished;
-    OVERLAPPED _comOverlap;
+
+    HANDLE _writeEventHandle;
+    HANDLE _readEventHandle;
+    bool _writeFinished;
+    bool _readFinished;
     OVERLAPPED _writeOverlap;
     OVERLAPPED _readOverlap;
+
     unsigned char _inputBuffer[MAX_BUFFER_SIZE];
     unsigned char _outputBuffer[MAX_BUFFER_SIZE];
     std::deque<unsigned char> _inputQueue;
@@ -51,7 +55,7 @@ private:
 
     void openDevice();
     void processReceivedData();
-    void readWriteRS232();
+    void readRS232();
 };
 
 
