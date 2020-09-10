@@ -5,9 +5,6 @@
  *      Author: user1
  */
 
-#if defined(_WIN32) || defined(_WIN64)
-#else
-
 #include "Poco/Net/NetException.h"
 
 #include "SocketTransceiver.h"
@@ -189,6 +186,3 @@ void SocketTransceiver::disconnectSocket()
 }
 
 
-
-
-#endif

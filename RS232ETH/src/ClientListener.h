@@ -20,8 +20,6 @@ public:
 	ClientListener(const std::string ip, unsigned int port);
 	~ClientListener();
 	void SetTransceiver(SocketTransceiver * pSocketTransceiver);
-
-private:
 	void runTask() override;
 
 private:

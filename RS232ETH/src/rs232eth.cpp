@@ -8,8 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#if defined(_WIN32) || defined(_WIN64)
+#else
 #include <sys/mman.h>
 #include <unistd.h>
+#endif
 #include <iostream>
 
 #include "Poco/Net/HTTPServer.h"
@@ -47,6 +50,7 @@
 #include "ClientListener.h"
 #include "SocketTransceiver.h"
 #include "LinuxRS232.h"
+#include "WinRS232.h"
 
 using Poco::Net::ServerSocket;
 using Poco::Net::HTTPRequestHandler;
@@ -274,6 +278,7 @@ protected:
 				ClientListener * pListener;
 				SocketTransceiver * pTransceiver;
 #if defined(_WIN32) || defined(_WIN64)
+                WinRS232 * pRs232;
 #else
 				LinuxRS232 * pRs232;
 #endif
@@ -293,6 +298,7 @@ protected:
 
 				//start the RS232 over Ethernet services
 #if defined(_WIN32) || defined(_WIN64)
+                pRs232 = new WinRS232(comDevicePath);
 #else
 				pRs232 = new LinuxRS232(comDevicePath);
 #endif

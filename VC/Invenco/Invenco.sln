@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "proxy", "proxy\proxy.vcxproj", "{1E8EC818-6786-4F78-914E-5E04CAB1CFE5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1C6F62A4-89C7-4C7A-AFC8-736E7F5C6B29} = {1C6F62A4-89C7-4C7A-AFC8-736E7F5C6B29}
+		{B6ABF9A7-6A6B-434C-B473-BA5B974A5C3C} = {B6ABF9A7-6A6B-434C-B473-BA5B974A5C3C}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SmartCardSwitch", "SmartCardSwitch\SmartCardSwitch.vcxproj", "{44116395-2825-4FC7-BB28-11DB495A86C7}"
 EndProject
@@ -12,6 +16,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MsgPackager", "MsgPackager\MsgPackager.vcxproj", "{B6ABF9A7-6A6B-434C-B473-BA5B974A5C3C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "iFinger", "iFinger\iFinger.vcxproj", "{069A9235-BAA3-49C8-A0EC-092292E97B12}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RS232ETH", "RS232ETH\RS232ETH.vcxproj", "{AF9937AC-9C26-4B05-A14C-0A6860B7308A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +67,14 @@ Global
 		{069A9235-BAA3-49C8-A0EC-092292E97B12}.Release|x64.Build.0 = Release|x64
 		{069A9235-BAA3-49C8-A0EC-092292E97B12}.Release|x86.ActiveCfg = Release|Win32
 		{069A9235-BAA3-49C8-A0EC-092292E97B12}.Release|x86.Build.0 = Release|Win32
+		{AF9937AC-9C26-4B05-A14C-0A6860B7308A}.Debug|x64.ActiveCfg = Debug|x64
+		{AF9937AC-9C26-4B05-A14C-0A6860B7308A}.Debug|x64.Build.0 = Debug|x64
+		{AF9937AC-9C26-4B05-A14C-0A6860B7308A}.Debug|x86.ActiveCfg = Debug|Win32
+		{AF9937AC-9C26-4B05-A14C-0A6860B7308A}.Debug|x86.Build.0 = Debug|Win32
+		{AF9937AC-9C26-4B05-A14C-0A6860B7308A}.Release|x64.ActiveCfg = Release|x64
+		{AF9937AC-9C26-4B05-A14C-0A6860B7308A}.Release|x64.Build.0 = Release|x64
+		{AF9937AC-9C26-4B05-A14C-0A6860B7308A}.Release|x86.ActiveCfg = Release|Win32
+		{AF9937AC-9C26-4B05-A14C-0A6860B7308A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

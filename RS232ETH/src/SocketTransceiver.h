@@ -8,9 +8,6 @@
 #ifndef SOCKETTRANSCEIVER_H_
 #define SOCKETTRANSCEIVER_H_
 
-#if defined(_WIN32) || defined(_WIN64)
-#else
-
 #include <string>
 #include <deque>
 #include <vector>
@@ -30,8 +27,6 @@ public:
 	bool SetSocket(Poco::Net::StreamSocket& socket);
 	void Connect (IDataExchange * pInterface) override;
 	void Send(const unsigned char * pData, const unsigned int amount) override;
-
-private:
 	void runTask() override;
 
 private:
@@ -53,6 +48,4 @@ private:
 	void disconnectSocket();
 };
 
-
-#endif // defined(_WIN32) || defined(_WIN64)
 #endif /* SOCKETTRANSCEIVER_H_ */
