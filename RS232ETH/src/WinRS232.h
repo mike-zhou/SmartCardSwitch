@@ -43,14 +43,13 @@ private:
     bool _comWriteFinished;
     OVERLAPPED _comOverlap;
     OVERLAPPED _writeOverlap;
+    OVERLAPPED _readOverlap;
     unsigned char _inputBuffer[MAX_BUFFER_SIZE];
     unsigned char _outputBuffer[MAX_BUFFER_SIZE];
     std::deque<unsigned char> _inputQueue;
     std::deque<unsigned char> _outputQueue;
 
     void openDevice();
-    bool receiveData();
-    bool sendData();
     void processReceivedData();
     void readWriteRS232();
 };

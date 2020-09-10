@@ -27,6 +27,8 @@ WinRS232::WinRS232(const std::string devicePath) : Task("RS232")
     _comOverlap.hEvent = CreateEventA(0, true, 0, 0); //manual reset event
     memset(&_writeOverlap, 0, sizeof(_writeOverlap));
     _writeOverlap.hEvent = CreateEventA(0, true, 0, 0);
+    memset(&_readOverlap, 0, sizeof(_readOverlap));
+    _readOverlap.hEvent = CreateEventA(0, true, 0, 0);
 }
 
 WinRS232::~WinRS232()
@@ -113,28 +115,25 @@ void WinRS232::readWriteRS232()
         {
             ResetEvent(_comOverlap.hEvent);
             _comEventHappened = true;
+            DWORD bytesRead;
 
             if (dwEventMask & EV_RXCHAR) 
             {
                 BOOL abRet = false;
-                DWORD dwBytesRead = 0;
-                OVERLAPPED ovRead;
-                memset(&ovRead, 0, sizeof(ovRead));
-                ovRead.hEvent = CreateEventA(0, true, 0, 0);
                 do
                 {
-                    ResetEvent(ovRead.hEvent);
-                    abRet = ReadFile(_handle, _inputBuffer, MAX_BUFFER_SIZE, &dwBytesRead, &ovRead);
+                    ResetEvent(_readOverlap.hEvent);
+                    abRet = ReadFile(_handle, _inputBuffer, MAX_BUFFER_SIZE, &bytesRead, &_readOverlap);
                     if (!abRet) {
+                        auto err = GetLastError();
+                        if (err != ERROR_IO_PENDING) {
+                            pLogger->LogError("WinRS232::readWriteRS232 failed to read com: " + std::to_string(err));
+                            _state = DeviceState::DeviceError;
+                        }
                         break;
                     }
-                    if (dwBytesRead > 0) {
-                        for (int i = 0; i < dwBytesRead; i++) {
-                            _inputQueue.push_back(_inputBuffer[i]);
-                        }
-                    }
-                } while (0);
-                CloseHandle(ovRead.hEvent);
+                    _inputQueue.push_back(_inputBuffer[0]);
+                } while (1);
             }
 
             if (dwEventMask & EV_TXEMPTY) {

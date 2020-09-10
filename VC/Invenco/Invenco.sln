@@ -18,6 +18,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "iFinger", "iFinger\iFinger.vcxproj", "{069A9235-BAA3-49C8-A0EC-092292E97B12}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RS232ETH", "RS232ETH\RS232ETH.vcxproj", "{AF9937AC-9C26-4B05-A14C-0A6860B7308A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1C6F62A4-89C7-4C7A-AFC8-736E7F5C6B29} = {1C6F62A4-89C7-4C7A-AFC8-736E7F5C6B29}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
