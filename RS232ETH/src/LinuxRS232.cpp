@@ -206,9 +206,8 @@ bool LinuxRS232::sendData()
 
 		if(rc == 0)
 		{
-			pLogger->LogError("LinuxRS232::sendData device not respond: " + _name);
-			_state = DeviceState::DeviceError;
-			return false;
+			//timeout
+			return true;
 		}
 		if(rc < 0)
 		{
