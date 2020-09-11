@@ -44,7 +44,7 @@ void WinRS232::openDevice()
         FILE_FLAG_OVERLAPPED,                     
         NULL);                      /* no templates */
     if (_handle == INVALID_HANDLE_VALUE) {
-        pLogger->LogError("WinComDevice::openDevice failed to open: " + _name);
+        pLogger->LogError("WinRS232::openDevice failed to open: " + _name);
         return;
     }
 
@@ -58,13 +58,13 @@ void WinRS232::openDevice()
     port_settings.DCBlength = sizeof(port_settings);
     if (!BuildCommDCBA(modeStr.c_str(), &port_settings))
     {
-        pLogger->LogError("WinComDevice::openDevice unable to set comport dcb settings");
+        pLogger->LogError("WinRS232::openDevice unable to set comport dcb settings");
         CloseHandle(_handle);
         return;
     }
     if (!SetCommState(_handle, &port_settings))
     {
-        pLogger->LogError("WinComDevice::openDevice unable to set comport cfg settings");
+        pLogger->LogError("WinRS232::openDevice unable to set comport cfg settings");
         CloseHandle(_handle);
         return;
     }
@@ -76,7 +76,7 @@ void WinRS232::openDevice()
     Cptimeouts.WriteTotalTimeoutConstant = WRITING_TIMEOUT;
     if (!SetCommTimeouts(_handle, &Cptimeouts))
     {
-        pLogger->LogError("WinComDevice::openDevice unable to set comport time-out settings");
+        pLogger->LogError("WinRS232::openDevice unable to set comport time-out settings");
         CloseHandle(_handle);
         return;
     }
@@ -90,7 +90,7 @@ void WinRS232::openDevice()
 
     _state = DeviceState::DeviceNormal;
 
-    pLogger->LogInfo("WinComDevice::openDevice file is opened: " + _name);
+    pLogger->LogInfo("WinRS232::openDevice file is opened: " + _name);
 }
 
 void WinRS232::readWriteRS232()

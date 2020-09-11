@@ -17,7 +17,6 @@ SocketTransceiver::SocketTransceiver(IClientEvent * pListener) : Task("SocketTra
 	_pClientEventListener = pListener;
 	_pPeer = nullptr;
 	_socketValid = false;
-
 }
 
 SocketTransceiver::~SocketTransceiver()
@@ -68,16 +67,23 @@ void SocketTransceiver::Send(const unsigned char * pData, const unsigned int amo
 
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	try
-	{
-		for(unsigned int i=0; i<amount; i++) {
-			_outputQueue.push_back(pData[i]);
-		}
-	}
-	catch(...)
-	{
-		pLogger->LogError("SocketTransceiver::Send exception happened in data saving");
-	}
+    if (_socketValid)
+    {
+	    try
+	    {
+		    for(unsigned int i=0; i<amount; i++) {
+			    _outputQueue.push_back(pData[i]);
+		    }
+	    }
+	    catch(...)
+	    {
+		    pLogger->LogError("SocketTransceiver::Send exception happened in data saving");
+	    }
+    }
+    else
+    {
+        pLogger->LogError("SocketTransceiver::Send discard byte amout: " + std::to_string(amount));
+    }
 }
 
 void SocketTransceiver::runTask()
@@ -117,14 +123,12 @@ void SocketTransceiver::runTask()
 						}
 						amount = _socket.sendBytes(_outputBuffer, amount, 0);
 						if(amount > 0) {
-							pLogger->LogInfo("SocketTransceiver::runTask byte amount sent out: " + std::to_string(amount));
+							pLogger->LogInfo("SocketTransceiver::runTask sent out ETH bytes: " + std::to_string(amount));
 							//delete the data which was sent out.
-							for(; amount>0; amount--) {
-								_outputQueue.pop_front();
-							}
+                            _outputQueue.erase(_outputQueue.begin(), _outputQueue.begin() + amount);
 						}
 						else {
-							pLogger->LogError("SocketTransceiver::runTask failed in sending, terminate socket connection");
+							pLogger->LogError("SocketTransceiver::runTask failed in ETH sending, terminate socket connection");
 							disconnectSocket();
 						}
 					}
@@ -146,6 +150,7 @@ void SocketTransceiver::runTask()
 					}
 					else
 					{
+                        pLogger->LogInfo("SocketTransceiver::runTask receive ETH bytes: " + std::to_string(amount));
 						if(_pPeer != nullptr) {
 							_pPeer->Send(_inputBuffer, amount);
 						}
@@ -177,6 +182,8 @@ void SocketTransceiver::runTask()
 
 void SocketTransceiver::disconnectSocket()
 {
+    Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
 	_socket.close();
 	_socketValid = false;
 

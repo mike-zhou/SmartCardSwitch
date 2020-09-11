@@ -267,7 +267,6 @@ protected:
 			pLogger->CopyToConsole(true);
 			tmLogger.start(pLogger);
 
-			socAddr = Poco::Net::SocketAddress (httpServerIp + ":" + std::to_string(httpServerPort));
 			pTransceiver = new SocketTransceiver(this);
 #if defined(_WIN32) || defined(_WIN64)
                 pRs232 = new WinRS232(comDevicePath);
@@ -281,9 +280,41 @@ protected:
 			{
 				pLogger->LogInfo("**** RS232ETH version 1.0.0 starts as client ****");
 
+                Poco::Net::StreamSocket socket;
+                Poco::Timespan timeout(10 * 1000000); //10s
+                bool bException = false;
 
+                try
+                {
+                    socAddr = Poco::Net::SocketAddress(comServerIp + ":" + std::to_string(comServerPort));
+                    socket.connect(socAddr, timeout);
+                }
+                catch (Poco::Exception &e)
+                {
+                    pLogger->LogError("main cannot connect to " + socAddr.toString() + ", reason: " + e.displayText());
+                    bException = true;
+                }
+                catch (std::exception &e)
+                {
+                    pLogger->LogError("main cannot connect to " + socAddr.toString() + ", reason: " + std::string(e.what()));
+                    bException = true;
+                }
+                catch (...)
+                {
+                    pLogger->LogError("main cannot connect to " + socAddr.toString());
+                    bException = true;
+                }
 
+                if (!bException)
+                {
+                    pTransceiver->SetSocket(socket);
 
+                    tm.start(pRs232);
+                    tm.start(pTransceiver);
+                    waitForTerminationRequest();
+                    tm.cancelAll();
+                    tm.joinAll();
+                }
 
 				pLogger->LogInfo("**** RS232ETH version 1.0.0 client stops ****");
 			}
@@ -299,7 +330,8 @@ protected:
 				pServerParams->setMaxQueued(64);
 
 				// start the HTTP server to provide IP address of the peer socket
-				ServerSocket svs(socAddr);
+                socAddr = Poco::Net::SocketAddress(httpServerIp + ":" + std::to_string(httpServerPort));
+                ServerSocket svs(socAddr);
 				// set-up a HTTPServer instance
 				HTTPServer srv(new UserRequestHandlerFactory, svs, pServerParams);
 				// start the HTTPServer
