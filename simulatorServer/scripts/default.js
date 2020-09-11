@@ -1,6 +1,7 @@
 
 let counter = 0;
 let frameUpdateTimer = setInterval(frameUpdate, 1000);
+let clientIpUpdateTimer = setInterval(clientUpdate, 1000);
 
 function onElementClicked() 
 {
@@ -18,8 +19,8 @@ function onElementClicked()
         command.index = parseInt(index);
         command.action = parseInt(action);
 
-        var xhr = new XMLHttpRequest();
-        xhr.responseType = "application/json";
+        let xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
         xhr.open('POST', '/nozzle');
     
         xhr.onreadystatechange = function() {
@@ -58,3 +59,28 @@ function frameUpdate()
     counter++;
 }
 
+function clientUpdate()
+{
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open('POST', '/clientIp');
+
+    xhr.onreadystatechange = function() {
+        let DONE = 4; // readyState 4 means the request is done.
+        let OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                let obj = xhr.response;
+                let ip = obj.clientIp;
+
+                document.getElementById("currentUser").textContent = ip;
+            } else {
+                document.getElementById("currentUser").textContent = "Unknown RS23ETH Server Status";
+            }
+        }
+    };
+    xhr.send();
+}

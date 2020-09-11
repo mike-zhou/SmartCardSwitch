@@ -20,6 +20,27 @@ var logMaintancePeriod = 60000; //60000 milliseconds
 const framesRootFolder = "/media/frameDisk/";
 let frameUploadFailed;
 
+//client ip
+const RS232ETH_SERVER_IP = "127.0.0.1";
+const RS232ETH_SERVER_PORT = 8082;
+const RS232ETH_URL = "/clientIp";
+const DEFAULT_CLIENT_IP = "Available";
+const clientIpUpdateInterval = 1000; //1000 ms
+let clientIp = DEFAULT_CLIENT_IP;
+
+//set up log
+setInterval(maintainLog, logMaintancePeriod);
+//client ip retrieval
+setInterval(updateClientIp, clientIpUpdateInterval);
+//create web server.
+const server = http.createServer((req, res) => {
+    onHttpRequest(req, res);
+});
+//start web server
+server.listen(port, hostname, () => {
+    appLog(`Server running at http://${hostname}:${port}/`);
+});
+
 function appLog(str) 
 {
     var d = new Date();
@@ -124,6 +145,52 @@ function maintainLog()
             });  
         }
     });
+}
+
+function updateClientIp()
+{
+    let options = {};
+    let body = "{}";
+
+    options.hostname = RS232ETH_SERVER_IP;
+    options.port = RS232ETH_SERVER_PORT;
+    options.path = RS232ETH_URL;
+    options.method = 'POST';
+    options.headers = {};
+    options.headers["Content-Type"] = "application/json";
+    options.headers["Content-Length"] = Buffer.byteLength(body);
+
+    let request = http.request(options, (response) => {
+        let replyBody = [];
+
+        response.on('data', (chunk) => {
+            replyBody.push(chunk);
+        }).on('end', () => {
+            if(response.statusCode == 200) {
+                let reply = Buffer.concat(replyBody).toString();
+                reply = JSON.parse(reply); //change string to object
+
+                if(reply.clientIp === "") {
+                    clientIp = DEFAULT_CLIENT_IP;
+                }
+                else {
+                    clientIp = reply.clientIp;
+                }
+            }
+            else {
+                appLog("RS232ETH server replied: " + response.statusCode);
+                clientIp = "Error in RS232ETH server";
+            }
+        });
+    });
+    request.on('error', (e) => {
+        var msg = "updateClientIp failed to retrieve client ip: " + e;
+        appLog(msg);
+        clientIp = "RS232ETH server is not running";
+    });
+
+    request.write(body);
+    request.end();
 }
 
 function onRetrievingFile(fileName, fileType, response) {
@@ -397,6 +464,16 @@ function onFrameUpload(req, res)
     });
 }
 
+function onRetrieveClientIp(request, response)
+{
+    let obj = {};
+
+    obj.clientIp = clientIp;
+    response.statusCode = 200;
+    response.setHeader('Content-Type', 'json');
+    response.end(JSON.stringify(obj));
+}
+
 function onHttpRequest(request, response) 
 {
     var url = request.url;
@@ -409,6 +486,10 @@ function onHttpRequest(request, response)
         // URL: /frames/...
         //appLog("onHttpRequest: " + request.url);
         onFrameRetrive(request, response);
+        return;
+    }
+    else if (url.indexOf("/clientIp") === 0) {
+        onRetrieveClientIp(request, response);
         return;
     }
 
@@ -432,13 +513,3 @@ function onHttpRequest(request, response)
     }
 }
 
-//set up log
-setInterval(maintainLog, logMaintancePeriod);
-//create web server.
-const server = http.createServer((req, res) => {
-    onHttpRequest(req, res);
-});
-//start web server
-server.listen(port, hostname, () => {
-    appLog(`Server running at http://${hostname}:${port}/`);
-});
