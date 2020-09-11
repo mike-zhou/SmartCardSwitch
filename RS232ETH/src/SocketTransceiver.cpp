@@ -38,7 +38,7 @@ bool SocketTransceiver::SetSocket(Poco::Net::StreamSocket& socket)
 		_socket = socket;
 
 		if(_pClientEventListener != nullptr) {
-			_pClientEventListener->OnClientSocketAddress(_socket.address().toString());
+			_pClientEventListener->OnClientSocketAddress(_socket.peerAddress().toString());
 		}
 
 		_socketValid = true;
