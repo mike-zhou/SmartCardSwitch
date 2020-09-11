@@ -23,6 +23,8 @@ WinRS232::WinRS232(const std::string devicePath) : Task("RS232")
     _nullWritingHappened = false;
     _readEventHandle = CreateEventA(NULL, TRUE, FALSE, NULL);
     _writeEventHandle = CreateEventA(NULL, TRUE, FALSE, NULL);
+    _totalRead = 0;
+    _totalWrite = 0;
 }
 
 WinRS232::~WinRS232()
@@ -109,7 +111,8 @@ void WinRS232::readWriteRS232()
             for (int i = 0; i < bytesRead; i++) {
                 _inputQueue.push_back(_inputBuffer[i]);
             }
-            pLogger->LogInfo("WinRS232::readWriteRS232 read com bytes directly: " + std::to_string(bytesRead));
+            _totalRead += bytesRead;
+            pLogger->LogInfo("WinRS232::readWriteRS232 read com bytes directly: " + std::to_string(bytesRead) + ", totally read: " + std::to_string(_totalRead));
         }
         else
         {
@@ -150,7 +153,8 @@ void WinRS232::readWriteRS232()
                 if (bytesWritten > 0) {
                     _nullWritingHappened = false;
                     _outputQueue.erase(_outputQueue.begin(), _outputQueue.begin() + bytesWritten);
-                    pLogger->LogInfo("WinRS232::readWriteRS232 wrote com bytes directly: " + std::to_string(bytesWritten));
+                    _totalWrite += bytesWritten;
+                    pLogger->LogInfo("WinRS232::readWriteRS232 wrote com bytes directly: " + std::to_string(bytesWritten) + ", totally write: " + std::to_string(_totalWrite));
                 }
                 else 
                 {
@@ -199,7 +203,8 @@ void WinRS232::readWriteRS232()
                         for (int i = 0; i < bytesRead; i++) {
                             _inputQueue.push_back(_inputBuffer[i]);
                         }
-                        pLogger->LogInfo("WinRS232::readWriteRS232 read com bytes indirectly: " + std::to_string(bytesRead));
+                        _totalRead += bytesRead;
+                        pLogger->LogInfo("WinRS232::readWriteRS232 read com bytes indirectly: " + std::to_string(bytesRead) + ", totally read: " + std::to_string(_totalRead));
                     }
                 }
                 else
@@ -221,7 +226,8 @@ void WinRS232::readWriteRS232()
                     {
                         Poco::ScopedLock<Poco::Mutex> lock(_mutex);
                         _outputQueue.erase(_outputQueue.begin(), _outputQueue.begin() + bytesWritten);
-                        pLogger->LogInfo("WinRS232::readWriteRS232 wrote com bytes indirectly: " + std::to_string(bytesWritten));
+                        _totalWrite += bytesWritten;
+                        pLogger->LogInfo("WinRS232::readWriteRS232 wrote com bytes indirectly: " + std::to_string(bytesWritten) + ", totally write: " + std::to_string(_totalWrite));
                     }
                 }
                 else

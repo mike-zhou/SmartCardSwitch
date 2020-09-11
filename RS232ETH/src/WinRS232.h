@@ -48,6 +48,7 @@ private:
     OVERLAPPED _writeOverlap;
     OVERLAPPED _readOverlap;
     bool _nullWritingHappened; // 0x13 0x11
+    unsigned long _totalRead, _totalWrite;
 
     unsigned char _inputBuffer[MAX_BUFFER_SIZE];
     unsigned char _outputBuffer[MAX_BUFFER_SIZE];
