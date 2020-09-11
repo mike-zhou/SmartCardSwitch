@@ -20,6 +20,7 @@ WinRS232::WinRS232(const std::string devicePath) : Task("RS232")
     _pPeer = nullptr;
     _handle = INVALID_HANDLE_VALUE;
     _bExit = false;
+    _nullWritingHappened = false;
     _readEventHandle = CreateEventA(NULL, TRUE, FALSE, NULL);
     _writeEventHandle = CreateEventA(NULL, TRUE, FALSE, NULL);
 }
@@ -72,7 +73,7 @@ void WinRS232::openDevice()
     Cptimeouts.ReadTotalTimeoutMultiplier = 0;
     Cptimeouts.ReadTotalTimeoutConstant = READING_TIMEOUT;
     Cptimeouts.WriteTotalTimeoutMultiplier = 0;
-    Cptimeouts.WriteTotalTimeoutConstant = 0; 
+    Cptimeouts.WriteTotalTimeoutConstant = WRITING_TIMEOUT;
     if (!SetCommTimeouts(_handle, &Cptimeouts))
     {
         pLogger->LogError("WinComDevice::openDevice unable to set comport time-out settings");
@@ -92,10 +93,11 @@ void WinRS232::openDevice()
     pLogger->LogInfo("WinComDevice::openDevice file is opened: " + _name);
 }
 
-void WinRS232::readRS232()
+void WinRS232::readWriteRS232()
 {
     if (_readFinished) 
     {
+        //read serial port
         DWORD bytesRead;
         _readOverlap = { 0 };
         _readOverlap.hEvent = _readEventHandle;
@@ -107,7 +109,7 @@ void WinRS232::readRS232()
             for (int i = 0; i < bytesRead; i++) {
                 _inputQueue.push_back(_inputBuffer[i]);
             }
-            pLogger->LogInfo("WinRS232::readRS232 read bytes directly: " + std::to_string(bytesRead));
+            pLogger->LogInfo("WinRS232::readWriteRS232 read com bytes directly: " + std::to_string(bytesRead));
         }
         else
         {
@@ -117,16 +119,73 @@ void WinRS232::readRS232()
             }
             else
             {
-                pLogger->LogError("WinRS232::readRS232 failed to read com: " + std::to_string(err));
+                pLogger->LogError("WinRS232::readWriteRS232 failed to read com: " + std::to_string(err));
                 _state = DeviceState::DeviceError;
                 return;
             }
         }
     }
 
-    if (!_readFinished)
+    if (_writeFinished) 
     {
-        auto rc = WaitForSingleObject(_readOverlap.hEvent, READING_TIMEOUT);
+        //write serial port
+        Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+        if (!_outputQueue.empty())
+        {
+            DWORD bytesWritten;
+            DWORD bytesToWrite;
+
+            _writeOverlap = { 0 };
+            _writeOverlap.hEvent = _writeEventHandle;
+            ResetEvent(_writeEventHandle);
+
+            for (bytesToWrite = 0; (bytesToWrite < _outputQueue.size()) && (bytesToWrite < MAX_BUFFER_SIZE); bytesToWrite++) {
+                _outputBuffer[bytesToWrite] = _outputQueue[bytesToWrite];
+            }
+
+            auto rc = WriteFile(_handle, _outputBuffer, bytesToWrite, &bytesWritten, &_writeOverlap);
+            if (rc)
+            {
+                if (bytesWritten > 0) {
+                    _nullWritingHappened = false;
+                    _outputQueue.erase(_outputQueue.begin(), _outputQueue.begin() + bytesWritten);
+                    pLogger->LogInfo("WinRS232::readWriteRS232 wrote com bytes directly: " + std::to_string(bytesWritten));
+                }
+                else 
+                {
+                    if (_nullWritingHappened == false) {
+                        _nullWritingHappened = true;
+                        pLogger->LogError("WinRS232::readWriteRS232 null writing happened: " + std::to_string(bytesToWrite));
+                    }
+                    sleep(1);
+                }
+            }
+            else
+            {
+                auto err = GetLastError();
+                if (err == ERROR_IO_PENDING) {
+                    _writeFinished = false;
+                    pLogger->LogInfo("WinRS232::readWriteRS232 pending write com bytes: " + std::to_string(bytesToWrite));
+                }
+                else
+                {
+                    pLogger->LogError("WinRS232::readWriteRS232 failed to write com: " + std::to_string(err));
+                    _state = DeviceState::DeviceError;
+                    return;
+                }
+            }
+        }
+    }
+
+    if ((!_readFinished) || (!_writeFinished))
+    {
+        HANDLE handles[2];
+
+        handles[0] = _readOverlap.hEvent;
+        handles[1] = _writeOverlap.hEvent;
+
+        auto rc = WaitForMultipleObjects(2, handles, FALSE, READING_TIMEOUT);
         switch (rc)
         {
             case WAIT_OBJECT_0:
@@ -140,15 +199,38 @@ void WinRS232::readRS232()
                         for (int i = 0; i < bytesRead; i++) {
                             _inputQueue.push_back(_inputBuffer[i]);
                         }
-                        pLogger->LogInfo("WinRS232::readRS232 read bytes indirectly: " + std::to_string(bytesRead));
+                        pLogger->LogInfo("WinRS232::readWriteRS232 read bytes indirectly: " + std::to_string(bytesRead));
                     }
                 }
                 else
                 {
                     auto err = GetLastError();
-                    pLogger->LogError("WinRS232::readRS232 failure in overlap reading: " + std::to_string(err));
+                    pLogger->LogError("WinRS232::readWriteRS232 failure in overlap reading: " + std::to_string(err));
                     _state = DeviceState::DeviceError;
                 }
+                ResetEvent(_readOverlap.hEvent);
+            }
+            break;
+            case WAIT_OBJECT_0 + 1:
+            {
+                DWORD bytesWritten;
+                if (GetOverlappedResult(_handle, &_writeOverlap, &bytesWritten, FALSE))
+                {
+                    _writeFinished = true;
+                    if (bytesWritten > 0)
+                    {
+                        Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+                        _outputQueue.erase(_outputQueue.begin(), _outputQueue.begin() + bytesWritten);
+                        pLogger->LogInfo("WinRS232::readWriteRS232 wrote bytes indirectly: " + std::to_string(bytesWritten));
+                    }
+                }
+                else
+                {
+                    auto err = GetLastError();
+                    pLogger->LogError("WinRS232::readWriteRS232 failure in overlap writing: " + std::to_string(err));
+                    _state = DeviceState::DeviceError;
+                }
+                ResetEvent(_writeOverlap.hEvent);
             }
             break;
             case WAIT_TIMEOUT:
@@ -158,36 +240,12 @@ void WinRS232::readRS232()
             break;
             default:
             {
-                pLogger->LogError("WinRS232::readRS232 failure in waiting: " + std::to_string(rc));
+                pLogger->LogError("WinRS232::readWriteRS232 failure in waiting: " + std::to_string(rc));
                 _state = DeviceState::DeviceError;
             }
             break;
         }
     }
-
-
-            //if (dwEventMask & EV_TXEMPTY) {
-            //    _writeFinished = true;
-            //}
-            //if (_writeFinished) 
-            //{
-            //    Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-
-            //    if (!_outputQueue.empty()) 
-            //    {
-            //        int amount = 0;
-
-            //        for (; (amount < _outputQueue.size()) && (amount < MAX_BUFFER_SIZE); amount++) {
-            //            _outputBuffer[amount] = _outputQueue[0];
-            //            _outputQueue.pop_front();                           
-            //        }
-
-            //        ResetEvent(_writeOverlap.hEvent);
-            //        WriteFile(_handle, _outputBuffer, amount, NULL, &_writeOverlap);
-            //        _writeFinished = false;
-            //    }
-            //}
-
 }
 
 void WinRS232::runTask()
@@ -214,7 +272,7 @@ void WinRS232::runTask()
 
         case DeviceState::DeviceNormal:
         {
-            readRS232();
+            readWriteRS232();
         }
         break;
 
@@ -285,7 +343,6 @@ void WinRS232::processReceivedData()
     for (amount = 0; amount < MAX_BUFFER_SIZE;) {
         _inputBuffer[amount] = _inputQueue[0];
         amount++;
-
         _inputQueue.pop_front();
         if (_inputQueue.empty()) {
             break;
@@ -294,6 +351,9 @@ void WinRS232::processReceivedData()
 
     pLogger->LogInfo("WinRS232::processReceivedData send to peer byte amount: " + std::to_string(amount));
     _pPeer->Send(_inputBuffer, amount);
+
+    //echo back to COM for test purpose, code should be deleted.
+    Send(_inputBuffer, amount);
 }
 
 void WinRS232::Connect(IDataExchange * pInterface)
