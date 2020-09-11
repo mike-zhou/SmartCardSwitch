@@ -225,6 +225,13 @@ protected:
 			std::string logFileAmount;
 			Poco::Net::SocketAddress socAddr;
 
+            SocketTransceiver * pTransceiver;
+#if defined(_WIN32) || defined(_WIN64)
+            WinRS232 * pRs232;
+#else
+            LinuxRS232 * pRs232;
+#endif
+
 			Poco::TaskManager tmLogger;
 			Poco::TaskManager tm;
 
@@ -260,6 +267,16 @@ protected:
 			pLogger->CopyToConsole(true);
 			tmLogger.start(pLogger);
 
+			socAddr = Poco::Net::SocketAddress (httpServerIp + ":" + std::to_string(httpServerPort));
+			pTransceiver = new SocketTransceiver(this);
+#if defined(_WIN32) || defined(_WIN64)
+                pRs232 = new WinRS232(comDevicePath);
+#else
+				pRs232 = new LinuxRS232(comDevicePath);
+#endif
+			pRs232->Connect(pTransceiver);
+			pTransceiver->Connect(pRs232);
+
 			if(bClient)
 			{
 				pLogger->LogInfo("**** RS232ETH version 1.0.0 starts as client ****");
@@ -276,19 +293,12 @@ protected:
 
 				HTTPServerParams * pServerParams;
 				ClientListener * pListener;
-				SocketTransceiver * pTransceiver;
-#if defined(_WIN32) || defined(_WIN64)
-                WinRS232 * pRs232;
-#else
-				LinuxRS232 * pRs232;
-#endif
 
 				pServerParams = new HTTPServerParams;
 				pServerParams->setMaxThreads(30);
 				pServerParams->setMaxQueued(64);
 
 				// start the HTTP server to provide IP address of the peer socket
-				socAddr = Poco::Net::SocketAddress (httpServerIp + ":" + std::to_string(httpServerPort));
 				ServerSocket svs(socAddr);
 				// set-up a HTTPServer instance
 				HTTPServer srv(new UserRequestHandlerFactory, svs, pServerParams);
@@ -297,15 +307,7 @@ protected:
 				pLogger->LogInfo("RS232ETH HTTP server is listening on: " + svs.address().toString());
 
 				//start the RS232 over Ethernet services
-#if defined(_WIN32) || defined(_WIN64)
-                pRs232 = new WinRS232(comDevicePath);
-#else
-				pRs232 = new LinuxRS232(comDevicePath);
-#endif
-				pTransceiver = new SocketTransceiver(this);
 				pListener = new ClientListener(comServerIp, comServerPort);
-				pRs232->Connect(pTransceiver);
-				pTransceiver->Connect(pRs232);
 				pListener->SetTransceiver(pTransceiver);
 				tm.start(pRs232);
 				tm.start(pTransceiver);

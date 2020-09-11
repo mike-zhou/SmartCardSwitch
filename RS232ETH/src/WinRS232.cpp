@@ -156,7 +156,7 @@ void WinRS232::readWriteRS232()
                 {
                     if (_nullWritingHappened == false) {
                         _nullWritingHappened = true;
-                        pLogger->LogError("WinRS232::readWriteRS232 null writing happened: " + std::to_string(bytesToWrite));
+                        pLogger->LogError("WinRS232::readWriteRS232 null writing com happened: " + std::to_string(bytesToWrite));
                     }
                     sleep(1);
                 }
@@ -199,13 +199,13 @@ void WinRS232::readWriteRS232()
                         for (int i = 0; i < bytesRead; i++) {
                             _inputQueue.push_back(_inputBuffer[i]);
                         }
-                        pLogger->LogInfo("WinRS232::readWriteRS232 read bytes indirectly: " + std::to_string(bytesRead));
+                        pLogger->LogInfo("WinRS232::readWriteRS232 read com bytes indirectly: " + std::to_string(bytesRead));
                     }
                 }
                 else
                 {
                     auto err = GetLastError();
-                    pLogger->LogError("WinRS232::readWriteRS232 failure in overlap reading: " + std::to_string(err));
+                    pLogger->LogError("WinRS232::readWriteRS232 failure in overlap com reading: " + std::to_string(err));
                     _state = DeviceState::DeviceError;
                 }
                 ResetEvent(_readOverlap.hEvent);
@@ -221,13 +221,13 @@ void WinRS232::readWriteRS232()
                     {
                         Poco::ScopedLock<Poco::Mutex> lock(_mutex);
                         _outputQueue.erase(_outputQueue.begin(), _outputQueue.begin() + bytesWritten);
-                        pLogger->LogInfo("WinRS232::readWriteRS232 wrote bytes indirectly: " + std::to_string(bytesWritten));
+                        pLogger->LogInfo("WinRS232::readWriteRS232 wrote com bytes indirectly: " + std::to_string(bytesWritten));
                     }
                 }
                 else
                 {
                     auto err = GetLastError();
-                    pLogger->LogError("WinRS232::readWriteRS232 failure in overlap writing: " + std::to_string(err));
+                    pLogger->LogError("WinRS232::readWriteRS232 failure in overlap com writing: " + std::to_string(err));
                     _state = DeviceState::DeviceError;
                 }
                 ResetEvent(_writeOverlap.hEvent);
@@ -351,27 +351,12 @@ void WinRS232::processReceivedData()
 
     pLogger->LogInfo("WinRS232::processReceivedData send to peer byte amount: " + std::to_string(amount));
     _pPeer->Send(_inputBuffer, amount);
-
-    //echo back to COM for test purpose, code should be deleted.
-    Send(_inputBuffer, amount);
 }
 
 void WinRS232::Connect(IDataExchange * pInterface)
 {
     _pPeer = pInterface;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
 
