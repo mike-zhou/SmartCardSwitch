@@ -33,3 +33,26 @@ cd /home/pi/Developments/invenco/ImageCapture/Release
 ./ImageCapture
 ####################################################################################
 
+####################################################################################
+# start simulator server after Raspberry powers up
+####################################################################################
+1. creates 2 directories at the first time.
+	sudo mkdir /media/ramdisk
+	sudo mkdir /media/frameDisk
+	
+2. create script file /home/pi/start_up_simulator_server with mode 777, and this file contains the following content:
+	#!/bin/bash
+	sudo mount -t tmpfs -o size=128m tmpfs /media/ramdisk
+	sudo mount -t tmpfs -o size=32m tmpfs /media/frameDisk
+	cd /home/pi/Developments/invenco/simulator/Debug
+	sudo ./simulator &
+	cd /home/pi/Developments/invenco/RS232ETH/Debug
+	sudo ./RS232ETH &
+	cd /home/pi/Developments/invenco/simulatorServer
+	sudo node app.js &
+	cd /home/pi/Developments/invenco/ImageCapture/Release
+	sudo ./ImageCapture &
+
+3. add the following line to /etc/rc.local before "exit 0"
+	/home/pi/start_up_simulator_server
+
