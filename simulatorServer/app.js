@@ -24,7 +24,7 @@ let frameUploadFailed;
 const RS232ETH_SERVER_IP = "127.0.0.1";
 const RS232ETH_SERVER_PORT = 8082;
 const RS232ETH_URL = "/clientIp";
-const DEFAULT_CLIENT_IP = "Available";
+const DEFAULT_CLIENT_IP = "no user";
 const clientIpUpdateInterval = 1000; //1000 ms
 let clientIp = DEFAULT_CLIENT_IP;
 
