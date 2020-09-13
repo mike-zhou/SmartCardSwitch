@@ -28,7 +28,7 @@ private:
 	const std::string DEVICE_NOT_ACCEPT_FURTHER_DATA = "device not accept further data";
 	const std::string EMPTY_COMMAND = "empty command";
 
-	const unsigned int WRITING_TIMEOUT = 50; // 50 milliseconds
+	const unsigned int WRITING_TIMEOUT = 1; // 1 milliseconds
 	const unsigned int READING_TIMEOUT = 10; // 10 milliseconds
 
 	Poco::Mutex _mutex;

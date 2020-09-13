@@ -31,6 +31,8 @@ LinuxRS232::LinuxRS232(const std::string devicePath): Task("RS232")
 	_pPeer = nullptr;
 	_fd = -1;
 	_bExit = false;
+	_totalRead = 0;
+	_totalWrite = 0;
 }
 
 LinuxRS232::~LinuxRS232()
@@ -167,7 +169,8 @@ bool LinuxRS232::receiveData()
 			for(unsigned int i=0; i<amount; i++) {
 				_inputQueue.push_back(_inputBuffer[i]);
 			}
-			pLogger->LogInfo("LinuxRS232::receiveData received " + std::to_string(amount) + " bytes from " + _name);
+			_totalRead += amount;
+			pLogger->LogInfo("LinuxRS232::receiveData received " + std::to_string(amount) + " bytes from " + _name + ", totally read: " + std::to_string(_totalRead));
 		}
 		catch(...)
 		{
@@ -234,7 +237,8 @@ bool LinuxRS232::sendData()
 			}
 			else if(amount > 0)
 			{
-				pLogger->LogInfo("LinuxRS232::sendData wrote " + std::to_string(amount) + " bytes to " + _name);
+				_totalWrite += amount;
+				pLogger->LogInfo("LinuxRS232::sendData wrote " + std::to_string(amount) + " bytes to " + _name + ", totally write: " + std::to_string(_totalWrite));
 			}
 			else if(amount == 0)
 			{

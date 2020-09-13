@@ -54,6 +54,7 @@ private:
 	std::deque<unsigned char> _inputQueue;
 	std::deque<unsigned char> _outputQueue;
 	unsigned char _dataBuffer[MAX_OUTPUT_QUEUE_SIZE];
+	unsigned long _totalRead, _totalWrite;
 
 	void openDevice();
 	bool receiveData();
