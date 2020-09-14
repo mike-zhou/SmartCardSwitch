@@ -158,9 +158,12 @@ bool LinuxRS232::receiveData()
 	if(amount < 0) {
 		pLogger->LogError("LinuxRS232::receiveData failed in reading device: " + _name + " errno: " + std::to_string(errorNumber));
 		_state = DeviceState::DeviceError;
+		return false;
 	}
 	else if (amount == 0) {
 		pLogger->LogError("LinuxRS232::receiveData no data is read from device: " + _name + " errno: " + std::to_string(errorNumber));
+		_state = DeviceState::DeviceError;
+		return false;
 	}
 	else if(amount > 0)
 	{
@@ -176,6 +179,7 @@ bool LinuxRS232::receiveData()
 		{
 			pLogger->LogError("LinuxRS232::receiveData failed to save received data");
 			_bExit = true;
+			return false;
 		}
 	}
 
@@ -289,7 +293,9 @@ void LinuxRS232::runTask()
 
 			case DeviceState::DeviceError:
 			{
-				_bExit = true;
+				pLogger->LogError("LinuxRS232::runTask error happens in device: " + _name);
+				close(_fd);
+				_state = DeviceState::DeviceNotConnected;
 			}
 			break;
 
