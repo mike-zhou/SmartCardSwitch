@@ -8,9 +8,18 @@
 #if defined(_WIN32) || defined(_WIN64)
 #else
 
-#include <poll.h>
-#include <stddef.h>
+#if 1
+//lowlevel ioctl for customized baudrate
+#include <asm/ioctls.h>
+#include <asm/termbits.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#else
 #include <termios.h>
+#endif
+
+#include <poll.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
@@ -51,6 +60,48 @@ void LinuxRS232::openDevice()
 		return;
 	}
 
+#if 1
+	//low level ioctl to support customized baudrate
+	{
+		struct termios2 tio;
+
+		if(ioctl(_fd, TCGETS2, &tio) < 0) {
+			auto errorNumber = errno;
+			//cannot open device file
+			pLogger->LogError("LinuxRS232::openDevice failed to TCGETS2, reason: " + std::string(strerror(errorNumber)));
+			return;
+		}
+
+		//receive instantly
+		tio.c_cc[VMIN] = 0;
+		tio.c_cc[VTIME] = 0;
+		//baudrate
+		tio.c_cflag &= ~CBAUD;
+		tio.c_cflag |= BOTHER;
+		tio.c_ispeed = 5787;
+		tio.c_ospeed = 5787;
+		//8bit
+		tio.c_cflag |= CS8;
+		//1 stop bit
+		tio.c_cflag &= ~CSTOPB;
+		//even parity
+		tio.c_cflag |= PARENB;
+		tio.c_cflag &= ~PARODD;
+		//others
+		tio.c_cflag |= CLOCAL; //ignore modem control lines
+		tio.c_cflag |= CREAD; //enable receiver
+		tio.c_cflag &= ~CRTSCTS; //no RTS/CTS flow control
+		//no echo
+		tio.c_lflag &= ~ECHO;
+
+		if(ioctl(_fd, TCSETS2, &tio) < 0) {
+			auto errorNumber = errno;
+			//cannot open device file
+			pLogger->LogError("LinuxRS232::openDevice failed to TCSETS2, reason: " + std::string(strerror(errorNumber)));
+			return;
+		}
+	}
+#else
 	//set device file
 	{
 		struct termios tios;
@@ -96,9 +147,8 @@ void LinuxRS232::openDevice()
 		tios.c_lflag &= ~ECHOKE;
 		tios.c_lflag &= ~FLUSHO;
 		tios.c_lflag &= ~EXTPROC;
-#endif
-
-#if 1 //cfmakeraw
+#else
+		//cfmakeraw
 		cfmakeraw(&tios);
 		//polling read.
 		tios.c_cc[VMIN] = 0;
@@ -121,6 +171,7 @@ void LinuxRS232::openDevice()
 			return;
 		}
 	}
+#endif
 
 	pLogger->LogInfo("LinuxRS232::openDevice file is opened: " + _name);
 	_state = DeviceState::DeviceNormal;
@@ -169,11 +220,21 @@ bool LinuxRS232::receiveData()
 	{
 		try
 		{
+			char buf[16];
+			std::string content;
+
 			for(unsigned int i=0; i<amount; i++) {
 				_inputQueue.push_back(_inputBuffer[i]);
+				sprintf(buf, "%02x ", _inputBuffer[i]);
+				content.push_back(buf[0]);
+				content.push_back(buf[1]);
+				content.push_back(buf[2]);
 			}
 			_totalRead += amount;
 			pLogger->LogInfo("LinuxRS232::receiveData received " + std::to_string(amount) + " bytes from " + _name + ", totally read: " + std::to_string(_totalRead));
+			if(amount > 0) {
+				pLogger->LogInfo("LinuxRS232::receiveData content 0x: " + content);
+			}
 		}
 		catch(...)
 		{
@@ -241,8 +302,18 @@ bool LinuxRS232::sendData()
 			}
 			else if(amount > 0)
 			{
+				std::string content;
+				char buf[16];
+
 				_totalWrite += amount;
 				pLogger->LogInfo("LinuxRS232::sendData wrote " + std::to_string(amount) + " bytes to " + _name + ", totally write: " + std::to_string(_totalWrite));
+				for(int i=0; i<amount; i++) {
+					sprintf(buf, "%02x ", data[i]);
+					content.push_back(buf[0]);
+					content.push_back(buf[1]);
+					content.push_back(buf[2]);
+				}
+				pLogger->LogInfo("LinuxRS232::sendData content 0x: " + content);
 			}
 			else if(amount == 0)
 			{
