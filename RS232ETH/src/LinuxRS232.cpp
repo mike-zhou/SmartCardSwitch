@@ -92,8 +92,9 @@ void LinuxRS232::openDevice()
 		tio.c_cflag |= CLOCAL; //ignore modem control lines
 		tio.c_cflag |= CREAD; //enable receiver
 		tio.c_cflag &= ~CRTSCTS; //no RTS/CTS flow control
-		//no echo
-		tio.c_lflag &= ~ECHO;
+		//no echo, non-canonical
+		tio.c_lflag = 0;
+		tio.c_oflag = 0;
 
 		if(ioctl(_fd, TCSETS2, &tio) < 0) {
 			auto errorNumber = errno;
