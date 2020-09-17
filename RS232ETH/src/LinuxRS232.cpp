@@ -87,6 +87,7 @@ void LinuxRS232::openDevice()
 		//even parity
 		tio.c_cflag |= PARENB;
 		tio.c_cflag &= ~PARODD;
+		tio.c_iflag |= INPCK;
 		//others
 		tio.c_cflag |= CLOCAL; //ignore modem control lines
 		tio.c_cflag |= CREAD; //enable receiver
