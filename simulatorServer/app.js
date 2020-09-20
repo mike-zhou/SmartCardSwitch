@@ -3,6 +3,8 @@ const fs = require('fs');
 var net = require('net');
 const formidable = require('formidable');
 
+const config = require("./config.json");
+
 //IP address and port number clients can connect to.
 const hostname = '0.0.0.0';
 const port = 80;
@@ -269,9 +271,11 @@ function onNozzle(request, response) {
     });
 }
 
-function onDefaultPage(request, response) {
+function onDefaultPage(request, response) 
+{
+    let fileName = "default_" + config.currentManufacture + ".html"
     appLog("onDefaultPage ");
-    const stream = fs.createReadStream('default.html');
+    const stream = fs.createReadStream(fileName);
 
     response.statusCode = 200;
     response.setHeader('Content-Type', 'text/html');

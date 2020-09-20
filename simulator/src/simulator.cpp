@@ -156,7 +156,7 @@ bool clearGpio(unsigned int index)
 	return true;
 }
 
-bool waynePutdownNozzle(int index)
+bool waynePutdownNozzle(unsigned int index)
 {
 	pLogger->LogInfo("putdownNozzle index: " + std::to_string(index));
 
@@ -171,7 +171,7 @@ bool waynePutdownNozzle(int index)
 	return false;
 }
 
-int wayneLiftNozzle(int index)
+bool wayneLiftNozzle(unsigned int index)
 {
 	pLogger->LogInfo("liftNozzle index: " + std::to_string(index));
 
@@ -186,6 +186,130 @@ int wayneLiftNozzle(int index)
 	return false;
 }
 
+void wayneHandleRequest(unsigned int terminalIndex, unsigned int pumpIndex, unsigned int action)
+{
+	if(terminalIndex == 0) 
+	{
+		if(pumpIndex == 0) 
+		{
+			if(action == 0) {
+				clearGpio(21);
+			}
+			else if(action == 1) {
+				setGpio(21);
+			}
+			else {
+				Poco::Exception("wayneHandleRequest wrong action: " + std::to_string(action));
+			}
+		}
+		else 
+		{
+			throw Poco::Exception("wayneHandleRequest wrong pump index: " + std::to_string(pumpIndex));
+		}
+	}
+	else 
+	{
+		throw Poco::Exception("wayneHandleRequest wrong terminal index: " + std::to_string(terminalIndex));
+	}
+}
+
+void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsigned int action)
+{
+	if(terminalIndex == 0) 
+	{
+		if(item == 0) 
+		{
+			if(action == 0) {
+				clearGpio(2);
+			}
+			else if(action == 1) {
+				setGpio(2);
+			}
+			else {
+				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
+			}
+		}
+		else if(item == 1) 
+		{
+			if(action == 0) {
+				clearGpio(3);
+			}
+			else if(action == 1) {
+				setGpio(3);
+			}
+			else {
+				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
+			}
+		}
+		else if(item == 2) 
+		{
+			if(action == 0) {
+				clearGpio(4);
+			}
+			else if(action == 1) {
+				setGpio(4);
+			}
+			else {
+				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
+			}
+		}
+		else if(item == 3) 
+		{
+			if(action == 0) {
+				clearGpio(14);
+			}
+			else if(action == 1) {
+				setGpio(14);
+			}
+			else {
+				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
+			}
+		}
+		else if(item == 4) 
+		{
+			if(action == 0) {
+				clearGpio(15);
+			}
+			else if(action == 1) {
+				setGpio(15);
+			}
+			else {
+				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
+			}
+		}
+		else if(item == 5) 
+		{
+			if(action == 0) {
+				clearGpio(17);
+			}
+			else if(action == 1) {
+				setGpio(17);
+			}
+			else {
+				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
+			}
+		}
+		else if(item == 6) 
+		{
+			if(action == 0) {
+				clearGpio(18);
+			}
+			else if(action == 1) {
+				setGpio(18);
+			}
+			else {
+				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
+			}
+		}
+		else {
+			throw Poco::Exception("gilbarcoHandleRequest wrong item: " + std::to_string(item));
+		}
+	}
+	else 
+	{
+		throw Poco::Exception("gilbarcoHandleRequest wrong terminal index: " + std::to_string(terminalIndex));
+	}
+}
 
 class UserRequestHandler: public HTTPRequestHandler
 {
@@ -202,7 +326,6 @@ public:
 		}
 		else
 		{
-			int nozzleIndex, action;
 			bool exceptionOccurred = true;
 			std::string command = getJsonCommand(request);
 
@@ -212,9 +335,35 @@ public:
 				Poco::Dynamic::Var result = parser.parse(command);
 				Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
 				Poco::DynamicStruct ds = *objectPtr;
+				std::string manufacture;
 
-				nozzleIndex = ds["index"];
-				action = ds["action"];
+				manufacture = ds["manufacture"].toString();
+
+				if(manufacture == "Wayne") 
+				{
+					unsigned int terminalIndex, pumpIndex, action;
+
+					terminalIndex = ds["terminalIndex"];
+					pumpIndex = ds["pumpIndex"];
+					action = ds["action"];
+
+					wayneHandleRequest(terminalIndex, pumpIndex, action);
+				}
+				else if(manufacture == "Gilbarco")
+				{
+					unsigned int terminalIndex, item, action;
+
+					terminalIndex = ds["terminalIndex"];
+					item = ds["item"];
+					action = ds["action"];
+
+					gilbarcoHandleRequest(terminalIndex, item, action);
+				}
+				else 
+				{
+					throw Poco::Exception("UserRequestHandler unknown manufacture: " + manufacture);
+				}
+
 				exceptionOccurred = false;
 			}
 			catch(Poco::Exception &e)
@@ -230,26 +379,13 @@ public:
 			if(exceptionOccurred)
 			{
 				pLogger->LogError("UserRequestHandler bad request");
-
 				response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
 				response.setReason("wrong parameter in: " + command);
-				response.send();
 			}
 			else
 			{
-				if(nozzleIndex == 0) {
-					if(action == 0) {
-						wayneLiftNozzle(0);
-					}
-					else {
-						waynePutdownNozzle(0);
-					}
-					response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
-				}
-				else {
-					pLogger->LogError("UserRequestHandler invalid nozzle index");
-					response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
-				}
+				pLogger->LogInfo("UserRequestHandler processed: " + command);
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
 			}
 		}
 		response.send();

@@ -12,11 +12,14 @@ function onElementClicked()
     var group = paraArray[0];
     if (group === "nozzle") 
     {
-        let index = paraArray[1];
-        let action = paraArray[2];
+        let terminalIndex = paraArray[1];
+        let pumpIndex = paraArray[2];
+        let action = paraArray[3];
         let command = {};
     
-        command.index = parseInt(index);
+        command.manufacture = "Wayne";
+        command.terminalIndex = parseInt(terminalIndex);
+        command.pumpIndex = parseInt(pumpIndex);
         command.action = parseInt(action);
 
         let xhr = new XMLHttpRequest();
