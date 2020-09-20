@@ -156,36 +156,6 @@ bool clearGpio(unsigned int index)
 	return true;
 }
 
-bool waynePutdownNozzle(unsigned int index)
-{
-	pLogger->LogInfo("putdownNozzle index: " + std::to_string(index));
-
-	if(index == 0) {
-	   setGpio(21);
-	   return true;
-	}
-	else {
-		pLogger->LogError("putdownNozzle invalid index: " + std::to_string(index));
-	}
-
-	return false;
-}
-
-bool wayneLiftNozzle(unsigned int index)
-{
-	pLogger->LogInfo("liftNozzle index: " + std::to_string(index));
-
-	if(index == 0) {
-		clearGpio(21);
-	   return true;
-	}
-	else {
-		pLogger->LogError("liftNozzle invalid index: " + std::to_string(index));
-	}
-
-	return false;
-}
-
 void wayneHandleRequest(unsigned int terminalIndex, unsigned int pumpIndex, unsigned int action)
 {
 	if(terminalIndex == 0) 
@@ -220,10 +190,10 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 		if(item == 0) 
 		{
 			if(action == 0) {
-				clearGpio(2);
+				clearGpio(12);
 			}
 			else if(action == 1) {
-				setGpio(2);
+				setGpio(12);
 			}
 			else {
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
@@ -232,10 +202,10 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 		else if(item == 1) 
 		{
 			if(action == 0) {
-				clearGpio(3);
+				clearGpio(13);
 			}
 			else if(action == 1) {
-				setGpio(3);
+				setGpio(13);
 			}
 			else {
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
@@ -244,10 +214,10 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 		else if(item == 2) 
 		{
 			if(action == 0) {
-				clearGpio(4);
+				clearGpio(19);
 			}
 			else if(action == 1) {
-				setGpio(4);
+				setGpio(19);
 			}
 			else {
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
@@ -256,10 +226,10 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 		else if(item == 3) 
 		{
 			if(action == 0) {
-				clearGpio(14);
+				clearGpio(16);
 			}
 			else if(action == 1) {
-				setGpio(14);
+				setGpio(16);
 			}
 			else {
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
@@ -268,10 +238,10 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 		else if(item == 4) 
 		{
 			if(action == 0) {
-				clearGpio(15);
+				clearGpio(26);
 			}
 			else if(action == 1) {
-				setGpio(15);
+				setGpio(26);
 			}
 			else {
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
@@ -280,10 +250,10 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 		else if(item == 5) 
 		{
 			if(action == 0) {
-				clearGpio(17);
+				clearGpio(20);
 			}
 			else if(action == 1) {
-				setGpio(17);
+				setGpio(20);
 			}
 			else {
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
@@ -292,10 +262,10 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 		else if(item == 6) 
 		{
 			if(action == 0) {
-				clearGpio(18);
+				clearGpio(21);
 			}
 			else if(action == 1) {
-				setGpio(18);
+				setGpio(21);
 			}
 			else {
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));

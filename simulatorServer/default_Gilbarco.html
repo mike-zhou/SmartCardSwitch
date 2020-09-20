@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Simulator Remote Access</title>
+</head>
+
+<body onclick="onElementClicked()">
+    <div>
+        <label>Current User: </label>
+        <label id="currentUser"></label><br>
+        <label>FramePerSecond: </label>
+        <select id="fps">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+        </select>
+    </div><br>
+    <div>
+        <img id="videoFrame" src="/frames/lastFrame">
+    </div> <br>
+    <div>
+        <table>
+            <tr>
+                <td> <button id="nozzle_0_0_1">Nozzle on</button> </td>
+                <td> <button id="nozzle_0_1_1">Grade 1 on</button> </td>
+                <td> <button id="nozzle_0_2_1">Handle 1 on</button> </td>
+                <td> <button id="nozzle_0_3_1">Grade 2 on</button> </td>
+                <td> <button id="nozzle_0_4_1">Handle 2 on</button> </td>
+                <td> <button id="nozzle_0_5_1">Grade 3 on</button> </td>
+                <td> <button id="nozzle_0_6_1">Handle 3 on</button> </td>
+            </tr>
+            <tr>
+                <td> <button id="nozzle_0_0_0">Nozzle off</button> </td>
+                <td> <button id="nozzle_0_1_0">Grade 1 off</button> </td>
+                <td> <button id="nozzle_0_2_0">Handle 1 off</button> </td>
+                <td> <button id="nozzle_0_3_0">Grade 2 off</button> </td>
+                <td> <button id="nozzle_0_4_0">Handle 2 off</button> </td>
+                <td> <button id="nozzle_0_5_0">Grade 3 off</button> </td>
+                <td> <button id="nozzle_0_6_0">Handle 3 off</button> </td>
+            </tr>
+        </table>
+    </div>
+
+    <script src="/scripts/default_Gilbarco.js"></script>
+</body>
+
+</html>
