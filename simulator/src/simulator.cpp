@@ -81,6 +81,7 @@ using Poco::StreamCopier;
 #define GET_GPIO(g) (*(gpio+13)&(1<<g)) // 0 if LOW, (1<<g) if HIGH
 #define GPIO_PULL *(gpio+37) // Pull up/pull down
 #define GPIO_PULLCLK0 *(gpio+38) // Pull up/pull down clock
+#define GPIO_PIN_AMOUNT 27
 
 int  mem_fd;
 void *gpio_map;
@@ -119,20 +120,48 @@ void setup_io()
    // Always use volatile pointer!
    gpio = (volatile unsigned *)gpio_map;
 
-   //set GP21
-   INP_GPIO(21); // must use INP_GPIO before we can use OUT_GPIO
-   OUT_GPIO(21);
+   //set GPIO pins
+   for(int i=0; i<GPIO_PIN_AMOUNT; i++) 
+   {
+	   // must use INP_GPIO before we can use OUT_GPIO
+	   INP_GPIO(i);
+	   OUT_GPIO(i);
+   }
 
    pLogger->LogInfo("setup_io finished");
 
 } // setup_io
 
-bool putdownNozzle(int index)
+bool setGpio(unsigned int index)
+{
+	if(index >= GPIO_PIN_AMOUNT) {
+		pLogger->LogError("setGpioHigh wrong GPIO index: " + std::to_string(index));
+		return false;
+	}
+
+	GPIO_SET = 1 << index;
+
+	return true;
+}
+
+bool clearGpio(unsigned int index)
+{
+	if(index >= GPIO_PIN_AMOUNT) {
+		pLogger->LogError("setGpioLow wrong GPIO index: " + std::to_string(index));
+		return false;
+	}
+
+	GPIO_CLR = 1 << index;
+
+	return true;
+}
+
+bool waynePutdownNozzle(int index)
 {
 	pLogger->LogInfo("putdownNozzle index: " + std::to_string(index));
 
 	if(index == 0) {
-	   GPIO_SET = 1<<21;
+	   setGpio(21);
 	   return true;
 	}
 	else {
@@ -142,12 +171,12 @@ bool putdownNozzle(int index)
 	return false;
 }
 
-int liftNozzle(int index)
+int wayneLiftNozzle(int index)
 {
 	pLogger->LogInfo("liftNozzle index: " + std::to_string(index));
 
 	if(index == 0) {
-		GPIO_CLR = 1<<21;
+		clearGpio(21);
 	   return true;
 	}
 	else {
@@ -210,10 +239,10 @@ public:
 			{
 				if(nozzleIndex == 0) {
 					if(action == 0) {
-						liftNozzle(0);
+						wayneLiftNozzle(0);
 					}
 					else {
-						putdownNozzle(0);
+						waynePutdownNozzle(0);
 					}
 					response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
 				}
