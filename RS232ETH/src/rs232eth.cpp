@@ -44,6 +44,7 @@
 #include "Poco/JSON/Object.h"
 #include "Poco/JSON/JSONException.h"
 #include "Poco/Dynamic/Struct.h"
+#include "Poco/ThreadPool.h"
 
 #include "Logger.h"
 #include "IClientEvent.h"
@@ -203,6 +204,8 @@ protected:
 
 	int main(const std::vector<std::string>& args)
 	{
+        Poco::ThreadPool appPool;
+
 		if (_helpRequested)
 		{
 			displayHelp();
@@ -233,7 +236,8 @@ protected:
 #endif
 
 			Poco::TaskManager tmLogger;
-			Poco::TaskManager tm;
+            Poco::ThreadPool appPool;
+			Poco::TaskManager tm(appPool);
 
 			//retrieve configuration
 			try
@@ -307,13 +311,13 @@ protected:
 
                 if (!bException)
                 {
-                    pTransceiver->SetSocket(socket);
+                        pTransceiver->SetSocket(socket);
 
-                    tm.start(pRs232);
-                    tm.start(pTransceiver);
-                    waitForTerminationRequest();
-                    tm.cancelAll();
-                    tm.joinAll();
+                        tm.start(pRs232);
+                        tm.start(pTransceiver);
+                        waitForTerminationRequest();
+                        tm.cancelAll();
+                        tm.joinAll();
                 }
 
 				pLogger->LogInfo("**** RS232ETH version 1.0.0 client stops ****");
