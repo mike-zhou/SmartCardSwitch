@@ -190,18 +190,6 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 		if(item == 0) 
 		{
 			if(action == 0) {
-				clearGpio(12);
-			}
-			else if(action == 1) {
-				setGpio(12);
-			}
-			else {
-				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
-			}
-		}
-		else if(item == 1) 
-		{
-			if(action == 0) {
 				clearGpio(13);
 			}
 			else if(action == 1) {
@@ -211,7 +199,7 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
 			}
 		}
-		else if(item == 2) 
+		else if(item == 1) 
 		{
 			if(action == 0) {
 				clearGpio(19);
@@ -223,7 +211,7 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
 			}
 		}
-		else if(item == 3) 
+		else if(item == 2) 
 		{
 			if(action == 0) {
 				clearGpio(16);
@@ -235,7 +223,13 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
 			}
 		}
-		else if(item == 4) 
+		else {
+			throw Poco::Exception("gilbarcoHandleRequest wrong item: " + std::to_string(item));
+		}
+	}
+	else if(terminalIndex == 1) 
+	{
+		if(item == 0) 
 		{
 			if(action == 0) {
 				clearGpio(26);
@@ -247,7 +241,7 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
 			}
 		}
-		else if(item == 5) 
+		else if(item == 1) 
 		{
 			if(action == 0) {
 				clearGpio(20);
@@ -259,7 +253,7 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
 			}
 		}
-		else if(item == 6) 
+		else if(item == 2) 
 		{
 			if(action == 0) {
 				clearGpio(21);
