@@ -183,11 +183,11 @@ void wayneHandleRequest(unsigned int terminalIndex, unsigned int pumpIndex, unsi
 	}
 }
 
-void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsigned int action)
+void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int hozeIndex, unsigned int action)
 {
 	if(terminalIndex == 0) 
 	{
-		if(item == 0) 
+		if(hozeIndex == 0) 
 		{
 			if(action == 0) {
 				clearGpio(13);
@@ -199,7 +199,7 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
 			}
 		}
-		else if(item == 1) 
+		else if(hozeIndex == 1) 
 		{
 			if(action == 0) {
 				clearGpio(19);
@@ -211,7 +211,7 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
 			}
 		}
-		else if(item == 2) 
+		else if(hozeIndex == 2) 
 		{
 			if(action == 0) {
 				clearGpio(16);
@@ -224,12 +224,12 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 			}
 		}
 		else {
-			throw Poco::Exception("gilbarcoHandleRequest wrong item: " + std::to_string(item));
+			throw Poco::Exception("gilbarcoHandleRequest wrong hoze index: " + std::to_string(hozeIndex));
 		}
 	}
 	else if(terminalIndex == 1) 
 	{
-		if(item == 0) 
+		if(hozeIndex == 0) 
 		{
 			if(action == 0) {
 				clearGpio(26);
@@ -241,7 +241,7 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
 			}
 		}
-		else if(item == 1) 
+		else if(hozeIndex == 1) 
 		{
 			if(action == 0) {
 				clearGpio(20);
@@ -253,7 +253,7 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 				throw Poco::Exception("gilbarcoHandleRequest wrong action: " + std::to_string(action));
 			}
 		}
-		else if(item == 2) 
+		else if(hozeIndex == 2) 
 		{
 			if(action == 0) {
 				clearGpio(21);
@@ -266,7 +266,7 @@ void gilbarcoHandleRequest(unsigned int terminalIndex, unsigned int item, unsign
 			}
 		}
 		else {
-			throw Poco::Exception("gilbarcoHandleRequest wrong item: " + std::to_string(item));
+			throw Poco::Exception("gilbarcoHandleRequest wrong hoze index: " + std::to_string(hozeIndex));
 		}
 	}
 	else 
@@ -315,13 +315,13 @@ public:
 				}
 				else if(manufacture == "Gilbarco")
 				{
-					unsigned int terminalIndex, item, action;
+					unsigned int terminalIndex, hozeIndex, action;
 
 					terminalIndex = ds["terminalIndex"];
-					item = ds["item"];
+					hozeIndex = ds["hozeIndex"];
 					action = ds["action"];
 
-					gilbarcoHandleRequest(terminalIndex, item, action);
+					gilbarcoHandleRequest(terminalIndex, hozeIndex, action);
 				}
 				else 
 				{

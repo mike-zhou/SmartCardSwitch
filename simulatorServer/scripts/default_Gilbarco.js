@@ -13,13 +13,13 @@ function onElementClicked()
     if (group === "nozzle") 
     {
         let terminalIndex = paraArray[1];
-        let item = paraArray[2];
+        let hozeIndex = paraArray[2];
         let action = paraArray[3];
         let command = {};
     
         command.manufacture = "Gilbarco";
         command.terminalIndex = parseInt(terminalIndex);
-        command.item = parseInt(item);
+        command.hozeIndex = parseInt(hozeIndex);
         command.action = parseInt(action);
 
         let xhr = new XMLHttpRequest();
