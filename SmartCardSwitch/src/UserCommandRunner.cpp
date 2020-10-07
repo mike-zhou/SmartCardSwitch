@@ -1023,8 +1023,8 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 				moveStepperY(fromY, toY);
 				moveStepperW(fromW, tmpW);
 				moveStepperX(fromX, toX);
-				moveStepperZ(fromZ, toZ);
 				moveStepperW(tmpW, toW);
+				moveStepperZ(fromZ, toZ);
 			}
 			break;
 
@@ -1069,8 +1069,8 @@ void UserCommandRunner::gateToGate(unsigned int fromX, unsigned int fromY, unsig
 			{
 				int tmpW = (fromW + toW)/2;
 
-				moveStepperW(fromW, tmpW);
 				moveStepperZ(fromZ, toZ);
+				moveStepperW(fromW, tmpW);
 				moveStepperY(fromY, toY);
 				moveStepperX(fromX, toX);
 				moveStepperW(tmpW, toW);
