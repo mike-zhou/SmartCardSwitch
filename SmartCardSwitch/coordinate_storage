@@ -980,7 +980,7 @@
 	"smartCardReader": {
 		"gate": {
 			"x": 6332,
-			"y": 676,
+			"y": 804,
 			"z": 294,
 			"w": 353
 		},
@@ -1190,7 +1190,7 @@
 	"smartCardSlowlyPlaceEnd": 1088,
 	"smartCardFetchOffset": 32,
 	"smartCardReleaseOffset": 0,
-	"smartCardReaderSlowInsertEnd": 268,
+	"smartCardReaderSlowInsertEnd": 948,
 	"smartCardInsertExtra": 32,
 	"maximumX": -1,
 	"maximumY": -1,
