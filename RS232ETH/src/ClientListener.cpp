@@ -7,6 +7,7 @@
 
 #include "Poco/Net/SocketAddress.h"
 #include "Poco/Net/NetException.h"
+#include "Poco/Timespan.h"
 
 #include "ClientListener.h"
 #include "Logger.h"
@@ -40,6 +41,7 @@ void ClientListener::SetTransceiver(SocketTransceiver * pSocketTransceiver)
 void ClientListener::runTask()
 {
 	Poco::Net::SocketAddress addr (_ip, _port);
+	Poco::Timespan pollingPeriod (100000);
 
 	pLogger->LogInfo("UserListener bonds to " + addr.toString());
 	_svrSocket.bind(addr);
@@ -57,8 +59,13 @@ void ClientListener::runTask()
 			bool exceptionOccur = false;
 			try
 			{
+				if(_svrSocket.poll(pollingPeriod, Poco::Net::Socket::SELECT_READ) == false) {
+					continue; //no incoming connection
+				}
+
 				Poco::Net::SocketAddress clientAddr;
 
+				pLogger->LogInfo("ClientListener::runTask incoming connection request");
 				auto socket = _svrSocket.acceptConnection(clientAddr);
 				pLogger->LogInfo("ClientListener::runTask new connection: " + clientAddr.toString());
 				if(_pSocketTransceiver != nullptr) {
