@@ -86,8 +86,9 @@ protected:
 	{
 		if (!_helpRequested)
 		{
+			Poco::ThreadPool threadPool(2, 64);
 			TaskManager tmLogger;
-			TaskManager tm;
+			TaskManager tm(threadPool);
 			Poco::Net::SocketAddress serverAddress;
 			std::string logFolder;
 			std::string logFile;
