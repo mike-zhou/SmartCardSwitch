@@ -114,8 +114,9 @@ protected:
 			}
 		}
 
+		Poco::ThreadPool threadPool(2, 64);
 		TaskManager tmLogger;
-		TaskManager tm;
+		TaskManager tm(threadPool);
 
 		std::string logFolder;
 		std::string logFile;
