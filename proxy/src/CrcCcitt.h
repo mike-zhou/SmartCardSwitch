@@ -15,7 +15,7 @@ class CrcCcitt
 public:
 	CrcCcitt()
 	{
-		crc_tabccitt_init = false;
+		init_crcccitt_tab();
 	}
 
 	unsigned short GetCRC(unsigned char * pData, unsigned int length)
@@ -26,7 +26,6 @@ public:
 private:
 	static const unsigned short CRC_POLY_CCITT	= 0x1021;
 
-	bool crc_tabccitt_init;
 	unsigned short crc_tabccitt[256];
 
 	unsigned short crc_ccitt_generic( const unsigned char *input_str, int num_bytes, unsigned short start_value )
@@ -36,8 +35,6 @@ private:
 		unsigned short short_c;
 		const unsigned char *ptr;
 		int a;
-
-		if ( ! crc_tabccitt_init ) init_crcccitt_tab();
 
 		crc = start_value;
 		ptr = input_str;
@@ -76,8 +73,6 @@ private:
 
 			crc_tabccitt[i] = crc;
 		}
-
-		crc_tabccitt_init = true;
 	}
 };
 
