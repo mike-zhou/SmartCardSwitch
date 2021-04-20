@@ -1,0 +1,122 @@
+@startuml
+
+participant Listner
+participant SocketManager
+participant DeviceManager
+participant CDataExchange
+participant DeviceMonitor
+participant LinuxComDevice
+participant DeviceFile
+
+DeviceManager -> LinuxComDevice: start
+
+DeviceManager -> DeviceManager: pollDevices
+activate DeviceManager
+DeviceManager -> DeviceManager: update timestamps
+DeviceManager -> DeviceManager: check device error
+deactivate DeviceManager
+
+note over LinuxComDevice
+thread starts for 
+a device file
+endnote
+LinuxComDevice -> DeviceManager: onLowlevelDeviceState: DeviceConnected
+LinuxComDevice -> LinuxComDevice: openDevice
+LinuxComDevice -> DeviceManager: onLowlevelDeviceState: DeviceNormal
+activate DeviceManager
+    DeviceManager -> CDataExchange: constructor
+deactivate DeviceManager
+
+note over DeviceManager
+    DeviceState::OPENED
+endnote
+DeviceManager -> DeviceManager: pollDevices
+activate DeviceManager
+    DeviceManager -> CDataExchange: SendCommand: CLEAR_BUFFER
+deactivate DeviceManager
+
+note over DeviceManager
+    DeviceState::CLEARING_BUFFER
+endnote
+
+LinuxComDevice -> LinuxComDevice: sendData
+activate LinuxComDevice
+    LinuxComDevice -> DeviceManager: onLowlevelDeviceWritable
+    activate DeviceManager
+        DeviceManager -> DeviceManager: onDeviceCanBeWritten
+        activate DeviceManager
+            DeviceManager -> CDataExchange: GetPacketData
+            DeviceManager -> LinuxComDevice: SendCommand
+            DeviceManager -> CDataExchange: ConsumePacketData
+        deactivate DeviceManager
+    deactivate DeviceManager
+    note over LinuxComDevice
+        try to write data to device
+    endnote
+    LinuxComDevice -> DeviceFile: poll
+    LinuxComDevice -> DeviceFile: write
+deactivate LinuxComDevice
+
+LinuxComDevice -> LinuxComDevice: receiveData
+activate LinuxComDevice
+    LinuxComDevice -> DeviceFile: poll
+    LinuxComDevice -> DeviceFile: read
+    note over LinuxComDevice
+        something is read from device
+    endnote
+    LinuxComDevice -> DeviceManager: onLowlevelDeviceReply
+    activate DeviceManager
+        DeviceManager -> DeviceManager: onDeviceCanBeRead
+        activate DeviceManager
+            DeviceManager -> CDataExchange: OnPacketReply
+        deactivate DeviceManager
+    deactivate DeviceManager
+deactivate LinuxComDevice
+
+DeviceManager -> DeviceManager: pollDevices
+activate DeviceManager
+    DeviceManager -> CDataExchange: Poll
+    activate CDataExchange
+        CDataExchange -> CDataExchange: processScsInputStage
+        CDataExchange -> CDataExchange: processScsOutputStage
+        CDataExchange -> CDataExchange: processMonitorStage
+    deactivate CDataExchange
+    DeviceManager -> CDataExchange: GetCmdReply
+    DeviceManager -> CDataExchange: ConsumeCmdReply
+    DeviceManager -> DeviceManager: onReply
+deactivate DeviceManager
+
+note over DeviceManager, LinuxComDevice
+    simplified sequence
+endnote
+
+note over DeviceManager
+    DeviceState::BUFFER_CLEARED
+endnote
+
+DeviceManager -> DeviceManager: pollDevices
+activate DeviceManager
+    DeviceManager -> CDataExchange: SendCommand: QUERY_NAME
+deactivate DeviceManager
+LinuxComDevice -> DeviceManager: onLowlevelDeviceWritable
+activate DeviceManager
+    DeviceManager -> CDataExchange: get packetrized QUERY_NAME
+    DeviceManager -> LinuxComDevice: send packetrized QUERY_NAME 
+deactivate DeviceManager
+LinuxComDevice -> DeviceManager: onLowlevelDeviceReply
+activate DeviceManager
+    DeviceManager -> CDataExchange: packetrized QUERY_NAME reply
+deactivate DeviceManager
+DeviceManager -> DeviceManager: pollDevices
+activate DeviceManager
+    DeviceManager -> CDataExchange: get QUERY_NAME reply
+    DeviceManager -> DeviceManager: onReply
+    note over DeviceManager
+        DeviceState::ACTIVE
+    endnote
+    activate DeviceManager
+        DeviceManager -> SocketManager: OnDeviceInserted
+    deactivate DeviceManager
+deactivate DeviceManager
+
+@enduml
