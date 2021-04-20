@@ -20,6 +20,7 @@
 #include "IDeviceObserver.h"
 #include "ILowlevelDevice.h"
 #include "CrcCcitt.h"
+#include "CDataExchange.h"
 
 
 /***************
@@ -56,68 +57,6 @@ private:
 	const char * COMMAND_QUERY_NAME = "C 1 0";
 	const char COMMAND_TERMINATER = 0x0D; //carriage return
 
-	//definitions for data exchange
-	static const int PACKET_SIZE  = 64;
-	static const unsigned char DATA_PACKET_TAG = 0xDD;
-	static const unsigned char ACK_PACKET_TAG = 0xAA;
-	const long DATA_INPUT_TIMEOUT = 50000; //50,000 microseconds
-	const long DATA_ACK_TIMEOUT = 200000; //200,000 microseconds
-	static const unsigned char INVALID_PACKET_ID = 0xFF;
-	static const unsigned char INITAL_PACKET_ID = 0; // this id is used only for the first packet after app starts.
-
-	enum InputStageState
-	{
-		INPUT_RECEIVING = 0,
-		INPUT_ACKNOWLEDGING
-	};
-
-	struct DataInputStage
-	{
-		unsigned char buffer[PACKET_SIZE];
-		InputStageState state;
-		unsigned int byteAmount;
-		Poco::Timestamp inputTimeStamp;
-		unsigned char previousId;
-		CrcCcitt crc16;
-
-		DataInputStage();
-	};
-
-	enum OutputStageState
-	{
-		OUTPUT_IDLE = 0, // ready for packet sending
-		OUTPUT_SENDING, // is sending a packet
-		OUTPUT_WAITING_ACK, // is waiting for acknowledgment
-		OUTPUT_WAITING_ACK_WHILE_SENDING // is waiting for acknowledgment, and is sending an acknowledgment
-	};
-
-	struct DataOutputStage
-	{
-		DataOutputStage();
-		void IncreasePacketId();
-		void OnAcknowledgment(unsigned char packetId);
-		//return true if ACK packet can be sent
-		//return false if ACK packet cannot be sent
-		bool SendAcknowledgment(unsigned char packetId);
-		//if possible, pop data from queue and sent it.
-		void SendData(std::deque<char>& dataQueue);
-
-		unsigned char packet[PACKET_SIZE];
-		unsigned char buffer[PACKET_SIZE];
-		OutputStageState state;
-		unsigned int sendingIndex;
-		Poco::Timestamp ackTimeStamp;
-		unsigned char packetId;
-
-		CrcCcitt crc16;
-	};
-
-	struct DataExchange
-	{
-		DataInputStage inputStage;
-		DataOutputStage outputStage;
-	};
-
 	enum DeviceState
 	{
 		CLOSED = 0,
@@ -133,6 +72,10 @@ private:
 
 	struct Device
 	{
+		Device() {
+			state = CLOSED;
+		}
+
 		static const Poco::Timestamp::TimeDiff FileReadWarningThreshold = 1000000; //1 second
 		static const Poco::Timestamp::TimeDiff FileWriteWarningThreshold = 1000000; // 1 second
 
@@ -143,10 +86,9 @@ private:
 
 		std::string fileName; //name of device file
 		std::string deviceName; //name queried from COMMAND_QUERY_NAME. Each device is supposed to have a unique name.
-		std::deque<char> outgoing;
-		std::deque<char> incoming;
+		std::deque<unsigned char> reply;
 
-		DataExchange dataExchange;
+		CDataExchange dataExchange;
 	};
 
 	std::vector<struct Device> _devices;

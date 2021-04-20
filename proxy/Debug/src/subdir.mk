@@ -4,6 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/CDataExchange.cpp \
 ../src/CDeviceManager.cpp \
 ../src/CDeviceMonitor.cpp \
 ../src/CListener.cpp \
@@ -17,6 +18,7 @@ CPP_SRCS += \
 ../src/proxy.cpp 
 
 OBJS += \
+./src/CDataExchange.o \
 ./src/CDeviceManager.o \
 ./src/CDeviceMonitor.o \
 ./src/CListener.o \
@@ -30,6 +32,7 @@ OBJS += \
 ./src/proxy.o 
 
 CPP_DEPS += \
+./src/CDataExchange.d \
 ./src/CDeviceManager.d \
 ./src/CDeviceMonitor.d \
 ./src/CListener.d \

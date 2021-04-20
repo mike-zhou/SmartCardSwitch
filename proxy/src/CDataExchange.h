@@ -7,27 +7,9 @@
 
 #include "CrcCcitt.h";
 
-class IDataExchangeObserver
-{
-public:
-    virtual void OnReply(unsigned char * pReply, unsigned int length) = 0;
-};
-
-class IPacketSender
-{
-public:
-    virtual unsigned int SendPacketData(unsigned char * pData, unsigned int length) = 0;
-};
-
-class IMonitorObserver
-{
-public:
-    virtual void OnMonitorInfo(unsigned char * pInfo, unsigned int length) = 0;
-};
-
 /**
- * this class accept a block of data, devides it to different packets, then sends out packets one by one
- * it also merges replied packets to a data block and sends it to the observer.
+ * this class accept a block of Cmd data, divides it to different packets, then sends out packets one by one.
+ * it also merges replied packets to a data block.
  * Poll() needs to be called repeatedly to drive this class
  */
 class CDataExchange
@@ -36,14 +18,39 @@ public:
     CDataExchange();
     void Poll();
 
-    unsigned int SendData(unsigned char * pData, unsigned int length);
-    void ClearData();
-    void SetDataObserver(IDataExchangeObserver * pObserver);
+    /**
+     * Send a command string to the device.
+     * Parameters:
+     * 		pData: address of the command
+     * 		length: length of command
+     * Return value:
+     * 		amount of bytes accepted.
+     */
+    unsigned int SendCmdData(unsigned char * pData, unsigned int length);
+    /**
+     * delete any content which hasn't beeen sent.
+     */
+    void ClearCmdData();
+    /**
+     * read reply
+     * Parameters:
+     * 		pBuffer: address where the reply can be written to
+     * 		length: length of buffer
+     * Return value:
+     * 		amount of data written to pBuffer
+     */
+    unsigned int GetCmdReply(unsigned char * pBuffer, unsigned int length);
+    /**
+     * Notify how much reply is consumed
+     */
+    void ConsumeCmdReply(unsigned int length);
 
-    void SetPacketSender(IPacketSender * pSender);
     void OnPacketReply(unsigned char * pData, unsigned int length);
+    unsigned int GetPacketData(unsigned char * pBuffer, unsigned int length);
+    void ConsumePacketData(unsigned int length);
 
-    void SetMonitorObserver(IMonitorObserver * pObserver);
+    unsigned int GetMonitorData(unsigned char * pBuffer, unsigned int length);
+    void ConsumeMonitorData(unsigned int length);
 
 private:
     /*********************************************************
@@ -136,7 +143,6 @@ private:
     void _on_inputStageAckPacketComplete(unsigned char packetId);
     void _on_inputStageDataPacketComplete(void);
     void _processScsOutputStageIdle(void);
-    void _on_inputStageDataPacketComplete(void);
 
 	void _processScsInputStage();
 	void _processScsOutputStage();
@@ -160,13 +166,13 @@ private:
     unsigned short counter_get(void);
     unsigned short counter_diff(unsigned short prevCounter);
     unsigned short _readOutputBuffer(unsigned char * pBuffer, unsigned short size);
-    Poco::Mutex _mutex;
     Poco::Timestamp _timeStamp;
     CrcCcitt crc16;
-    IDataExchangeObserver * pDataObserver;
-    IPacketSender * pPacketSender;
-    IMonitorObserver * pMonitorObserver;
-    std::vector<unsigned char> dataVector;
+    std::vector<unsigned char> incomingCmdData;
+    std::vector<unsigned char> outgoingCmdData;
+    std::vector<unsigned char> incomingPacketData;
+    std::vector<unsigned char> outgoingPacketData;
+    std::vector<unsigned char> monitorData;
 };
 
 

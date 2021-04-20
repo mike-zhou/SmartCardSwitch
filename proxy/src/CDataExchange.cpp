@@ -533,48 +533,32 @@ void CDataExchange::printChar(unsigned char c)
 
 CDataExchange::CDataExchange()
 {
-	pDataObserver = NULL;
-	pPacketSender = NULL;
-	pMonitorObserver = NULL;
-
 	initScsDataExchange();
 }
 
-void CDataExchange::Poll()
+unsigned int CDataExchange::SendCmdData(unsigned char * pData, unsigned int length)
 {
-	_processScsInputStage();
-	_processScsOutputStage();
-	_processMonitorStage();
+	if(incomingCmdData.size() > 0xFFFF) {
+		return 0;
+	}
+
+	for(int i=0; i<length; i++) {
+		incomingCmdData.push_back(pData[i]);
+	}
+
+	return length;
 }
 
-unsigned int SendData(unsigned char * pData, unsigned int length)
+void CDataExchange::ClearCmdData()
 {
-
+	incomingCmdData.clear();
 }
 
-void ClearData()
+void CDataExchange::OnPacketReply(unsigned char * pData, unsigned int length)
 {
-
-}
-
-void SetDataObserver(IDataExchangeObserver * pObserver)
-{
-
-}
-
-void SetPacketSender(IPacketSender * pSender)
-{
-
-}
-
-void OnPacketReply(unsigned char * pData, unsigned int length)
-{
-
-}
-
-void SetMonitorObserver(IMonitorObserver * pObserver)
-{
-
+	for(int i=0; i<length; i++) {
+		incomingPacketData.push_back(pData[i]);
+	}
 }
 
 bool CDataExchange::_calculateCrc16(unsigned char * pData, unsigned char length, unsigned char * pCrcLow, unsigned char * pCrcHigh)
@@ -595,51 +579,163 @@ bool CDataExchange::_calculateCrc16(unsigned char * pData, unsigned char length,
 
 unsigned char CDataExchange::_putCharsMonitor(unsigned char * pBuffer, unsigned char size)
 {
+	if(monitorData.size() > 0xffff) {
+		return 0;
+	}
 
-}
-
-unsigned char CDataExchange::_putChars(unsigned char * pBuffer, unsigned char size)
-{
-
+	for(int i=0; i<size; i++) {
+		monitorData.push_back(pBuffer[i]);
+	}
+	return size;
 }
 
 unsigned short CDataExchange::_getAppInputBufferAvailable(void)
 {
-
+	return 1024;
 }
 
 unsigned short CDataExchange::_writeAppInputBuffer(unsigned char * pBuffer, unsigned short length)
 {
+	unsigned short amount;
 
+	for(amount = 0; amount < length; amount++) {
+		outgoingCmdData.push_back(pBuffer[amount]);
+	}
+
+	return length;
 }
 
 bool CDataExchange::_getChar(unsigned char * p)
 {
+	if(p == NULL) {
+		return false;
+	}
+	if(incomingPacketData.empty()) {
+		return false;
+	}
 
+	*p = incomingPacketData[0];
+	incomingPacketData.erase(incomingPacketData.begin());
 
+	return true;
 }
 
 bool CDataExchange::_putChar(unsigned char c)
 {
-
+	outgoingPacketData.push_back(c);
+	return true;
 }
 
 unsigned char CDataExchange::_putChars(unsigned char * pBuffer, unsigned char size)
 {
+	for(int i=0; i<size; i++) {
+		outgoingPacketData.push_back(pBuffer[i]);
+	}
 
+	return size;
 }
 
 unsigned short CDataExchange::counter_get(void)
 {
+	unsigned short clocks;
 
+	_timeStamp.update();
+	clocks = (_timeStamp.epochMicroseconds()/1000) & 0xFFFF;
+	return clocks;
 }
 
 unsigned short CDataExchange::counter_diff(unsigned short prevCounter)
 {
+	unsigned short diff;
+	unsigned short curClock = counter_get();
 
+	if(curClock >= prevCounter) {
+		diff = curClock - prevCounter;
+	}
+	else {
+		diff = 0xFFFF - prevCounter + curClock;
+	}
+
+	return diff;
 }
 
  unsigned short CDataExchange::_readOutputBuffer(unsigned char * pBuffer, unsigned short size)
  {
+	 unsigned short amount;
 
+	 if(pBuffer == NULL) {
+		 printString("ERROR: NULL parameter in _readOutputBuffer\r\n");
+		 return 0;
+	 }
+
+	 for(amount=0; (amount<size)&&(amount<incomingCmdData.size()); amount++)
+	 {
+		 pBuffer[amount] = incomingCmdData[amount];
+	 }
+	 if(amount > 0) {
+		 incomingCmdData.erase(incomingCmdData.begin(), incomingCmdData.begin()+amount);
+	 }
+
+	 return amount;
  }
+
+ unsigned int CDataExchange::GetCmdReply(unsigned char * pBuffer, unsigned int length)
+ {
+	 unsigned int amount;
+
+	 for(amount=0; (amount < length) && (amount < outgoingCmdData.size()); amount++) {
+		 pBuffer[amount] = outgoingCmdData[amount];
+	 }
+
+	 return amount;
+ }
+
+ void CDataExchange::ConsumeCmdReply(unsigned int length)
+ {
+	 if(length > outgoingCmdData.size()) {
+		 length = outgoingCmdData.size();
+	 }
+
+	 outgoingCmdData.erase(outgoingCmdData.begin(), outgoingCmdData.begin() + length);
+ }
+
+ unsigned int CDataExchange::GetPacketData(unsigned char * pBuffer, unsigned int length)
+ {
+	 unsigned int amount;
+
+	 for(amount=0; (amount < length) && (amount < outgoingPacketData.size()); amount++) {
+		 pBuffer[amount] = outgoingPacketData[amount];
+	 }
+
+	 return amount;
+}
+
+void CDataExchange::ConsumePacketData(unsigned int length)
+{
+	 if(length > outgoingPacketData.size()) {
+		 length = outgoingPacketData.size();
+	 }
+
+	 outgoingPacketData.erase(outgoingPacketData.begin(), outgoingPacketData.begin() + length);
+}
+
+unsigned int CDataExchange::GetMonitorData(unsigned char * pBuffer, unsigned int length)
+{
+	 unsigned int amount;
+
+	 for(amount=0; (amount < length) && (amount < monitorData.size()); amount++) {
+		 pBuffer[amount] = monitorData[amount];
+	 }
+
+	 return amount;
+}
+
+void CDataExchange::ConsumeMonitorData(unsigned int length)
+{
+	 if(length > monitorData.size()) {
+		 length = monitorData.size();
+	 }
+
+	 monitorData.erase(monitorData.begin(), monitorData.begin() + length);
+}
+
