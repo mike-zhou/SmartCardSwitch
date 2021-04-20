@@ -227,7 +227,7 @@ void CDeviceManager::enqueueCommand(struct Device& device, const std::string com
 	}
 	array.push_back(COMMAND_TERMINATER);
 
-	device.dataExchange.SendCmdData(array.data(), array.size());
+	device.dataExchange.SendCommand(array.data(), array.size());
 }
 
 //write a command to device
@@ -243,7 +243,7 @@ void CDeviceManager::onDeviceCanBeWritten(struct Device& device, ILowlevelDevice
 		data.push_back(buffer[i]);
 	}
 
-	if(pLowlevelDevice->SendCommand(data, info) == true) {
+	if(pLowlevelDevice->SendData(data, info) == true) {
 		device.dataExchange.ConsumePacketData(size);
 	}
 	else {
@@ -402,7 +402,7 @@ void CDeviceManager::pollDevices()
 				break;
 			}
 			deviceIt->dataExchange.ConsumeCmdReply(size);
-			for(int i=0; i<size; i++) {
+			for(unsigned int i=0; i<size; i++) {
 				deviceIt->reply.push_back(buffer[i]);
 			}
 		}

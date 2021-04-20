@@ -89,7 +89,7 @@ void WinComDevice::runTask()
 	pLogger->LogInfo("WinComDevice::runTask for " + _name + " existed");
 }
 
-bool WinComDevice::SendCommand(const std::vector<unsigned char> & command, std::string & info)
+bool WinComDevice::SendData(const std::vector<unsigned char> & command, std::string & info)
 {
 	info.clear();
 	if (_state == LowlevelDeviceState::DeviceNotConnected) {

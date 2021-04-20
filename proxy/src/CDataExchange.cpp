@@ -536,7 +536,7 @@ CDataExchange::CDataExchange()
 	initScsDataExchange();
 }
 
-unsigned int CDataExchange::SendCmdData(unsigned char * pData, unsigned int length)
+unsigned int CDataExchange::SendCommand(unsigned char * pData, unsigned int length)
 {
 	if(incomingCmdData.size() > 0xFFFF) {
 		return 0;
@@ -549,7 +549,7 @@ unsigned int CDataExchange::SendCmdData(unsigned char * pData, unsigned int leng
 	return length;
 }
 
-void CDataExchange::ClearCmdData()
+void CDataExchange::ClearCommand()
 {
 	incomingCmdData.clear();
 }

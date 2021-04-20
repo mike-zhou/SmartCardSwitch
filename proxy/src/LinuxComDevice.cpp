@@ -329,7 +329,7 @@ void LinuxComDevice::runTask()
 	pLogger->LogInfo("LinuxComDevice::runTask for " + _name + " existed");
 }
 
-bool LinuxComDevice::SendCommand(const std::vector<unsigned char> & command, std::string & info)
+bool LinuxComDevice::SendData(const std::vector<unsigned char> & command, std::string & info)
 {
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 

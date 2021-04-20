@@ -42,7 +42,7 @@ public:
 	}
 	virtual ~ILowlevelDevice() {}
 
-	virtual bool SendCommand(const std::vector<unsigned char> & command, std::string & info) = 0;
+	virtual bool SendData(const std::vector<unsigned char> & command, std::string & info) = 0;
 	virtual void Disconnect() = 0;
 
 protected:

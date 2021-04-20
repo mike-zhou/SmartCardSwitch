@@ -5,7 +5,7 @@
 #include "Poco/Mutex.h"
 #include "Poco/Timestamp.h"
 
-#include "CrcCcitt.h";
+#include "CrcCcitt.h"
 
 /**
  * this class accept a block of Cmd data, divides it to different packets, then sends out packets one by one.
@@ -26,11 +26,11 @@ public:
      * Return value:
      * 		amount of bytes accepted.
      */
-    unsigned int SendCmdData(unsigned char * pData, unsigned int length);
+    unsigned int SendCommand(unsigned char * pData, unsigned int length);
     /**
      * delete any content which hasn't beeen sent.
      */
-    void ClearCmdData();
+    void ClearCommand();
     /**
      * read reply
      * Parameters:

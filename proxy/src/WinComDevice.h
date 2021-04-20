@@ -13,7 +13,7 @@ public:
 
 private:
 	virtual void runTask() override;
-	virtual bool SendCommand(const std::vector<unsigned char> & command, std::string & info) override;
+	virtual bool SendData(const std::vector<unsigned char> & command, std::string & info) override;
 	virtual void Disconnect() override;
 
 private:
