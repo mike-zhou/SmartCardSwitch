@@ -90,17 +90,22 @@ void CDeviceManager::checkDevices()
 		timeStamp.update();
 	}
 
-	std::vector<std::string> deviceUnpluged; //contain file name of device which has been unpluged.
-	std::vector<std::string> currentFileList; //contain file name of device which has been opened.
+	std::vector<std::string> deviceUnpluged;
+	std::vector<std::string> currentFileList;
 
+	//iterate each file in the folder /dev/serial/device_by_id
 	try
 	{
+		Poco::File folderFile(DEVICE_FOLDER_PATH);
+
+		if(folderFile.exists() && folderFile.isDirectory())
 		{
-			for(int fileCounter = 0; fileCounter < 1; fileCounter++)
+			//open all DCD files.
+			Poco::DirectoryIterator end;
+			for(DirectoryIterator it(DEVICE_FOLDER_PATH) ;it != end; it++)
 			{
-				std::string fileName = "/dev/ttyUSB0";
 				bool fileIsOpened = false;
-				Path p(fileName);
+				Path p(it->path());
 				int fd;
 
 				//check if current device has been opened
@@ -112,6 +117,13 @@ void CDeviceManager::checkDevices()
 				}
 				if(fileIsOpened) {
 					currentFileList.push_back(p.getFileName());
+					continue;
+				}
+
+				//check if it is a DCD device
+				std::string fileName = it->path();
+				if(fileName.find(IDENTIFIER) == std::string::npos) {
+					// not a DCD device
 					continue;
 				}
 
@@ -134,7 +146,7 @@ void CDeviceManager::checkDevices()
 						close(fd);
 						continue;
 					}
-					rc = cfsetspeed(&tios, B115200);
+					rc = cfsetspeed(&tios, B1152000);
 					if(0 != rc)
 					{
 						auto e = errno;
@@ -151,9 +163,6 @@ void CDeviceManager::checkDevices()
 					tios.c_oflag &= ~OPOST;
 					//c_cflag
 					tios.c_cflag &= ~CLOCAL;
-					tios.c_cflag |= CS8;
-					tios.c_cflag &= ~CSTOPB;
-					tios.c_cflag &= ~PARENB;
 					//c_lflag
 					tios.c_lflag &= ~ISIG;
 					tios.c_lflag &= ~ICANON;
@@ -522,6 +531,8 @@ void CDeviceManager::onDeviceError(struct Device& device, int errorNumber)
 	pLogger->LogError("CDeviceManager device error: " + device.fileName + ", errno: " + std::to_string(errorNumber));
 	device.state = DeviceState::ERROR;
 }
+
+
 
 void CDeviceManager::pollDevices()
 {
