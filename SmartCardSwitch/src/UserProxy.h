@@ -87,6 +87,7 @@ private:
 	std::deque<unsigned char> _input;
 	std::deque<unsigned char> _output;
 
+	std::string createErrorInfo(const std::string& info, const std::string cmdId);
 	std::string createErrorInfo(const std::string& info);
 	std::string createAutoBackToHomeCmd();
 };

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Case Recorder</title>
+    <link rel="stylesheet" href="/css/scs.css">
+</head>
+
+<body onclick="onElementClicked()">
+    <div>
+        <h1>Record source:</h1>
+        <div id="recordSource"></div>
+    </div><br>
+    <div id="videoFrameContainer">
+    </div> <br>
+    <div class="tooltip" style="width:100%">
+        <input type="range" id="framePosition" min="0" max="100" class="frameSlider"></input>
+        <span class="tooltiptext">drag or click to reposition video frame</span>
+    </div><br>
+    <table style="width:100%">
+        <tr>
+            <td style="text-align:left">
+                <div class="tooltip">
+                    <label id="timeStampBegin"></label>
+                    <span class="tooltiptext">time of first video frame</span>
+                </div>
+            </td>
+            <td style="text-align:center">
+                <div class="tooltip">
+                    <label id="timeStampCurrent"></label>
+                    <span class="tooltiptext">time of current video frame</span>
+                </div>
+            </td>
+            <td style="text-align:right">
+                <div class="tooltip">
+                    <label id="timeStampEnd"></label>
+                    <span class="tooltiptext">time of last video frame</span>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td>
+                <div class="tooltip">
+                    <button id="toFirstFrame">|&lt</button>
+                    <span class="tooltiptext">to first video frame</span>
+                </div>
+            </td>
+            <td>
+                <div class="tooltip">
+                    <button id="fastBackWard">&lt&lt</button>
+                    <span class="tooltiptext">decrease speed</span>
+                </div>
+            </td>
+            <td>
+                <div class="tooltip">
+                    <label id="speed">+1</label>
+                    <span class="tooltiptext">current speed</span>
+                </div>
+            </td>
+            <td>
+                <div class="tooltip">
+                    <button id="fastForward">&gt&gt</button>
+                    <span class="tooltiptext">increase speed</span>
+                </div>
+            </td>
+            <td>
+                <div class="tooltip">
+                    <button id="toLastFrame">&gt|</button>
+                    <span class="tooltiptext">to last video frame</span>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <script src="/scripts/Record.js"></script>
+</body>
+
+</html>

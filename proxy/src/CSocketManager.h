@@ -52,10 +52,12 @@ private:
 	void runTask();
 
 private:
+	const int MUTEX_TIMEOUT = 100; //100 milliseconds
 	Poco::Mutex _mutex;
+	std::string _lockMutexFor;
 
-	const long long INVALID_SOCKET_ID = -1;
-	const long long STARTING_SOCKET_ID = 1;
+	static const long INVALID_SOCKET_ID = -1;
+	static const long STARTING_SOCKET_ID = 1;
 	long long _lastSocketId;
 
 	//a map of socket id and socket object
@@ -66,7 +68,7 @@ private:
 	};
 	struct SocketWrapper
 	{
-		long socketId;
+		long socketId = INVALID_SOCKET_ID;
 		StreamSocket socket;
 		enum SocketState state;
 		std::deque<unsigned char> incoming;//reception stage to save partial command from socket
@@ -78,7 +80,7 @@ private:
 	//device has a 1:1 relationship to socket
 	struct DeviceData
 	{
-		long long socketId;//which socket this device bonds to
+		long socketId = INVALID_SOCKET_ID;//which socket this device bonds to
 		std::deque<std::string> replyPool; //to save information from device.
 	};
 	std::map<std::string, struct DeviceData> _deviceMap;
@@ -93,6 +95,8 @@ private:
 	void moveReplyToSocket(long long socketId, const std::string& reply);
 	void processReplies();
 
+	void lockMutex(const std::string & functionName, const std::string & purpose);
+	void unlockMutex();
 
 	//retrieve commands from data
 	void retrieveCommands(std::deque<unsigned char>& data, std::vector<std::string>& commands);
@@ -127,6 +131,7 @@ private:
 	void onCommandStepperConfigHome(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperConfigHome> cmdPtr);
 	void onCommandStepperQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperQuery> cmdPtr);
 	void onCommandStepperSetState(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperSetState> cmdPtr);
+	void onCommandStepperForwardClockwise(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperForwardClockwise> cmdPtr);
 	void onCommandLocatorQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandLocatorQuery> cmdPtr);
 	void onCommandOptPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandOptPowerOn> cmdPtr);
 	void onCommandOptPowerOff(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandOptPowerOff> cmdPtr);
@@ -134,6 +139,7 @@ private:
 	void onCommandDcmPowerOn(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDcmPowerOn> cmdPtr);
 	void onCommandDcmPowerOff(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDcmPowerOff> cmdPtr);
 	void onCommandDcmQueryPower(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandDcmQueryPower> cmdPtr);
+	void onCommandSolenoidActivate(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSolenoidActivate> cmdPtr);
 	void sendTranslatedCommandToDevice(long long socketId, const std::string& cmdString);
 
 	long long newSocketId() { return ++_lastSocketId; }

@@ -206,6 +206,12 @@ std::shared_ptr<DeviceCommand> CommandFactory::StepperMove(unsigned int stepperI
 
 	return ptr;
 }
+std::shared_ptr<DeviceCommand> CommandFactory::StepperForwardClockwise(unsigned int stepperIndex, bool forwardClockwise)
+{
+	std::shared_ptr<DeviceCommand> ptr(new CommandStepperForwardClockwise(stepperIndex, forwardClockwise));
+
+	return ptr;
+}
 
 std::shared_ptr<DeviceCommand> CommandFactory::LocatorQuery(unsigned int locatorIndex)
 {

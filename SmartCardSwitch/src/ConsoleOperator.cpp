@@ -943,6 +943,21 @@ bool ConsoleOperator::runConsoleCommand(const std::string& command, ICommandRece
 		}
 		break;
 
+		case ConsoleCommandFactory::Type::StepperForwardClockwise:
+		{
+			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+			unsigned int index = d1;
+			bool forwardClockwise = (d2 != 0);
+
+			_cmdKey = _pCommandReception->StepperForwardClockwise(index, forwardClockwise);
+			if(_cmdKey != InvalidCommandId)
+			{
+				_steppers[index].forwardClockwise = forwardClockwise;
+			}
+			cmdId = _cmdKey;
+		}
+		break;
+
 		case ConsoleCommandFactory::Type::LocatorQuery:
 		{
 			Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
@@ -1853,6 +1868,7 @@ void ConsoleOperator::OnStepperQuery(CommandId key, bool bSuccess,
 									StepperState state,
 									bool bEnabled,
 									bool bForward,
+									bool bForwardClockwise,
 									unsigned int locatorIndex,
 									unsigned int locatorLineNumberStart,
 									unsigned int locatorLineNumberTerminal,
@@ -1883,6 +1899,7 @@ void ConsoleOperator::OnStepperQuery(CommandId key, bool bSuccess,
 		_steppers[_index].state = state;
 		_steppers[_index].enabled = bEnabled;
 		_steppers[_index].forward = bForward;
+		_steppers[_index].forwardClockwise = bForwardClockwise;
 
 		_steppers[_index].locatorIndex = locatorIndex;
 		_steppers[_index].locatorLineNumberStart = locatorLineNumberStart;
@@ -1901,6 +1918,7 @@ void ConsoleOperator::OnStepperQuery(CommandId key, bool bSuccess,
 								state,
 								bEnabled,
 								bForward,
+								bForwardClockwise,
 								locatorIndex,
 								locatorLineNumberStart,
 								locatorLineNumberTerminal,
@@ -1911,6 +1929,28 @@ void ConsoleOperator::OnStepperQuery(CommandId key, bool bSuccess,
 								accelerationBufferDecrement,
 								decelerationBuffer,
 								decelerationBufferIncrement);
+	}
+}
+
+void ConsoleOperator::OnStepperForwardClockwise(CommandId key, bool bSuccess)
+{
+	Poco::ScopedLock<Poco::Mutex> lowerLock(_lowerMutex);
+
+	if(_cmdKey == InvalidCommandId) {
+		return;
+	}
+	if(_cmdKey != key) {
+		pLogger->LogDebug("ConsoleOperator::OnStepperForwardClockwise unexpected cmdKey: " + std::to_string(key) + ", expected: " + std::to_string(_cmdKey));
+		return;
+	}
+
+	pLogger->LogInfo("ConsoleOperator::OnStepperForwardClockwise finished");
+	_bCmdSucceed = bSuccess;
+	_bCmdFinish = true;
+	_cmdKey = InvalidCommandId;
+
+	for(auto it=_observerPtrArray.begin(); it!=_observerPtrArray.end(); it++) {
+		(*it)->OnStepperForwardClockwise(key, bSuccess);
 	}
 }
 

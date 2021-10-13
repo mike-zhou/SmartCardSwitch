@@ -80,6 +80,7 @@ private:
 	virtual CommandId StepperMove(unsigned int index, unsigned short steps) override;
 	virtual CommandId StepperQuery(unsigned int index) override;
 	virtual CommandId StepperSetState(unsigned int index, StepperState state) override;
+	virtual CommandId StepperForwardClockwise(unsigned int index, bool bForwardClockwise) override;
 	virtual CommandId LocatorQuery(unsigned int index) override;
 	virtual CommandId SaveMovementConfig() override;
 
@@ -142,8 +143,11 @@ private:
 	void onFeedbackStepperMove(std::shared_ptr<ReplyTranslator::ReplyStepperMove> replyPtr);
 	void onFeedbackStepperQuery(std::shared_ptr<ReplyTranslator::ReplyStepperQuery> replyPtr);
 	void onFeedbackStepperSetState(std::shared_ptr<ReplyTranslator::ReplyStepperSetState> replyPtr);
+	void onFeedbackStepperForwardClockwise(std::shared_ptr<ReplyTranslator::ReplyStepperForwardClockwise> replyPtr);
 	void onFeedbackLocatorQuery(std::shared_ptr<ReplyTranslator::ReplyLocatorQuery> replyPtr);
 
+	// "User" in the name is confusing because there is a "UserCommandRunner"
+	// The following names of struct and variable need to be changed to avoid this confusion.
 	struct UserCommand
 	{
 		enum class CommandState
@@ -181,11 +185,18 @@ private:
 			FORWORD,
 			REVERSE
 		};
+		enum class StepperForwardClockwiseStatus
+		{
+			UNKNOWN,
+			CLOCKWISE,
+			COUNTER_CLOCKWISE
+		};
 		struct StepperStatus
 		{
 			std::string state;
 			StepperEnableStatus enabled;
 			StepperDirectionStatus forward;
+			StepperForwardClockwiseStatus forwardClockwise;
 			long locatorIndex;
 			long locatorLineNumberStart;
 			long locatorLineNumberTerminal;

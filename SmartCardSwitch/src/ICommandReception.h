@@ -19,7 +19,7 @@ public:
 
 	typedef unsigned long CommandId;
 
-	const CommandId InvalidCommandId = 0;
+	static const CommandId InvalidCommandId = 0;
 
 	enum class BdcStatus
 	{
@@ -89,6 +89,7 @@ public:
 								StepperState state,
 								bool bEnabled,
 								bool bForward,
+								bool bForwardClockwise,
 								unsigned int locatorIndex,
 								unsigned int locatorLineNumberStart,
 								unsigned int locatorLineNumberTerminal,
@@ -101,6 +102,7 @@ public:
 								unsigned long decelerationBufferIncrement) {}
 
 	virtual void OnStepperSetState(CommandId key, bool bSuccess) {}
+	virtual void OnStepperForwardClockwise(CommandId key, bool bSuccess) {}
 	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) {}
 	virtual void OnSaveMovementConfig(CommandId key, bool bSuccess) {}
 	virtual void OnSaveCoordinates(CommandId key, bool bSuccess) {}
@@ -146,6 +148,7 @@ public:
 	virtual CommandId StepperConfigHome(unsigned int index, unsigned int locatorIndex, unsigned int lineNumberStart, unsigned int lineNumberTerminal) = 0;
 	virtual CommandId StepperMove(unsigned int index, unsigned short steps) = 0;
 	virtual CommandId StepperSetState(unsigned int index, StepperState state) = 0;
+	virtual CommandId StepperForwardClockwise(unsigned int index, bool bForwardClockwise) = 0;
 	virtual CommandId StepperQuery(unsigned int index) = 0;
 	virtual CommandId LocatorQuery(unsigned int index) = 0;
 	virtual CommandId SaveMovementConfig() = 0;

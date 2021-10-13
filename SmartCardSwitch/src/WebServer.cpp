@@ -359,6 +359,78 @@ void ScsRequestHandler::onStepperConfigMovement(Poco::Net::HTTPServerRequest& re
 	}
 }
 
+void ScsRequestHandler::onStepperConfigForwardClockwise(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onStepperConfigForwardClockwise no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onStepperConfigForwardClockwise command: " + command);
+		unsigned int index;
+		bool forwardClockwise;
+		bool exceptionOccurred = true;
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			index = ds["index"];
+			forwardClockwise = ds["forwardClockwise"];
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperConfigForwardClockwise exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperConfigForwardClockwise unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onStepperConfigForwardClockwise reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else
+		{
+			std::string errorInfo;
+			if(!_pWebServer->StepperConfigForwardClockwise(index, forwardClockwise, errorInfo))
+			{
+				pLogger->LogError("ScsRequestHandler::onStepperConfigForwardClockwise failed to configure stepper movement: " + errorInfo);
+			}
+
+			if(errorInfo.empty()) {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				auto& oStream = response.send();
+				oStream << _pWebServer->DeviceStatus();
+			}
+			else {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
+		}
+	}
+}
+
 void ScsRequestHandler::onStepperConfigHome(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	std::string command = getJsonCommand(request);
@@ -497,6 +569,110 @@ void ScsRequestHandler::onToCoordinate(Poco::Net::HTTPServerRequest& request, Po
 				if(!_pWebServer->ToCoordinateIndirect(x, y, z, w, errorInfo)) {
 					pLogger->LogError("ScsRequestHandler::onToCoordinate failed: " + errorInfo);
 				}
+			}
+
+			if(errorInfo.empty()) {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				auto& oStream = response.send();
+				oStream << _pWebServer->DeviceStatus();
+			}
+			else {
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
+		}
+	}
+}
+
+void ScsRequestHandler::onToCoordinateItem(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onToCoordinateItem no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onToCoordinateItem command: " + command);
+		int x, y, z, w, v;
+		bool exceptionOccurred = true;
+
+		x = -1;
+		y = -1;
+		z = -1;
+		w = -1;
+		v = -1;
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			if(objectPtr->has("x")) {
+				x = ds["x"];
+			}
+			else if(objectPtr->has("y")) {
+				y = ds["y"];
+			}
+			else if(objectPtr->has("z")) {
+				z = ds["z"];
+			}
+			else if(objectPtr->has("w")) {
+				w = ds["w"];
+			}
+			else if(objectPtr->has("v")) {
+				v = ds["v"];
+			}
+			else {
+				throw Poco::Exception("wrong parameter in command");
+			}
+
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onToCoordinateItem exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onToCoordinateItem unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onToCoordinateItem reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else
+		{
+			std::string errorInfo;
+			if(x >= 0) {
+				_pWebServer->ToCoordinateItem(0, x, errorInfo);
+			}
+			else if(y >= 0) {
+				_pWebServer->ToCoordinateItem(1, y, errorInfo);
+			}
+			else if(z >= 0) {
+				_pWebServer->ToCoordinateItem(2, z, errorInfo);
+			}
+			else if(w >= 0) {
+				_pWebServer->ToCoordinateItem(3, w, errorInfo);
+			}
+			else if(v >= 0) {
+				_pWebServer->ToCoordinateItem(4, v, errorInfo);
 			}
 
 			if(errorInfo.empty()) {
@@ -662,6 +838,77 @@ void ScsRequestHandler::onPower(Poco::Net::HTTPServerRequest& request, Poco::Net
 	}
 }
 
+void ScsRequestHandler::onToSmartCardOffset(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	std::string command = getJsonCommand(request);
+
+	//execute command
+	if(command.empty())
+	{
+		pLogger->LogError("ScsRequestHandler::onToSmartCardOffset no command in request");
+
+		response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+		response.setReason("no command in request");
+		response.send();
+	}
+	else
+	{
+		pLogger->LogInfo("ScsRequestHandler::onToSmartCardOffset command: " + command);
+		unsigned int offset;
+		bool exceptionOccurred = true;
+
+		try
+		{
+			Poco::JSON::Parser parser;
+			Poco::Dynamic::Var result = parser.parse(command);
+			Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+			Poco::DynamicStruct ds = *objectPtr;
+
+			offset = ds["v"];
+			exceptionOccurred = false;
+		}
+		catch(Poco::Exception &e)
+		{
+			pLogger->LogError("ScsRequestHandler::onToSmartCardOffset exception: " + e.displayText());
+		}
+		catch(...)
+		{
+			pLogger->LogError("ScsRequestHandler::onToSmartCardOffset unknown exception occurred");
+		}
+
+		//reply to request
+		if(exceptionOccurred)
+		{
+			pLogger->LogError("ScsRequestHandler::onToSmartCardOffset reply bad request to browser");
+
+			response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+			response.setReason("wrong parameter in: " + command);
+			response.send();
+		}
+		else
+		{
+			std::string errorInfo;
+
+			if(!_pWebServer->ToSmartCardOffset(offset, errorInfo)) {
+				pLogger->LogError("ScsRequestHandler::onToSmartCardOffset failed: " + errorInfo);
+			}
+
+			if(errorInfo.empty())
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+				response.setContentType("application/json");
+				response.send();
+			}
+			else
+			{
+				response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+				response.setReason(errorInfo);
+				response.send();
+			}
+		}
+	}
+}
+
 void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	const std::string& uri = request.getURI();
@@ -691,8 +938,14 @@ void ScsRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poc
 	else if(uri == "/toCoordinate") {
 		onToCoordinate(request, response);
 	}
+	else if(uri == "/toCoordinateItem") {
+		onToCoordinateItem(request, response);
+	}
 	else if(uri == "/power") {
 		onPower(request, response);
+	}
+	else if(uri == "/toSmartCardOffset") {
+		onToSmartCardOffset(request, response);
 	}
 	else
 	{
@@ -741,7 +994,7 @@ const std::string& WebServer::GetDefaultPageContent()
 		{
 			std::string filePathName = pagePath.toString();
 
-			int fd = open(filePathName.c_str(), O_RDONLY);
+			FILE * fd = fopen(filePathName.c_str(), "r");
 			if(fd < 0) {
 				pLogger->LogError("WebServer::GetDefaultPageContent cannot open file: " + filePathName);
 			}
@@ -750,7 +1003,7 @@ const std::string& WebServer::GetDefaultPageContent()
 				for(;;)
 				{
 					unsigned char c;
-					auto amount = read(fd, &c, 1);
+					auto amount = fread(&c, 1, 1, fd);
 					if(amount < 1) {
 						break;
 					}
@@ -759,7 +1012,7 @@ const std::string& WebServer::GetDefaultPageContent()
 					}
 				}
 				//close file
-				close(fd);
+				fclose(fd);
 			}
 		}
 
@@ -1465,6 +1718,7 @@ void WebServer::OnStepperQuery(CommandId key, bool bSuccess,
 							StepperState state,
 							bool bEnabled,
 							bool bForward,
+							bool bForwardClockwise,
 							unsigned int locatorIndex,
 							unsigned int locatorLineNumberStart,
 							unsigned int locatorLineNumberTerminal,
@@ -1495,6 +1749,7 @@ void WebServer::OnStepperQuery(CommandId key, bool bSuccess,
 
 		data.state = state;
 		data.forward = bForward;
+		data.forwardClockwise = bForwardClockwise;
 		data.enabled = bEnabled;
 		data.locatorIndex = locatorIndex;
 		data.locatorLineNumberStart = locatorLineNumberStart;
@@ -1520,6 +1775,31 @@ void WebServer::OnStepperQuery(CommandId key, bool bSuccess,
 void WebServer::OnStepperSetState(CommandId key, bool bSuccess)
 {
 
+}
+
+void WebServer::OnStepperForwardClockwise(CommandId key, bool bSuccess)
+{
+	if(key == InvalidCommandId) {
+		return;
+	}
+
+	Poco::ScopedLock<Poco::Mutex> lock(_replyMutex); //synchronize console command and reply
+
+	if(_consoleCommand.state != CommandState::OnGoing) {
+		return;
+	}
+	if(_consoleCommand.cmdId != key) {
+		return;
+	}
+
+	if(bSuccess) {
+		//update result.
+		_consoleCommand.resultSteppers[_consoleCommand.stepperIndex].forwardClockwise = _consoleCommand.stepperForwardClockwise;
+		_consoleCommand.state = CommandState::Succeeded;
+	}
+	else {
+		_consoleCommand.state = CommandState::Failed;
+	}
 }
 
 void WebServer::OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput)
@@ -1742,6 +2022,25 @@ bool WebServer::StepperConfigMovement(
 	}
 
 	return true;
+}
+
+bool WebServer::StepperConfigForwardClockwise(unsigned int index, bool forwardClockwise, std::string & errorInfo)
+{
+	errorInfo.clear();
+
+	if(index >= STEPPER_AMOUNT) {
+		errorInfo = "stepper index is out of range: " + std::to_string(index);
+	}
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::StepperConfigMovement " + errorInfo);
+		return false;
+	}
+
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex); //one command at a time
+
+	//not implemented in webserver yet.
+
+	return false;
 }
 
 bool WebServer::BdcForward(unsigned int index, std::string & errorInfo)
@@ -1993,6 +2292,12 @@ bool WebServer::SaveCoordinate(const std::string & coordinateType, unsigned int 
 			errorInfo = "failed to save coordinate of smart card: " + std::to_string(data);
 			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
 		}
+
+		rc = pCoordinateStorage->SetSmartCardOffset(data, _consoleCommand.resultSteppers[4].homeOffset);
+		if(rc == false) {
+			errorInfo = "failed to save offset of smart card: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
 	}
 	else if(coordinateType == "smartCardGate")
 	{
@@ -2218,6 +2523,20 @@ bool WebServer::SaveCoordinate(const std::string & coordinateType, unsigned int 
 			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
 		}
 	}
+	else if(coordinateType == "barCodeReaderExtra")
+	{
+		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::BarCodeReaderExtraPosition,
+				_consoleCommand.resultSteppers[0].homeOffset,
+				_consoleCommand.resultSteppers[1].homeOffset,
+				_consoleCommand.resultSteppers[2].homeOffset,
+				_consoleCommand.resultSteppers[3].homeOffset,
+				data);
+
+		if(rc == false) {
+			errorInfo = "failed to save coordinate of bar code reader extra position: " + std::to_string(data);
+			pLogger->LogError("WebServer::SaveCoordinate " + errorInfo);
+		}
+	}
 	else if(coordinateType == "barcodeReaderGate")
 	{
 		auto rc = pCoordinateStorage->SetCoordinate(CoordinateStorage::Type::BarCodeReaderGate,
@@ -2425,6 +2744,31 @@ bool WebServer::ToCoordinate(const unsigned int x, const unsigned int y, const u
 	return true;
 }
 
+bool WebServer::ToCoordinateItem(const unsigned int index, unsigned int coordinate, std::string & errorInfo)
+{
+	errorInfo.clear();
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex);
+
+	if(index >= STEPPER_AMOUNT) {
+		errorInfo = "stepper index out of range: " + std::to_string(index);
+		pLogger->LogError("WebServer::ToCoordinateItem stepper index out of range: " + std::to_string(index));
+		return false;
+	}
+
+	unsigned int curOffset = _consoleCommand.resultSteppers[index].homeOffset;
+
+	bool forward = (coordinate > curOffset);
+	unsigned int steps = forward?(coordinate - curOffset):(curOffset - coordinate);
+
+	StepperMove(index, forward, steps, errorInfo);
+	if(!errorInfo.empty()) {
+		pLogger->LogError("WebServer::ToCoordinateItem failed to move stepper: " + std::to_string(index));
+		return false;
+	}
+
+	return true;
+}
+
 bool WebServer::ToCoordinateIndirect(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo)
 {
 	errorInfo.clear();
@@ -2529,6 +2873,30 @@ bool WebServer::ToCoordinateIndirect(const unsigned int x, const unsigned int y,
 	return true;
 }
 
+bool WebServer::ToSmartCardOffset(const unsigned int offset, std::string & errorInfo)
+{
+	errorInfo.clear();
+	Poco::ScopedLock<Poco::Mutex> lock(_webServerMutex);
+
+	unsigned int curV = _consoleCommand.resultSteppers[STEPPER_V].homeOffset;
+	if(offset > curV) {
+		StepperMove(STEPPER_V, true, offset - curV, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToSmartCardOffset fail to move stepper V: " + errorInfo);
+			return false;
+		}
+	}
+	else {
+		StepperMove(STEPPER_V, false, offset - curV, errorInfo);
+		if(!errorInfo.empty()) {
+			pLogger->LogError("WebServer::ToSmartCardOffset fail to move stepper V: " + errorInfo);
+			return false;
+		}
+	}
+
+	return true;
+}
+
 std::string WebServer::DeviceStatus()
 {
 	std::string json;
@@ -2544,6 +2912,7 @@ std::string WebServer::DeviceStatus()
 			json += "\"state\":" + std::to_string((int)(data.state)) + ",";
 			json += "\"enabled\":" + (data.enabled?std::string("true"):std::string("false")) + ",";
 			json += "\"forward\":" + (data.forward?std::string("true"):std::string("false")) + ",";
+			json += "\"forwardClockwise\":" + (data.forwardClockwise?std::string("true"):std::string("false")) + ",";
 			json += "\"homeOffset\":" + std::to_string(data.homeOffset) + ",";
 			json += "\"locatorIndex\":" + std::to_string(data.locatorIndex) + ",";
 			json += "\"locatorLineNumberStart\":" + std::to_string(data.locatorLineNumberStart) + ",";
@@ -2662,6 +3031,26 @@ std::string WebServer::DeviceStatus()
 		else {
 			pLogger->LogError("WebServer::DeviceStatus failed to retrieve coordinate of smart card: " + std::to_string(i));
 		}
+		json += "},";
+	}
+	if(pCoordinateStorage->SmartCardsAmount()) {
+		json.pop_back();//remove the last ','
+	}
+	json += "],";
+	//coordinate Smart card offsets
+	json += "\"coordinateSmartCardOffsets\":[";
+	for(unsigned int i=0; i<pCoordinateStorage->SmartCardsAmount(); i++)
+	{
+		int value = 0;
+
+		json += "{";
+		if(pCoordinateStorage->GetSmartCardOffset(i, value)) {
+		}
+		else {
+			pLogger->LogError("WebServer::DeviceStatus failed to retrieve smart card offset: " + std::to_string(i));
+		}
+		json += "\"index\":" + std::to_string(i) + ",";
+		json += "\"value\":" + std::to_string(value) ;
 		json += "},";
 	}
 	if(pCoordinateStorage->SmartCardsAmount()) {

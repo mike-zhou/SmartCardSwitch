@@ -5,7 +5,6 @@
  *      Author: user1
  */
 
-#include <poll.h>
 #include <stddef.h>
 #include "Poco/Timespan.h"
 #include "Poco/Net/Socket.h"
@@ -34,10 +33,32 @@ void CSocketManager::SetDevice(IDevice * pDevice)
 	_pDevice = pDevice;
 }
 
+void CSocketManager::lockMutex(const std::string & functionName, const std::string & purpose)
+{
+	do
+	{
+		if(_mutex.tryLock(MUTEX_TIMEOUT))
+		{
+			_lockMutexFor = functionName + " " + purpose;
+			break;
+		}
+		else
+		{
+			pLogger->LogError(functionName + " failed to lock mutex: " + _lockMutexFor);
+		}
+	} while(1);
+}
+
+void CSocketManager::unlockMutex()
+{
+	_lockMutexFor.clear();
+	_mutex.unlock();
+}
+
+
 void CSocketManager::OnDeviceInserted(const std::string& deviceName)
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-
+	lockMutex("CSocketManager::OnDeviceInserted", "");
 	if(_deviceMap.end() == _deviceMap.find(deviceName)) {
 		pLogger->LogInfo("CSocketManager::OnDeviceInserted new device is available: " + deviceName);
 		_deviceMap[deviceName].socketId = INVALID_SOCKET_ID;
@@ -45,18 +66,19 @@ void CSocketManager::OnDeviceInserted(const std::string& deviceName)
 	else {
 		pLogger->LogError("CSocketManager::OnDeviceInserted: device has already existed: " + deviceName);
 	}
+	unlockMutex();
 }
 
 void CSocketManager::OnDeviceUnplugged(const std::string& deviceName)
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-
+	lockMutex("CSocketManager::OnDeviceUnplugged", "");
 	_unpluggedDevices.push_back(deviceName);
+	unlockMutex();
 }
 
 void CSocketManager::OnDeviceReply(const std::string& deviceName, const std::string& reply)
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	lockMutex("CSocketManager::OnDeviceReply", "");
 
 	auto it = _deviceMap.find(deviceName);
 	if(_deviceMap.end() != it) {
@@ -66,12 +88,12 @@ void CSocketManager::OnDeviceReply(const std::string& deviceName, const std::str
 	else {
 		pLogger->LogError("CSocketManager::OnDeviceReply: unknown device has a  reply: " + deviceName + ":" + reply);
 	}
+
+	unlockMutex();
 }
 
 void CSocketManager::onDeviceUnpluged(long long socketId)
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-
 	auto it = _sockets.begin();
 	for(; it != _sockets.end(); it++)
 	{
@@ -91,7 +113,7 @@ void CSocketManager::onDeviceUnpluged(long long socketId)
 
 void CSocketManager::processUnpluggedDevice()
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	lockMutex("CSocketManager::processUnpluggedDevice", "");
 
 	for(; _unpluggedDevices.size()>0; )
 	{
@@ -100,7 +122,8 @@ void CSocketManager::processUnpluggedDevice()
 		_unpluggedDevices.erase(_unpluggedDevices.begin());
 
 		auto it = _deviceMap.find(deviceName);
-		if(_deviceMap.end() != it) {
+		if(_deviceMap.end() != it)
+		{
 			auto socketId = _deviceMap[deviceName].socketId;
 
 			pLogger->LogInfo("CSocketManager::OnDeviceUnplugged: device is unplugged: " + deviceName);
@@ -115,13 +138,13 @@ void CSocketManager::processUnpluggedDevice()
 			pLogger->LogError("CDeviceSocketMapping::OnDeviceUnplugged: unknown device is unplugged: " + deviceName);
 		}
 	}
+
+	unlockMutex();
 }
 
 
 void CSocketManager::moveReplyToSocket(long long socketId, const std::string& reply)
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-
 	auto it = _sockets.begin();
 	for(; it!=_sockets.end(); it++)
 	{
@@ -146,7 +169,7 @@ void CSocketManager::moveReplyToSocket(long long socketId, const std::string& re
 
 void CSocketManager::processReplies()
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	lockMutex("CSocketManager::processReplies", "");
 
 	for(auto deviceIt = _deviceMap.begin(); deviceIt != _deviceMap.end(); deviceIt++)
 	{
@@ -179,13 +202,16 @@ void CSocketManager::processReplies()
 		}
 		deviceData.replyPool.clear();
 	}
+
+	unlockMutex();
 }
 
 void CSocketManager::AddSocket(StreamSocket& socket)
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 	struct SocketWrapper wrapper;
 	Poco::Timespan zeroSpan;
+
+	lockMutex("CSocketManager::AddSocket", "");
 
 	try {
 		socket.setReceiveTimeout(zeroSpan);
@@ -200,6 +226,8 @@ void CSocketManager::AddSocket(StreamSocket& socket)
 	pLogger->LogInfo("CSocketManager::AddSocket socket received: " + socket.peerAddress().toString() + " socketId: " + std::to_string(wrapper.socketId));
 
 	_sockets.push_back(wrapper);
+
+	unlockMutex();
 }
 
 //retrieve commands from data
@@ -356,8 +384,16 @@ void CSocketManager::onCommand(struct SocketWrapper& socketWrapper, const std::s
 		onCommandStepperSetState(socketWrapper, translator.GetCommandStepperSetState());
 		break;
 
+	case CommandType::StepperForwardClockwise:
+		onCommandStepperForwardClockwise(socketWrapper, translator.GetCommandStepperForwardClockwise());
+		break;
+
 	case CommandType::LocatorQuery:
 		onCommandLocatorQuery(socketWrapper, translator.GetCommandLocatorQuery());
+		break;
+
+	case CommandType::SolenoidActivate:
+		onCommandSolenoidActivate(socketWrapper, translator.GetCommandSolenoidActivate());
 		break;
 
 	case CommandType::Invalid:
@@ -726,7 +762,27 @@ void CSocketManager::onCommandStepperSetState(struct SocketWrapper& socketWrappe
 	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
 }
 
+void CSocketManager::onCommandStepperForwardClockwise(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandStepperForwardClockwise> cmdPtr)
+{
+	if(cmdPtr == nullptr) {
+		pLogger->LogError("CSocketManager::"  + std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
+
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+}
+
 void CSocketManager::onCommandLocatorQuery(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandLocatorQuery> cmdPtr)
+{
+	if(cmdPtr == nullptr) {
+		pLogger->LogError("CSocketManager::"  + std::string(__FUNCTION__) + " failed in translating JSON");
+		return;
+	}
+
+	sendTranslatedCommandToDevice(socketWrapper.socketId, cmdPtr->ToString());
+}
+
+void CSocketManager::onCommandSolenoidActivate(struct SocketWrapper& socketWrapper, std::shared_ptr<CommandSolenoidActivate> cmdPtr)
 {
 	if(cmdPtr == nullptr) {
 		pLogger->LogError("CSocketManager::"  + std::string(__FUNCTION__) + " failed in translating JSON");
@@ -817,7 +873,7 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 				if(dataRead == 0)
 				{
 					char buf[256];
-					sprintf(buf, "CSocketManager::onSocketReadable socket closed: %s, socketId: %Ld",
+					sprintf(buf, "CSocketManager::onSocketReadable socket closed: %s, socketId: %ld",
 							socketWrapper.socket.peerAddress().toString().c_str(),
 							socketWrapper.socketId);
 					pLogger->LogInfo(buf);
@@ -828,7 +884,7 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 				else
 				{
 					char buf[256];
-					sprintf(buf, "CSocketManager::onSocketReadable %d bytes from %s, socketId: %Ld",
+					sprintf(buf, "CSocketManager::onSocketReadable %d bytes from %s, socketId: %ld",
 							dataRead,
 							socketWrapper.socket.peerAddress().toString().c_str(),
 							socketWrapper.socketId);
@@ -843,13 +899,13 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 			catch(Poco::TimeoutException& e)
 			{
 				char buf[256];
-				sprintf(buf, "CSocketManager::onSocketReadable timeout in socket: %Ld", socketWrapper.socketId);
+				sprintf(buf, "CSocketManager::onSocketReadable timeout in socket: %ld", socketWrapper.socketId);
 				pLogger->LogError(buf);
 			}
 			catch(Poco::Net::NetException& e)
 			{
 				char buf[256];
-				sprintf(buf, "CSocketManager::onSocketReadable NetException in socket: %Ld: %s",
+				sprintf(buf, "CSocketManager::onSocketReadable NetException in socket: %ld: %s",
 						socketWrapper.socketId,
 						e.displayText().c_str());
 				pLogger->LogError(buf);
@@ -857,7 +913,7 @@ void CSocketManager::onSocketReadable(struct SocketWrapper& socketWrapper)
 			catch(...)
 			{
 				char buf[256];
-				sprintf(buf, "CSocketManager::onSocketReadable unknown exception in socket: %Ld", socketWrapper.socketId);
+				sprintf(buf, "CSocketManager::onSocketReadable unknown exception in socket: %ld", socketWrapper.socketId);
 				pLogger->LogError(buf);
 			}
 		}
@@ -916,7 +972,7 @@ void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 			dataSent = 0;
 			if(dataSize > 0) {
 				char buf[256];
-				sprintf(buf, "CSocketManager::onSocketWritable writing %d bytes to socket %Ld", dataSize, socketWrapper.socketId);
+				sprintf(buf, "CSocketManager::onSocketWritable writing %d bytes to socket %ld", dataSize, socketWrapper.socketId);
 				pLogger->LogInfo(buf);
 				dataSent = socketWrapper.socket.sendBytes(buffer, dataSize, 0);
 			}
@@ -926,7 +982,7 @@ void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 			//remove the sent data from the sending stage.
 			if(dataSent > 0) {
 				char buf[256];
-				sprintf(buf, "CSocketManager::onSocketWritable wrote %d bytes to socket %Ld", dataSize, socketWrapper.socketId);
+				sprintf(buf, "CSocketManager::onSocketWritable wrote %d bytes to socket %ld", dataSize, socketWrapper.socketId);
 				pLogger->LogInfo(buf);
 				for(;dataSent>0; dataSent--) {
 					socketWrapper.outgoing.pop_front();
@@ -934,7 +990,7 @@ void CSocketManager::onSocketWritable(struct SocketWrapper& socketWrapper)
 			}
 			else {
 				char buf[256];
-				sprintf(buf, "CSocketManager::onSocketWritable wrote no byte to socket %Ld", socketWrapper.socketId);
+				sprintf(buf, "CSocketManager::onSocketWritable wrote no byte to socket %ld", socketWrapper.socketId);
 				pLogger->LogError(buf);
 				break;
 			}
@@ -950,7 +1006,8 @@ void CSocketManager::onSocketError(struct SocketWrapper& socketWrapper)
 
 void CSocketManager::cleanupSockets()
 {
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	lockMutex("CSocketManager::cleanupSockets", "");
+
 	for(auto it=_sockets.begin(); it!=_sockets.end(); )
 	{
 		if(it->state == SocketState::TO_BE_CLOSED)
@@ -979,6 +1036,8 @@ void CSocketManager::cleanupSockets()
 			it++;
 		}
 	}
+
+	unlockMutex();
 }
 
 void CSocketManager::pollSockets()
@@ -990,7 +1049,6 @@ void CSocketManager::pollSockets()
 	using Poco::Net::Socket;
 	using Poco::Timespan;
 
-	std::vector<struct pollfd> fdVector;
 	Socket::SocketList readList, writeList, exceptionList;
 	Timespan zeroSpan;
 	Timespan timedSpan(10*1000); //10 ms
@@ -998,16 +1056,17 @@ void CSocketManager::pollSockets()
 
 	//check if socket can accept replies/events.
 	{
-		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+		lockMutex("CSocketManager::pollSockets", "retrieve socket list for writing reply");
 		for(auto it = _sockets.begin(); it != _sockets.end(); it++)
 		{
 			writeList.push_back(it->socket);
 			exceptionList.push_back(it->socket);
 		}
+		unlockMutex();
 	}
 	try {
 		socketAmount = 0;
-		socketAmount = Socket::select(readList, writeList, exceptionList, zeroSpan);
+		socketAmount = Socket::select(readList, writeList, exceptionList, zeroSpan); //do not wait.
 	}
 	catch(Poco::TimeoutException& e) {
 		pLogger->LogError("CSocketManager::pollSockets timeout exception in select: " + e.displayText());
@@ -1023,24 +1082,26 @@ void CSocketManager::pollSockets()
 		//process exception list
 		for(auto it = exceptionList.begin(); it != exceptionList.end(); it++)
 		{
-			Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+			lockMutex("CSocketManager::pollSockets", "mark socket to be deleted");
 			for(auto wrapperIt = _sockets.begin(); wrapperIt != _sockets.end(); wrapperIt++) {
 				if(*it == wrapperIt->socket) {
 					onSocketError(*wrapperIt);
 				}
 			}
+			unlockMutex();
 		}
 		cleanupSockets();
 
 		//process writable list
 		for(auto it = writeList.begin(); it != writeList.end(); it++)
 		{
-			Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+			lockMutex("CSocketManager::pollSockets", "write socket");
 			for(auto wrapperIt = _sockets.begin(); wrapperIt != _sockets.end(); wrapperIt++) {
 				if(*it == wrapperIt->socket) {
 					onSocketWritable(*wrapperIt);
 				}
 			}
+			unlockMutex();
 		}
 		cleanupSockets();
 	}
@@ -1052,16 +1113,17 @@ void CSocketManager::pollSockets()
 
 	//check if socket has new commands.
 	{
-		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+		lockMutex("CSocketManager::pollSockets", "retrieve socket list for reading command");
 		for(auto it = _sockets.begin(); it != _sockets.end(); it++)
 		{
 			readList.push_back(it->socket);
 			exceptionList.push_back(it->socket);
 		}
+		unlockMutex();
 	}
 	try {
 		socketAmount = 0;
-		socketAmount = Socket::select(readList, writeList, exceptionList, timedSpan);
+		socketAmount = Socket::select(readList, writeList, exceptionList, timedSpan); //wait for 10ms
 	}
 	catch(Poco::TimeoutException& e) {
 		pLogger->LogError("CSocketManager::pollSockets timeout exception in select: " + e.displayText());
@@ -1077,23 +1139,36 @@ void CSocketManager::pollSockets()
 		//process exception list
 		for(auto it = exceptionList.begin(); it != exceptionList.end(); it++)
 		{
-			Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+			lockMutex("CSocketManager::pollSockets", "mark socket to be deleted");
 			for(auto wrapperIt = _sockets.begin(); wrapperIt != _sockets.end(); wrapperIt++) {
 				if(*it == wrapperIt->socket) {
 					onSocketError(*wrapperIt);
 				}
 			}
+			unlockMutex();
 		}
 		cleanupSockets();
 
 		//process readable list
-		for(auto it = readList.begin(); it != readList.end(); it++)
+		for(auto socketIt = readList.begin(); socketIt != readList.end(); socketIt++)
 		{
-			Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-			for(auto wrapperIt = _sockets.begin(); wrapperIt != _sockets.end(); wrapperIt++) {
-				if(*it == wrapperIt->socket) {
-					onSocketReadable(*wrapperIt);
+			struct SocketWrapper * pWrapper = nullptr;
+
+			lockMutex("SocketManager::pollSockets", "read socket");
+			for(auto wrapperIt = _sockets.begin(); wrapperIt != _sockets.end(); wrapperIt++)
+			{
+				if(*socketIt == wrapperIt->socket) {
+					pWrapper = &(*wrapperIt);
+					break;
 				}
+			}
+			unlockMutex();
+
+			if(pWrapper == nullptr) {
+				pLogger->LogError("CSocketManager::pollSockets socket not in list");
+			}
+			else {
+				onSocketReadable(*pWrapper);
 			}
 		}
 		cleanupSockets();

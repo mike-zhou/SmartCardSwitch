@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 #include <fcntl.h>
-#include <unistd.h>
+#include <stdio.h>
 #include "Poco/File.h"
 #include "Poco/Path.h"
 #include "Poco/Exception.h"
@@ -42,16 +42,16 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 		std::string json;
 
 		//open storage file
-		int fd = open(_pathFileName.c_str(), O_RDONLY);
+		FILE * fd = fopen(_pathFileName.c_str(), "r");
 		if(fd < 0) {
-			pLogger->LogError("MovementConfiguration::PersistToFile cannot open file: " + _pathFileName);
+			pLogger->LogError("MovementConfiguration::MovementConfiguration cannot open file: " + _pathFileName);
 			return;
 		}
 		//read out the file content
 		for(;;)
 		{
 			unsigned char c;
-			auto amount = read(fd, &c, 1);
+			auto amount = fread(&c, 1, 1, fd);
 			if(amount < 1) {
 				break;
 			}
@@ -60,10 +60,10 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 			}
 		}
 		//close file
-		close(fd);
+		fclose(fd);
 
 		if(json.empty()) {
-			pLogger->LogError("MovementConfiguration::PersistToFile nothing read from: " + _pathFileName);
+			pLogger->LogError("MovementConfiguration::MovementConfiguration nothing read from: " + _pathFileName);
 		}
 		else
 		{
@@ -79,6 +79,7 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 			{
 				unsigned int index;
 
+				bool forwardClockwise;
 				long lowClks;
 				long highClks;
 				long accelerationBuffer;
@@ -90,6 +91,7 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 				int locatorLineNumberTerminal;
 
 				index 						= ds["steppers"][i]["index"];
+				forwardClockwise			= ds["steppers"][i]["value"]["forwardClockwise"];
 				lowClks 					= ds["steppers"][i]["value"]["lowClks"];
 				highClks 					= ds["steppers"][i]["value"]["highClks"];
 				accelerationBuffer 			= ds["steppers"][i]["value"]["accelerationBuffer"];
@@ -107,10 +109,13 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 									accelerationBufferDecrement,
 									decelerationBuffer,
 									decelerationBufferIncrement);
+
 				SetStepperBoundary(index,
 									locatorIndex,
 									locatorLineNumberStart,
 									locatorLineNumberTerminal);
+
+				SetStepperForwardClockwise(index, forwardClockwise);
 			}
 
 			//cardInsert
@@ -134,16 +139,16 @@ MovementConfiguration::MovementConfiguration(const std::string& pathFileName)
 			_bdc.highClks = ds["bdc"]["highClks"];
 			_bdc.cycles = ds["bdc"]["cycles"];
 
-			pLogger->LogInfo("MovementConfiguration::PersistToFile storage file is parsed successfully");
+			pLogger->LogInfo("MovementConfiguration::MovementConfiguration storage file is parsed successfully");
 		}
 	}
 	catch(Poco::Exception& e)
 	{
-		pLogger->LogError("MovementConfiguration::PersistToFile exception: " + e.displayText());
+		pLogger->LogError("MovementConfiguration::MovementConfiguration exception: " + e.displayText());
 	}
 	catch(...)
 	{
-		pLogger->LogError("MovementConfiguration::PersistToFile unknown exception");
+		pLogger->LogError("MovementConfiguration::MovementConfiguration unknown exception");
 	}
 }
 
@@ -180,25 +185,25 @@ bool MovementConfiguration::PersistToFile()
 	//write json string to file
 	try
 	{
-		int fd;
+		FILE * fd;
 		Poco::File storageFile(_pathFileName);
 
 		if(storageFile.exists()) {
 			storageFile.remove(false);
 		}
 
-		fd = open(_pathFileName.c_str(), O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-		if(fd >= 0)
+		fd = fopen(_pathFileName.c_str(), "w");
+		if(fd != NULL)
 		{
 			pLogger->LogInfo("MovementConfiguration::PersistToFile write " + std::to_string(json.size()) + " bytes to file " + _pathFileName);
-			auto amount = write(fd, json.c_str(), json.size());
-			if(amount != json.size()) {
+			auto amount = fwrite(json.c_str(), json.size(), 1, fd);
+			if(amount != 1) {
 				pLogger->LogError("MovementConfiguration::PersistToFile failure in writing: " + std::to_string(amount) + "/" + std::to_string(json.size()));
 			}
 			else {
 				rc = true;
 			}
-			close(fd);
+			fclose(fd);
 		}
 		else
 		{
@@ -225,7 +230,7 @@ bool MovementConfiguration::SetStepperBoundary(unsigned int index,
 	bool rc = false;
 	char buf[256];
 
-	sprintf(buf, "MovementConfiguration::SetStepperBoundary index: %ld, locatorIndex: %ld, start: %ld, terminal: %ld", index, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
+	sprintf(buf, "MovementConfiguration::SetStepperBoundary index: %d, locatorIndex: %d, start: %d, terminal: %d", index, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
 	std::string info(buf);
 	pLogger->LogInfo(info);
 
@@ -262,7 +267,7 @@ bool MovementConfiguration::SetStepperGeneral(unsigned int index,
 	bool rc = false;
 	char buf[512];
 
-	sprintf(buf, "MovementConfiguration::SetStepperGeneral index: %ld, lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
+	sprintf(buf, "MovementConfiguration::SetStepperGeneral index: %d, lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
 			index, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
 	std::string info(buf);
 	pLogger->LogInfo(info);
@@ -284,6 +289,35 @@ bool MovementConfiguration::SetStepperGeneral(unsigned int index,
 		stepper.accelerationBufferDecrement = accelerationBufferDecrement;
 		stepper.decelerationBuffer = decelerationBuffer;
 		stepper.decelerationBufferIncrement = decelerationBufferIncrement;
+
+		rc = true;
+	}
+
+	return rc;
+}
+
+bool MovementConfiguration::SetStepperForwardClockwise(unsigned int index, bool forwardClockwise)
+{
+	bool rc = false;
+	char buf[512];
+
+	sprintf(buf, "MovementConfiguration::SetStepperForwardClockwise index: %d, clockwise: %s",
+			index, forwardClockwise?"true":"false");
+	std::string info(buf);
+	pLogger->LogInfo(info);
+
+	if(index < STEPPERS_AMOUNT)
+	{
+		if(index >= _steppers.size())
+		{
+			for(; _steppers.size() < STEPPERS_AMOUNT; ) {
+				StepperMovementConfig defaultCfg;
+				_steppers.push_back(defaultCfg);
+			}
+		}
+
+		auto& stepper = _steppers[index];
+		stepper.forwardClockwise = forwardClockwise;
 
 		rc = true;
 	}
@@ -360,7 +394,7 @@ bool MovementConfiguration::GetStepperBoundary(unsigned int index,
 
 	char buf[256];
 
-	sprintf(buf, "MovementConfiguration::GetStepperBoundary index: %ld, locatorIndex: %ld, start: %ld, terminal: %ld", index, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
+	sprintf(buf, "MovementConfiguration::GetStepperBoundary index: %d, locatorIndex: %d, start: %d, terminal: %d", index, locatorIndex, locatorLineNumberStart, locatorLineNumberTerminal);
 	std::string info(buf);
 	pLogger->LogInfo(info);
 
@@ -392,8 +426,30 @@ bool MovementConfiguration::GetStepperGeneral(unsigned int index,
 
 	char buf[512];
 
-	sprintf(buf, "MovementConfiguration::GetStepperGeneral index: %ld, lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
+	sprintf(buf, "MovementConfiguration::GetStepperGeneral index: %d, lowClks: %ld, highClks: %ld, accelerationBuffer: %ld, accelerationBufferDecrement: %ld, decelerationBuffer: %ld, decelerationBufferIncrement: %ld",
 			index, lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement);
+	std::string info(buf);
+	pLogger->LogInfo(info);
+
+	return true;
+}
+
+bool MovementConfiguration::GetStepperForwardClockwise(unsigned int index, bool & forwardClockwise)
+{
+	if(index >= STEPPERS_AMOUNT) {
+		return false;
+	}
+	if(index >= _steppers.size()) {
+		return false;
+	}
+
+	forwardClockwise = _steppers[index].forwardClockwise;
+
+
+	char buf[512];
+
+	sprintf(buf, "MovementConfiguration::GetStepperForwardClockwise index: %d, forward clockwise: %s",
+			index, forwardClockwise?"true":"false");
 	std::string info(buf);
 	pLogger->LogInfo(info);
 
@@ -482,6 +538,7 @@ void MovementConfiguration::GetBdcConfig(unsigned long& lowClks, unsigned long& 
 
 MovementConfiguration::StepperMovementConfig::StepperMovementConfig()
 {
+	forwardClockwise = true;
 	lowClks = 0;
 	highClks = 0;
 	accelerationBuffer = 0;
@@ -498,7 +555,8 @@ std::string MovementConfiguration::StepperMovementConfig::ToJsonObj()
 	std::string json;
 
 	json = "{";
-	json = json + "\"lowClks\":" + std::to_string(lowClks);
+	json = json + "\"forwardClockwise\":" + std::string(forwardClockwise ? "true" : "false");
+	json = json + ",\"lowClks\":" + std::to_string(lowClks);
 	json = json + ",\"highClks\":" + std::to_string(highClks);
 	json = json + ",\"accelerationBuffer\":" + std::to_string(accelerationBuffer);
 	json = json + ",\"accelerationBufferDecrement\":" + std::to_string(accelerationBufferDecrement);

@@ -6,7 +6,7 @@
  */
 #include <stddef.h>
 #include <fcntl.h>
-#include <unistd.h>
+#include <stdio.h>
 
 #include "Poco/File.h"
 #include "Poco/Path.h"
@@ -21,10 +21,26 @@
 
 extern Logger * pLogger;
 
+
 CoordinateStorage::CoordinateStorage(std::string filePathName)
 {
 	_filePathName = filePathName;
+	_wAdjustment = 0;
+	ReloadCoordinate();
+}
 
+int CoordinateStorage::GetWAdjustment()
+{
+	return _wAdjustment;
+}
+
+void CoordinateStorage::SetWAdjustment(int adjustment)
+{
+	_wAdjustment = adjustment;
+}
+
+void CoordinateStorage::ReloadCoordinate()
+{
 	_smartCardSlowlyPlaceStart = -1;
 	_smartCardSlowlyPlaceEnd = -1;
 	_smartCardFetchOffset = -1;
@@ -42,6 +58,18 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 	_home.z = 0;
 	_home.w = 0;
 
+	_smartCards.clear();
+	_pedKeys.clear();
+	_pedKeysPressed.clear();
+	_softKeys.clear();
+	_softKeysPressed.clear();
+	_touchScreenKeys.clear();
+	_touchScreenKeysPressed.clear();
+	_assistKeys.clear();
+	_assistKeysPressed.clear();
+	_smartCardOffsets.clear();
+	_barCodeReaderExtraPositions.clear();
+
 	if(_filePathName.empty()) {
 		pLogger->LogError("CoordinateStorage::CoordinateStorage empty file path & name");
 		return;
@@ -58,8 +86,8 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 		std::string json;
 
 		//open storage file
-		int fd = open(_filePathName.c_str(), O_RDONLY);
-		if(fd < 0) {
+		FILE * fd = fopen(_filePathName.c_str(), "r");
+		if(fd == NULL) {
 			pLogger->LogError("CoordinateStorage::CoordinateStorage cannot open file: " + _filePathName);
 			return;
 		}
@@ -67,7 +95,7 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 		for(;;)
 		{
 			unsigned char c;
-			auto amount = read(fd, &c, 1);
+			auto amount = fread(&c, 1, 1, fd);
 			if(amount < 1) {
 				break;
 			}
@@ -76,7 +104,7 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			}
 		}
 		//close file
-		close(fd);
+		fclose(fd);
 
 		if(json.empty()) {
 			pLogger->LogError("CoordinateStorage::CoordinateStorage nothing read from: " + _filePathName);
@@ -107,6 +135,18 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 				w = ds["smartCards"]["cards"][i]["value"]["w"];
 
 				SetCoordinate(Type::SmartCard, x, y, z, w, index);
+			}
+
+			//smart card offset
+			auto smartCardOffsetAmount = ds["smartCardOffsets"].size();
+			for(unsigned int i=0; i<smartCardOffsetAmount; i++)
+			{
+				unsigned int index;
+				int value;
+
+				index = ds["smartCardOffsets"][i]["index"];
+				value = ds["smartCardOffsets"][i]["value"];
+				SetSmartCardOffset(index, value);
 			}
 
 			//PED keys
@@ -274,6 +314,20 @@ CoordinateStorage::CoordinateStorage(std::string filePathName)
 			_barCodeReader.y = ds["barCodeReader"]["reader"]["y"];
 			_barCodeReader.z = ds["barCodeReader"]["reader"]["z"];
 			_barCodeReader.w = ds["barCodeReader"]["reader"]["w"];
+			auto barCodeReaderExtraPositionsAmount = ds["barCodeReader"]["extraPositions"].size();
+			for(unsigned int i=0; i<barCodeReaderExtraPositionsAmount; i++)
+			{
+				long x, y, z, w;
+				long index;
+
+				index = ds["barCodeReader"]["extraPositions"][i]["index"];
+				x = ds["barCodeReader"]["extraPositions"][i]["value"]["x"];
+				y = ds["barCodeReader"]["extraPositions"][i]["value"]["y"];
+				z = ds["barCodeReader"]["extraPositions"][i]["value"]["z"];
+				w = ds["barCodeReader"]["extraPositions"][i]["value"]["w"];
+
+				SetCoordinate(Type::BarCodeReaderExtraPosition, x, y, z, w, index);
+			}
 
 			//safe
 //			_safe.x = ds["safe"]["x"];
@@ -329,6 +383,16 @@ bool CoordinateStorage::PersistToFile()
 	}
 	json = json + "]";//end of cards
 	json = json + "}";//end of smartCards
+
+	//smart card offsets
+	json = json + ",\"smartCardOffsets\":[";
+	for(unsigned int i=0; i<_smartCardOffsets.size(); i++) {
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + std::to_string(_smartCardOffsets[i]) + "},";
+	}
+	if(!_smartCardOffsets.empty()) {
+		json.pop_back();
+	}
+	json = json + "]";//end of smart card offset.
 
 	//PED keys
 	json = json + ",\"pedKeys\": {";
@@ -438,7 +502,16 @@ bool CoordinateStorage::PersistToFile()
 	//bar code reader
 	json = json + ",\"barCodeReader\": {";
 	json = json + "\"gate\":" + _barCodeReaderGate.ToJsonObj() + ",";
-	json = json + "\"reader\":" + _barCodeReader.ToJsonObj();
+	json = json + "\"reader\":" + _barCodeReader.ToJsonObj() + ",";
+	json = json + "\"extraPositions\":["; //start of extra positions
+	for(unsigned int i=0; i<_barCodeReaderExtraPositions.size(); i++)
+	{
+		json = json + "{\"index\":" + std::to_string(i) + ",\"value\":" + _barCodeReaderExtraPositions[i].ToJsonObj() + "},";
+	}
+	if(!_barCodeReaderExtraPositions.empty()) {
+		json.pop_back(); //delete the extra ','
+	}
+	json = json + "]";//end of extra positions
 	json = json + "}";
 
 	//safe
@@ -463,25 +536,25 @@ bool CoordinateStorage::PersistToFile()
 	//write json string to file
 	try
 	{
-		int fd;
+		FILE * fd;
 		Poco::File storageFile(_filePathName);
 
 		if(storageFile.exists()) {
 			storageFile.remove(false);
 		}
 
-		fd = open(_filePathName.c_str(), O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-		if(fd >= 0)
+		fd = fopen(_filePathName.c_str(),"w");
+		if(fd != NULL)
 		{
 			pLogger->LogInfo("CoordinateStorage::PersistToFile write " + std::to_string(json.size()) + " bytes to file " + _filePathName);
-			auto amount = write(fd, json.c_str(), json.size());
-			if(amount != json.size()) {
+			auto amount = fwrite(json.c_str(), json.size(), 1, fd);
+			if(amount != 1) {
 				pLogger->LogError("CoordinateStorage::PersistToFile failure in writing: " + std::to_string(amount) + "/" + std::to_string(json.size()));
 			}
 			else {
 				rc = true;
 			}
-			close(fd);
+			fclose(fd);
 		}
 		else
 		{
@@ -769,8 +842,6 @@ bool CoordinateStorage::SetCoordinate(Type type,
 		}
 		break;
 
-
-
 		case Type::Home:
 		{
 			_home = value;
@@ -796,6 +867,27 @@ bool CoordinateStorage::SetCoordinate(Type type,
 		{
 			_safe = value;
 			rc = true;
+		}
+		break;
+
+		case Type::BarCodeReaderExtraPosition:
+		{
+			if(index < BAR_CODE_READER_EXTRA_POSITION_AMOUNT)
+			{
+				if(index >= _barCodeReaderExtraPositions.size())
+				{
+					Coordinate tmp;
+					// fill _assistKeys
+					for(; index >= _barCodeReaderExtraPositions.size(); ) {
+						_barCodeReaderExtraPositions.push_back(tmp);
+					}
+				}
+				_barCodeReaderExtraPositions[index] = value;
+				rc = true;
+			}
+			else {
+				pLogger->LogError("CoordinateStorage::SetCoordinate bar code extra position index out of range: " + std::to_string(index));
+			}
 		}
 		break;
 
@@ -1040,6 +1132,20 @@ bool CoordinateStorage::GetCoordinate(Type type,
 	}
 	break;
 
+	case Type::BarCodeReaderExtraPosition:
+	{
+		if(index < _barCodeReaderExtraPositions.size())
+		{
+			value = _barCodeReaderExtraPositions[index];
+			rc = true;
+		}
+		else
+		{
+			pLogger->LogError("CoordinateStorage::GetCoordinate bar code extra positions index out of range: " + std::to_string(index));
+		}
+	}
+	break;
+
 	default:
 		pLogger->LogError("CoordinateStorage::GetCoordinate unknown type: " + std::to_string(type));
 		break;
@@ -1050,7 +1156,7 @@ bool CoordinateStorage::GetCoordinate(Type type,
 		x = value.x;
 		y = value.y;
 		z = value.z;
-		w = value.w;
+		w = value.w + _wAdjustment;
 	}
 
 	return rc;
@@ -1222,6 +1328,31 @@ bool CoordinateStorage::GetMaximumW(long & value)
 	}
 
 	value = _maximumW;
+	return true;
+}
+
+bool CoordinateStorage::SetSmartCardOffset(unsigned int index, int offset)
+{
+	for(;;) {
+		if(_smartCardOffsets.size() <= index) {
+			_smartCardOffsets.push_back(-1);
+		}
+		else {
+			break;
+		}
+	}
+
+	_smartCardOffsets[index] = offset;
+	return true;
+}
+
+bool CoordinateStorage::GetSmartCardOffset(unsigned int index, int& offset)
+{
+	if(index >= _smartCardOffsets.size()) {
+		return false;
+	}
+
+	offset = _smartCardOffsets[index];
 	return true;
 }
 

@@ -57,7 +57,9 @@ enum CommandType
 	StepperConfigHome,
 	StepperQuery,
 	StepperSetState,
-	LocatorQuery
+	StepperForwardClockwise,
+	LocatorQuery,
+	SolenoidActivate
 };
 
 //{
@@ -180,7 +182,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 4 %d %d", _clks,  _commandId & 0xffff);
+		sprintf(buf, "C 4 %d %ld", _clks,  _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -295,7 +297,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 43 %d %d", _bdcIndex,  _commandId & 0xffff);
+		sprintf(buf, "C 43 %d %ld", _bdcIndex,  _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -326,7 +328,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 44 %d %d %d %d %d", _bdcIndex, _lowClks, _highClks, _cycles, _commandId & 0xffff);
+		sprintf(buf, "C 44 %d %d %d %d %ld", _bdcIndex, _lowClks, _highClks, _cycles, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -360,7 +362,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 45 %d %d %d %d %d", _bdcIndex, _lowClks, _highClks, _cycles,  _commandId & 0xffff);
+		sprintf(buf, "C 45 %d %d %d %d %ld", _bdcIndex, _lowClks, _highClks, _cycles,  _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -391,7 +393,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 46 %d %d", _bdcIndex,  _commandId & 0xffff);
+		sprintf(buf, "C 46 %d %ld", _bdcIndex,  _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -419,7 +421,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 47 %d %d", _bdcIndex,  _commandId & 0xffff);
+		sprintf(buf, "C 47 %d %ld", _bdcIndex,  _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -549,7 +551,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 51 %d %d %d %d", _stepperIndex, _lowClks, _highClks, _commandId & 0xffff);
+		sprintf(buf, "C 51 %d %d %d %ld", _stepperIndex, _lowClks, _highClks, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -580,7 +582,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 52 %d %d %d", _stepperIndex, _buffer, _commandId & 0xffff);
+		sprintf(buf, "C 52 %d %d %ld", _stepperIndex, _buffer, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -611,7 +613,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 53 %d %d %d", _stepperIndex, _decrement, _commandId & 0xffff);
+		sprintf(buf, "C 53 %d %d %ld", _stepperIndex, _decrement, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -642,7 +644,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 54 %d %d %d", _stepperIndex, _buffer, _commandId & 0xffff);
+		sprintf(buf, "C 54 %d %d %ld", _stepperIndex, _buffer, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -673,7 +675,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 55 %d %d %d", _stepperIndex, _increment, _commandId & 0xffff);
+		sprintf(buf, "C 55 %d %d %ld", _stepperIndex, _increment, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -704,7 +706,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 56 %d %d %d", _stepperIndex, _enable ? 1 : 0, _commandId & 0xffff);
+		sprintf(buf, "C 56 %d %d %ld", _stepperIndex, _enable ? 1 : 0, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -735,7 +737,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 57 %d %d %d", _stepperIndex, _forward ? 1 : 0, _commandId & 0xffff);
+		sprintf(buf, "C 57 %d %d %ld", _stepperIndex, _forward ? 1 : 0, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -766,7 +768,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 58 %d %d %d", _stepperIndex, _steps, _commandId & 0xffff);
+		sprintf(buf, "C 58 %d %d %ld", _stepperIndex, _steps, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -789,7 +791,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 59 %d %d", _stepperIndex, _commandId & 0xffff);
+		sprintf(buf, "C 59 %d %ld", _stepperIndex, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -830,7 +832,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 60 %d %d %d %d %d",
+		sprintf(buf, "C 60 %d %d %d %d %ld",
 				_stepperIndex,
 				_locatorIndex,
 				_lineNumberStart,
@@ -863,7 +865,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 61 %d %d", _stepperIndex, _commandId & 0xffff);
+		sprintf(buf, "C 61 %d %ld", _stepperIndex, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -894,10 +896,41 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 62 %d %d %d", _stepperIndex, _state, _commandId & 0xffff);
+		sprintf(buf, "C 62 %d %d %ld", _stepperIndex, _state, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
+};
+
+//{
+//	"command":"stepper forward clockwise",
+//	"index":0,
+//	"clockwise":1
+//}
+class CommandStepperForwardClockwise
+{
+public:
+	CommandStepperForwardClockwise(int stepperIndex, bool clockwise, unsigned long commandId)
+	{
+		_stepperIndex = stepperIndex;
+		_clockwise = clockwise;
+		_commandId = commandId;
+	}
+
+	CommandType Type() { return CommandType::StepperForwardClockwise; }
+
+	std::string ToString()
+	{
+		char buf[256];
+		sprintf(buf, "C 63 %d %d %ld", _stepperIndex, _clockwise?1:0, _commandId & 0xffff);
+		std::string cmd(buf);
+		return cmd;
+	}
+
+private:
+	int _stepperIndex;
+	bool _clockwise;
+	unsigned long _commandId;
 };
 
 //{
@@ -922,7 +955,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 100 %d %d", _locatorIndex, _commandId & 0xffff);
+		sprintf(buf, "C 100 %d %ld", _locatorIndex, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -944,7 +977,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 10 %d", _commandId & 0xffff);
+		sprintf(buf, "C 10 %ld", _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -969,7 +1002,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 11 %d", _commandId & 0xffff);
+		sprintf(buf, "C 11 %ld", _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -994,7 +1027,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 12 %d", _commandId & 0xffff);
+		sprintf(buf, "C 12 %ld", _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -1021,7 +1054,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 30 %d %d", _index, _commandId & 0xffff);
+		sprintf(buf, "C 30 %d %ld", _index, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -1049,7 +1082,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 31 %d %d", _index, _commandId & 0xffff);
+		sprintf(buf, "C 31 %d %ld", _index, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -1077,7 +1110,7 @@ public:
 	std::string ToString()
 	{
 		char buf[256];
-		sprintf(buf, "C 32 %d %d", _index, _commandId & 0xffff);
+		sprintf(buf, "C 32 %d %ld", _index, _commandId & 0xffff);
 		std::string cmd(buf);
 		return cmd;
 	}
@@ -1087,6 +1120,40 @@ private:
 	unsigned int _index;
 };
 
+//{
+//	"command":"solenoid activate",
+//	"index":0,
+//	"lowClks":1,
+//	"highClks":2
+//}
+class CommandSolenoidActivate
+{
+public:
+	CommandSolenoidActivate(unsigned int index, unsigned int lowClks, unsigned int highClks, unsigned long commandId)
+	{
+		_index = index;
+		_commandId = commandId;
+		_lowClks = lowClks;
+		_highClks = highClks;
+	}
+
+	CommandType Type() { return CommandType::SolenoidActivate; }
+
+	std::string ToString()
+	{
+		char buf[256];
+
+		sprintf(buf, "C 200 %d %d %d %ld", _index, _lowClks, _highClks, _commandId & 0xffff);
+		std::string cmd(buf);
+		return cmd;
+	}
+
+private:
+	unsigned long _commandId;
+	unsigned int _index;
+	unsigned int _lowClks;
+	unsigned int _highClks;
+};
 
 // translate JSON command to device command
 class CommandTranslator
@@ -1126,6 +1193,7 @@ public:
 	std::shared_ptr<CommandStepperConfigHome> GetCommandStepperConfigHome();
 	std::shared_ptr<CommandStepperQuery> GetCommandStepperQuery();
 	std::shared_ptr<CommandStepperSetState> GetCommandStepperSetState();
+	std::shared_ptr<CommandStepperForwardClockwise> GetCommandStepperForwardClockwise();
 	std::shared_ptr<CommandLocatorQuery> GetCommandLocatorQuery();
 	std::shared_ptr<CommandOptPowerOn> GetCommandOptPowerOn();
 	std::shared_ptr<CommandOptPowerOff> GetCommandOptPowerOff();
@@ -1133,6 +1201,7 @@ public:
 	std::shared_ptr<CommandDcmPowerOn> GetCommandDcmPowerOn();
 	std::shared_ptr<CommandDcmPowerOff> GetCommandDcmPowerOff();
 	std::shared_ptr<CommandDcmQueryPower> GetCommandDcmQueryPower();
+	std::shared_ptr<CommandSolenoidActivate> GetCommandSolenoidActivate();
 
 private:
 	std::string _jsonCmd;
@@ -1167,6 +1236,7 @@ private:
 	const std::string strCommandStepperConfigHome = "stepper config home";
 	const std::string strCommandStepperQuery = "stepper query";
 	const std::string strCommandStepperSetState = "stepper set state";
+	const std::string strCommandStepperForwardClockwise = "stepper forward clockwise";
 	const std::string strCommandLocatorQuery = "locator query";
 	const std::string strCommandOptPowerOn = "opt power on";
 	const std::string strCommandOptPowerOff = "opt power off";
@@ -1174,6 +1244,7 @@ private:
 	const std::string strCommandDcmPowerOn = "dcm power on";
 	const std::string strCommandDcmPowerOff = "dcm power off";
 	const std::string strCommandDcmQueryPower = "dcm query power";
+	const std::string strCommandSolenoidActivate = "solenoid activate";
 };
 
 #endif /* COMMANDPARSER_H_ */

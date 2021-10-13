@@ -25,7 +25,7 @@
 
 /**
  * This class accepts user command with IUserCommandRunner interface,
- * expands user command to console commands,
+ * expands one user command to multiple console commands,
  * passes those console commands to ConsoleOperator instance one by one,
  * and sends result of user command to IUserCommandRunnerObserver
  */
@@ -84,6 +84,7 @@ private:
 								StepperState state,
 								bool bEnabled,
 								bool bForward,
+								bool bForwardClockwise,
 								unsigned int locatorIndex,
 								unsigned int locatorLineNumberStart,
 								unsigned int locatorLineNumberTerminal,
@@ -96,10 +97,11 @@ private:
 								unsigned long decelerationBufferIncrement) override;
 
 	virtual void OnStepperSetState(CommandId key, bool bSuccess) override {}
+	virtual void OnStepperForwardClockwise(CommandId key, bool bSuccess) override;
 	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) override;
 
 private:
-	static const int STEPPER_AMOUNT = 4;
+	static const int STEPPER_AMOUNT = 5;
 	static const int LOCATOR_AMOUNT = 8;
 	static const int DCM_AMOUNT = 2;
 
@@ -125,6 +127,18 @@ private:
 		Succeeded
 	};
 
+	enum class CardState
+	{
+		InBay = 0,
+		InSmartCardGate,
+		InSmartCardReaderGate,
+		InSmartCardReader,
+		InContactlessReaderGate,
+		InContactlessReader,
+		InBarcodeReaderGate,
+		InBarcodeReader
+	};
+
 	//command details
 	struct ExpandedUserCommand
 	{
@@ -138,6 +152,9 @@ private:
 		//confirm reset
 		unsigned int locatorIndexReset;
 		unsigned int lineNumberReset;
+		//stepper W
+		int wAdjustment = 0;
+		bool wAdjusted = false;
 		//smart card related command
 		unsigned int smartCardNumber;
 		//bar code related command
@@ -148,9 +165,11 @@ private:
 		std::vector<unsigned int> keyNumbers;
 		//dcm
 		unsigned int dcmIndex;
+		//barcode
+		unsigned int barcodeExtraPositionIndex;
 
 		//---- user command result ----
-		bool smartCardReaderSlotOccupied;
+		CardState cardState;
 	};
 	ExpandedUserCommand _userCommand;
 
@@ -162,7 +181,6 @@ private:
 	};
 	ClampState _clampState;
 
-	bool _smartCardSlotWithCard;
 	bool _deviceHomePositioned;
 
 	void notifyObservers(const std::string& cmdId, CommandState state, const std::string& errorInfo);
@@ -179,11 +197,17 @@ private:
 	void parseUserCmdCheckResetPressed(Poco::DynamicStruct& ds);
 	void parseUserCmdCheckResetReleased(Poco::DynamicStruct& ds);
 	void parseUserCmdResetDevice(Poco::DynamicStruct& ds);
+	void parseUserCmdAjustStepperW(Poco::DynamicStruct& ds);
+	void parseUserCmdFinishStepperWAdjustment(Poco::DynamicStruct& ds);
 	void parseUserCmdSmartCard(Poco::DynamicStruct& ds);
+	void parseUserCmdBarcodeToExtraPosition(Poco::DynamicStruct& ds);
 	void parseUserCmdSwipeSmartCard(Poco::DynamicStruct& ds);
 	void parseUserCmdTapSmartCard(Poco::DynamicStruct& ds);
 	void parseUserCmdBarCode(Poco::DynamicStruct& ds);
-	void parseUserCmdKeys(Poco::DynamicStruct& ds);
+	void parseUserCmdPedKeys(Poco::DynamicStruct& ds);
+	void parseUserCmdSoftKeys(Poco::DynamicStruct& ds);
+	void parseUserCmdTouchScreenKeys(Poco::DynamicStruct& ds);
+	void parseUserCmdAdaKeys(Poco::DynamicStruct& ds);
 	void parseUserCmdDcm(Poco::DynamicStruct& ds);
 
 	//fulfill user command with console commands
@@ -191,17 +215,31 @@ private:
 	void executeUserCmdCheckResetPressed();
 	void executeUserCmdCheckResetReleased();
 	void executeUserCmdResetDevice();
+	void executeUserCmdAdjustStepperW();
+	void executeUserCmdFinishStepperWAdjustment();
 	void executeUserCmdInsertSmartCard();
 	void executeUserCmdRemoveSmartCard();
 	void executeUserCmdSwipeSmartCard();
 	void executeUserCmdTapSmartCard();
-	void executeUserCmdShowBarCode();
+	void executeUserCmdTapBarCode();
 	void executeUserCmdPressPedKey();
 	void executeUserCmdPressSoftKey();
 	void executeUserCmdPressAssistKey();
 	void executeUserCmdTouchScreen();
+	//	sub user commands
+	void executeUserCmdPullUpSmartCard();
+	void executeUserCmd_Card_from_SmartCardGate_to_SmartCardReaderGate();
+	void executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardReader();
+	void executeUserCmd_Card_from_SmartCardReader_to_SmartCardReaderGate();
+	void executeUserCmd_Card_from_SmartCardReaderGate_to_SmartCardGate();
+	void executeUserCmd_Card_from_SmartCardGate_to_BarcodeReaderGate();
+	void executeUserCmd_Card_from_BarcodeReaderGate_to_BarcodeReader();
+	void executeUserCmd_Card_barcode_to_extraPosition();
+	void executeUserCmd_Card_from_BarcodeReader_to_BarcodeReaderGate();
+	void executeUserCmd_Card_from_BarcodeReaderGate_to_SmartCardGate();
+	void executeUserCmdPutBackSmartCard();
 
-	enum class CurrentPosition
+	enum class Position
 	{
 		Unknown = 0,
 		Home,
@@ -215,12 +253,14 @@ private:
 		ContactlessReaderGate,
 		BarCodeReaderGate
 	};
-	CurrentPosition getCurrentPosition();
+	Position getCurrentPosition();
+	Position getPosition(int x, int y, int z, int w);
 
 	int currentX();
 	int currentY();
 	int currentZ();
 	int currentW();
+	int currentV();
 
 	//append commands to configure stepper movement
 	void configStepperMovement(unsigned int index,
@@ -237,6 +277,13 @@ private:
 	void moveStepperY(unsigned int initialPos, unsigned int finalPos) { moveStepper(1, initialPos, finalPos); }
 	void moveStepperZ(unsigned int initialPos, unsigned int finalPos) { moveStepper(2, initialPos, finalPos); }
 	void moveStepperW(unsigned int initialPos, unsigned int finalPos) { moveStepper(3, initialPos, finalPos); }
+	void moveStepperV(unsigned int initialPos, unsigned int finalPos) { moveStepper(4, initialPos, finalPos); }
+
+	//smart card bay
+	void moveSmartCardCarriage(unsigned int cardNumber);
+	void pushUpSmartCardArm();
+	void pullDownSmartCardArm();
+	void releaseSmartCardArm();
 
 	//delay
 	void deviceDelay(unsigned int clks);
@@ -279,6 +326,7 @@ private:
 	void gate_contactlessReader();
 	//movement between barcode reader and gate
 	void barcodeReader_gate();
+	void barcodeReader_extraPosition();
 	void gate_barcodeReader();
 	//from Gate to Gate
 	void gateToGate(unsigned int fromX, unsigned int fromY, unsigned int fromZ, unsigned int fromW,
@@ -312,6 +360,7 @@ private:
 		unsigned int stepperIndex;
 		unsigned int steps;
 		bool stepperForward;
+		bool stepperForwardClockwise;
 		unsigned int locatorIndex;
 
 		//command results
@@ -327,6 +376,7 @@ private:
 			StepperState state;
 			bool enabled;
 			bool forward;
+			bool forwardClockwise;
 			unsigned int homeOffset;
 			unsigned int targetPosition;
 			unsigned int locatorIndex;

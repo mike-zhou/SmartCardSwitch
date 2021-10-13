@@ -100,6 +100,15 @@ private:
 	void onStepperConfigMovement(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 
 	//request:
+	//	uri: /stepperConfigForwardClockwise
+	//	body:
+	//	{
+	//		"index":1,
+	//		"forwardClockwise":true
+	//	}
+	void onStepperConfigForwardClockwise(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
+	//request:
 	//	uri: /stepperConfigHome
 	// 	body:
 	//	{
@@ -123,6 +132,18 @@ private:
 	void onToCoordinate(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 
 	//request:
+	//	uri: /toCoordinateItem
+	// 	body:
+	//	{
+	//		"x":1,
+	//		"y":0,
+	//		"z":1,
+	//		"w":1
+	//	}
+	void onToCoordinateItem(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
+
+	//request:
 	//	uri: /power
 	// 	body:
 	//	{
@@ -130,6 +151,14 @@ private:
 	//		"on":true
 	//	}
 	void onPower(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+
+	//request:
+	//	uri: /toSmartCardOffset
+	// 	body:
+	//	{
+	//		"v":1
+	//	}
+	void onToSmartCardOffset(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 };
 
 
@@ -177,6 +206,7 @@ public:
 						unsigned int decelerationBuffer,
 						unsigned int decelerationBufferIncrement,
 						std::string & errorInfo);
+	bool StepperConfigForwardClockwise(unsigned int index, bool forwardClockwise, std::string & errorInfo);
 	bool BdcForward(unsigned int index, std::string & errorInfo);
 	bool BdcReverse(unsigned int index, std::string & errorInfo);
 	bool BdcDeactivate(unsigned int index, std::string & errorInfo);
@@ -184,7 +214,9 @@ public:
 	bool Query(std::string & errorInfo);
 	bool SaveCoordinate(const std::string & coordinateType, unsigned int data, std::string & errorInfo);
 	bool ToCoordinate(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo);
+	bool ToCoordinateItem(const unsigned int index, unsigned int coordinate, std::string & errorInfo);
 	bool ToCoordinateIndirect(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int w, std::string & errorInfo);
+	bool ToSmartCardOffset(const unsigned int offset, std::string & errorInfo);
 	//return a JSON string representing current device status.
 	std::string DeviceStatus();
 
@@ -231,6 +263,7 @@ private:
 								StepperState state,
 								bool bEnabled,
 								bool bForward,
+								bool bForwardClockwise,
 								unsigned int locatorIndex,
 								unsigned int locatorLineNumberStart,
 								unsigned int locatorLineNumberTerminal,
@@ -243,16 +276,18 @@ private:
 								unsigned long decelerationBufferIncrement) override;
 
 	virtual void OnStepperSetState(CommandId key, bool bSuccess) override;
+	virtual void OnStepperForwardClockwise(CommandId key, bool bSuccess) override;
 	virtual void OnLocatorQuery(CommandId key, bool bSuccess, unsigned int lowInput) override;
 
 private:
-	static const int STEPPER_AMOUNT = 4;
+	static const int STEPPER_AMOUNT = 5;
 	static const int LOCATOR_AMOUNT = 8;
 	static const int BDC_AMOUNT = 6;
 	static const int STEPPER_X = 0;
 	static const int STEPPER_Y = 1;
 	static const int STEPPER_Z = 2;
 	static const int STEPPER_W = 3;
+	static const int STEPPER_V = 4;
 
 
 	Poco::Mutex _webServerMutex;
@@ -275,6 +310,7 @@ private:
 		unsigned int stepperIndex;
 		unsigned int steps;
 		bool stepperForward;
+		bool stepperForwardClockwise;
 		unsigned int lowClks, highClks, accelerationBuffer, accelerationBufferDecrement, decelerationBuffer, decelerationBufferIncrement;
 		unsigned int locatorLineNumberStart, locatorLineNumberTerminal;
 		unsigned int locatorIndex;
@@ -294,6 +330,7 @@ private:
 			StepperState state;
 			bool enabled;
 			bool forward;
+			bool forwardClockwise;
 			//boundary
 			unsigned int homeOffset;
 			unsigned int targetPosition;

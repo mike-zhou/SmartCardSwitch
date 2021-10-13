@@ -8,6 +8,7 @@
     border-width: 1px;
     border-color: blue;
     border-radius: 5px;
+    margin-bottom: 5px;
 }
 
 .functionZone:hover {
@@ -16,4 +17,113 @@
     border-color: blue;
     border-radius: 5px;
     background-color: bisque;
+}
+
+.cardSlotMappingTable,
+.cardSlotMappingTable th,
+.cardSlotMappingTable td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+.cardSlotMappingTable tr:nth-child(even) {
+    background-color: beige;
+}
+
+.cardSlotAccessTable,
+.cardSlotAccessTable th,
+.cardSlotAccessTable td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+.cardSlotAccessTable tr:nth-child(even) {
+    background-color: beige;
+}
+
+.touchScreenTableConsole td:nth-child(odd) {
+    vertical-align: top;
+}
+.touchScreenTableConsole,
+.touchScreenTableConsole th,
+.touchScreenTableConsole td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+.touchScreenTableConsole select {
+    width: 100%;
+}
+
+.frameSlider
+{
+    width: 100%;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltipFrameSlider {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -60px;
+}
+
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.tooltip .bottomtooltiptext::after {
+    content: " ";
+    position: absolute;
+    bottom: 100%;  /* At the top of the tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent black transparent;
+  }
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
+  
+.navigation {
+    position: sticky;
+    top:0;
+    padding: 5px;
+    background-color: gray;
+}
+
+.navigation a {
+    margin-right: 10px;
+    text-decoration: none;
+    color: blue;
+}
+
+.navigation a:hover {
+    background-color: greenyellow;
 }

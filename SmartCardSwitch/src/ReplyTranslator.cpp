@@ -47,6 +47,7 @@ ReplyTranslator::ReplyTranslator(const std::string& reply)
 	_stepperMovePtr = nullptr;
 	_stepperQueryPtr = nullptr;
 	_stepperSetStatePtr = nullptr;
+	_stepperForwardClockwisePtr = nullptr;
 	_locatorQueryPtr = nullptr;
 	_devicePowerPtr = nullptr;
 	_deviceConnectionPtr = nullptr;
@@ -833,6 +834,25 @@ void ReplyTranslator::parseReply(Poco::JSON::Object::Ptr objectPtr, const std::s
 
 		_stepperSetStatePtr = ptr;
 	}
+	else if(command == strCommandStepperForwardClockwise)
+	{
+		_type = ReplyType::StepperForwardClockwise;
+
+		std::shared_ptr<ReplyStepperForwardClockwise> ptr (new ReplyStepperForwardClockwise);
+		//common attributes
+		ptr->originalString = _reply;
+		ptr->commandKey = commandKey;
+		ptr->commandId = commandId;
+		ptr->errorInfo = errorInfo;
+		//specific attributes
+		if(errorInfo.empty()) {
+			ptr->index = ds["index"];
+			ptr->forwardClockwise = ds["forwardClockwise"];
+		}
+
+		_stepperForwardClockwisePtr = ptr;
+
+	}
 	else if(command == strCommandLocatorQuery)
 	{
 		_type = ReplyType::LocatorQuery;
@@ -1035,6 +1055,11 @@ std::shared_ptr<ReplyTranslator::ReplyStepperQuery> ReplyTranslator::ToStepperQu
 std::shared_ptr<ReplyTranslator::ReplyStepperSetState> ReplyTranslator::ToStepperSetState()
 {
 	return _stepperSetStatePtr;
+}
+
+std::shared_ptr<ReplyTranslator::ReplyStepperForwardClockwise> ReplyTranslator::ToStepperForwardClockwise()
+{
+	return _stepperForwardClockwisePtr;
 }
 
 std::shared_ptr<ReplyTranslator::ReplyLocatorQuery> ReplyTranslator::ToLocatorQuery()

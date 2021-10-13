@@ -4,41 +4,28 @@
  *  Created on: Sep 17, 2018
  *      Author: user1
  */
-#include "stddef.h"
-#include "fcntl.h"
 #include "CDeviceManager.h"
-#include "Poco/DirectoryIterator.h"
-#include "Poco/File.h"
-#include "Poco/Path.h"
-#include "Poco/Exception.h"
-#include "Poco/Format.h"
 #include "Poco/JSON/Parser.h"
 #include "Poco/Dynamic/Var.h"
 #include "Poco/JSON/Object.h"
 #include "Poco/JSON/JSONException.h"
 #include "ProxyLogger.h"
-#include <poll.h>
-#include <stddef.h>
-#include <unistd.h>
-#include <termios.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <errno.h>
 
-using Poco::DirectoryIterator;
-using Poco::File;
-using Poco::Path;
+#if defined(_WIN32) || defined(_WIN64)
+#include "WinComDevice.h"
+#else
+#include "LinuxComDevice.h"
+#endif
 
 extern ProxyLogger * pLogger;
 
 CDeviceManager::CDeviceManager() : Task("CDeviceManager")
 {
 	_pObserver = NULL;
-	_startMonitoringDevices = false;
 }
 
 CDeviceManager::~CDeviceManager() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void CDeviceManager::SetObserver(IDeviceObserver * pObserver)
@@ -46,11 +33,6 @@ void CDeviceManager::SetObserver(IDeviceObserver * pObserver)
 	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
 	_pObserver = pObserver;
-}
-
-void CDeviceManager::StartMonitoringDevices()
-{
-	_startMonitoringDevices = true;
 }
 
 void CDeviceManager::SendCommand(const std::string& deviceName, const std::string& command)
@@ -62,7 +44,7 @@ void CDeviceManager::SendCommand(const std::string& deviceName, const std::strin
 		}
 	}
 
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+	lockMutex("CDeviceManager::SendCommand", "enqueue command: " + deviceName + " : " + command);
 
 	auto it = _devices.begin();
 	for(; it != _devices.end(); it++) {
@@ -77,173 +59,51 @@ void CDeviceManager::SendCommand(const std::string& deviceName, const std::strin
 	if(it == _devices.end()) {
 		pLogger->LogError("CDeviceManager::SendCommand failed in sending: " + deviceName + ":" + command);
 	}
+
+	unlockMutex();
 }
 
-void CDeviceManager::checkDevices()
+void CDeviceManager::AddDeviceFile(const std::string & deviceFilePath)
 {
-	//check devices every 1 second
-	static Poco::Timestamp timeStamp;
-	if(timeStamp.elapsed() <= 1000000) {
-		return;
-	}
-	else {
-		timeStamp.update();
-	}
+	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
-	std::vector<std::string> deviceUnpluged;
-	std::vector<std::string> currentFileList;
+	bool fileExist = false;
 
-	//iterate each file in the folder /dev/serial/device_by_id
-	try
+	for(auto it = _deviceFiles.begin(); it != _deviceFiles.end(); it++)
 	{
-		Poco::File folderFile(DEVICE_FOLDER_PATH);
-
-		if(folderFile.exists() && folderFile.isDirectory())
-		{
-			//open all DCD files.
-			Poco::DirectoryIterator end;
-			for(DirectoryIterator it(DEVICE_FOLDER_PATH) ;it != end; it++)
-			{
-				bool fileIsOpened = false;
-				Path p(it->path());
-				int fd;
-
-				//check if current device has been opened
-				for(size_t i = 0; i<_devices.size(); i++) {
-					if(_devices[i].fileName == p.getFileName()) {
-						fileIsOpened = true;
-						break;
-					}
-				}
-				if(fileIsOpened) {
-					currentFileList.push_back(p.getFileName());
-					continue;
-				}
-
-				//check if it is a DCD device
-				std::string fileName = it->path();
-				if(fileName.find(IDENTIFIER) == std::string::npos) {
-					// not a DCD device
-					continue;
-				}
-
-				//open device
-				fd = open(fileName.c_str(), O_RDWR | O_NOCTTY);
-				if(fd < 0){
-					//cannot open device file
-					continue;
-				}
-
-				{
-					struct termios tios;
-					int rc;
-					//change settings of device.
-					rc = tcgetattr(fd, &tios);
-					if(0 != rc)
-					{
-						auto e = errno;
-						pLogger->LogError("CDeviceManager::checkDevices tcgetattr errno: " + std::to_string(e));
-						close(fd);
-						continue;
-					}
-					rc = cfsetspeed(&tios, B1152000);
-					if(0 != rc)
-					{
-						auto e = errno;
-						pLogger->LogError("CDeviceManager::checkDevices cfsetspeed errno: " + std::to_string(e));
-						close(fd);
-						continue;
-					}
-					//c_iflag
-					tios.c_iflag &= ~ICRNL;
-					tios.c_iflag &= ~IXON;
-					tios.c_iflag |= IGNPAR;
-					//c_oflag
-					tios.c_oflag &= ~ONLCR;
-					tios.c_oflag &= ~OPOST;
-					//c_cflag
-					tios.c_cflag &= ~CLOCAL;
-					//c_lflag
-					tios.c_lflag &= ~ISIG;
-					tios.c_lflag &= ~ICANON;
-					tios.c_lflag &= ~IEXTEN;
-					tios.c_lflag &= ~ECHO;
-					tios.c_lflag &= ~ECHOE;
-					tios.c_lflag &= ~ECHOK;
-					tios.c_lflag &= ~ECHOCTL;
-					tios.c_lflag &= ~ECHOKE;
-					tios.c_lflag &= ~FLUSHO;
-					tios.c_lflag &= ~EXTPROC;
-
-					rc = tcsetattr(fd, TCSANOW, &tios);
-					if(0 != rc)
-					{
-						auto e = errno;
-						pLogger->LogError("CDeviceManager::checkDevices tcsetattr errno: " + std::to_string(e));
-						close(fd);
-						continue;
-					}
-
-					//remember this new device.
-					Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-					struct Device device;
-
-					device.fd = fd;
-					device.fileName = p.getFileName();
-					device.state = DeviceState::OPENED;
-					_devices.push_back(device);
-				}
-
-				currentFileList.push_back(p.getFileName());
-				pLogger->LogInfo("CDeviceManager::checkDevices file is opened: " + p.getFileName());
-			}
-		}
-	}
-	catch (Poco::Exception& exc)
-	{
-		pLogger->LogError("CDeviceManager::checkDevices exception: " + exc.displayText());
-	}
-	catch(...)
-	{
-		pLogger->LogError("CDeviceManager::checkDevices unknown exception");
-	}
-
-	//check if any device was unplugged.
-	{
-		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-
-		for(auto oldDeviceIt = _devices.begin(); oldDeviceIt!=_devices.end(); )
-		{
-			auto newDeviceIt = currentFileList.begin();
-			for(; newDeviceIt!=currentFileList.end(); newDeviceIt++)
-			{
-				if(oldDeviceIt->fileName == *newDeviceIt) {
-					break;
-				}
-			}
-			if(newDeviceIt == currentFileList.end()) {
-				//the old device is NOT found in the new file list
-				pLogger->LogInfo("CDeviceManager::checkDevices device is unplugged: " + oldDeviceIt->fileName);
-				if(oldDeviceIt->state == DeviceState::ACTIVE) {
-					//observers are to be notified
-					deviceUnpluged.push_back(oldDeviceIt->deviceName); // deviceName rather than fileName.
-				}
-				//delete the old device
-				oldDeviceIt = _devices.erase(oldDeviceIt);
-			}
-			else {
-				oldDeviceIt++;
-			}
+		if(*it == deviceFilePath) {
+			fileExist = true;
+			break;
 		}
 	}
 
-	//outside mutex protection to avoid dead lock.
-	if(deviceUnpluged.size() > 0) {
-		for(auto it = deviceUnpluged.begin(); it != deviceUnpluged.end(); it++) {
-			_pObserver->OnDeviceUnplugged(*it);
-		}
+	if(!fileExist) {
+		_deviceFiles.push_back(deviceFilePath);
 	}
 }
+
+void CDeviceManager::lockMutex(const std::string & functionName, const std::string & purpose)
+{
+	do
+	{
+		if(_mutex.tryLock(MUTEX_TIMEOUT))
+		{
+			_lockMutexFor = functionName + " " + purpose;
+			break;
+		}
+		else
+		{
+			pLogger->LogError(functionName + " failed to lock mutex: " + _lockMutexFor);
+		}
+	} while(1);
+}
+
+void CDeviceManager::unlockMutex()
+{
+	_lockMutexFor.clear();
+	_mutex.unlock();
+}
+
 
 void CDeviceManager::onReply(struct Device& device, const std::string& reply)
 {
@@ -297,7 +157,15 @@ void CDeviceManager::onReply(struct Device& device, const std::string& reply)
 					device.deviceName = name;
 					device.state = DeviceState::ACTIVE;
 					pLogger->LogInfo("CDeviceManager::onReply device inserted: " + device.deviceName + ":" + device.fileName);
-					_pObserver->OnDeviceInserted(device.deviceName);
+					if(_pObserver != nullptr) {
+						_pObserver->OnDeviceInserted(device.deviceName);
+					}
+					else {
+						pLogger->LogError("CDeviceManager::onReply invalid observer at receiving name");
+					}
+				}
+				else {
+					pLogger->LogError("CDeviceManager::onReply no name in reply");
 				}
 			}
 		}
@@ -305,7 +173,12 @@ void CDeviceManager::onReply(struct Device& device, const std::string& reply)
 
 		case DeviceState::ACTIVE:
 		{
-			_pObserver->OnDeviceReply(device.deviceName, json);
+			if(_pObserver != nullptr) {
+				_pObserver->OnDeviceReply(device.deviceName, json);
+			}
+			else {
+				pLogger->LogError("CDeviceManager::onReply invalid observer at active");
+			}
 		}
 		break;
 
@@ -318,99 +191,13 @@ void CDeviceManager::onReply(struct Device& device, const std::string& reply)
 }
 
 //read data from device
-void CDeviceManager::onDeviceCanBeRead(struct Device& device)
+void CDeviceManager::onDeviceCanBeRead(struct Device& device, std::deque<unsigned char> & reply)
 {
-	const int BUFFER_SIZE = 1024;
-	unsigned char buffer[BUFFER_SIZE];
-	ssize_t amount;
-	std::string binaryLog;
-	std::string charLog;
-
-	//read data from device
-	amount =  read(device.fd, buffer, BUFFER_SIZE);
-	auto errorNumber = errno;
-	if(amount == 0) {
-		pLogger->LogError("CDeviceManager::onDeviceCanBeRead nothing is read, errno: " + std::to_string(errorNumber));
-	}
-	else if(amount < 0) {
-		pLogger->LogError("CDeviceManager::onDeviceCanBeRead error in device, errno: " + std::to_string(errorNumber));
-	}
-	pLogger->LogDebug("CDeviceManager::onDeviceCanBeRead " + std::to_string(amount) + " bytes from " + device.fileName);
-
-	if(device.state < DeviceState::RECEIVING_NAME) {
-		pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead clearing buffer, discard bytes: " + std::to_string(amount));
-		return;
-	}
-
-	//log data received
-	for(int i=0; i<amount; i++)
+	for(; reply.empty() == false; )
 	{
-		char tmpBuffer[16];
-
-		sprintf(tmpBuffer, " %02x", buffer[i]);
-		binaryLog = binaryLog + tmpBuffer;
-		charLog.push_back(buffer[i]);
-
-		device.incoming.push_back(buffer[i]);
-	}
-	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead binary content:" + binaryLog);
-	pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead char content: " + charLog);
-
-	//notify mapping of complete replies
-	for(;;)
-	{
-		bool replyReady = false;
-
-		//check if there is a complete reply
-		for(auto it = device.incoming.begin(); it!=device.incoming.end(); it++) {
-			if((*it == 0x0D) || (*it == 0x0A)) {
-				//0x0D is changed to 0x0A in raspberry pi
-				replyReady = true; //a reply is found.
-				break;
-			}
-		}
-
-		if(!replyReady) {
-			break; //no complete reply, break the loop.
-		}
-		else
-		{
-			std::string reply;
-			bool illegal = false;
-
-			//retrieve the first reply from the incoming deque.
-			for(; device.incoming.size() > 0; )
-			{
-				unsigned char c = device.incoming.front();
-				device.incoming.pop_front(); //delete the first character.
-
-				if((c >= ' ') && (c <= '~')) {
-					reply.push_back(c);
-				}
-				else if((c == 0x0D) || (c == 0x0A)) {
-					// a carriage return means that a complete reply is found
-					//0x0D is changed to 0x0A in raspberry pi.
-					if(illegal) {
-						pLogger->LogError("CDeviceManager::onDeviceCanBeRead illegal reply from: " + device.fileName + " : " + reply.data());
-					}
-					else if(!reply.empty()) {
-						pLogger->LogInfo("CDeviceManager::onDeviceCanBeRead rely: " + device.fileName + ":" + std::string(reply.data()));
-						onReply(device, reply);
-					}
-					break;
-				}
-				else {
-					//illegal character
-					if(illegal == false) {
-						char tmpBuffer[512];
-						sprintf(tmpBuffer, "CDeviceManager::onDeviceCanBeRead illegal character 0x%02x from: %s", c, device.fileName.c_str());
-						pLogger->LogError(tmpBuffer);
-						illegal = true;
-					}
-					reply.push_back(ILLEGAL_CHARACTER_REPLACEMENT);
-				}
-			}
-		}
+		unsigned char c = reply.front();
+		device.dataExchange.OnPacketReply(&c, 1);
+		reply.pop_front();
 	}
 }
 
@@ -426,113 +213,137 @@ void CDeviceManager::enqueueCommand(struct Device& device, const char * pCommand
 
 void CDeviceManager::enqueueCommand(struct Device& device, const std::string command)
 {
+	std::vector<unsigned char> array;
+
 	if(command.size() < 1) {
 		pLogger->LogError("CDeviceManager::enqueueCommand empty command to device: " + device.fileName);
 		return;
 	}
 
-	pLogger->LogDebug("CDeviceManager::enqueueCommand enqueue command: " + command + " : " + device.fileName);
-	for(auto it=command.begin(); it!=command.end(); it++) {
-		device.outgoing.push_back(*it);
+	pLogger->LogDebug("CDeviceManager::enqueueCommand enqueue command: " + device.fileName + " : " + command);
+	for(auto it=command.begin(); it!=command.end(); it++)
+	{
+		array.push_back(*it);
 	}
-	device.outgoing.push_back(COMMAND_TERMINATER);
-}
+	array.push_back(COMMAND_TERMINATER);
 
+	device.dataExchange.SendCommand(array.data(), array.size());
+}
 
 //write a command to device
-void CDeviceManager::onDeviceCanBeWritten(struct Device& device)
+void CDeviceManager::onDeviceCanBeWritten(struct Device& device, ILowlevelDevice * pLowlevelDevice)
 {
-	int amount;
-	char c;
+	unsigned char buffer[256];
+	int size;
+	std::vector<unsigned char> data;
+	std::string info;
 
-	Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-
-	switch(device.state)
-	{
-		case DeviceState::OPENED:
-		{
-			std::string command;
-
-			//make device to spit out rubbish in receiving buffer.
-			command.push_back(COMMAND_TERMINATER);
-			enqueueCommand(device, command);
-			pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten clearing device buffer: " + device.fileName);
-			device.state = DeviceState::CLEARING_BUFFER;
-			device.timeStamp.update();
-		}
-		break;
-
-		case DeviceState::CLEARING_BUFFER:
-		{
-			if(device.timeStamp.elapsed() > 1000000) {
-				//1 second is enough for device to spit out rubbish in receiving buffer.
-				device.state = DeviceState::BUFFER_CLEARED;
-				pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten cleared device buffer: " + device.fileName);
-			}
-		}
-		break;
-
-		case DeviceState::BUFFER_CLEARED:
-		{
-			//internal command to query device name
-			std::string command(COMMAND_QUERY_NAME);
-			enqueueCommand(device, command);
-			device.state = DeviceState::RECEIVING_NAME;
-			pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten querying device name: " + device.fileName);
-		}
-		break;
-
-		default:
-		{
-			//nothing to do
-		}
-		break;
+	size = device.dataExchange.GetPacketData(buffer, 256);
+	for(int i=0; i<size; i++) {
+		data.push_back(buffer[i]);
 	}
 
-	if(device.outgoing.size() > 0)
-	{
-		char buffer[512];
-		std::string binaryLog;
-		std::string charLog;
-
-		sprintf(buffer, "CDeviceManager::onDeviceCanBeWritten write %ld bytes to device file: %s", device.outgoing.size(), device.fileName.c_str());
-		pLogger->LogDebug(buffer);
-
-		//send command to device
-		for(;;)
-		{
-			if(device.outgoing.empty()) {
-				break;
-			}
-
-			//write a byte to device
-			c = device.outgoing.front();
-			amount = write(device.fd, &c, 1);
-			if(amount > 0) {
-				//byte is written
-				sprintf(buffer, " %02x" ,c);
-				binaryLog = binaryLog + buffer;
-				charLog.push_back(c);
-
-				device.outgoing.pop_front();
-			}
-			else {
-				//nothing is written
-				break;
-			}
-		}
-		pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten binary content:" + binaryLog);
-		pLogger->LogInfo("CDeviceManager::onDeviceCanBeWritten char content: " + charLog);
+	if(pLowlevelDevice->SendData(data, info) == true) {
+		device.dataExchange.ConsumePacketData(size);
+	}
+	else {
+		pLogger->LogError("CDeviceManager::onDeviceCanBeWritten failed to send to: " + device.fileName);
 	}
 }
 
-void CDeviceManager::onDeviceError(struct Device& device, int errorNumber)
+void CDeviceManager::onDeviceError(struct Device& device, const std::string & errorInfo)
 {
-	pLogger->LogError("CDeviceManager device error: " + device.fileName + ", errno: " + std::to_string(errorNumber));
-	device.state = DeviceState::ERROR;
+	pLogger->LogError("CDeviceManager device error: " + device.fileName + ", errInfo: " + errorInfo);
+	device.state = DeviceState::DEVICE_ERROR;
 }
 
+void CDeviceManager::onLowlevelDeviceState(const std::string & deviceName, const LowlevelDeviceState state, const std::string & info)
+{
+	bool deviceFound = false;
+	pLogger->LogInfo("CDeviceManager::onLowlevelDeviceState device: " + deviceName + " state: " + std::to_string((int)state) + " info: " + info);
 
+	lockMutex("CDeviceManager::onLowlevelDeviceState", deviceName);
+
+	if(state == LowlevelDeviceState::DeviceNormal)
+	{
+		//check whether this device exists
+		for(auto it = _devices.begin(); it != _devices.end(); it++)
+		{
+			if(deviceName == it->fileName)
+			{
+				//this device file shouldn't be in _devices before its normal state.
+				deviceFound = true;
+				pLogger->LogError("CDeviceManager::onLowlevelDeviceState low level device state error: " + deviceName);
+				onDeviceError(*it, "low level device error in " + deviceName);
+				break;
+			}
+		}
+
+		if(!deviceFound)
+		{
+			pLogger->LogInfo("CDeviceManager::onLowlevelDeviceState low level device changes to normal state: " + deviceName);
+
+			Device device;
+
+			device.fileName = deviceName;
+			device.state = DeviceState::OPENED;
+
+			_devices.push_back(device);
+		}
+	}
+	else if(state == LowlevelDeviceState::DeviceError)
+	{
+		//check whether this device exists
+		for(auto it = _devices.begin(); it != _devices.end(); it++)
+		{
+			if(deviceName == it->fileName)
+			{
+				deviceFound = true;
+				onDeviceError(*it, info);
+				break;
+			}
+		}
+
+		if(!deviceFound) {
+			pLogger->LogError("CDeviceManager::onLowlevelDeviceState device not found: " + deviceName);
+		}
+	}
+
+	unlockMutex();
+}
+
+void CDeviceManager::onLowlevelDeviceWritable(const std::string & deviceName, ILowlevelDevice * pLowlevelDevice)
+{
+	lockMutex("CDeviceManager::onLowlevelDeviceWritable", deviceName);
+
+	for(auto it = _devices.begin(); it != _devices.end(); it++)
+	{
+		if(deviceName == it->fileName)
+		{
+			it->writeStamp.update();
+			onDeviceCanBeWritten(*it, pLowlevelDevice);
+			break;
+		}
+	}
+
+	unlockMutex();
+}
+
+void CDeviceManager::onLowlevelDeviceReply(const std::string & deviceName, std::deque<unsigned char> & data)
+{
+	lockMutex("CDeviceManager::onLowlevelDeviceReply", deviceName);
+
+	for(auto it = _devices.begin(); it != _devices.end(); it++)
+	{
+		if(deviceName == it->fileName)
+		{
+			onDeviceCanBeRead(*it, data);
+			break;
+		}
+	}
+
+	unlockMutex();
+}
 
 void CDeviceManager::pollDevices()
 {
@@ -540,92 +351,186 @@ void CDeviceManager::pollDevices()
 		return;
 	}
 
-	std::vector<struct pollfd> fdVector;
+	lockMutex("CDeviceManager::pollDevices", "device polling");
 
-	//check if device can be written.
 	for(size_t i=0; i<_devices.size(); i++)
 	{
-		pollfd fd;
-
-		fd.fd = _devices[i].fd;
-		fd.events = POLLOUT | POLLERR;
-		fd.revents = 0;
-		fdVector.push_back(fd);
-	}
-	auto rc = poll(fdVector.data(), fdVector.size(), 0);
-	auto errorNumber = errno;
-	if(rc > 0)
-	{
-		for(size_t i=0; i<_devices.size(); i++)
+		if(_devices[i].writeStamp.elapsed() > _devices[i].FileWriteWarningThreshold)
 		{
-			auto events = fdVector[i].revents;
-
-			if(events & POLLOUT) {
-				//device can be written.
-				onDeviceCanBeWritten(_devices[i]);
-			}
-			if(events & POLLERR) {
-				onDeviceError(_devices[i], errorNumber);
-			}
+			_devices[i].writeStamp.update();
+			pLogger->LogError("CDeviceManager::pollDevices writing unavailable: " + _devices[i].fileName);
 		}
-	}
-
-	//check if device can be read
-	fdVector.clear();
-	for(size_t i=0; i<_devices.size(); i++)
-	{
-		pollfd fd;
-
-		fd.fd = _devices[i].fd;
-		fd.events = POLLIN | POLLERR;
-		fd.revents = 0;
-		fdVector.push_back(fd);
-	}
-
-	rc = poll(fdVector.data(), fdVector.size(), 10);
-	errorNumber = errno;
-	if(rc > 0)
-	{
-		for(size_t i=0; i<_devices.size(); i++)
+		if(_devices[i].readStamp.elapsed() > _devices[i].FileReadWarningThreshold)
 		{
-			auto events = fdVector[i].revents;
-
-			if(events & POLLIN) {
-				//device can be read.
-				onDeviceCanBeRead(_devices[i]);
-			}
-			if(events & POLLERR) {
-				onDeviceError(_devices[i], errorNumber);
-			}
+			_devices[i].readStamp.update();
+			//pLogger->LogError("CDeviceManager::pollDevices reading unavailable: " + _devices[i].fileName);
 		}
 	}
 
 	//remove the device having an error
+	for(auto deviceIt = _devices.begin(); deviceIt != _devices.end(); )
 	{
-		Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-		for(auto deviceIt = _devices.begin(); deviceIt != _devices.end(); )
+		if(deviceIt->state == DeviceState::DEVICE_ERROR)
 		{
-			if(deviceIt->state == DeviceState::ERROR)
-			{
-				close(deviceIt->fd);
-				//notify observers of device's unavailability
-				if(!deviceIt->deviceName.empty()) {
-					//this device has been fully enumerated.
-					_pObserver->OnDeviceUnplugged(deviceIt->deviceName);
-				}
-				//erase this device
-				deviceIt = _devices.erase(deviceIt);
+			//notify observers of device's unavailability
+			if(!deviceIt->deviceName.empty()) {
+				//this device has been fully enumerated.
+				_pObserver->OnDeviceUnplugged(deviceIt->deviceName);
 			}
-			else
-			{
-				deviceIt++;
-			}
+			//erase this device
+			deviceIt = _devices.erase(deviceIt);
+		}
+		else
+		{
+			deviceIt++;
 		}
 	}
+
+	//poll data exchange
+	for(auto deviceIt = _devices.begin(); deviceIt != _devices.end(); )
+	{
+		unsigned char buffer[64];
+		unsigned int size;
+
+		deviceIt->dataExchange.Poll();
+
+		//get reply to command
+		for(;;)
+		{
+			size = deviceIt->dataExchange.GetCmdReply(buffer, 64);
+			if(size == 0) {
+				break;
+			}
+			deviceIt->dataExchange.ConsumeCmdReply(size);
+			for(unsigned int i=0; i<size; i++) {
+				deviceIt->reply.push_back(buffer[i]);
+			}
+		}
+		//find a complete reply
+		bool replyReady = false;
+		for(auto it = deviceIt->reply.begin(); it != deviceIt->reply.end(); it++)
+		{
+			if((*it == 0x0A) || (*it == 0x0D)) {
+				replyReady = true;
+				break;
+			}
+		}
+		if(replyReady == false) {
+			continue;
+		}
+
+		//handle reply.
+		std::string reply;
+		bool illegal = false;
+		for(; deviceIt->reply.size() > 0; )
+		{
+			unsigned char c = deviceIt->reply.front();
+			deviceIt->reply.pop_front(); //delete the first character.
+
+			if((c >= ' ') && (c <= '~')) {
+				reply.push_back(c);
+			}
+			else if((c == 0x0D) || (c == 0x0A)) {
+				// a carriage return means that a complete reply is found
+				//0x0D is changed to 0x0A in raspberry pi.
+				if(illegal) {
+					pLogger->LogError("CDeviceManager::pollDevices illegal reply from: " + deviceIt->fileName + " : " + reply);
+				}
+				else if(!reply.empty()) {
+					pLogger->LogInfo("CDeviceManager::pollDevices rely: " + deviceIt->fileName + ":" + reply);
+					onReply(*deviceIt, reply);
+				}
+				break;
+			}
+			else {
+				//illegal character
+				if(illegal == false) {
+					char tmpBuffer[512];
+					sprintf(tmpBuffer, "CDeviceManager::pollDevices illegal character 0x%02x from: %s", c, deviceIt->fileName.c_str());
+					pLogger->LogError(tmpBuffer);
+					illegal = true;
+				}
+				reply.push_back(ILLEGAL_CHARACTER_REPLACEMENT);
+			}
+		}
+
+		//handle device state
+		switch(deviceIt->state)
+		{
+			case DeviceState::OPENED:
+			{
+				//make device to spit out rubbish in receiving buffer.
+				pLogger->LogInfo("CDeviceManager::pollDevices clearing device buffer: " + deviceIt->fileName);
+				std::string command;
+				command.push_back(COMMAND_TERMINATER);
+				enqueueCommand(*deviceIt, command);
+				deviceIt->state = DeviceState::CLEARING_BUFFER;
+				deviceIt->bufferCleaningStamp.update();
+			}
+			break;
+
+			case DeviceState::CLEARING_BUFFER:
+			{
+				if(deviceIt->bufferCleaningStamp.elapsed() > 1000000) {
+					//1 second is enough for device to spit out rubbish in receiving buffer.
+					deviceIt->state = DeviceState::BUFFER_CLEARED;
+					pLogger->LogInfo("CDeviceManager::pollDevices cleared device buffer: " + deviceIt->fileName);
+				}
+			}
+			break;
+
+			case DeviceState::BUFFER_CLEARED:
+			{
+				//internal command to query device name
+				pLogger->LogInfo("CDeviceManager::pollDevices querying device name: " + deviceIt->fileName);
+				std::string command(COMMAND_QUERY_NAME);
+				enqueueCommand(*deviceIt, command);
+				deviceIt->state = DeviceState::RECEIVING_NAME;
+			}
+			break;
+
+			default:
+			{
+				//nothing to do
+			}
+			break;
+		}
+	}
+
+	unlockMutex();
 }
 
 void CDeviceManager::runTask()
 {
+	pLogger->LogInfo("CDeviceManager::runTask starts");
+
+	//launch low level devices
+	{
+		std::vector<ILowlevelDevice *> taskVector;
+		for(unsigned int i=0; i<_deviceFiles.size(); i++)
+		{
+			ILowlevelDevice * pLowlevelDevice = nullptr;
+
+#if defined(_WIN32) || defined(_WIN64)
+			pLowlevelDevice = new WinComDevice(_deviceFiles[i], this);
+#else
+			pLowlevelDevice = new LinuxComDevice(_deviceFiles[i], this);
+#endif
+
+			if(pLowlevelDevice == nullptr) {
+				pLogger->LogError("CDeviceManager::runTask() failed to launch: " + _deviceFiles[i]);
+			}
+			else {
+				taskVector.push_back(pLowlevelDevice);
+			}
+		}
+
+		for(unsigned int i=0; i<taskVector.size(); i++)
+		{
+			_tm.start(taskVector[i]);
+		}
+	}
+
 	while(1)
 	{
 		if(isCancelled()) {
@@ -633,27 +538,33 @@ void CDeviceManager::runTask()
 		}
 		else
 		{
-			if(!_startMonitoringDevices) {
+			bool noObserver = false;
+			{
+				lockMutex("CDeviceManager::runTask", "check observer");
+
+				if(_pObserver == NULL) {
+					noObserver = true;
+				}
+
+				unlockMutex();
+			}
+			if(noObserver) {
 				sleep(10);
 				continue;
 			}
 
-			{
-				Poco::ScopedLock<Poco::Mutex> lock(_mutex);
-				if(_pObserver == NULL) {
-					sleep(10);
-					continue;
-				}
-			}
-
-			checkDevices();
 			pollDevices();
-
-			if(_devices.empty()) {
-				sleep(100);
-			}
+			sleep(1);
 		}
 	}
 
+	pLogger->LogInfo("CDeviceManager::runTask stopping low level devices...");
+	_tm.cancelAll();
+	_tm.joinAll();
+
 	pLogger->LogInfo("CDeviceManager::runTask exited");
 }
+
+
+
+

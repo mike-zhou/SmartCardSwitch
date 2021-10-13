@@ -1,4 +1,3 @@
-
 function updatePageStepper(stepper, data) {
     var elementId;
 
@@ -26,6 +25,12 @@ function updatePageStepper(stepper, data) {
     document.getElementById(elementId).selectedIndex = data["locatorLineNumberStart"] - 1;
     elementId = stepper + "LocatorLineNumberTerminal";
     document.getElementById(elementId).selectedIndex = data["locatorLineNumberTerminal"] - 1;
+    elementId = stepper + "ForwardClockwise";
+    if (data["forwardClockwise"] == true) {
+        document.getElementById(elementId).innerHTML = "Clockwise";
+    } else {
+        document.getElementById(elementId).innerHTML = "Counter Clockwise";
+    }
 }
 
 function updatePageLocator(locator, data) {
@@ -268,21 +273,67 @@ function updatePageCoordinates(serverResponse) {
     var coorTouchScreenKeysPressed = serverResponse["coordinateTouchScreenKeysPressed"];
     for (i = 0;
         (i < coorTouchScreenKeys.length) || (i < coorTouchScreenKeysPressed.length); i++) {
-        if (i < coorTouchScreenKeys.length) {
-            var index = coorTouchScreenKeys[i].index;
-            var x = coorTouchScreenKeys[i].x;
-            var y = coorTouchScreenKeys[i].y;
-            var z = coorTouchScreenKeys[i].z;
-            var w = coorTouchScreenKeys[i].w;
+        if (i < coorTouchScreenKeys.length) 
+        {
+            var index, x, y, z, w;
+
+            if(coorTouchScreenKeys[i].hasOwnProperty("index")) 
+                index = coorTouchScreenKeys[i].index;
+            else 
+                continue;
+
+            if(coorTouchScreenKeys[i].hasOwnProperty("x")) 
+                x = coorTouchScreenKeys[i].x;
+            else 
+                continue;
+
+            if(coorTouchScreenKeys[i].hasOwnProperty("y")) 
+                y = coorTouchScreenKeys[i].y;
+            else 
+                continue;
+
+            if(coorTouchScreenKeys[i].hasOwnProperty("z")) 
+                z = coorTouchScreenKeys[i].z;
+            else 
+                continue;
+
+           if(coorTouchScreenKeys[i].hasOwnProperty("w")) 
+                w = coorTouchScreenKeys[i].w;
+            else 
+                continue;
+
             html += createCoordinateLineWithIndex("TouchScreenKey", x, y, z, w, index);
         }
-        if (i < coorAssistKeysPressed.length) {
-            var index = coorAssistKeysPressed[i].index;
-            var x = coorAssistKeysPressed[i].x;
-            var y = coorAssistKeysPressed[i].y;
-            var z = coorAssistKeysPressed[i].z;
-            var w = coorAssistKeysPressed[i].w;
-            html += createCoordinateLineWithIndex("coorTouchScreenKeysPressed", x, y, z, w, index);
+        if (i < coorTouchScreenKeysPressed.length) 
+        {
+            var index, x, y, z, w;
+
+            if(coorTouchScreenKeysPressed[i].hasOwnProperty("index")) 
+                index = coorTouchScreenKeysPressed[i].index;
+            else 
+                continue;
+
+            if(coorTouchScreenKeysPressed[i].hasOwnProperty("x")) 
+                x = coorTouchScreenKeysPressed[i].x;
+            else 
+                continue;
+
+            if(coorTouchScreenKeysPressed[i].hasOwnProperty("y")) 
+                y = coorTouchScreenKeysPressed[i].y;
+            else 
+                continue;
+
+            if(coorTouchScreenKeysPressed[i].hasOwnProperty("z")) 
+                z = coorTouchScreenKeysPressed[i].z;
+            else 
+                continue;
+
+            if(coorTouchScreenKeysPressed[i].hasOwnProperty("w")) 
+                w = coorTouchScreenKeysPressed[i].w;
+            else 
+                continue;
+
+            html += createCoordinateLineWithIndex("TouchScreenKeyPressed", x, y, z, w, index);
         }
     }
 
@@ -308,6 +359,20 @@ function updatePageCoordinates(serverResponse) {
     html += createCoordinateLine("Safe", coorSafe.x, coorSafe.y, coorSafe.z, coorSafe.w);
 
     document.getElementById("coordinateList").innerHTML = html;
+}
+
+function updatePageSmartCardOffsets(serverResponse) {
+    var html = "";
+    var coorSmartCardOffsets = serverResponse["coordinateSmartCardOffsets"];
+
+    for (i = 0; i < coorSmartCardOffsets.length; i++) {
+        var index = coorSmartCardOffsets[i].index;
+        var value = coorSmartCardOffsets[i].value;
+
+        html += "<input name=\"smartCardOffset_selection\" id=\"smartCardOffset_index_" + index + "\" type=\"radio\">" + index + ": </input>";
+        html += "<label id=\"smartCardOffset_value_" + index + "\" for=\"smartCardOffset_index_" + index + "\">" + value + "</label><br>";
+    }
+    document.getElementById("smartCardOffsets").innerHTML = html;
 }
 
 function updatePage(serverResponse) {
@@ -378,12 +443,13 @@ function updatePage(serverResponse) {
     }
 
     updatePageCoordinates(serverResponse);
+    updatePageSmartCardOffsets(serverResponse);
 }
 
 function moveStepper(stepper, forward, steps) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'stepperMove');
+    xhr.open('POST', '/stepperMove');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -412,6 +478,8 @@ function moveStepper(stepper, forward, steps) {
         parameters["index"] = 2;
     } else if (stepper === "stepper3") {
         parameters["index"] = 3;
+    } else if (stepper === "stepper4") {
+        parameters["index"] = 4;
     } else {
         alert("Wrong stepper: " + stepper);
         return;
@@ -430,7 +498,7 @@ function moveStepper(stepper, forward, steps) {
 function setBdc(index, action) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'bdc');
+    xhr.open('POST', '/bdc');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -459,7 +527,7 @@ function setBdc(index, action) {
 function queryDevice() {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'query');
+    xhr.open('POST', '/query');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -505,7 +573,7 @@ function onStepperConfigMovement(index) {
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'stepperConfigMovement');
+    xhr.open('POST', '/stepperConfigMovement');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -543,7 +611,7 @@ function onStepperConfigHome(index) {
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'stepperConfigHome');
+    xhr.open('POST', '/stepperConfigHome');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -567,6 +635,37 @@ function onStepperConfigHome(index) {
     parameters["locator"] = locatorIndex;
     parameters["locatorLineNumberStart"] = locatorLineNumberStart;
     parameters["locatorLineNumberTerminal"] = locatorLineNumberTerminal;
+
+    xhr.send(JSON.stringify(parameters));
+}
+
+function onStepperConfigForwardClockwise(index) {
+    var selectionIndex = parseInt(document.getElementById("stepper" + index + "ForwardClockwiseSelection").selectedIndex);
+
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open('POST', '/stepperConfigForwardClockwise');
+
+    xhr.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                var jsonObj = xhr.response;
+                console.log(JSON.stringify(jsonObj)); // 'This is the output.'
+                updatePage(jsonObj);
+            } else {
+                alert('Error: ' + xhr.status + ": " + xhr.statusText); // An error occurred during the request.
+            }
+        }
+    };
+
+    var parameters = {};
+    parameters["index"] = parseInt(index);
+    parameters["forwardClockwise"] = Boolean(selectionIndex == 0);
 
     xhr.send(JSON.stringify(parameters));
 }
@@ -610,7 +709,7 @@ function saveCoordinate() {
         case "smartCardReaderGate":
         case "pedKeyGate":
         case "softKeyGate":
-        case "touchScreenGate":
+        case "touchScreenKeyGate":
         case "assistKeyGate":
         case "contactlessReader":
         case "contactlessReaderGate":
@@ -619,13 +718,14 @@ function saveCoordinate() {
             break;
 
         case "smartCard":
+        case "barCodeReaderExtra":
             command["data"] = selectedRadio["index"];
             break;
 
         case "pedKey":
         case "softKey":
         case "assistKey":
-        case "touchScreenKey:":
+        case "touchScreenKey":
             {
                 var keyUp = document.getElementById("coordinate_keyState_0").checked;
                 var keyDown = document.getElementById("coordinate_keyState_1").checked;
@@ -656,13 +756,13 @@ function saveCoordinate() {
             break;
 
         default:
-            alert("unknown coordinate type");
+            alert("unknown coordinate type: " + selectedRadio.coordinateType);
             return;
     }
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'saveCoordinate');
+    xhr.open('POST', '/saveCoordinate');
 
     xhr.onreadystatechange = function() {
         var DONE = 4; // readyState 4 means the request is done.
@@ -726,7 +826,7 @@ function onCoordinateItem(type, index) {
 
         var xhr = new XMLHttpRequest();
         xhr.responseType = "json";
-        xhr.open('POST', 'toCoordinate');
+        xhr.open('POST', '/toCoordinate');
 
         xhr.onreadystatechange = function() {
             var DONE = 4; // readyState 4 means the request is done.
@@ -755,7 +855,7 @@ function onCoordinateItem(type, index) {
 
         var xhr = new XMLHttpRequest();
         xhr.responseType = "json";
-        xhr.open('POST', 'toCoordinate');
+        xhr.open('POST', '/toCoordinate');
 
         xhr.onreadystatechange = function() {
             var DONE = 4; // readyState 4 means the request is done.
@@ -766,6 +866,106 @@ function onCoordinateItem(type, index) {
 
                 if (xhr.status === OK) {
                     console.log("toCoordinate succeeded");
+                } else {
+                    alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                }
+            }
+        };
+        xhr.send(JSON.stringify(command));
+    } else if (type === "toX") {
+        updateDest = false;
+
+        var command = {};
+        command["x"] = document.getElementById("destCoordinateX").innerText;
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open('POST', '/toCoordinateItem');
+
+        xhr.onreadystatechange = function() {
+            var DONE = 4; // readyState 4 means the request is done.
+            var OK = 200; // status 200 is a successful return.
+            if (xhr.readyState === DONE) {
+                console.log("response is available");
+                console.log("response type: " + xhr.responseType);
+
+                if (xhr.status === OK) {
+                    console.log("toCoordinateItem succeeded");
+                } else {
+                    alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                }
+            }
+        };
+        xhr.send(JSON.stringify(command));
+    } else if (type === "toY") {
+        updateDest = false;
+
+        var command = {};
+        command["y"] = document.getElementById("destCoordinateY").innerText;
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open('POST', '/toCoordinateItem');
+
+        xhr.onreadystatechange = function() {
+            var DONE = 4; // readyState 4 means the request is done.
+            var OK = 200; // status 200 is a successful return.
+            if (xhr.readyState === DONE) {
+                console.log("response is available");
+                console.log("response type: " + xhr.responseType);
+
+                if (xhr.status === OK) {
+                    console.log("toCoordinateItem succeeded");
+                } else {
+                    alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                }
+            }
+        };
+        xhr.send(JSON.stringify(command));
+    } else if (type === "toZ") {
+        updateDest = false;
+
+        var command = {};
+        command["z"] = document.getElementById("destCoordinateZ").innerText;
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open('POST', '/toCoordinateItem');
+
+        xhr.onreadystatechange = function() {
+            var DONE = 4; // readyState 4 means the request is done.
+            var OK = 200; // status 200 is a successful return.
+            if (xhr.readyState === DONE) {
+                console.log("response is available");
+                console.log("response type: " + xhr.responseType);
+
+                if (xhr.status === OK) {
+                    console.log("toCoordinateItem succeeded");
+                } else {
+                    alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                }
+            }
+        };
+        xhr.send(JSON.stringify(command));
+    } else if (type === "toW") {
+        updateDest = false;
+
+        var command = {};
+        command["w"] = document.getElementById("destCoordinateW").innerText;
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open('POST', '/toCoordinateItem');
+
+        xhr.onreadystatechange = function() {
+            var DONE = 4; // readyState 4 means the request is done.
+            var OK = 200; // status 200 is a successful return.
+            if (xhr.readyState === DONE) {
+                console.log("response is available");
+                console.log("response type: " + xhr.responseType);
+
+                if (xhr.status === OK) {
+                    console.log("toCoordinateItem succeeded");
                 } else {
                     alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
                 }
@@ -785,10 +985,40 @@ function onCoordinateItem(type, index) {
     }
 }
 
+function onSmartCardOffset(type, index) {
+    if (type === "index") {
+        var content = document.getElementById("smartCardOffset_value_" + index).innerText;
+        document.getElementById("smartCardOffset_selected").innerText = content;
+    } else if (type === "to") {
+        var command = {};
+        command["v"] = document.getElementById("smartCardOffset_selected").innerText;
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open('POST', '/toCoordinateItem');
+
+        xhr.onreadystatechange = function() {
+            var DONE = 4; // readyState 4 means the request is done.
+            var OK = 200; // status 200 is a successful return.
+            if (xhr.readyState === DONE) {
+                console.log("response is available");
+                console.log("response type: " + xhr.responseType);
+
+                if (xhr.status === OK) {
+                    console.log("toSmartCardOffset succeeded");
+                } else {
+                    alert('Error: failed to go to: ' + JSON.stringify(command)); // An error occurred during the request.
+                }
+            }
+        };
+        xhr.send(JSON.stringify(command));
+    }
+}
+
 function onPower(target, on) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open('POST', 'power');
+    xhr.open('POST', '/power');
 
     var command = {};
     command["target"] = target;
@@ -803,6 +1033,31 @@ function onPower(target, on) {
 
             if (xhr.status === OK) {
                 console.log("saveCoordinate succeeded");
+            } else {
+                alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
+            }
+        }
+    };
+    xhr.send(JSON.stringify(command));
+}
+
+function onKey(keyIndex) {
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open('POST', '/key');
+
+    var command = {};
+    command["index"] = keyIndex;
+
+    xhr.onreadystatechange = function() {
+        var DONE = 4; // readyState 4 means the request is done.
+        var OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            console.log("response is available");
+            console.log("response type: " + xhr.responseType);
+
+            if (xhr.status === OK) {
+                console.log("key was pressed: " + keyIndex);
             } else {
                 alert('Error: ' + xhr.status + ":" + xhr.statusText); // An error occurred during the request.
             }
@@ -856,6 +1111,8 @@ function onElementClicked() {
             onStepperConfigMovement(index);
         } else if (action === "configHome") {
             onStepperConfigHome(index);
+        } else if (action === "configForwardClockwise") {
+            onStepperConfigForwardClockwise(index);
         } else {
             alert("onElementClicked unknown action type: " + elementId);
         }
@@ -876,10 +1133,21 @@ function onElementClicked() {
         var type = paraArray[1];
         var index = parseInt(paraArray[2]);
         onCoordinateItem(type, index);
+    } else if (device === "smartCardOffset") {
+        var index;
+        var type = paraArray[1];
+
+        if ((type === "index") || (type === "value")) {
+            index = parseInt(paraArray[2]);
+        }
+        onSmartCardOffset(type, index);
     } else if (device === "power") {
         var target = paraArray[1];
         var action = paraArray[2];
         onPower(target, action === "on");
+    } else if (device === "iFinger") {
+        var keyIndex = paraArray[2];
+        onKey(keyIndex);
     } else if (elementId === "coordinate_save") {
         saveCoordinate();
     } else if (elementId === "deviceQuery") {

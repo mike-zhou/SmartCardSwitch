@@ -340,6 +340,19 @@ private:
 	unsigned long _steps;
 };
 
+class CommandStepperForwardClockwise: public DeviceCommand
+{
+public:
+	CommandStepperForwardClockwise(unsigned int stepperIndex, bool forwardClockwise);
+
+	virtual std::string CommandKey() override;
+	virtual std::string ToJsonCommandString() override;
+
+private:
+	unsigned int _stepperIndex;
+	bool _forwardClockwise;
+};
+
 class CommandLocatorQuery: public DeviceCommand
 {
 public:

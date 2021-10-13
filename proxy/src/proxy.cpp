@@ -15,6 +15,7 @@
 #include "CSocketManager.h"
 #include "CListener.h"
 #include "ProxyLogger.h"
+#include "CDeviceMonitor.h"
 
 
 using Poco::Util::Application;
@@ -85,13 +86,17 @@ protected:
 	{
 		if (!_helpRequested)
 		{
+			Poco::ThreadPool threadPool(2, 64);
 			TaskManager tmLogger;
-			TaskManager tm;
+			TaskManager tm(threadPool);
 			Poco::Net::SocketAddress serverAddress;
 			std::string logFolder;
 			std::string logFile;
 			std::string logFileSize;
 			std::string logFileAmount;
+			std::vector<std::string> monitorFileVec;
+			std::vector<std::string> controllingFileVec;
+			std::vector<CDeviceMonitor *> monitorPointerVec;
 
 			//use the designated configuration if it exist
 			if(args.size() > 0)
@@ -121,6 +126,38 @@ protected:
 				logFile = config().getString("log_file_name", "proxyLog");
 				logFileSize = config().getString("log_file_size", "1M");
 				logFileAmount = config().getString("log_file_amount", "10");
+				//controlling device file
+				for(int i=0; ; i++)
+				{
+					char keyBuf[128];
+					std::string controllingFile;
+
+					sprintf(keyBuf, "controlling_device_file_%d", i);
+					controllingFile = config().getString(keyBuf, std::string());
+
+					if(controllingFile.empty()) {
+						break;
+					}
+					else {
+						controllingFileVec.push_back(controllingFile);
+					}
+				}
+				//monitorFile
+				for(int i=0; ; i++)
+				{
+					char keyBuf[128];
+					std::string monitorFile;
+
+					sprintf(keyBuf, "monitor_device_file__%d", i);
+					monitorFile = config().getString(keyBuf, std::string());
+
+					if(monitorFile.empty()) {
+						break;
+					}
+					else {
+						monitorFileVec.push_back(monitorFile);
+					}
+				}
 			}
 			catch(Poco::NotFoundException& e)
 			{
@@ -146,17 +183,36 @@ protected:
 
 			CDeviceManager * pDeviceManager = new CDeviceManager;
 			CSocketManager * pSocketManager = new CSocketManager;
+			if(controllingFileVec.empty()) {
+				pLogger->LogError("no controlling file is specified");
+			}
+			for(unsigned int i=0; i < controllingFileVec.size(); i++)
+			{
+				pDeviceManager->AddDeviceFile(controllingFileVec[i]);
+			}
 			pDeviceManager->SetObserver(pSocketManager);
 			pSocketManager->SetDevice(pDeviceManager);
 
 			CListener * pListener = new CListener(pSocketManager);
 			pListener->Bind(serverAddress);
 
+			for(unsigned int i=0; i < monitorFileVec.size(); i++)
+			{
+				CDeviceMonitor * pMonitor = new CDeviceMonitor(monitorFileVec[i]);
+				if(pMonitor == nullptr) {
+					pLogger->LogError("failed to start monitor: " + monitorFileVec[i]);
+				}
+				else {
+					monitorPointerVec.push_back(pMonitor);
+				}
+			}
+
 			tm.start(pDeviceManager);
 			tm.start(pSocketManager);
 			tm.start(pListener);
-
-			pDeviceManager->StartMonitoringDevices();
+			for(unsigned int i=0; i<monitorPointerVec.size(); i++) {
+				tm.start(monitorPointerVec[i]);
+			}
 
 			waitForTerminationRequest();
 			//stop tasks

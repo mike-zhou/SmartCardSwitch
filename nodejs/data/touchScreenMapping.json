@@ -1,0 +1,117 @@
+[
+	{
+		"name": "general",
+		"active": false,
+		"mapping": [
+			{
+				"areaName": "area 0",
+				"index": 0
+			},
+			{
+				"areaName": "area 1",
+				"index": 1
+			},
+			{
+				"areaName": "area 2",
+				"index": 2
+			},
+			{
+				"areaName": "area 3",
+				"index": 3
+			},
+			{
+				"areaName": "area 4",
+				"index": 4
+			},
+			{
+				"areaName": "area 5",
+				"index": 5
+			},
+			{
+				"areaName": "area 6",
+				"index": 6
+			},
+			{
+				"areaName": "area 7",
+				"index": 7
+			}
+		]
+	},
+	{
+		"name": "car wash",
+		"active": false,
+		"mapping": [
+			{
+				"areaName": "car wash 1",
+				"index": 0
+			},
+			{
+				"areaName": "car wash 2",
+				"index": 1
+			},
+			{
+				"areaName": "previous",
+				"index": 2
+			},
+			{
+				"areaName": "next",
+				"index": 3
+			},
+			{
+				"areaName": "main menu",
+				"index": 4
+			},
+			{
+				"areaName": "$5",
+				"index": 5
+			},
+			{
+				"areaName": "$10",
+				"index": 6
+			},
+			{
+				"areaName": "cancel",
+				"index": 7
+			}
+		]
+	},
+	{
+		"name": "BladeRunner",
+		"active": true,
+		"mapping": [
+			{
+				"areaName": "AREA LEFT 0",
+				"index": 0
+			},
+			{
+				"areaName": "AREA RIGHT 0",
+				"index": 1
+			},
+			{
+				"areaName": "AREA LEFT 1",
+				"index": 2
+			},
+			{
+				"areaName": "AREA RIGHT 1",
+				"index": 3
+			},
+			{
+				"areaName": "AREA LEFT 2",
+				"index": 4
+			},
+			{
+				"areaName": "AREA RIGHT 2",
+				"index": 5
+			},
+			{
+				"areaName": "AREA LEFT 3",
+				"index": 6
+			},
+			{
+				"areaName": "AREA RIGHT 3",
+				"index": 7
+			}
+		]
+	}
+
+]

@@ -56,6 +56,7 @@ public:
 		StepperMove,
 		StepperQuery,
 		StepperSetState,
+		StepperForwardClockwise,
 		LocatorQuery,
 		//events
 		DevicePower = 10000,
@@ -269,6 +270,12 @@ public:
 		unsigned int index;
 	};
 
+	struct ReplyStepperForwardClockwise: ReplyCommon
+	{
+		unsigned int index;
+		bool forwardClockwise;
+	};
+
 	struct ReplyLocatorQuery: ReplyCommon
 	{
 		unsigned int index;
@@ -340,6 +347,7 @@ public:
 	std::shared_ptr<ReplyTranslator::ReplyStepperMove> ToStepperMove();
 	std::shared_ptr<ReplyTranslator::ReplyStepperQuery> ToStepperQuery();
 	std::shared_ptr<ReplyTranslator::ReplyStepperSetState> ToStepperSetState();
+	std::shared_ptr<ReplyTranslator::ReplyStepperForwardClockwise> ToStepperForwardClockwise();
 	std::shared_ptr<ReplyTranslator::ReplyLocatorQuery> ToLocatorQuery();
 	//std::shared_ptr<ReplyTranslator::Reply> To();
 	std::shared_ptr<ReplyTranslator::EventDevicePower> ToDevicePower();
@@ -389,6 +397,7 @@ private:
 	const std::string strCommandStepperMove = "stepper move";
 	const std::string strCommandStepperQuery = "stepper query";
 	const std::string strCommandStepperSetState = "stepper set state";
+	const std::string strCommandStepperForwardClockwise = "stepper forward clockwise";
 	const std::string strCommandLocatorQuery = "locator query";
 	//events
 	const std::string strEventDevicePower = "device power";
@@ -430,6 +439,7 @@ private:
 	std::shared_ptr<ReplyTranslator::ReplyStepperMove> _stepperMovePtr;
 	std::shared_ptr<ReplyTranslator::ReplyStepperQuery> _stepperQueryPtr;
 	std::shared_ptr<ReplyTranslator::ReplyStepperSetState> _stepperSetStatePtr;
+	std::shared_ptr<ReplyTranslator::ReplyStepperForwardClockwise> _stepperForwardClockwisePtr;
 	std::shared_ptr<ReplyTranslator::ReplyLocatorQuery> _locatorQueryPtr;
 	std::shared_ptr<ReplyTranslator::EventDevicePower> _devicePowerPtr;
 	std::shared_ptr<ReplyTranslator::EventDeviceConnection> _deviceConnectionPtr;

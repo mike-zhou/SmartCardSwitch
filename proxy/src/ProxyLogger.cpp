@@ -92,7 +92,7 @@ void ProxyLogger::Log(const std::string& log)
 
 void ProxyLogger::LogError(const std::string& err)
 {
-	Log(err);
+	Log("ERROR: " + err);
 }
 
 void ProxyLogger::LogDebug(const std::string& debug)

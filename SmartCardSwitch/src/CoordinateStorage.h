@@ -15,6 +15,7 @@ class CoordinateStorage
 public:
 	CoordinateStorage(std::string filePathName);
 	bool PersistToFile();
+	void ReloadCoordinate();
 
 	enum Type
 	{
@@ -39,7 +40,8 @@ public:
 		BarCodeReader = 18,
 		ContactlessReaderGate = 19,
 		ContactlessReader = 20,
-		Safe = 21
+		Safe = 21,
+		BarCodeReaderExtraPosition = 22
 	};
 
 	unsigned int SmartCardsAmount() { return _smartCards.size(); }
@@ -47,6 +49,10 @@ public:
 	unsigned int SoftKeysAmount() { return _softKeys.size(); }
 	unsigned int TouchScreenKeysAmount() { return _touchScreenKeys.size(); }
 	unsigned int AssistKeysAmount() { return _assistKeys.size(); }
+	unsigned int BarcodeReaderExtraPositionsAmount() { return _barCodeReaderExtraPositions.size(); }
+
+	int GetWAdjustment();
+	void SetWAdjustment(int adjustment);
 
 	bool SetCoordinate(Type type,
 					unsigned int x,
@@ -85,14 +91,19 @@ public:
 	bool GetMaximumZ(long & value);
 	bool GetMaximumW(long & value);
 
+	bool SetSmartCardOffset(unsigned int index, int offset);
+	bool GetSmartCardOffset(unsigned int index, int& offset);
+
 private:
 	//constraints
-	const unsigned int SMART_CARDS_AMOUNT = 64;
-	const unsigned int BAR_CODE_AMOUNT = 16;
+	const unsigned int SMART_CARDS_AMOUNT = 128;
+	const unsigned int BAR_CODE_READER_EXTRA_POSITION_AMOUNT = 128;
 	const unsigned int PED_KEYS_AMOUNT = 15;
 	const unsigned int SOFT_KEYS_AMOUNT = 8;
-	const unsigned int TOUCH_SCREEN_KEYS_AMOUNT = 8;
+	const unsigned int TOUCH_SCREEN_KEYS_AMOUNT = 64;
 	const unsigned int ASSIST_KEYS_AMOUNT = 9;
+
+	int _wAdjustment;
 
 	std::string _filePathName;
 
@@ -151,9 +162,13 @@ private:
 	//barcode reader
 	Coordinate _barCodeReaderGate;
 	Coordinate _barCodeReader;
+	std::vector<Coordinate> _barCodeReaderExtraPositions;
 
 	//safe
 	Coordinate _safe;
+
+	//smart card offset
+	std::vector<int> _smartCardOffsets;
 };
 
 #endif /* COORDINATESTORAGE_H_ */

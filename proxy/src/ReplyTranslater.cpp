@@ -269,7 +269,37 @@ std::string ReplyTranslater::optPowerOff(Poco::JSON::Object::Ptr& replyPtr)
 
 std::string ReplyTranslater::optQueryPower(Poco::JSON::Object::Ptr& replyPtr)
 {
+	std::string reply;
+	std::string strCmdId;
+	Poco::DynamicStruct ds = *replyPtr;
+	long commandId;
+	std::string error;
 
+	auto size = ds["params"].size();
+	if (size != 1) {
+		throw Poco::JSON::JSONException("ReplyTranslater::optQueryPower wrong parameter amount: " + std::to_string(size));
+	}
+
+	strCmdId = ds["params"][size - 1].toString();
+	commandId = getHexValue(strCmdId);
+
+	if (replyPtr->has("error")) {
+		error = ds["error"].toString();
+	}
+
+	reply = "{";
+	reply = reply + "\"command\":\"" + strCommandOptQueryPower + "\",";
+	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	if (!error.empty()) {
+		reply = reply + ",\"error\":\"" + error + "\"";
+		//"\"error\":\"invalid command\""
+		//"\"error\":\"too many parameters\""
+		//"\"error\":\"unknown command\""
+		//"\"error\":\"wrong parameter amount\""
+	}
+	reply += "}";
+
+	return reply;
 }
 
 std::string ReplyTranslater::dcmPowerOn(Poco::JSON::Object::Ptr& replyPtr)
@@ -354,7 +384,37 @@ std::string ReplyTranslater::dcmPowerOff(Poco::JSON::Object::Ptr& replyPtr)
 
 std::string ReplyTranslater::dcmQueryPower(Poco::JSON::Object::Ptr& replyPtr)
 {
+	std::string reply;
+	std::string strCmdId;
+	Poco::DynamicStruct ds = *replyPtr;
+	long commandId;
+	std::string error;
 
+	auto size = ds["params"].size();
+	if (size != 1) {
+		throw Poco::JSON::JSONException("ReplyTranslater::dcmQueryPower wrong parameter amount: " + std::to_string(size));
+	}
+
+	strCmdId = ds["params"][size - 1].toString();
+	commandId = getHexValue(strCmdId);
+
+	if (replyPtr->has("error")) {
+		error = ds["error"].toString();
+	}
+
+	reply = "{";
+	reply = reply + "\"command\":\"" + strCommandDcmQueryPower + "\",";
+	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	if (!error.empty()) {
+		reply = reply + ",\"error\":\"" + error + "\"";
+		//"\"error\":\"invalid command\""
+		//"\"error\":\"too many parameters\""
+		//"\"error\":\"unknown command\""
+		//"\"error\":\"wrong parameter amount\""
+	}
+	reply += "}";
+
+	return reply;
 }
 
 std::string ReplyTranslater::bdcsPowerOn(Poco::JSON::Object::Ptr& replyPtr)
@@ -1440,6 +1500,53 @@ std::string ReplyTranslater::stepperSetState(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
+std::string ReplyTranslater::stepperForwardClockwise(Poco::JSON::Object::Ptr& replyPtr)
+{
+	std::string reply;
+	std::string strCmdId;
+	std::string error;
+	std::string strIndex;
+	std::string strForwardClockwise;
+	Poco::DynamicStruct ds = *replyPtr;
+	long commandId;
+	long index;
+	int forwardClockwise;
+
+	//parameters
+	auto size = ds["params"].size();
+	if(size != 3) {
+		throw Poco::JSON::JSONException("ReplyTranslater::stepperForwardClockwise wrong parameter amount: " + std::to_string(size));
+	}
+	strIndex = ds["params"][0].toString();
+	index = getHexValue(strIndex);
+	strForwardClockwise = ds["params"][1].toString();
+	forwardClockwise = getHexValue(strForwardClockwise);
+	strCmdId = ds["params"][size - 1].toString();
+	commandId = getHexValue(strCmdId);
+
+	if (replyPtr->has("error")) {
+		error = ds["error"].toString();
+	}
+
+	reply = "{";
+	reply = reply + "\"command\":\"" + strCommandStepperForwardClockwise + "\",";
+	reply = reply + "\"index\":" + std::to_string(index) + ",";
+	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	reply = reply + ",\"forwardClockwise\":" + std::to_string(forwardClockwise);
+	if(!error.empty()) {
+		reply = reply + ",\"error\":\"" + error + "\"";
+		//"\"error\":\"invalid command\""
+		//"\"error\":\"too many parameters\""
+		//"\"error\":\"unknown command\""
+		//"\"error\":\"wrong parameter amount\""
+		//"\"error\":\"stepper index is out of scope\""
+		//"\"error\":\"invalid parameter\""
+	}
+	reply += "}";
+
+	return reply;
+}
+
 std::string ReplyTranslater::locatorQuery(Poco::JSON::Object::Ptr& replyPtr)
 {
 	std::string reply;
@@ -1490,7 +1597,58 @@ std::string ReplyTranslater::locatorQuery(Poco::JSON::Object::Ptr& replyPtr)
 	return reply;
 }
 
+std::string ReplyTranslater::solenoidActivate(Poco::JSON::Object::Ptr& replyPtr)
+{
+	std::string reply;
+	std::string strCmdId;
+	std::string error;
+	std::string strIndex;
+	std::string strLowClks;
+	std::string strHighClks;
+	Poco::DynamicStruct ds = *replyPtr;
+	long commandId;
+	long index;
+	unsigned long lowClks;
+	unsigned long highClks;
+	std::string strLowInput;
 
+	//parameters
+	auto size = ds["params"].size();
+	if(size != 4) {
+		throw Poco::JSON::JSONException("ReplyTranslater::activateSolenoid wrong parameter amount: " + std::to_string(size));
+	}
+	strIndex = ds["params"][0].toString();
+	index = getHexValue(strIndex);
+	strLowClks = ds["params"][1].toString();
+	lowClks = getHexValue(strLowClks);
+	strHighClks = ds["params"][2].toString();
+	highClks = getHexValue(strHighClks);
+	strCmdId = ds["params"][size - 1].toString();
+	commandId = getHexValue(strCmdId);
+
+	if (replyPtr->has("error")) {
+		error = ds["error"].toString();
+		//"\"error\":\"invalid command\""
+		//"\"error\":\"too many parameters\""
+		//"\"error\":\"unknown command\""
+		//"\"error\":\"wrong parameter amount\""
+		//"\"error\":\"power supply is unavailable\""
+		//"\"error\":\"main fuse is off\""
+	}
+
+	reply = "{";
+	reply = reply + "\"command\":\"" + strCommandSolenoidActivate + "\",";
+	reply = reply + "\"index\":" + std::to_string(index) + ",";
+	reply = reply + "\"lowClks\":" + std::to_string(lowClks) + ",";
+	reply = reply + "\"highClks\":" + std::to_string(highClks) + ",";
+	reply = reply + "\"commandId\":" + std::to_string(commandId);
+	if(!error.empty()) {
+		reply = reply + ",\"error\":\"" + error + "\"";
+	}
+	reply += "}";
+
+	return reply;
+}
 
 std::string ReplyTranslater::formatCmdReply(Poco::JSON::Object::Ptr& replyPtr)
 {
@@ -1637,8 +1795,16 @@ std::string ReplyTranslater::formatCmdReply(Poco::JSON::Object::Ptr& replyPtr)
 		reply = stepperSetState(replyPtr);
 		break;
 
+	case 63:
+		reply = stepperForwardClockwise(replyPtr);
+		break;
+
 	case 100:
 		reply = locatorQuery(replyPtr);
+		break;
+
+	case 200:
+		reply = solenoidActivate(replyPtr);
 		break;
 
 	default:

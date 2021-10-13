@@ -131,6 +131,11 @@ void UserProxy::OnCommandStatus(const std::string& jsonStatus)
 	}
 }
 
+std::string UserProxy::createErrorInfo(const std::string& info, const std::string cmdId)
+{
+	return "{\"commandId\":\"" + cmdId + "\", \"result\":\"failed\",\"errorInfo\":\"" + info + "\"}";
+}
+
 std::string UserProxy::createErrorInfo(const std::string& info)
 {
 	return "{\"commandId\":\"invalid\", \"result\":\"failed\",\"errorInfo\":\"" + info + "\"}";
@@ -564,16 +569,36 @@ void UserProxy::runTask()
 				continue;
 			}
 
-			if(_sockets.empty()) {
-				sleep(10);
-				continue;
-			}
-
+			//normal state
 			bool exceptionOccured = false;
 			bool peerClosed = false;
-
 			try
 			{
+				if(_autoBackToHomeEnabled)
+				{
+					if(autoBackToHomeStamp.elapsed() >= Poco::Timestamp::TimeDiff(_autoBackToHomeSeconds * 1000000))
+					{
+						autoBackToHomeStamp.update();
+
+						if(_pUserCmdRunner != nullptr)
+						{
+							std::string errorInfo;
+							std::string cmd = createAutoBackToHomeCmd();
+
+							_pUserCmdRunner->RunCommand(cmd, errorInfo);
+							if(!errorInfo.empty())
+							{
+								pLogger->LogError("UserProxy::runTask internal auto back to home error: " + errorInfo);
+							}
+						}
+					}
+				}
+
+				if(_sockets.empty()) {
+					sleep(10);
+					continue;
+				}
+
 				//receive user command
 				if(_sockets[0].poll(timeSpan, Poco::Net::Socket::SELECT_READ))
 				{
@@ -584,8 +609,19 @@ void UserProxy::runTask()
 					else
 					{
 						pLogger->LogInfo("UserProxy::runTask received bytes amount: " + std::to_string(amount));
+						{
+							std::string content;
 
-						for(unsigned int i=0; i<amount; i++) {
+							for(int i=0; i<amount; i++)
+							{
+								char tmpBuffer[32];
+								sprintf(tmpBuffer, "%02x,", buffer[i]);
+								content += std::string(tmpBuffer);
+							}
+							pLogger->LogInfo("UserProxy::runTask content: " + content);
+						}
+
+						for(int i=0; i<amount; i++) {
 							_input.push_back(buffer[i]);
 						}
 
@@ -601,14 +637,35 @@ void UserProxy::runTask()
 							if(_pUserCmdRunner != nullptr)
 							{
 								std::string errorInfo;
+								std::string uniqueCmdId;
+								bool wrongCmdFormat = false;
 
-								_pUserCmdRunner->RunCommand(*it, errorInfo);
-								if(!errorInfo.empty())
+								try
+								{
+									Poco::JSON::Parser parser;
+									Poco::Dynamic::Var result = parser.parse(*it);
+									Poco::JSON::Object::Ptr objectPtr = result.extract<Poco::JSON::Object::Ptr>();
+									Poco::DynamicStruct ds = *objectPtr;
+
+									uniqueCmdId = ds["commandId"].toString();
+								}
+								catch(Poco::Exception& e)
+								{
+									pLogger->LogError("UserProxy::runTask exception in user command parsing: " + e.displayText());
+									wrongCmdFormat = true;
+								}
+								catch(...)
+								{
+									pLogger->LogError("UserProxy::runTask unknown exception in user command parsing");
+									wrongCmdFormat = true;
+								}
+
+								if(wrongCmdFormat)
 								{
 									std::vector<unsigned char> pkg;
 
-									pLogger->LogError("UserProxy::runTask RunCommand error: " + errorInfo);
-									errorInfo = createErrorInfo(errorInfo);
+									pLogger->LogError("UserProxy::runTask wrong user command format: " + *it);
+									errorInfo = createErrorInfo("wrong command format");
 
 									Poco::ScopedLock<Poco::Mutex> lock(_mutex);
 
@@ -616,6 +673,29 @@ void UserProxy::runTask()
 									pLogger->LogError("UserProxy::runTask error package size: " + std::to_string(pkg.size()));
 									for(auto it=pkg.begin(); it!=pkg.end(); it++) {
 										_output.push_back(*it);
+									}
+								}
+								else
+								{
+									_pUserCmdRunner->RunCommand(*it, errorInfo);
+									if(!errorInfo.empty())
+									{
+										std::vector<unsigned char> pkg;
+
+										pLogger->LogError("UserProxy::runTask RunCommand error: " + errorInfo);
+										errorInfo = createErrorInfo(errorInfo);
+
+										Poco::ScopedLock<Poco::Mutex> lock(_mutex);
+
+										MsgPackager::PackageMsg(errorInfo, pkg);
+										pLogger->LogError("UserProxy::runTask error package size: " + std::to_string(pkg.size()));
+										for(auto it=pkg.begin(); it!=pkg.end(); it++) {
+											_output.push_back(*it);
+										}
+									}
+									else
+									{
+										//do nothing here. User is notified in OnCommandStatus.
 									}
 								}
 							}
@@ -651,30 +731,15 @@ void UserProxy::runTask()
 								for(; amount > 0; amount--) {
 									_output.pop_front();
 								}
+
+								if(_output.empty()) {
+									_sockets[0].shutdownSend();
+									peerClosed = true;
+								}
 							}
 							else {
 								pLogger->LogError("UserProxy::runTask error in sending out data: " + std::to_string(amount));
 								peerClosed = true; // to close this socket.
-							}
-						}
-					}
-				}
-
-				if(_autoBackToHomeEnabled)
-				{
-					if(autoBackToHomeStamp.elapsed() >= Poco::Timestamp::TimeDiff(_autoBackToHomeSeconds * 1000000))
-					{
-						autoBackToHomeStamp.update();
-
-						if(_pUserCmdRunner != nullptr)
-						{
-							std::string errorInfo;
-							std::string cmd = createAutoBackToHomeCmd();
-
-							_pUserCmdRunner->RunCommand(cmd, errorInfo);
-							if(!errorInfo.empty())
-							{
-								pLogger->LogError("UserProxy::runTask internal auto back to home error: " + errorInfo);
 							}
 						}
 					}
